@@ -9,103 +9,13 @@ static void tile(const char* id){
  for(unsigned i=0;i<n&&f>=0;i++)if(o[i]==(AppFolder|f)){pick(i);key(13);uint8_t in[AppEntriesMax];unsigned m=appsShown(in,f);for(unsigned j=0;j<m;j++)if(in[j]==app){pick(j);return;}}
  printf("FAIL no home tile %s\n",id);exit(1);}
 static void scenario(){
-#if defined(MM_JOYSTICK)
- // GAT562: joystick arrows 0xb4..0xb7, centre 13 (hold 0xa3), Back 0x86 (hold 0x82).
- for(int i=0;i<6;i++)tick(); // the boot choice times out
- shot("gat562-home");key(13);shot("gat562-home-menu");key(13);
- {int r=0,c=0;auto at=[&](int row,int col){while(r<row){key(0xb6);r++;}while(r>row){key(0xb5);r--;}while(c<col){key(0xb7);c++;}while(c>col){key(0xb4);c--;}key(13);};
-  if(config.lang==LangRu||config.lang==LangUk){at(1,2);at(1,3);at(0,8);at(0,2);at(0,5);at(1,5);}else{at(0,7);at(0,4);at(0,11);at(0,11);at(1,1);}
-  shot("gat562-keyboard");key(0x82);}
- auto sayId=[](int peer,const char* name,unsigned id,const char* body){char t[64];snprintf(t,sizeof t,"\xe2\x99\x9f%04X %s",id,body);chessNet.receive(peerId(peer),name,t);};
- ChessMatch* g=chessNet.invite(peerId(0),chess::White);sayId(0,"Heltec V4",g->id,"yes");
- for(const char* u:{"e2e4","e7e5","g1f3","b8c6","f1c4","f8c5"}){if(g->myTurn()){chess::Move mv;if(g->game.pos.parseUci(u,mv))chessNet.move(*g,mv);}else{char b[16];snprintf(b,sizeof b,"%u %s",g->game.plies+1,u);sayId(0,"Heltec V4",g->id,b);}}
- chessNet.events=0;for(int i=0;i<9;i++)tick(); // no news popup over the board
- key(0x86);for(int i=0;i<16&&uiStatus().indexOf("\"page\":\"chess\"")<0;i++)key(uiStatus().indexOf("\"page\":\"folder\"")>=0?13:0xb7);shot("gat562-chess-list");key(13);key(13);shot("gat562-chess");key(0x86);key(0x86);
- for(int i=0;i<16&&uiStatus().indexOf("\"page\":\"radar\"")<0;i++)key(0xb7);for(int i=0;i<3;i++)tick();shot("gat562-radar");
- for(int i=0;i<16&&uiStatus().indexOf("\"page\":\"nodes\"")<0;i++)key(0xb4);key(13);shot("gat562-node-menu");key(0x86);
- // Radio settings: "Radio..." in the Settings menu; the frequency by digits (OK, left/right, up/down), SF by right, Save.
- {auto expect=[](const char* what,const char* part){if(uiStatus().indexOf(part)<0){printf("FAIL %s: %s\n",what,uiStatus().c_str());exit(1);}};
-  for(int i=0;i<14&&uiStatus().indexOf("\"page\":\"settings\"")<0;i++)key(0xb7);key(13);key(0xb6);key(13);expect("radio screen","\"page\":\"radio\"");shot("gat562-radio");
-  key(13);key(0xb5);expect("MHz +1","\"radio_draft\":\"869.731\"");key(0xb7);key(0xb7);key(0xb5);key(0xb5);expect("10 kHz +2","\"radio_draft\":\"869.751\"");shot("gat562-radio-freq");
-  key(13);key(0xb6);key(0xb6);key(0xb7);expect("SF9","\"radio_draft\":\"9\"");shot("gat562-radio-sf");
-  for(int i=0;i<9;i++)key(0xb6);expect("Network row","\"radio_row\":11");key(13);shot("gat562-radio-net");key(0xb6);expect("Save row","\"radio_row\":12");key(13);expect("saved and closed","\"page\":\"settings\"");
-  key(13);key(0xb6);key(13);key(0x86);expect("back leaves","\"page\":\"settings\"");}
-#elif defined(MM_BOARD_TDECK)
- // Touch (uiTouch): each step checks the page the production UI reached.
- auto expect=[](const char* what,const char* part){if(uiStatus().indexOf(part)<0){printf("FAIL %s: %s\n",what,uiStatus().c_str());exit(1);}};
- auto touch=[](char gesture,int x,int y){uiTouch(gesture,x,y);tick();};
- // The rightmost footer hint (BACK on most pages), found by tapping from the right edge.
- auto footerRight=[&](const char* page){for(int x=316;x>150&&uiStatus().indexOf(page)>=0;x-=4){uiTouch('t',x,230);tick();}};
- shot("tdeck-role");touch('t',160,10);expect("title bar leaves the boot choice","\"page\":\"home\"");
- touch('t',160,48+2*24+12);expect("Nodes row","\"page\":\"nodes\"");shot("tdeck-nodes");
- touch('t',160,90);expect("second node row","\"page\":\"node\"");expect("second node","\"selected_node\":\"4A00B2C3D4E5F711\"");
- touch('t',160,10);expect("title bar back","\"page\":\"nodes\"");key(0x83);footerRight("\"page\":\"diagnostics\"");expect("footer BACK to where @ was pressed","\"page\":\"nodes\"");key(0x82);
- touch('d',0,0);expect("swipe down","\"selected\":1");touch('d',0,0);touch('u',0,0);touch('l',0,0);expect("swipe up and left","\"selected\":0");
- key(0x90);touch('t',160,24+32+10);expect("Settings row","\"page\":\"display\"");
- touch('t',160,25+23+8);expect("first tap selects","\"selected\":1");shot("tdeck-display");
- touch('t',160,10);expect("cancel the editor","\"page\":\"settings\"");
- touch('t',160,24+3*24+10);expect("Connections","\"page\":\"network\"");touch('t',160,25+56+6+44+10);expect("Bluetooth card toggles","\"page\":\"network\"");
- if(!bleActive()){printf("FAIL Bluetooth card did not toggle\n");exit(1);}
- internet.state=Internet::Online;touch('t',160,25+38+6+10);expect("Internet card","\"page\":\"internet\"");
- // Footer: OK (client on/off), DEL (rescan; on the T-Deck keyboard DEL would go back here), BACK.
- {int rescans=previewRescans;for(int x=4;x<316&&previewRescans==rescans&&uiStatus().indexOf("\"page\":\"internet\"")>=0;x+=4){uiTouch('t',x,230);internet.enabled=false;tick();}
-  if(previewRescans==rescans){printf("FAIL footer DEL did not rescan: %s\n",uiStatus().c_str());exit(1);}}
- expect("footer DEL stays on the list","\"page\":\"internet\"");
- touch('t',160,10);expect("back to Connections","\"page\":\"network\"");shot("tdeck-network-lan");internet.state=Internet::Off;
- key(0x88);expect("locked","\"locked\":true");touch('t',160,120);expect("a tap does not unlock","\"locked\":true");touch('h',160,120);expect("hold unlocks","\"locked\":false");
- tile("solitaire");key(0x86);for(int i=0;i<3;i++)key(0xb6);key(0x86);
- key(0x90);for(int i=0;i<5;i++)key(0xb6);key(13);shot("tdeck-help");key(0x86);
- // Chess: the colour row, then a game opened by taps and a move made on the board.
- {ChessMatch* g=chessNet.invite(peerId(0),chess::White);char t[64];snprintf(t,sizeof t,"\xe2\x99\x9f%04X yes",g->id);chessNet.receive(peerId(0),"Heltec V4",t);
-  chessNet.events=0;for(int i=0;i<9;i++)tick();
-  tile("chess");touch('t',160,10);key(0x82);
-  tile("chess");key(13);expect("chess list","\"page\":\"chess\"");touch('t',160,46+44+20);expect("game opens","\"page\":\"chess_board\"");
-  touch('t',4+4*24+12,25+6*24+12);expect("tap e2 takes the pawn","\"chess_held\":\"e2\"");touch('t',4+4*24+12,25+4*24+12);
-  if(g->game.plies!=1){printf("FAIL e2-e4 by taps: %u plies\n",g->game.plies);exit(1);}shot("tdeck-chess");
-  touch('t',160,10);touch('t',160,10);expect("chess list back to its folder","\"page\":\"folder\"");touch('t',160,10);expect("folder back to menu","\"page\":\"home\"");
-  tile("chess");key(13);touch('t',160,60);expect("new game","\"page\":\"chess_pick\"");touch('t',160,35);expect("colour row","\"chess_color\":0");
-  touch('t',160,88+44+20);expect("first tap on another contact selects","\"selected\":1");expect("no challenge yet","\"page\":\"chess_pick\"");}
- // Channels: "add a channel" row, the hashtag editor, a channel chat, its settings from the footer "@" hint.
- key(0x82);key(0x81);expect("chats","\"page\":\"threads\"");touch('t',160,24+3*48+20);expect("add row","\"page\":\"channel_add\"");
- touch('t',160,24+20);expect("hashtag editor","\"editing\":true");touch('t',160,10);expect("editor cancelled","\"editing\":false");touch('t',160,10);expect("back to chats","\"page\":\"threads\"");
- touch('t',160,24+48+20);expect("channel chat","\"page\":\"chat\"");
- for(int x=4;x<316&&uiStatus().indexOf("\"page\":\"chat\"")>=0;x+=4){uiTouch('t',x,230);tick();}
- expect("footer @ opens the chat settings","\"page\":\"chat_menu\"");shot("tdeck-chat-menu");
- touch('t',160,25+4*25+11);expect("first tap selects the invite row","\"menu_row\":\"invite\"");
- {unsigned before=meshRadio.historyCount;touch('t',160,25+4*25+11);if(meshRadio.historyCount!=before+1){printf("FAIL invite row did not send\n");exit(1);}}
- touch('t',160,10);expect("settings back to the chat","\"page\":\"chat\"");key(0x82);
- // Storage left by another firmware: OK on Module health, then OK again, formats and restarts.
- hardware.fsOk=false;key(0x82);key(0x83);shot("tdeck-format");previewCommands="";key(13);key(13);
- if(previewCommands!="fsformat;restart;"){printf("FAIL create storage: %s\n",previewCommands.c_str());exit(1);}hardware.fsOk=true;
- // Dice: taps on a tab, a grid die, the roll card and a sheet block (a tap chooses, a second one rolls its check).
- {dicer.begin();dicer.applyTemplate(dice::DndTemplate);tile("dice");key(13);expect("dice tile","\"page\":\"dice\"");
-  touch('t',80,34);if(dicer.s.mode!=dice::Grid){printf("FAIL dice tab tap: %s\n",dicer.json().c_str());exit(1);}
-  touch('t',20,60);touch('t',50,60);if(dicer.s.gridChosen!=2){printf("FAIL dice grid tap: %s\n",dicer.json().c_str());exit(1);}
-  touch('t',20,34);uint32_t rolls=dicer.rolls;touch('t',100,120);if(dicer.rolls!=rolls+1){printf("FAIL dice roll tap: %s\n",dicer.json().c_str());exit(1);}shot("tdeck-dice");
-  dicer.setMode(dice::Sheet);tick();touch('t',8+60,60);touch('t',8+60,60);if(dicer.rolls!=rolls+2||String(dicer.last()->formula)!="d20"){printf("FAIL sheet block taps: %s\n",dicer.json().c_str());exit(1);}shot("tdeck-dice-sheet");
-  key('e');touch('t',100,74+5*19+8);if(uiStatus().indexOf("\"block_field\":5")<0){printf("FAIL builder row tap: %s\n",uiStatus().c_str());exit(1);}
-  touch('t',100,74+5*19+8);if(dicer.sheet.block[1].shape!=dice::Square){printf("FAIL builder second tap: %s\n",uiStatus().c_str());exit(1);}shot("tdeck-dice-builder");key(0x86);
-  touch('t',160,10);expect("dice back to its folder","\"page\":\"folder\"");touch('t',160,10);expect("folder back","\"page\":\"home\"");}
- // Quick Send: the pinned recipient card and first/last templates use their own touch targets.
- {strlcpy(config.apps,"quick people dice",sizeof config.apps);config.dimAfter=0;config.autoLock=0;key(0x82);key(13);expect("Quick tile","\"page\":\"quick\"");shot("tdeck-quick");unsigned before=meshRadio.historyCount;
-  touch('t',160,45);expect("recipient card opens chooser","\"quick_targets\":true");shot("tdeck-quick-targets");if(meshRadio.historyCount!=before){printf("FAIL recipient card sent a template\n");exit(1);}
-  touch('t',160,10);expect("cancel returns to card","\"selected\":0");touch('t',160,45);touch('t',160,90);expect("recipient confirmation selects first preset","\"quick_index\":0");shot("tdeck-quick-preset");
-  touch('t',160,90);if(meshRadio.historyCount!=before+1||String(meshRadio.history[before].text)!=quickSend::state.text[0]||meshRadio.history[before].destination!=quickSend::state.to){printf("FAIL first Quick template touch\n");exit(1);}
-  key(0xb5);key(0xb5);shot("tdeck-quick-last");touch('t',160,190);if(meshRadio.historyCount!=before+2||String(meshRadio.history[before+1].text)!=quickSend::state.text[quickSend::Count-1]){printf("FAIL last Quick template touch\n");exit(1);}
-  touch('t',160,45);expect("pinned card after scrolling","\"quick_targets\":true");if(meshRadio.historyCount!=before+2){printf("FAIL pinned card sent a template\n");exit(1);}touch('t',160,10);touch('t',160,10);config.apps[0]=0;}
- // Checkers, sea battle, the folders and the node card's Play (the T-Deck part of the file).
-#include "scenario_games_m9.inc"
- printf("tdeck touch checks passed\n");return;
-#elif defined(MM_HELTEC_V4)
+#if   defined(MM_HELTEC_V4)
  auto expect=[](const char* what,const char* part){if(uiStatus().indexOf(part)<0){printf("FAIL %s: %s\n",what,uiStatus().c_str());exit(1);}};
  shot("heltec-role");for(int i=0;i<5;i++)tick(); // the boot choice times out
  // Each screen is reached by name: an open menu times out first, then clicks step through the screens.
  auto go=[&](const char* n){char savedApps[sizeof config.apps];strlcpy(savedApps,config.apps,sizeof savedApps);strlcpy(config.apps,"-dice -quick -people",sizeof config.apps);std::string want=std::string("\"page\":\"")+n+"\"";for(int i=0;i<11&&uiStatus().indexOf("\"menu\":true")>=0;i++)tick();
   for(int i=0;i<60&&uiStatus().indexOf(want.c_str())<0;i++){if(uiStatus().indexOf("\"page\":\"quick\"")>=0||uiStatus().indexOf("\"page\":\"dice\"")>=0||uiStatus().indexOf("\"page\":\"people\"")>=0)key(0x86);else key(13);}expect(n,want.c_str());strlcpy(config.apps,savedApps,sizeof config.apps);};
  for(const char* n:{"home","messages","nodes","chess","radar","gps","wifi","ble","settings","modules"}){
-#if defined(MM_NO_WIFI)
-  if(!strcmp(n,"wifi"))continue; // nRF52 (T114): no Wi-Fi screen
-#endif
   go(n);shot((std::string("heltec-")+n).c_str());if(!strcmp(n,"radar")){key(0xa3);shot("heltec-radar-menu");key(13);key(13);key(0xa3);for(int i=0;i<4;i++)tick();shot("heltec-homing");key(0xa3);key(0xa3);}if(!strcmp(n,"messages")){key(0xa3);shot("heltec-messages-menu");key(13);key(13);key(0xa3);shot("heltec-messages-older");key(13);key(13);key(0xa3);}if(!strcmp(n,"wifi")){key(0xa3);shot("heltec-wifi-on");}
   if(!strcmp(n,"ble")){for(int i=0;i<2&&!bleActive();i++)key(0xa3);if(!bleActive()){printf("FAIL BLE on\n");exit(1);}if(uiStatus().indexOf("\"menu\":true")>=0)key(0x86);shot("heltec-ble-on");for(int i=0;i<2&&bleActive();i++)key(0xa3);if(uiStatus().indexOf("\"menu\":true")>=0)key(0x86);} // the MeshCore- name and the PIN
   key(13);}
@@ -297,8 +207,7 @@ static void scenario(){
  }
 #endif
  // Device modes: the repeater and room pages, the mode choice from Settings.
-#if defined(MM_JOYSTICK)
-#elif defined(MM_HELTEC_V4)
+#if   defined(MM_HELTEC_V4)
  auto home=[]{for(int i=0;i<11&&uiStatus().indexOf("\"menu\":true")>=0;i++)tick();for(int i=0;i<4&&uiStatus().indexOf("\"page\":\"home\"")<0;i++)key(0x86);};
  for(int i=0;i<9;i++)tick(); // the message popup closes
  config.role=RoleRepeater;home();shot("heltec-repeater");key(0xa3);shot("heltec-repeater-menu");key(0x82);key(0x82);key(0xa3);shot("heltec-role-menu");key(0xa3); // holding the current mode closes the list
@@ -334,17 +243,9 @@ static void scenario(){
 #if defined(MM_HELTEC_V4)
   for(int i=0;i<11;i++)tick(); // menus and popups close
   for(int i=0;i<20&&uiStatus().indexOf("\"page\":\"pet\"")<0;i++) // in the games folder: a hold (OK) enters it
-#if defined(MM_JOYSTICK)
-   key(uiStatus().indexOf("\"page\":\"folder\"")>=0?13:0xb7);
-#else
    key(uiStatus().indexOf("\"page\":\"folder\"")>=0?0xa3:13);
-#endif
   const char* prefix=
-#if defined(MM_JOYSTICK)
-   "gat562-";
-#else
    "heltec-";
-#endif
   auto snap=[&](const char* n){shot((std::string(prefix)+n).c_str());};
 #else
   tile("pet");auto snap=[&](const char* n){shot(n);};snap("home-pet");key(13);
@@ -362,11 +263,7 @@ static void scenario(){
   creature.s.species=5;look(pet::Teen,420,300,260,900,nullptr,pet::NoEffect);snap("pet-ill");
 #if defined(MM_HELTEC_V4)
   key(0xa3);snap("pet-menu");
-#if defined(MM_JOYSTICK)
-  key(0x86);
-#else
   for(int i=0;i<11;i++)tick();
-#endif
 #endif
   auto& s=creature.s;s.food=0;s.joy=0;s.health=0;creature.speech="";creature.command("pet skip 3600");
   if(creature.alive()){printf("FAIL the pet outlived zero health: %s\n",creature.json().c_str());exit(1);}
@@ -481,41 +378,26 @@ static void scenario(){
   dicer.addCharacter(ru?"Ян":"Yan",dice::RetTemplate);dicer.setValue(dicer.find("cha"),5);dicer.setValue(dicer.find("insp"),4);dicer.setValue(dicer.find("hp"),4);
   dicer.useCharacter(0);
 #if defined(MM_HELTEC_V4)
-#if defined(MM_JOYSTICK)
-  const int next=0xb7,hold=13,run=13;const char* prefix="gat562-";
-#else
   const int next=13,hold=0xa3,run=0xa3;const char* prefix="heltec-";
-#endif
   auto snap=[&](const char* n){shot((std::string(prefix)+n).c_str());};
   for(int i=0;i<11;i++)tick();for(int i=0;i<20&&uiStatus().indexOf("\"page\":\"dice\"")<0;i++)key(uiStatus().indexOf("\"page\":\"folder\"")>=0?hold:next); // in the games folder
   if(uiStatus().indexOf("\"page\":\"dice\"")<0){printf("FAIL dice page: %s\n",uiStatus().c_str());exit(1);}
-#if !defined(MM_JOYSTICK)
   snap("dice-closed");key(hold);must(uiStatus().indexOf("\"app_open\":true")>=0,"hold opens dice");
-#endif
   snap("dice-empty");key(hold);snap("dice-menu");key(run);must(dicer.resultCount==1&&uiStatus().indexOf("\"menu\":false")>=0,"hold, hold rolls the pool");snap("dice-rpg");
   dicer.roll("d20+5",ru?"Атака мечом":"Sword attack");snap("dice-saved");dicer.roll("d4+d6+d8+d10+d12");snap("dice-shapes");
   dicer.setMode(dice::Grid);dicer.gridChoose(10);dicer.gridSetThreshold(true,4);dicer.gridRoll();snap("dice-grid");
   dicer.setMode(dice::Sheet);tick();snap("dice-counters");key(hold);
-#if defined(MM_JOYSTICK)
-  key(run);must(dicer.value(0)==25,"+1 from the menu");snap("dice-counter-menu");
-  key(0x86);key(0xb5);must(dicer.value(0)==26,"joystick up");
-#else
   // Count with button: click +1, hold -1, a 5 s hold leaves and takes that hold's -1 back.
   key(run);must(uiStatus().indexOf("\"dice_tapping\":true")>=0,"count with button opens");snap("dice-counting");
   key(13);key(13);must(dicer.value(0)==26,"click +1");key(0xa3);must(dicer.value(0)==25,"hold -1");
   key(0xa4);must(dicer.value(0)==26&&uiStatus().indexOf("\"dice_tapping\":false")>=0,"5 s hold leaves, -1 taken back");
   for(int i=0;i<11;i++)tick();
-#endif
   // The D&D sheet: a click goes to the next block, the menu rolls the shown stat's check.
   dicer.useCharacter(1);tick();snap("dice-sheet");
-#if !defined(MM_JOYSTICK)
   key(13);must(uiStatus().indexOf("\"sheet_block\":1")>=0,"a click: the next block");
-#endif
   {uint32_t rolls=dicer.rolls;key(hold);key(run);must(dicer.rolls==rolls+1&&String(dicer.last()->formula).startsWith("d20"),"the menu rolls the check");snap("dice-sheet-roll");}
   dicer.useCharacter(2);for(int i=0;i<11;i++)tick();snap("dice-sheet-ret");
-#if !defined(MM_JOYSTICK)
   {int want=dicer.find("cha");for(int k=0;k<80&&uiStatus().indexOf((std::string("\"sheet_block\":")+std::to_string(want)+",").c_str())<0;k++)key(13);}
-#endif
   dicer.roll("r5+3",dicer.sheet.block[dicer.find("cha")].name);snap("dice-sheet-ret-roll");
   dicer.useCharacter(0);dicer.setMode(dice::Rpg);
 #else
@@ -561,11 +443,7 @@ static void scenario(){
   strlcpy(config.apps,"settings -chats -nodes map -dice -quick -people",sizeof config.apps);
 #if defined(MM_HELTEC_V4)
   const int next=
-#if defined(MM_JOYSTICK)
-   0xb7; // joystick right
-#else
    13;
-#endif
   for(int i=0;i<4&&uiStatus().indexOf("\"page\":\"home\"")<0;i++)key(0x86);page("home");shot("heltec-apps-home");key(next);page("settings");key(next);page("gps"); // the apps the setting does not name follow in the default order
   for(int i=0;i<14&&uiStatus().indexOf("\"page\":\"home\"")<0;i++){key(next);if(uiStatus().indexOf("\"page\":\"messages\"")>=0||uiStatus().indexOf("\"page\":\"nodes\"")>=0){printf("FAIL hidden page shown\n");exit(1);}}page("home");
 #else
@@ -599,19 +477,11 @@ static void scenario(){
  {auto must=[](bool ok,const char* why){if(!ok){printf("FAIL wishlist UI %s: %s\n",why,uiStatus().c_str());exit(1);}};
   strlcpy(config.apps,"quick people dice",sizeof config.apps);config.dimAfter=0;config.autoLock=0;
 #if defined(MM_HELTEC_V4)
-#if defined(MM_JOYSTICK)
-  const int step=0xb7,hold=13,choose=0xb6;
-#else
   const int step=13,hold=0xa3,choose=13;
-#endif
-#if !defined(MM_JOYSTICK)
   key(0x86);key(step);must(uiStatus().indexOf("\"page\":\"quick\"")>=0&&uiStatus().indexOf("\"app_open\":false")>=0,"Quick Send waits for a hold");shot("heltec-quick-closed");unsigned passed=meshRadio.historyCount;key(step);
   must(uiStatus().indexOf("\"page\":\"people\"")>=0&&uiStatus().indexOf("\"app_open\":false")>=0,"click passes Quick Send");int32_t untouched=people::value();key(step);must(uiStatus().indexOf("\"page\":\"dice\"")>=0&&people::value()==untouched,"click passes the counter without counting");
   unsigned unrolled=dicer.rolls;key(step);must(uiStatus().indexOf("\"page\":\"dice\"")<0&&dicer.rolls==unrolled&&meshRadio.historyCount==passed,"click passes dice without rolling");
   key(0x86);key(step);key(hold);
-#else
-  key(0x86);key(step);
-#endif
   must(uiStatus().indexOf("\"page\":\"quick\"")>=0&&uiStatus().indexOf("\"quick_row\":0")>=0,"open Quick Send on recipient card");shot("heltec-quick");unsigned sent=meshRadio.historyCount;key(hold);
   must(uiStatus().indexOf("\"quick_targets\":true")>=0&&meshRadio.historyCount==sent,"recipient card opens chooser without sending");shot("heltec-quick-targets");key(0x86);
   must(uiStatus().indexOf("\"page\":\"quick\"")>=0&&uiStatus().indexOf("\"quick_row\":0")>=0,"cancel returns to recipient card");key(hold);key(choose);uint64_t to=quickSend::target(1);key(hold);
@@ -619,20 +489,13 @@ static void scenario(){
   must(meshRadio.historyCount==sent+1&&String(meshRadio.history[sent].text)==quickSend::state.text[0]&&meshRadio.history[sent].destination==to,"first preset still sends its own text to chosen recipient");
   for(unsigned i=1;i<quickSend::Count;i++)key(choose);for(int i=0;i<4;i++)tick();shot("heltec-quick-last");key(hold);
   must(meshRadio.historyCount==sent+2&&String(meshRadio.history[sent+1].text)==quickSend::state.text[quickSend::Count-1]&&meshRadio.history[sent+1].destination==to,"last preset remains reachable and sends its own text");
-#if defined(MM_JOYSTICK)
-  key(0x86);key(step);key(0xb5);must(uiStatus().indexOf("\"quick_row\":11")>=0,"joystick up wraps to exit");key(0xb5);must(uiStatus().indexOf("\"quick_index\":9")>=0,"joystick up reaches last preset");key(0xb6);key(0xb6);must(uiStatus().indexOf("\"quick_row\":0")>=0,"joystick down wraps to recipient card");
-  key(0x86);key(step);key(step);int32_t manual=people::value();key(0xb5);must(people::value()==manual+1,"joystick up counts +1");key(0xb6);must(people::value()==manual,"joystick down counts -1");
-#else
   key(13);key(hold);must(uiStatus().indexOf("\"page\":\"people\"")>=0,"Quick exit advances to counter");shot("heltec-people-closed");key(hold);must(uiStatus().indexOf("\"app_open\":true")>=0,"hold opens the counter");int32_t manual=people::value();key(13);must(people::value()==manual+1,"manual +1");key(hold);shot("heltec-people-menu");key(hold);must(people::value()==manual,"manual -1 menu");
   key(hold);key(13);key(hold);must(people::tally.count==2&&people::tally.current==1,"menu adds a card and opens it");key(13);key(13);must(people::value()==2,"the new card counts");
   people::rename(1,config.lang==LangRu?"Кофе":"Coffee");fakeMillis+=4000;tick();shot("heltec-people-two");key(hold);key(13);key(hold);must(people::tally.current==0&&people::value()==manual,"menu turns to the next card");
   people::select(1);key(hold);for(int i=0;i<4;i++)key(13);key(hold);must(people::tally.count==2,"delete asks again");shot("heltec-people-delete");key(hold);must(people::tally.count==1,"second hold deletes");
-#endif
   shot("heltec-people");
-#if !defined(MM_JOYSTICK)
   key(hold);StaticJsonDocument<768>d;deserializeJson(d,uiStatus());unsigned n=d["menu_count"]|0;must(n>=3,"counter exit menu");for(unsigned i=0;i<n-2;i++)key(13);key(hold);must(uiStatus().indexOf("\"page\":\"dice\"")>=0,"counter exit advances to dice");key(hold);
   dicer.setMode(dice::Rpg);unsigned rolls=dicer.rolls;key(13);must(dicer.rolls==rolls+1,"short press rolls");ChatMessage m;m.source=peerId(0);strcpy(m.name,"Preview");strcpy(m.text,"message while rolling");notifications::incoming(m);tick();must(uiStatus().indexOf("\"popup\":false")>=0,"message does not take the roll button");key(13);must(dicer.rolls==rolls+2,"next short press rolls again");config.dimAfter=10;fakeMillis+=12000;tick();must(uiScreenOff(),"dice screen dims");key(13);must(!uiScreenOff()&&dicer.rolls==rolls+3,"dark press wakes and rolls");key(hold);deserializeJson(d,uiStatus());n=d["menu_count"]|0;for(unsigned i=0;i<n-2;i++)key(13);key(hold);must(uiStatus().indexOf("\"page\":\"dice\"")<0,"exit through menu");
-#endif
 #else
   key(0x82);key(13);must(uiStatus().indexOf("\"page\":\"quick\"")>=0,"open Quick Send");shot("quick");
   unsigned sent=meshRadio.historyCount;key(13);must(uiStatus().indexOf("\"quick_targets\":true")>=0&&meshRadio.historyCount==sent,"first row opens recipients without sending");shot("quick-targets");
@@ -653,7 +516,7 @@ static void scenario(){
 // Wardrive: off, then listening and pings along a street; its points on the map.
  {auto must=[](bool ok,const char* why){if(!ok){printf("FAIL wardrive UI %s: %s\n",why,uiStatus().c_str());exit(1);}};
   strlcpy(config.apps,"wardrive",sizeof config.apps);config.dimAfter=0;config.autoLock=0;
-#if defined(MM_HELTEC_V4)&&!defined(MM_JOYSTICK)
+#if defined(MM_HELTEC_V4)
   for(int i=0;i<4&&uiStatus().indexOf("\"page\":\"home\"")<0;i++)key(0x86);key(13);must(uiStatus().indexOf("\"page\":\"wardrive\"")>=0,"open wardrive");shot("heltec-wardrive-off");
   key(0xa3);shot("heltec-wardrive-menu");key(0xa3);must(wardrive::running(),"menu starts it");wardriveData();tick();shot("heltec-wardrive");
   key(0xa3);key(13);key(13);key(0xa3);shot("heltec-wardrive-repeaters");key(0xa3);key(13);key(13);key(0xa3);key(0x86);
@@ -676,7 +539,7 @@ static void scenario(){
 // Checkers, sea battle and the app folders: their own files (statements of this function).
 #if defined(MM_HELTEC_V4)
 #include "scenario_games_compact.inc"
-#elif !defined(MM_BOARD_TDECK) // the T-Deck runs it inside its touch checks
+#else
 #include "scenario_games_m9.inc"
 #endif
 }

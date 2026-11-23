@@ -241,9 +241,7 @@ struct CompanionCore {
    case CmdImportContact:if(len<=98)break;if(d->importContact(frame+1,len-1))ok();else err(ErrIllegalArg);return;
    case CmdReboot:if(len<7||memcmp(frame+1,"reboot",6))break;r.flush();executeCommand("restart");return;
    case CmdBattery:{uint32_t used=0,total=0;
-#if !defined(MM_NRF52)
     if(hardware.fsOk){used=LittleFS.usedBytes()/1024;total=LittleFS.totalBytes()/1024;}
-#endif
     start(RespBattery);u16(hardware.batteryMv);u32(used);u32(total);send();return;}
    case CmdGetTuning:start(RespTuning);u32(0);u32(uint32_t(d->getAirtimeBudgetFactor()*1000));send();return;
    case CmdExportKey:start(RespDisabled);send();return; // the key is given out on the device access point only

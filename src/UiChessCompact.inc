@@ -51,9 +51,7 @@ unsigned chessActions(const ChessMatch& m,ChessAct* out){unsigned n=0;
  if(m.state==ChessMatch::Playing){if(m.drawOffer==ChessMatch::OfferedToMe)out[n++]=CaAcceptDraw;else if(m.drawOffer==ChessMatch::NoOffer)out[n++]=CaDraw;out[n++]=CaResign;}
  if(m.active()&&m.link()==ChatMessage::Failed)out[n++]=CaResend;
  if(!m.active())out[n++]=CaDelete;
-#if !defined(MM_JOYSTICK)
  out[n++]=CaList; // the joystick has Back
-#endif
  out[n++]=CaClose;return n;}
 String chessActName(ChessAct a){switch(a){
  case CaAccept:return t("Accept challenge","Принять вызов");case CaDecline:return t("Decline / cancel","Отклонить / отменить");
@@ -65,7 +63,6 @@ void chessRun(ChessMatch& m,ChessAct a){bool ok=true;switch(a){
  case CaAcceptDraw:ok=chessNet.acceptDraw(m);break;case CaResign:ok=chessNet.resign(m);break;case CaResend:ok=chessNet.resend(m);break;
  case CaDelete:ok=chessNet.remove(m);if(ok)chessOpen=nullptr;break;case CaList:chessOpen=nullptr;break;default:break;}
  if(!ok)notice(t("Not now: radio busy?","Сейчас нельзя"));}
-#if !defined(MM_JOYSTICK)
 // One button: the choices in the order the player sees them, bottom row first, left to right: the own
 // pieces that can move, or the squares the picked piece reaches.
 unsigned chessChoices(const ChessMatch& m,int* out){
@@ -90,45 +87,10 @@ String chessChoiceText(const ChessMatch& m){
  if(chessHeld>=0){chess::Move mv;san+="-"+name(chessCursor);if(targetOf(m,chessHeld,chessCursor,&mv)&&chess::movePromotion(mv))san+="=Q";}
  return chessLocalSan(san.c_str());
 }
-#endif
-#if defined(MM_HIRES)
-// TFT: the board at its own resolution, 16-pixel squares in the left 128x128 of the screen; 12x13
-// silhouettes, bit 11 = left column: white pieces filled white with a dark outline, black pieces solid.
-const uint16_t bigGlyphs[7][13]={{0},
- {0x000,0x060,0x0f0,0x0f0,0x060,0x0f0,0x060,0x060,0x0f0,0x1f8,0x3fc,0x3fc,0x000}, // pawn
- {0x000,0x050,0x0f8,0x1fc,0x37c,0x7fc,0x7bc,0x03c,0x078,0x0f8,0x1fc,0x3fc,0x000}, // knight
- {0x060,0x0f0,0x1d8,0x1b8,0x1f8,0x0f0,0x060,0x0f0,0x060,0x1f8,0x3fc,0x3fc,0x000}, // bishop
- {0x000,0x36c,0x3fc,0x3fc,0x1f8,0x0f0,0x0f0,0x0f0,0x0f0,0x1f8,0x3fc,0x3fc,0x000}, // rook
- {0x462,0x666,0x76e,0x7fe,0x3fc,0x1f8,0x1f8,0x0f0,0x0f0,0x1f8,0x3fc,0x3fc,0x000}, // queen
- {0x060,0x0f0,0x060,0x36c,0x7fe,0x7fe,0x3fc,0x1f8,0x0f0,0x1f8,0x3fc,0x3fc,0x000}, // king
-};
-bool bigGlyphAt(int piece,int x,int y){return x>=0&&x<12&&y>=0&&y<13&&(bigGlyphs[piece][y]>>(11-x)&1);}
-void drawHiresBoard(const ChessMatch& m,bool cursor,const chess::Move* list,unsigned n){
- GFXcanvas8& s=hardware.canvas->screen;constexpr int S=16,Top=(HiresCanvas::Height-8*S)/2;
- int lastFrom=-1,lastTo=-1;if(m.game.plies){chess::Move last=m.game.moves[m.game.plies-1];lastFrom=chess::moveFrom(last);lastTo=chess::moveTo(last);}
- bool blink=(millis()/300)%2;
- for(int sq=0;sq<64;sq++){int x,y;squareXY(m,sq,x,y);x*=2;y=y*2+Top;bool dark=(chess::fileOf(sq)+chess::rankOf(sq))%2==0;
-  s.fillRect(x,y,S,S,sq==chessHeld&&blink?ColTarget:sq==lastFrom||sq==lastTo?ColLastMove:dark?ColBoardDark:ColBoardLight);
-  int8_t p=m.game.pos.board[sq];
-  if(p){int type=p>0?p:-p;
-   for(int yy=-1;yy<=12;yy++)for(int xx=-1;xx<=12;xx++){
-    if(bigGlyphAt(type,xx,yy)){s.drawPixel(x+2+xx,y+2+yy,p>0?ColInk:ColPieceDark);continue;}
-    if(p<0)continue;bool edge=false;for(int dy=-1;dy<=1&&!edge;dy++)for(int dx=-1;dx<=1;dx++)if(bigGlyphAt(type,xx+dx,yy+dy)){edge=true;break;}
-    if(edge)s.drawPixel(x+2+xx,y+2+yy,ColPieceDark);}}
-  for(unsigned i=0;i<n;i++)if(chess::moveFrom(list[i])==chessHeld&&chess::moveTo(list[i])==sq){
-   if(p){s.drawRect(x,y,S,S,ColTarget);s.drawRect(x+1,y+1,S-2,S-2,ColTarget);}else s.fillCircle(x+S/2,y+S/2,3,ColTarget);}
- }
- if(cursor){int x,y;squareXY(m,chessCursor,x,y);x*=2;y=y*2+Top;for(int k=0;k<3;k++)s.drawRect(x+k,y+k,S-2*k,S-2*k,k==1?ColPieceDark:ColCursor);}
-}
-#endif
 void drawChessBoard(const ChessMatch& m){
  auto& c=*hardware.canvas;c.fillScreen(0);
-#if defined(MM_JOYSTICK)
- bool picking=false,cursor=true;
-#else
  // No cursor off the own move; on a piece it blinks so the piece shows.
  chessSettle(m);bool picking=chessPicking(m),cursor=picking&&chessCursor>=0&&(chessHeld>=0||(millis()/400)%3);
-#endif
  chess::Move list[chess::MaxMoves];unsigned n=chessHeld>=0&&m.myTurn()?m.game.pos.legal(list):0;
  for(int sq=0;sq<64;sq++){int x,y;squareXY(m,sq,x,y);bool dark=(chess::fileOf(sq)+chess::rankOf(sq))%2==0;
   if(dark)for(int yy=0;yy<8;yy+=2)for(int xx=0;xx<8;xx+=2)c.drawPixel(x+xx,y+yy,1);
@@ -148,17 +110,12 @@ void drawChessBoard(const ChessMatch& m){
  textLinesAt(chessStateText(m),68,27,picking?1:2,11);
  if(m.game.plies){chess::Position before=m.game.at(m.game.plies-1);char san[16];before.san(m.game.moves[m.game.plies-1],san,sizeof san);
   say(68,46,String((m.game.plies+1)/2)+(m.game.plies%2?". ":"... ")+chessLocalSan(san),small);}
-#if defined(MM_JOYSTICK)
- say(68,55,clipped(chessLink(m),11),small);
- say(68,63,t("hold OK: menu","держ.OK: меню"),u8g2_font_4x6_t_cyrillic);
-#else
  if(picking){
   // The current choice, lit when it is "Game menu" or "Cancel"; the move sent last is acknowledged by the reply.
   if(chessCursor<0)c.fillRect(67,29,61,9,1);say(68,36,clipped(chessChoiceText(m),11),small,chessCursor>=0);
   say(68,55,t("click: next","клик: далее"),u8g2_font_4x6_t_cyrillic);
   say(68,63,chessCursor<0?(chessHeld<0?t("hold: menu","держ: меню"):t("hold: cancel","держ: отмена")):chessHeld<0?t("hold: pick","держ: взять"):t("hold: move","держ: сходить"),u8g2_font_4x6_t_cyrillic);}
  else{say(68,55,clipped(chessLink(m),11),small);say(68,63,t("hold: menu","держ: меню"),u8g2_font_4x6_t_cyrillic);}
-#endif
  if(chessMenu){ChessAct acts[8];unsigned k=chessActions(m,acts);chessMenuIndex%=k;int first=max(0,min(chessMenuIndex-1,int(k)-3));
   c.fillRect(0,12,128,45,0);c.drawRect(0,12,128,45,1);
   for(unsigned i=first;i<k&&i<unsigned(first+3);i++){int y=14+(i-first)*14;bool focus=int(i)==chessMenuIndex;if(focus)c.fillRect(2,y,124,13,1);say(5,y+10,clipped(chessActName(acts[i]),20),body,focus?0:1);}}
@@ -168,48 +125,13 @@ void drawChessBoard(const ChessMatch& m){
 void drawChessList(String& title){
  auto& c=*hardware.canvas;ChessMatch* games[ChessNet::MaxMatches];unsigned n=chessGames(games);title=t("Chess","Шахматы")+(n?" "+String(chessSel%n+1)+"/"+String(n):"");
  if(!n){say(0,28,t("No games yet","Партий пока нет"));
-#if defined(MM_JOYSTICK)
-  say(0,40,t("Nodes: OK - Chess invite","Узлы: OK - вызвать"),small);
-#else
   say(0,40,t("Node menu: Chess invite","Меню узла: вызвать"),small);
-#endif
   say(0,49,t("or accept a challenge","или примите вызов"),small);return;}
  chessSel%=n;int first=max(0,min(chessSel-1,int(n)-3));
  for(unsigned i=first;i<n&&i<unsigned(first+3);i++){const ChessMatch& m=*games[i];int y=13+(i-first)*15;bool focus=int(i)==chessSel;
   if(focus)c.fillRect(0,y,128,15,1);say(2,y+7,clipped(String(m.unseen?"* ":"")+m.name,14),small,!focus);sayRight(126,y+7,m.game.plies?String((m.game.plies+1)/2)+t(" mv"," ход"):String(""),small,!focus);
   say(2,y+14,clipped(chessStateText(m),24),small,!focus);}
 }
-#if defined(MM_JOYSTICK)
-// Keys while the Chess page is shown; false lets the page switch handle them (list view only).
-bool chessKey(int key){
- bool up=key==0xb5,down=key==0xb6,left=key==0xb4,right=key==0xb7,ok=key==13,hold=key==0xa3,back=key==0x86||key==0x82;
- if(!chessOpen){ChessMatch* games[ChessNet::MaxMatches];unsigned n=chessGames(games);
-  if(up||down){if(n)chessSel=(chessSel+(up?n-1:1))%n;return true;}
-  if((ok||hold)&&n){openChess(games[chessSel%n]);return true;}
-  return false;}
- ChessMatch& m=*chessOpen;
- if(m.state==ChessMatch::Free){chessOpen=nullptr;return true;}
- if(chessMenu){ChessAct acts[8];unsigned k=chessActions(m,acts);
-  if(up||down){chessMenuIndex=(chessMenuIndex+(up?k-1:1))%k;return true;}
-  if(ok||hold){chessMenu=false;chessRun(m,acts[chessMenuIndex%k]);return true;}
-  chessMenu=false;return true;}
- if(hold){chessMenu=true;chessMenuIndex=0;return true;}
- if(back){if(chessHeld>=0)chessHeld=-1;else chessOpen=nullptr;return true;}
- int col,row;{int x,y;squareXY(m,chessCursor,x,y);col=x/8;row=y/8;}
- if(up)row=(row+7)%8;if(down)row=(row+1)%8;if(left)col=(col+7)%8;if(right)col=(col+1)%8;
- if(up||down||left||right){chessCursor=squareAt(m,col,row);return true;}
- if(ok){
-  if(m.state!=ChessMatch::Playing){chessMenu=true;chessMenuIndex=0;return true;} // accept, decline or delete
-  if(!m.myTurn()){notice(t("Their move","Ход соперника"));return true;}
-  int8_t p=m.game.pos.board[chessCursor];bool mine=p&&((p>0)==(m.mine==chess::White));
-  if(chessHeld<0||mine){if(mine)chessHeld=chessCursor;else notice(t("Pick your piece","Выберите свою фигуру"));return true;}
-  chess::Move mv;if(!targetOf(m,chessHeld,chessCursor,&mv)){notice(t("Not a legal move","Так ходить нельзя"));return true;}
-  if(chessNet.move(m,mv)){chessHeld=-1;hardware.ping(1400,15);if(m.link()==ChatMessage::Failed)notice(t("Not sent: will resend","Не отправлено: повторю"));}
-  else notice(t("Move not sent","Ход не отправлен"));
-  return true;}
- return true;
-}
-#else
 // The button while the Chess page is shown; false lets the page switch handle it (the next screen).
 bool chessButton(int key){
  bool click=key==13||key==0x82,hold=key==0xa3;
@@ -230,5 +152,4 @@ bool chessButton(int key){
  else notice(t("Move not sent","Ход не отправлен"));
  return true;
 }
-#endif
 }

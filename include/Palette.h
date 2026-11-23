@@ -4,9 +4,7 @@
 #include "Dice.h"
 #include "EmojiData.h"
 // Colours of the compact interface as canvas values. Monochrome panels light any non-zero value,
-// so the colour entries are used only on colour screens: the T114 TFT (MM_HIRES, UiHires.inc), where
-// they are the M9 interface's colours (Ui.cpp), and colour 1 on the Wireless Tracker's TFT.
-// Colour panels look values up in palette565 (RGB565).
+// so on the Heltec OLED the colour entries only tell lit from dark.
 enum UiColor:uint8_t {ColBack,ColInk,ColAccent,ColDim,ColGood,ColWarn,ColBad,ColBar,
   ColBoardLight,ColBoardDark,ColTarget,ColCursor,ColPieceDark,ColLastMove,
   ColCard,ColCardHi,ColLine,ColFaint,ColInfo,ColViolet,ColPink,ColOutBubble,ColInBubble,ColHashBack,ColLockBack,
@@ -14,46 +12,4 @@ enum UiColor:uint8_t {ColBack,ColInk,ColAccent,ColDim,ColGood,ColWarn,ColBad,Col
   ColPetBody0,ColPetAccent0=ColPetBody0+pet::Species,ColPetShell=ColPetAccent0+pet::Species,ColPetEye,ColPetSick,ColPetStone,ColPetStoneLight,
   ColDice0,ColDicePass=ColDice0+dice::Colors,ColDiceFail,ColDiceChosen,ColDiceNumber,
   ColEmoji0,ColCount=ColEmoji0+emoji::Colors};
-static_assert(ColCount<=255,"the T114 frame buffer keeps a palette index in a byte");
-constexpr uint16_t rgb565(uint32_t v){return ((v>>8)&0xf800)|((v>>5)&0x07e0)|((v>>3)&0x1f);}
-constexpr uint16_t palette565[ColCount]={
-  rgb565(0x080c11), // background
-  rgb565(0xe4e9ee), // text and lines
-  rgb565(0x1fc2ae), // accent: the chosen row, home title
-  rgb565(0x8d99a6), // secondary text
-  rgb565(0x4cc26b), // good: battery, signal, GPS fix
-  rgb565(0xe9b13b), // warning, unread
-  rgb565(0xe5564d), // error, low battery
-  rgb565(0x000000), // status bar and footer
-  rgb565(0xeed9b6), // light squares
-  rgb565(0xb58863), // dark squares
-  rgb565(0xf6f669), // reachable squares, picked piece
-  rgb565(0x00e5ff), // board cursor
-  rgb565(0x202020), // black pieces, white piece outline
-  rgb565(0xcdd26a), // last move
-  rgb565(0x131a22), // card
-  rgb565(0x1c2835), // chosen card
-  rgb565(0x2a3542), // lines, key chips
-  rgb565(0x56626e), // faint text, empty states
-  rgb565(0x4f9df7), // info: Bluetooth, sensors
-  rgb565(0xa78bfa), // repeaters, LoRa
-  rgb565(0xf472b6), // phones and watches on the radar
-  rgb565(0x103a35), // own message
-  rgb565(0x1a232d), // received message
-  rgb565(0x14524b), // channel avatar
-  rgb565(0x2e2450), // private channel avatar
-  rgb565(0x2f7d6f),rgb565(0x3f6fb5),rgb565(0x8a5cc2),rgb565(0xb5693f), // node avatars, by ID
-  rgb565(0x4f8a3a),rgb565(0xa8466a),rgb565(0x3a8aa0),rgb565(0x8f7a2e),
-  // the pet: body and accent of each species (PetSprites.h)
-  rgb565(pet::bodies[0]),rgb565(pet::bodies[1]),rgb565(pet::bodies[2]),rgb565(pet::bodies[3]),rgb565(pet::bodies[4]),rgb565(pet::bodies[5]),rgb565(pet::bodies[6]),rgb565(pet::bodies[7]),rgb565(pet::bodies[8]),rgb565(pet::bodies[9]),rgb565(pet::bodies[10]),rgb565(pet::bodies[11]),rgb565(pet::bodies[12]),rgb565(pet::bodies[13]),rgb565(pet::bodies[14]),
-  rgb565(pet::accents[0]),rgb565(pet::accents[1]),rgb565(pet::accents[2]),rgb565(pet::accents[3]),rgb565(pet::accents[4]),rgb565(pet::accents[5]),rgb565(pet::accents[6]),rgb565(pet::accents[7]),rgb565(pet::accents[8]),rgb565(pet::accents[9]),rgb565(pet::accents[10]),rgb565(pet::accents[11]),rgb565(pet::accents[12]),rgb565(pet::accents[13]),rgb565(pet::accents[14]),
-  rgb565(0xf4ecd8), // the egg shell
-  rgb565(0x101418), // its eyes and mouth
-  rgb565(0x9fb08a), // its body when ill
-  rgb565(0x8d99a6),rgb565(0xc5ccd3), // the grave stone and its cross
-  // dice: the counters' and saved rolls' colours (Dice.h), then grid dice at or over and under the threshold, chosen dice and numbers in a roll
-  rgb565(dice::colors[0]),rgb565(dice::colors[1]),rgb565(dice::colors[2]),rgb565(dice::colors[3]),rgb565(dice::colors[4]),rgb565(dice::colors[5]),rgb565(dice::colors[6]),rgb565(dice::colors[7]),
-  rgb565(dice::colors[8]),rgb565(dice::colors[9]),rgb565(dice::colors[10]),rgb565(dice::colors[11]),rgb565(dice::colors[12]),rgb565(dice::colors[13]),rgb565(dice::colors[14]),
-  rgb565(0x2f8f4e),rgb565(0xa8322c),rgb565(0x2f5f9e),rgb565(0x1d3557),
-  MM_EMOJI_PALETTE(rgb565), // emoji (Emoji.h): a picture's value v is ColEmoji0+v-1
-};
+static_assert(ColCount<=255,"a palette index must fit a byte");

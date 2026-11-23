@@ -1,6 +1,3 @@
-#if defined(MM_NRF52)
-#pragma GCC optimize("Os") // 1 MB flash: not speed-critical (AGENTS.md, "Языки")
-#endif
 #include "Hardware.h"
 #include <ArduinoJson.h>
 #include <Preferences.h>
@@ -13,7 +10,7 @@ static uint32_t buildFloor(){
   y-=m<=2;int era=y/400,yoe=y-era*400,doy=(153*(m+(m>2?-3:9))+2)/5+day-1,doe=yoe*365+yoe/4-yoe/100+doy;
   return uint32_t(era*146097+doe-719468-1)*86400U;
 }
-#if !defined(MM_NRF52) && !defined(MM_UI_PREVIEW)
+#if !defined(MM_UI_PREVIEW)
 #include <esp_attr.h>
 // The ESP32 keeps the system time over a reset (not over a power cycle). Its source is kept beside it:
 // a time of an unknown source (a firmware before this one) or before the build is not kept.
@@ -35,7 +32,7 @@ void Hardware::beginClock(){Preferences p;if(p.begin("meshmesh-clock",true)){clo
 #if !defined(MM_UI_PREVIEW)
   for(int i=0;i<6;i++)gsvInView[i].begin(gps,gsvNames[i],3);
 #endif
-#if !defined(MM_NRF52) && !defined(MM_UI_PREVIEW)
+#if !defined(MM_UI_PREVIEW)
   if(time(nullptr)>=1735689600){
     if(keptMagic==KeptMagic&&memchr(keptSource,0,sizeof keptSource)&&keptSource[0]&&uint32_t(time(nullptr))>=buildFloor()){clockSource=keptSource;utc=time(nullptr);}
     else{timeval tv={0,0};settimeofday(&tv,nullptr);}
@@ -58,7 +55,7 @@ bool Hardware::setUtc(uint32_t epoch,const char* source,bool persist){
   // A fresh phone/NTP sync must not briefly make an already conflicting GPS position usable.
   if(!gnss&&gpsTime()){DateTime fix(gps.date.year(),gps.date.month(),gps.date.day(),gps.time.hour(),gps.time.minute(),gps.time.second());int64_t delta=int64_t(fix.unixtime())-epoch;clockConflict=fix.unixtime()<buildFloor()||delta>300||delta<-300;}
   clockSyncAt=millis()?millis():1;
-#if !defined(MM_NRF52) && !defined(MM_UI_PREVIEW)
+#if !defined(MM_UI_PREVIEW)
   strlcpy(keptSource,source,sizeof keptSource);keptMagic=KeptMagic;
 #endif
   if(persist){clockTrusted=true;if(rtcOk){rtc.adjust(DateTime(epoch));rtcValid=true;Preferences p;if(p.begin("meshmesh-clock",false)){p.putBool("trusted",true);p.end();}}}

@@ -1,6 +1,3 @@
-#if defined(MM_NRF52)
-#pragma GCC optimize("Os") // 1 MB flash: the screens and menus are not speed-critical (the rest of the nRF52 image is -O2)
-#endif
 #include "App.h"
 #include <new>
 #include "Hardware.h"
@@ -24,20 +21,8 @@
 #include <algorithm>
 #include <math.h>
 #include <time.h>
-#if defined(MM_HIRES)
-#include "UiIcons.h"
-#endif
-#if defined(MM_HIRES) || defined(MM_PANEL_ST7735)
-#include "Palette.h" // colour screens: the palette, emoji colours too
-#endif
-#if defined(MM_NRF52)
-#include <esp_system.h> // ESP.getFreeHeap(); Arduino.h provides it on the ESP32
-#endif
 // One PRG button: click = next screen or next menu item; hold = the screen's action, or its menu
 // (chess on the board: click = next choice, hold = take it; UiChessCompact.inc).
-// Joystick boards (MM_JOYSTICK, GAT562): left/right change the screen, up/down scroll the screen or
-// the menu, the centre runs the action or opens the menu, Back closes and goes home; messages are
-// written on an on-screen keyboard (UiCompose.inc).
 // Folders (App.h): a folder is a screen of the cycle with its apps listed; a hold (joystick: OK on the chosen
 // app) enters it, then clicks go through its apps and after the last one back to the folder screen; Back (or a
 // double click) returns to it. Folders are made on the web page and in the app.
@@ -49,11 +34,7 @@ int page=Home,menuIndex=0,messageOffset=0,nodeIndex=0;bool menuOpen=false,dirty=
 // One button: pages whose click counts, rolls or picks are entered with a hold, so clicking through the pages passes them.
 bool appOpen=false;uint32_t tallyArmed=0; // tallyArmed: the quick counter asks to hold again before deleting a card
 bool appPage(){
-#if defined(MM_JOYSTICK)
- return false;
-#else
  return page==QuickPage||page==PeoplePage||page==DicePage;
-#endif
 }
 bool appClosed(){return appPage()&&!appOpen;}
 uint32_t drawAt=0,lastInput=0,menuAt=0,actionAt=0,popupAt=0,ledAt=0,pingAt=0,pingedSamples=0;String action;
@@ -79,11 +60,7 @@ int emojiGlyph(int x,int y,uint32_t cp,const uint8_t* f,uint16_t color,bool pain
  int e=emoji::find(cp);if(e<0)return -1;
  int s=f==small||f==u8g2_font_4x6_t_cyrillic?8:emoji::Size;uint8_t px[emoji::Size*emoji::Size];
  if(!paint||!emoji::decode(e,px))return s+1;
-#if defined(MM_PANEL_ST7735)
- (void)color;emoji::draw(px,x,y-s+1+s/12,s,[](int a,int b,uint8_t v){hardware.canvas->drawPixel(a,b,ColEmoji0+v-1);});
-#else
  emoji::mono(px);emoji::draw(px,x,y-s+1+s/12,s,[color](int a,int b,uint8_t){hardware.canvas->drawPixel(a,b,color);});
-#endif
  return s+1;
 }
 // Glyph by glyph: what the font lacks comes from its fallback fonts (I18n.h); Arabic in visual order.
@@ -98,46 +75,6 @@ int glyph(int x,int y,uint32_t cp,const uint8_t* f,uint16_t color,bool paint){
 int width(const String& value,const uint8_t* f){String s=visualText(value);int w=0;for(unsigned i=0;i<s.length();)w+=glyph(0,0,utf8Next(s,i),f,0,false);return w;}
 void say(int x,int y,const String& value,const uint8_t* f=body,uint16_t color=1){String s=visualText(value);for(unsigned i=0;i<s.length();)x+=glyph(x,y,utf8Next(s,i),f,color,true);}
 void sayRight(int x,int y,const String& value,const uint8_t* f=small,uint16_t color=1){say(x-width(value,f),y,value,f,color);}
-#if defined(MM_HIRES)
-// TFT: each layout font has a larger one of the same column width at 240x135 (HiresCanvas.h), drawn
-// on the screen itself; x and the baseline y are screen pixels. Bold: the glyph twice, 1 px apart.
-struct HiFont{const uint8_t* main;const uint8_t* latin;bool bold;};
-HiFont hiFont(const uint8_t* f){
- if(f==small)return{u8g2_font_9x15_t_cyrillic,u8g2_font_9x15_tf,false};
- if(f==u8g2_font_4x6_t_cyrillic)return{u8g2_font_7x13_t_cyrillic,u8g2_font_7x13_tf,false};
-#if defined(MM_NO_RU)
- // Without a Russian screen (the nRF52 images of the other languages) the large role writes numbers, a password and
- // states: ASCII large, anything else (a Cyrillic name) at 10x20; 3 KB less than the Cyrillic large font.
- if(f==u8g2_font_10x20_t_cyrillic)return{u8g2_font_inr24_mr,u8g2_font_10x20_t_cyrillic,false};
-#else
- if(f==u8g2_font_10x20_t_cyrillic)return{u8g2_font_inr24_t_cyrillic,nullptr,false};
-#endif
- return{u8g2_font_10x20_t_cyrillic,u8g2_font_10x20_tf,f==bold};
-}
-// Emoji: 16 px with the large fonts, 12 px with the small ones, in the pictures' colours.
-int hiGlyph(int x,int y,uint32_t cp,const uint8_t* f,uint16_t color,bool paint){
- HiresCanvas& c=*hardware.canvas;HiFont h=hiFont(f);
- if(char l=emoji::flagLetter(cp))cp=uint8_t(l);
- if(cp>=0x203c){
-  if(emoji::modifier(cp))return 0;
-  int e=emoji::find(cp);
-  if(e>=0){int s=f==small||f==u8g2_font_4x6_t_cyrillic?emoji::Size:16;uint8_t px[emoji::Size*emoji::Size];
-   if(paint&&emoji::decode(e,px))emoji::draw(px,x,y-s+1+s/12,s,[&c](int a,int b,uint8_t v){c.screen.drawPixel(a,b,ColEmoji0+v-1);});
-   return s+2;}
- }
- const uint8_t* use=cp>0xffff?nullptr:fontHasGlyph(h.main,cp)?h.main:h.latin&&fontHasGlyph(h.latin,cp)?h.latin:nullptr;
- if(use){hardware.font.begin(c.screen);useFont(use);int w=u8g2_GetGlyphWidth(&hardware.font.u8g2,cp)+h.bold;
-  if(paint){hardware.font.setForegroundColor(color);hardware.font.drawGlyph(x,y,cp);if(h.bold)hardware.font.drawGlyph(x+1,y,cp);}
-  return w;}
- // What the large fonts lack (CJK, Arabic, extended Latin): the glyph subsets of the 12-20 px layout fonts
- // at their own size, as tall as the large fonts' capitals (small text takes the 13 px ones).
- const uint8_t* layout=f==small?body:f==u8g2_font_4x6_t_cyrillic?u8g2_font_6x12_t_cyrillic:f;
- if(cp<=0xffff)for(const uint8_t* const* x=fallbackFonts(layout);*x;x++)if(fontHasGlyph(*x,cp)){use=*x;break;}
- if(!use){if(!emoji::pictograph(cp))return 0;int s=f==small||f==u8g2_font_4x6_t_cyrillic?emoji::Size:16;if(paint)c.screen.drawRect(x+1,y-s+2+s/12,s-2,s-2,color);return s+1;}
- hardware.font.begin(c.screen);useFont(use);if(paint){hardware.font.setForegroundColor(color);return hardware.font.drawGlyph(x,y,cp);}
- return u8g2_GetGlyphWidth(&hardware.font.u8g2,cp);
-}
-#endif
 // Up to `maximum` 21-column rows, wrapped at spaces; longer text pages every four seconds.
 void textLines(const String& value,int y,unsigned maximum){
  String rows[12];unsigned at=0,count=0;
@@ -197,26 +134,16 @@ const char* kindLetter(const RadarTarget& r){return r.kind==RadarTarget::Lora?"L
 float signalLevel(int rssi){return constrain((rssi+100)/65.f,0.f,1.f);} // -100 .. -35 dBm
 bool homingFresh(){return radar.fresh();}
 String wifiState(){
-#if defined(MM_NO_WIFI)
- return ""; // no Wi-Fi radio: the radar lists BLE and LoRa
-#endif
  switch(radar.wifi){case Radar::WifiPortal:return t("Wi-Fi: access point","Wi-Fi: точка доступа");case Radar::WifiBusy:return t("Wi-Fi busy","Wi-Fi занят");case Radar::WifiFailed:return t("Wi-Fi error","Ошибка Wi-Fi");default:return radar.sweeps?"":t("scanning...","сканирую...");}}
 String bleState(){return radar.ble==Radar::BleBusy?t("BLE busy","BLE занят"):radar.ble==Radar::BleFailed?t("BLE error","Ошибка BLE"):"";}
 // Server roles show the pages that still mean something: no chats, nodes or radar.
 bool pageShown(int p){
  if(p==WardrivePage&&!MM_WARDRIVE)return false;
-#if defined(MM_NO_WIFI)
- if(p==Wifi)return false; // no Wi-Fi radio
-#endif
  if((p==Chess&&!MM_CHESS)||(p==CheckersPage&&!MM_CHECKERS)||(p==SeaPage&&!MM_SEA)||(p==PetPage&&!MM_PET)||(p==DicePage&&!MM_DICE))return false; // modules left out of this image (Modules.h)
  return config.role==RoleNormal||p==Home||p==PetPage||p==DicePage||p==Gps||p==Wifi||p==Ble||p==Settings||p==Modules;} // the pet lives in every role
 } // namespace
 // The pages after Home, in the default order; the chosen order and the hidden ones: config.apps (App.h).
-#if defined(MM_NO_WIFI)
-#define MM_WIFI_APP(x)
-#else
 #define MM_WIFI_APP(x) x,
-#endif
 // The default as on the M9: messages, places, tools, games, then the device itself.
 const char* const uiApps[]={"chats","quick","nodes","gps","radar",
 #if MM_WARDRIVE
@@ -310,9 +237,6 @@ bool screenPresent(){
 #endif
 }
 void openRolePick(bool atBoot){if(atBoot&&!screenPresent())return;rolePick=true;rolePickBoot=atBoot;rolePickAt=millis();roleSel=config.role;dirty=true;}
-#if defined(MM_JOYSTICK)
-#include "UiCompose.inc"
-#endif
 #if MM_CHESS
 #include "UiChessCompact.inc"
 #endif
@@ -395,24 +319,10 @@ void radioButton(bool click,bool hold){
  if(!hold)return;
  if(radioRow==RowSave)radioSave();else if(radioRow==RowCancel)radioEdit=false;else if(radioRow==RowRelay||radioRow==RowFind||radioRow==RowPrev||radioRow==RowNet)radioStep(1);else{radioEditing=true;radioDigit=0;}
 }
-#if defined(MM_JOYSTICK)
-void radioJoystick(bool up,bool down,bool left,bool right,bool ok,bool back){
- if(radioEditing){if(up||down)radioStep(up?1:-1);else if(left||right)radioDigit=constrain(radioDigit+(right?1:-1),0,3);else if(ok||back)radioEditing=false;return;}
- if(up||down){radioRow=(radioRow+(up?RadioRows-1:1))%RadioRows;return;}
- if(left||right){if(radioRow==RowFreq){radioEditing=true;radioDigit=0;}else if(radioRow<RowSave&&radioRow!=RowFind&&radioRow!=RowPrev&&radioRow!=RowNet)radioStep(right?1:-1);return;}
- if(ok){if(radioRow==RowSave)radioSave();else if(radioRow==RowCancel)radioEdit=false;else if(radioRow==RowFreq){radioEditing=true;radioDigit=0;}else radioStep(1);return;}
- if(back)radioEdit=false;
-}
-#endif
 // The key hints of the radio screen: what a click and a hold (or the joystick) do now.
 String radioHint(){
-#if defined(MM_JOYSTICK)
- if(radioEditing)return t("<> digit, up/down value","<> цифра, вверх/вниз");
- return radioRow>=RowSave?t("up/down, OK","вверх/вниз, OK"):t("up/down, <> change","вверх/вниз, <> изменить");
-#else
  if(radioEditing)return radioRow==RowFreq?t("click-digit+ hold-next","клик-цифра+ держ-далее"):t("click-change hold-done","клик-изм. держ-готово");
  return radioRow==RowSave?t("click-next hold-save","клик-далее держ-сохр."):radioRow==RowCancel?t("click-next hold-leave","клик-далее держ-выйти"):t("click-next hold-change","клик-далее держ-изм.");
-#endif
 }
 
 #if MM_WARDRIVE
@@ -446,44 +356,29 @@ unsigned actions(Act* out){
   // Storage left by another firmware: on the nRF52 the settings live there (nothing is saved or sent
   // without it); on the ESP32 the key, settings and contacts are in NVS, the history and games are not kept.
   if(!hardware.fsOk)out[n++]=ActFormat;
-#if defined(MM_JOYSTICK)
-  if(config.role==RoleNormal)out[n++]=ActWrite;
-#endif
   out[n++]=ActAdvert;if(config.role!=RoleNormal){out[n++]=ActForward;out[n++]=ActRole;}break;
  case Messages:
   {String name;uint8_t key[16];const ChatMessage* m=shownMessage();if(m&&channels::parseLink(m->text,name,key)&&!meshRadio.channel(channels::idOf(key)))out[n++]=ActJoin;}
   if(heardTag())out[n++]=ActJoinHeard;
-#if defined(MM_JOYSTICK)
-  out[n++]=ActWrite;
-#endif
   if(meshRadio.historyCount){out[n++]=ActReplyOk;out[n++]=ActReplyAck;out[n++]=ActOlder;out[n++]=ActNewer;out[n++]=ActQuick;}break;
  case Nodes:if(Peer* p=shownNode()){
-#if defined(MM_JOYSTICK)
-  if(p->type==1)out[n++]=ActWrite;
-#else
   out[n++]=ActNextNode;
-#endif
   if(p->type==1){if(MM_CHESS)out[n++]=ActChess;if(MM_CHECKERS)out[n++]=ActCheckers;if(MM_SEA)out[n++]=ActSea;} // games with a chat contact
   if(p->type==1)out[n++]=ActNodeOk;
   if(p->type==2||p->type==3){out[n++]=ActRemoteLogin;out[n++]=ActRemoteStatus;} // with the saved password, else as a guest
   if(remote::traceable(p->id))out[n++]=ActTrace;
   if(p->pathLength!=255)out[n++]=ActResetPath;}out[n++]=ActAdvert;break;
  case Chess:
-#if !defined(MM_JOYSTICK)
 #if MM_CHESS
   {ChessMatch* games[ChessNet::MaxMatches];unsigned g=chessGames(games);if(g){out[n++]=ActChessOpen;if(g>1)out[n++]=ActChessNext;}} // the joystick opens with OK
 #endif
-#endif
   break;
  case CheckersPage:case SeaPage:
-#if MM_DUEL&&!defined(MM_JOYSTICK)
+#if MM_DUEL
   {Duel* games[DuelNet::Max];unsigned g=duelGames(duelKind(),games);if(g){out[n++]=ActDuelOpen;if(g>1)out[n++]=ActDuelNext;}} // the joystick opens with OK
 #endif
   break;
  case Signals:
-#if defined(MM_NO_WIFI)
-  if(radar.tracking){out[n++]=ActStopHoming;out[n++]=ActResetPeak;}else if(radar.count)out[n++]=ActHoming;break; // no Wi-Fi CSI
-#endif
   if(radar.csi==Radar::CsiSensor){out[n++]=ActCalibrate;out[n++]=ActCsiSensor;}
   else if(radar.tracking){out[n++]=ActStopHoming;out[n++]=ActResetPeak;}
   else{out[n++]=ActCsiBeacon;if(radar.csi==Radar::CsiOff){out[n++]=ActCsiSensor;if(radar.count){out[n++]=ActHoming;out[n++]=ActNextSignal;}}}break; // CSI first: the beacon is the usual Heltec role
@@ -499,24 +394,17 @@ unsigned actions(Act* out){
  case Gps:out[n++]=ActGps;out[n++]=ActPosition;break;
  case Wifi:out[n++]=ActWifi;break;case Ble:out[n++]=ActBle;break;
  case Settings:
-#if defined(MM_JOYSTICK)
-  out[n++]=ActSound; // the GAT562 buzzer
-#endif
   out[n++]=ActRadio;out[n++]=ActLanguage;out[n++]=ActBattery;out[n++]=ActScreen;out[n++]=ActContrast;
 #if defined(MM_ONE_BUTTON)
   out[n++]=ActDoubleBack;
 #endif
   out[n++]=ActRole;out[n++]=ActPowerOff;out[n++]=ActNotify;break;
  case PeoplePage:out[n++]=ActPeopleMinus;if(people::tally.count>1)out[n++]=ActPeopleNext;if(people::tally.count<people::Counters)out[n++]=ActPeopleAdd;out[n++]=ActPeopleReset;if(people::tally.count>1)out[n++]=ActPeopleDelete;out[n++]=ActPeopleBle;
-#if !defined(MM_NO_WIFI)
  out[n++]=ActPeopleWifi;
-#endif
  out[n++]=ActPeopleWindow;out[n++]=ActPeopleRssi;out[n++]=ActPeoplePersonal;out[n++]=ActPeopleClear;out[n++]=ActPeopleExit;break;
  #if MM_WARDRIVE
  case WardrivePage:out[n++]=ActWardriveRun;if(wardrive::running())out[n++]=ActWardrivePing;out[n++]=ActWardriveView;
-#if !defined(MM_NO_WIFI)
   out[n++]=ActWardriveNets;
-#endif
   break;
 #endif
  case NotifyPage:if(pins::led>=0)out[n++]=ActNotifyLed;out[n++]=ActNotifyWake;out[n++]=ActNotifyPopup;out[n++]=ActNotifyFailed;break;
@@ -607,21 +495,11 @@ void run(Act a){
  case ActNotifyPopup:notice(applyOne("notify_popup",(config.notifyPopup+1)%3));break;
  case ActNotifyFailed:notice(applyOne("notify_failed",!config.notifyFailed));break;
  case ActFormat:{static uint32_t armed=0;
-#if defined(MM_JOYSTICK)
-  if(!armed||millis()-armed>5000){armed=millis();notice(t("OK again: erase old data","Ещё раз OK: стереть"));break;}
-#else
   if(!armed||millis()-armed>5000){armed=millis();notice(t("Hold again: erase","Удерж. ещё: стереть"));break;}
-#endif
   armed=0;String r=executeCommand("fsformat");if(r.startsWith("OK"))executeCommand("restart");notice(r.startsWith("OK")?t("Storage created, restart","Создано, перезапуск"):r);break;}
  case ActJoin:{const ChatMessage* m=shownMessage();String name;uint8_t key[16];if(m&&channels::parseLink(m->text,name,key))joinedNotice(meshRadio.joinLink(m->text),name);break;}
  case ActJoinHeard:{const HeardChannel* h=heardTag();if(h){String name=h->name;joinedNotice(meshRadio.joinHashtag(name),name);}break;}
  case ActWrite:
-#if defined(MM_JOYSTICK)
-  if(page==Nodes){if(Peer* p=shownNode())openCompose(p->id,p->name);}
-  else if(page==Messages&&shownMessage()&&channels::isChannel(shownMessage()->destination)){const ChatMessage* m=shownMessage();const channels::Channel* c=meshRadio.channel(m->destination);if(c)openCompose(c->id,c->name);else openCompose(meshmesh::Broadcast,t("Public channel","Общий канал"));}
-  else if(page==Messages&&shownMessage()){const ChatMessage* m=shownMessage();uint64_t to=m->outgoing?m->destination:m->source;String name=m->name;for(unsigned i=0;i<meshRadio.peerCount;i++)if(meshRadio.peers[i].id==to)name=meshRadio.peers[i].name;openCompose(to,name);}
-  else openCompose(meshmesh::Broadcast,t("Public channel","Общий канал"));
-#endif
   break;
 #if MM_CHESS
  case ActChess:
@@ -667,19 +545,11 @@ void run(Act a){
  case ActPetDeath:notice(creature.setMortal(!creature.s.mortal));break;
  case ActPetAdopt:creature.newEgg();menuOpen=false;break;
  case ActPetRelease:{static uint32_t armed=0;if(!armed||millis()-armed>5000){armed=millis();
-#if defined(MM_JOYSTICK)
-  notice(t("OK again: let it go","Ещё раз OK: отпустить"));
-#else
   notice(t("Hold again: let it go","Удерж. ещё: отпустить"));
-#endif
   break;}armed=0;notice(creature.release());menuOpen=false;break;}
 #endif
  case ActPowerOff:{static uint32_t armed=0;if(!armed||millis()-armed>5000){armed=millis();
-#if defined(MM_JOYSTICK)
-  notice(t("OK again: turn off","Ещё раз OK: выключить"));
-#else
   notice(t("Hold again: turn off","Удерж. ещё: выключить"));
-#endif
   break;}armed=0;powerOff();menuOpen=false;break;}
  case ActClose:default:break;
  case ActSelfTest:{bool valid=meshRadio.selfTest();meshRadio.event=valid?"Encryption test OK":"Encryption test FAILED";notice(valid?t("Encryption: OK","Шифрование: OK"):t("Encryption: ERROR","Шифрование: ошибка"));break;}
@@ -714,23 +584,16 @@ void footer(const String& hint){
  for(unsigned i=0;i<n;i++){if(cycle[i]==h)c.fillRect(x,58,2,4,1);else c.drawPixel(x,61,1);x+=3;}
  if(hint.length())sayRight(128,63,fitted(clipped(hint,20),128-x,small));
 }
-#if defined(MM_JOYSTICK)
-String hint(){Act acts[MenuMax];unsigned n=actions(acts);if(!n)return "<  >";return n==1?t("OK: ","OK: ")+actName(acts[0]):t("OK: menu  < >","OK: меню  < >");}
-#else
 String hint(){
 #if MM_DICE
  if(diceTapOn())return t("click+ hold- 5s:exit","клик+ держ- 5с:выход");
 #endif
  Act acts[MenuMax];unsigned n=actions(acts);if(!n)return "";return n==1?t("hold: ","держ: ")+actName(acts[0]):t("hold: menu","держ: меню");}
-#endif
 unsigned quickTargetCount(){return quickSend::targetCount();}
 uint64_t quickTarget(unsigned i){return quickSend::target(i);}
 String quickName(uint64_t id){const auto* ch=meshRadio.channel(id);const Peer* p=meshRadio.findContact(id);return ch?String(ch->name):p?String(p->name):t("Choose recipient","Выберите получателя");}
 String quickLabel(unsigned i){if(!i)return t("Choose recipient","Выберите получателя");if(i<=quickSend::Count)return quickSend::state.text[i-1][0]?String(quickSend::state.text[i-1]):String("--");return "< "+t("Exit","Выход");}
 bool quickKey(int key){if(page!=QuickPage)return false;if(key==0x86){if(quickTargets){quickTargets=false;quickIndex=0;}else{quickReply=false;showPage(Home);}return true;}bool click=key==13||key==0x82||key==0xb6,hold=key==0xa3;
-#if defined(MM_JOYSTICK)
- click=key==0xb6;hold=key==13;if(key==0xb5){if(quickTargets){unsigned n=quickTargetCount();if(n)quickTargetIndex=(quickTargetIndex+n-1)%n;}else quickIndex=(quickIndex+quickSend::Count+1)%(quickSend::Count+2);return true;}if(key==0xb4||key==0xb7){quickReply=quickTargets=false;showPage(key==0xb4?previousPage():nextPage());return true;}
-#endif
  if(click){if(quickTargets){unsigned n=quickTargetCount();if(n)quickTargetIndex=(quickTargetIndex+1)%n;}else quickIndex=(quickIndex+1)%(quickSend::Count+2);}
  if(hold){if(quickTargets){if(!quickTargetCount()){notice(t("No recipients","Нет получателей"));quickTargets=false;quickIndex=0;return true;}quickTargetIndex%=quickTargetCount();StaticJsonDocument<128>d;d["action"]="target";d["to"]=meshRadio.idText(quickTarget(quickTargetIndex));String r=quickSend::command(d.as<JsonObjectConst>());notice(r);if(r.startsWith("OK")){quickReply=quickTargets=false;quickIndex=1;}}
  else if(!quickIndex){quickTargets=true;quickTargetIndex=0;}
@@ -748,11 +611,7 @@ void drawMenu(){
  c.fillRect(0,12,128,45,0);c.drawRect(0,12,128,45,1);
  for(unsigned i=first;i<n&&i<unsigned(first+3);i++){int y=14+(i-first)*14;bool focus=int(i)==menuIndex;if(focus)c.fillRect(2,y,124,13,1);say(5,y+10,clipped(actName(acts[i]),20),body,focus?0:1);}
  c.fillRect(0,57,128,7,0);
-#if defined(MM_JOYSTICK)
- footer(t("up/down, OK, back","выбор, OK, назад"));
-#else
  footer(t("click-next hold-run","клик-далее держ-ОК"));
-#endif
 }
 void drawPopup(const ChatMessage& m){
  auto& c=*hardware.canvas;c.fillScreen(0);c.drawRect(3,3,11,8,1);c.drawLine(3,3,8,7,1);c.drawLine(13,3,8,7,1);
@@ -765,11 +624,7 @@ void drawChessPopup(){
  else if(newsKind==1){c.fillCircle(8,7,4,1);c.drawCircle(8,7,2,0);} // a draughts man
  else{c.fillCircle(8,5,2,1);c.fillTriangle(8,5,5,10,11,10,1);c.fillRect(4,10,9,2,1);} // a pawn
  say(18,11,newsTitle(),bold);textLines(chessPopupText,25,3);
-#if defined(MM_JOYSTICK)
- if(config.role==RoleNormal)sayRight(126,62,t("OK: open the game","OK: открыть партию"),small);
-#else
  if(config.role==RoleNormal)sayRight(126,62,t("hold: open the game","держ: открыть партию"),small);
-#endif
 }
 // Hold (OK) on news: the game it is about, or its game's list.
 void openNews(){
@@ -787,11 +642,7 @@ void drawRolePick(){
  uint32_t gone=millis()-rolePickAt;unsigned left=gone>=5000?0:(5000-gone+999)/1000;
  header(t("Device mode","Режим работы"));
  sayRight(128,63,rolePickBoot?t("as now in ","как сейчас через ")+String(left)+t("s","с"):
-#if defined(MM_JOYSTICK)
- t("up/down, OK","вверх/вниз, OK")
-#else
  t("click-next hold-choose","клик-далее держ-выбор")
-#endif
  ,small);
  if(action.length()&&millis()-actionAt<3500){c.fillRect(0,36,128,20,0);c.drawRect(0,36,128,20,1);say(3,50,clipped(action,20));}
  hardware.flush();
@@ -811,11 +662,7 @@ void drawRadioEdit(){
 // Power off pending (Power.cpp): what turns the board on again.
 String powerOnHint(){int way=powerOnWay();
  if(way==-2)return t("the power key","кнопка питания");if(way<0)return t("RESET or power switch","RESET или выключатель");
-#if defined(MM_JOYSTICK)
- return t("hold the joystick","удержать джойстик");
-#else
  return t("hold ","удержать ")+MM_BUTTON;
-#endif
 }
 // The quick counter: the open card's name and count, a dot for every card and the devices nearby when counted.
 String tallyNear(){String s;if(people::settings.ble)s="BLE "+String(people::count(false))+(people::saturated(false)?"+":"");
@@ -852,23 +699,11 @@ unsigned appNews(int p){
 // A folder: its apps in one column, two when more than four; the one a hold (OK) opens lit.
 void drawFolderMono(){
  auto& c=*hardware.canvas;uint8_t p[AppsMax];unsigned n=folderPages(folderAt,p),rows=n>4?(n+1)/2:n;if(rows>4)rows=4;int w=n>4?64:128;
-#if defined(MM_JOYSTICK)
- folderSel=n?folderSel%n:0;
-#endif
  for(unsigned i=0;i<n&&i<rows*2;i++){int x=i/rows*64,y=13+i%rows*11;bool focus=int(i)==folderSel;unsigned k=appNews(p[i]);String badge=k?String(k):String();
   if(focus)c.fillRect(x,y,w-1,11,1);say(x+2,y+9,fitted(appName(p[i]),w-6-(k?width(badge,small)+3:0),small),small,!focus);if(k)sayRight(x+w-3,y+9,badge,small,!focus);}
 }
-#if defined(MM_HIRES)
-#include "UiHires.inc"
-#endif
 void draw(){
-#if defined(MM_HIRES)
- hi::draw();return; // T114: its own drawing at 240x135
-#endif
  auto& c=*hardware.canvas;if(powerOffPending()){drawOff();return;}if(rolePick){drawRolePick();return;}if(radioEdit){drawRadioEdit();return;}
-#if defined(MM_JOYSTICK)
- if(composing){drawCompose();return;}
-#endif
  c.fillScreen(0);const ChatMessage* last=&incomingPopup;
  if(popupAt&&millis()-popupAt<8000&&last&&!last->outgoing){drawPopup(*last);hardware.flush();return;}
  popupAt=0;
@@ -921,17 +756,11 @@ void draw(){
   else{bool beacon=radar.csi==Radar::CsiBeacon;int sel=shownSignal();
    // Beacon: sweeps and BLE pause, so the title shows the beacon instead of the counts.
    title=beacon?t("CSI beacon ","Маяк CSI ")+String(radar.csiRate)+t("/s","/с"):t("Radar","Радар")+
-#if !defined(MM_NO_WIFI)
    " W"+String(radar.counted(RadarTarget::Wifi))+
-#endif
    " B"+String(radar.counted(RadarTarget::Ble))+" L"+String(radar.counted(RadarTarget::Lora));
    String st=beacon?String():wifiState();if(!st.length()&&!beacon)st=bleState();
    if(sel<0){say(0,30,beacon?t("Beacon on","Маяк включён"):t("No signals yet","Сигналов пока нет"));say(0,44,st.length()?st:beacon?t("hold: switch off","держите: выключить"):
-#if defined(MM_NO_WIFI)
-    t("BLE and LoRa","BLE и LoRa")
-#else
     t("Wi-Fi and LoRa","Wi-Fi и LoRa")
-#endif
    ,small);}
    else{unsigned rows=st.length()?3:4; // a status line takes the 4th row, clear of the bottom hint
     int first=max(0,min(sel-1,int(radar.count)-int(rows)));for(int i=first;i<int(radar.count)&&i<first+int(rows);i++){const RadarTarget& r=radar.targets[i];int y=19+(i-first)*10;
@@ -967,69 +796,19 @@ void draw(){
  }
  header(title);
  if(menuOpen)drawMenu();else footer(page==FolderPage?
-#if defined(MM_JOYSTICK)
- t("OK: open  < >","OK: открыть  < >"):
-#else
  t("hold: open","держ: открыть"):
-#endif
  appClosed()?t("hold: open","держ: открыть"):page==PeoplePage?
-#if defined(MM_JOYSTICK)
- t("OK: menu  < >","OK: меню  < >"):
-#else
  t("click +1 hold-menu","клик +1 держ-меню"):
-#endif
 #if MM_DICE
  page==DicePage?(dicer.s.mode==dice::Sheet?t("click-next hold-menu","клик-далее держ-меню"):t("click-roll hold-menu","клик-бросок держ-меню")):
 #endif
  page==QuickPage?
-#if defined(MM_JOYSTICK)
- String("^v ")+t("choose","выбор")+" OK "+(quickTargets||!quickIndex?t("select","выбрать"):quickIndex>quickSend::Count?t("exit","выход"):t("send","слать")):
-#else
  (quickTargets||!quickIndex||quickIndex>quickSend::Count?t("click-next hold-run","клик-далее держ-ОК"):t("click-next hold-send","клик-выбор держ-слать")):
-#endif
  hint());
  if(action.length()&&millis()-actionAt<3500){c.fillRect(0,36,128,20,0);c.drawRect(0,36,128,20,1);say(3,50,clipped(action,20));}
  hardware.flush();
 }
 }
-#if defined(MM_JOYSTICK)
-// Up/down inside a screen: older/newer message, previous/next node or signal.
-void scroll(int step){
- if(page==Messages){messageOffset=max(0,messageOffset-step);shownMessage();}
- else if(page==PeoplePage)people::change(-step);
- else if(page==Nodes){unsigned n=meshRadio.peerCount;if(n)nodeIndex=(nodeIndex+n+step)%n;}
-#if MM_DICE
- else if(page==DicePage)diceScroll(step);
-#endif
- else if(page==Signals&&radar.count&&!radar.tracking){int i=shownSignal();signalManual=true;if(i>=0){i=(i+radar.count+step)%radar.count;signalId=radar.targets[i].id;signalKind=radar.targets[i].kind;}}
-}
-void joystickKey(int key){
- bool up=key==0xb5,down=key==0xb6,left=key==0xb4,right=key==0xb7,ok=key==13||key==0xa3,back=key==0x86||key==0x82;
- if(composing){composeKey(key);return;}
- if(rolePick){
-  if(up||down){roleSel=(roleSel+(up?RoleCount-1:1))%RoleCount;rolePickBoot=false;return;}
-  if(ok){if(roleSel==config.role){rolePick=false;return;}String r=setRole(roleSel);notice(r.startsWith("OK")?t("Restarting: ","Перезапуск: ")+roleShort(roleSel):r);if(!r.startsWith("OK"))rolePick=false;return;}
-  if(back)rolePick=false;return;}
- if(popupAt){popupAt=0;if(ok)showPage(Messages);return;}
- if(chessPopupAt){chessPopupAt=0;if(ok)openNews();return;}
- if(quickKey(key))return;
- if(menuOpen){menuAt=millis();Act acts[MenuMax];unsigned n=actions(acts);if(!n){menuOpen=false;return;}
-  if(up||down){menuIndex=(menuIndex+(up?n-1:1))%n;return;}
-  if(ok){Act a=acts[menuIndex%n];run(a);if(!keepsMenu(a))menuOpen=false;return;}
-  menuOpen=false;return;}
-#if MM_CHESS
- if(page==Chess&&chessKey(key))return;
-#endif
-#if MM_DUEL
- if((page==CheckersPage||page==SeaPage)&&duelKey(key))return;
-#endif
- if(page==FolderPage){uint8_t p[AppsMax];unsigned n=folderPages(folderAt,p);if(n&&(up||down)){folderSel=(folderSel+(up?n-1:1))%n;return;}if(n&&ok){showPage(p[folderSel%n]);return;}}
- if(left||right){showPage(left?previousPage():nextPage());return;}
- if(back){int f=folderBack();if(f>=0)showPage(f);else if(page!=Home)showPage(Home);return;} // Back leaves a folder for its screen
- if(up||down){scroll(up?-1:1);return;}
- if(ok){Act acts[MenuMax];unsigned n=actions(acts);if(n==1)run(acts[0]);else if(n>1){menuOpen=true;menuIndex=0;menuAt=millis();}}
-}
-#endif
 #if defined(MM_ONE_BUTTON)
 // Double click = back, as on the stock MeshCore screen (config.doubleBack, off by default): a click waits DoubleMs
 // for a second one, so with the option on a single click acts that much later. Counting keeps clicks immediate.
@@ -1071,14 +850,8 @@ static void uiKeyNow(int key){
  if(powerOffPending())return; // the screen says it is turning off
  lastInput=millis();dirty=true;
  if(screenOff){screenOff=false;hardware.brightness(config.brightness); // the first press only wakes the panel
-#if !defined(MM_JOYSTICK)
   if(!appOpen||(page!=DicePage&&page!=PeoplePage)) // an open dice/count page also acts on the waking press
-#endif
   return;}
-#if defined(MM_JOYSTICK)
- if(radioEdit){radioJoystick(key==0xb5,key==0xb6,key==0xb4,key==0xb7,key==13||key==0xa3,key==0x86||key==0x82);return;}
- joystickKey(key);return;
-#endif
  if(radioEdit){radioButton(key==13||key==0x82,key==0xa3);return;}
  if(rolePick){if(key==0x86){rolePick=false;return;}if(key==13||key==0x82){roleSel=(roleSel+1)%RoleCount;rolePickBoot=false;return;}
   if(key==0xa3){if(roleSel==config.role){rolePick=false;return;}String r=setRole(roleSel);notice(r.startsWith("OK")?t("Restarting: ","Перезапуск: ")+roleShort(roleSel):r);if(!r.startsWith("OK"))rolePick=false;}return;}
@@ -1090,7 +863,6 @@ static void uiKeyNow(int key){
  if(menuOpen){menuAt=millis();Act acts[MenuMax];unsigned n=actions(acts);if(!n){menuOpen=false;return;}
   if(key==13||key==0x82){menuIndex=(menuIndex+1)%n;return;}
   if(key==0xa3){Act a=acts[menuIndex%n];run(a);if(!keepsMenu(a))menuOpen=false;}return;}
-#if !defined(MM_JOYSTICK)
 #if MM_CHESS
  if(page==Chess&&chessButton(key))return;
 #endif
@@ -1099,7 +871,6 @@ static void uiKeyNow(int key){
 #endif
 #if MM_DICE
  if(diceTapKey(key)||diceRollKey(key))return;
-#endif
 #endif
  if(page==PeoplePage&&(key==13||key==0x82)){people::change(1);return;}
  if(key==0x86){showPage(Home);return;}
@@ -1124,9 +895,6 @@ d["chess_popup"]=chessPopupAt!=0;d["unread"]=unreadCount;{int f=pageFolder();if(
 #if MM_CHESS
  if(page==Chess&&chessOpen){char id[5];snprintf(id,sizeof id,"%04X",chessOpen->id);d["chess_game"]=id;d["chess_cursor"]=chessCursor;d["chess_held"]=chessHeld;d["chess_menu"]=chessMenu;d["chess_menu_index"]=chessMenuIndex;
   if(chessMenu){ChessAct acts[8];unsigned k=chessActions(*chessOpen,acts);d["chess_act"]=int(acts[chessMenuIndex%k]);}}
-#endif
-#if defined(MM_JOYSTICK)
- if(composing){d["compose"]=true;d["draft"]=draft;d["keyboard"]=layoutNames[kbLayout];d["key_row"]=kbRow;d["key_col"]=kbCol;}
 #endif
 if(page==Signals){d["radar_selected"]=shownSignal();d["csi_role"]=radar.csi;}
 #if MM_DICE
@@ -1190,9 +958,6 @@ void uiTick(){
  if(menuOpen&&now-menuAt>10000){menuOpen=false;dirty=true;}
  if(config.dimAfter&&!screenOff&&now-lastInput>=config.dimAfter*1000UL){screenOff=true;hardware.brightness(0);}
  if(screenOff)return;
- #if defined(MM_JOYSTICK)
- if(composing)dirty=true; // blinking cursor
- #endif
  if(page==PetPage)dirty=true; // it moves
 #if MM_DICE
  if(page==DicePage&&dicer.events!=diceSeen){diceSeen=dicer.events;dirty=true;} // rolls from the web page or the app

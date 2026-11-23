@@ -48,10 +48,7 @@ static void liveCommand(const std::string& line){
 }
 // The canvas as RGB565: as it is on the colour boards, through the palette on the T114, white on black on the OLEDs.
 static const uint16_t* liveFrame(int W,int H){
-#if defined(MM_HIRES)
- static std::vector<uint16_t> f;f.resize(W*H);const uint8_t* px=hardware.canvas->getBuffer();
- for(int i=0;i<W*H;i++)f[i]=palette565[px[i]<ColCount?px[i]:ColInk];return f.data();
-#elif defined(MM_HELTEC_V4)
+#if   defined(MM_HELTEC_V4)
  static std::vector<uint16_t> f;f.resize(W*H);const uint16_t* px=hardware.canvas->getBuffer();
  for(int i=0;i<W*H;i++)f[i]=px[i]?0xffff:0;return f.data();
 #else
@@ -59,11 +56,7 @@ static const uint16_t* liveFrame(int W,int H){
 #endif
 }
 static int live(){
-#if defined(MM_HIRES)
- const int W=HiresCanvas::Width,H=HiresCanvas::Height;
-#else
  const int W=hardware.canvas->width(),H=hardware.canvas->height();
-#endif
  int scale=max(1,960/W);if(const char* s=getenv("SIM_SCALE"))scale=max(1,atoi(s)); // about 960 px wide by default
  if(SDL_Init(SDL_INIT_VIDEO)!=0){fprintf(stderr,"SDL: %s\n",SDL_GetError());return 1;}
  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,"0"); // sharp pixels

@@ -1,6 +1,3 @@
-#if defined(MM_NRF52)
-#pragma GCC optimize("Os") // 1 MB flash: the Chinese T114 image (AGENTS.md, "Языки")
-#endif
 #include "Power.h"
 #include "App.h"
 #include "People.h"
@@ -16,38 +13,23 @@
 #include "ChessTour.h"
 #include "Pet.h"
 #include "Dice.h"
-#if defined(MM_NRF52)
-#include <esp_system.h>
-#include <nrf_soc.h>
-#include <nrf_sdm.h>
-#include <flash/flash_nrf5x.h>
-#else
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <esp_sleep.h>
 #include <driver/rtc_io.h>
 #include <WiFi.h>
-#endif
 namespace {
 TaskHandle_t volatile idleTask=nullptr;
 uint32_t inputAt=0,idleWaits=0,idleMs=0,radioEvents=0;
 constexpr uint32_t IdlePollMs=20; // below the 30 ms button debounce; also drains GPS/USB regularly
 }
-#if defined(MM_NRF52)
-void powerRadioIrq(){
-#else
 void IRAM_ATTR powerRadioIrq(){
-#endif
   // Called only from the RadioLib GPIO ISR. A pending notification also closes the race
   // between checking the radio IRQ and blocking the task. The RTOS controls sleep
   // (together with the SoftDevice on nRF52); other tasks can still run during this wait.
   if(!idleTask)return;
   BaseType_t woken=pdFALSE;vTaskNotifyGiveFromISR(idleTask,&woken);
-#if defined(MM_NRF52)
-  portYIELD_FROM_ISR(woken);
-#else
   if(woken)portYIELD_FROM_ISR();
-#endif
 }
 namespace {
 void waitForRadio(bool usbIdle){
@@ -65,17 +47,11 @@ void waitForRadio(bool usbIdle){
 }
 namespace {
 uint32_t offAt=0;
-#if defined(MM_NRF52)
-bool lowOff=false; // off for an empty battery: USB power turns it on again
-bool lowBattery(uint16_t mv,uint16_t below);
-#endif
-#if !defined(MM_NRF52)
 // The wake button pressed at boot: on after it is held 0.7 s (with the boot, about a second), then released.
 bool wakeHeld(int pin){
   uint32_t start=millis();while(millis()-start<700){if(digitalRead(pin)==HIGH)return false;delay(5);}
   start=millis();while(digitalRead(pin)==LOW&&millis()-start<4000)delay(10);return true;
 }
-#endif
 [[noreturn]] void sleepNow(int pin);
 }
 String powerOff(){
@@ -86,12 +62,6 @@ String powerOff(){
 bool powerOffPending(){return offAt!=0;}
 int powerOnWay(){return hardware.wakePin();}
 void powerOffTick(){
-#if defined(MM_NRF52)
-  // An empty battery: off while it is still steady, after 30 s below 3.3 V (a transmission sags it for a moment).
-  static uint32_t lowSince=0;
-  if(!offAt&&lowBattery(hardware.batteryMv,3300)){if(!lowSince)lowSince=millis()|1;else if(millis()-lowSince>30000){lowOff=true;meshRadio.event="Battery empty";powerOff();}}
-  else lowSince=0;
-#endif
   if(!offAt||int32_t(millis()-offAt)<0)return;
   if(meshRadio.busy()&&millis()-offAt<5000)return;
   people::flush();wardrive::flush();meshRadio.flush();chessNet.flush();duels.flush();tour::net.flush();creature.flush();dicer.flush(); // counters wait 2 s before writing
@@ -103,57 +73,10 @@ void powerOffTick(){
   while(millis()-shown<3000)delay(10); // time to read it
   if(radar.active)radar.release();
   meshRadio.sleep();
-#if !defined(MM_NRF52)
   if(WiFi.getMode()!=WIFI_OFF)WiFi.mode(WIFI_OFF);
-#endif
   hardware.powerDown(true);
   sleepNow(pin);
 }
-#if defined(MM_NRF52)
-// Soft off. A wake from System OFF is a reset with the button still held, and the T114 bootloader takes a
-// held USER key at reset for its Bluetooth OTA update mode ("HT-n5262-OTA"): the board stayed there with
-// no USB, and a RESET pressed then ended in lost storage (docs/verification.md). Here the CPU stays in
-// System ON: this task polls the button from FreeRTOS sleep (tickless idle) and nothing else runs. After
-// a 1 s hold the LED lights; the board restarts the ordinary way once the button is released.
-//
-// The battery. Every start writes the settings (the boot counter) into the first 4 KB page of the storage,
-// which also holds its root: the page is erased and written again around the changed 128-byte block. A
-// nearly empty cell that sags under the start's load resets the board between the two, the page stays
-// blank and the storage no longer mounts ("No storage", key and history gone; T114, 9 and 20 October 2026).
-// So a start on such a battery goes off before the storage is touched, and a running board turns off
-// while the battery is still steady. On USB power, or without a reading (no cell), nothing changes.
-namespace {
-bool usbPower(){
-  uint8_t on=0;sd_softdevice_is_enabled(&on);uint32_t s=0;
-  if(on)sd_power_usbregstatus_get(&s);else s=NRF_POWER->USBREGSTATUS;
-  return s&POWER_USBREGSTATUS_VBUSDETECT_Msk;
-}
-#if defined(MM_NO_BATTERY_GUARD)
-bool lowBattery(uint16_t,uint16_t){return false;}
-#else
-bool lowBattery(uint16_t mv,uint16_t below){return mv>2500&&mv<below&&!usbPower();}
-#endif
-void sleepNow(int pin){
-  bleSilence();flash_nrf5x_flush();
-  if(pin>=0)pinMode(pin,INPUT_PULLUP);uint32_t down=0;
-  while(true){
-    delay(50);
-    if(lowOff&&usbPower()){delay(1000);ESP.restart();} // charging: on again
-    if(pin<0||digitalRead(pin)==HIGH){down=0;continue;}
-    if(!down){down=millis()|1;continue;}
-    if(millis()-down<1000)continue;
-    if(pins::led>=0){pinMode(pins::led,OUTPUT);digitalWrite(pins::led,pins::ledOn);}
-    while(digitalRead(pin)==LOW)delay(20);
-    delay(50);ESP.restart(); // released: the bootloader starts the application
-  }
-}
-}
-// 3.4 V at rest: above the 3.3 V of a running board, so an empty cell does not start, sag and stop over again.
-void powerBootCheck(){
-  if(!lowBattery(hardware.batteryNow(),3400))return;
-  Serial.begin(115200);Serial.println("OFF: battery empty");lowOff=true;hardware.powerDown(false);sleepNow(hardware.wakePin());
-}
-#else
 namespace {
 void sleepNow(int pin){
   esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
@@ -168,19 +91,9 @@ void powerBootCheck(){
   rtc_gpio_deinit(gpio_num_t(pin));pinMode(pin,INPUT_PULLUP);if(wakeHeld(pin))return;
   hardware.powerDown(false);sleepNow(pin);
 }
-#endif
 uint32_t powerIdleWaits(){return idleWaits;}
 uint32_t powerIdleMs(){return idleMs;}
 uint32_t powerRadioEvents(){return radioEvents;}
-#if defined(MM_NRF52)
-void powerWake(){inputAt=millis();}
-void powerTick(bool usbIdle){waitForRadio(usbIdle);}
-uint8_t powerMhz(){return 64;}
-// Application wait time is not measured CPU sleep time: keep these ESP32 counters separate.
-uint32_t powerSleeps(){return 0;}
-uint32_t powerSleptMs(){return 0;}
-uint32_t powerSlowMs(){return 0;}
-#else
 #include <esp_sleep.h>
 #include <driver/gpio.h>
 #include <driver/uart.h>
@@ -280,4 +193,3 @@ uint8_t powerMhz(){return getCpuFrequencyMhz();}
 uint32_t powerSleeps(){return sleeps;}
 uint32_t powerSleptMs(){return uint32_t(sleptUs/1000);}
 uint32_t powerSlowMs(){return uint32_t(slowMs+(getCpuFrequencyMhz()==Slow?millis()-slowAt:0));}
-#endif

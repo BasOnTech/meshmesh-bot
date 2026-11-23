@@ -1,11 +1,6 @@
-#if defined(MM_NRF52)
-#pragma GCC optimize("Os") // 1 MB flash: not speed-critical (AGENTS.md, "Языки")
-#endif
 #include "Config.h"
 #include <esp_system.h>
-#if !defined(MM_NRF52)
 #include <nvs_flash.h>
-#endif
 #include <bootloader_random.h>
 #include <Mm1Packet.h>
 #include "Regions.h"
@@ -22,13 +17,11 @@ bool Config::valid() const {
     meshmesh::validUtf8((const uint8_t*)name,strlen(name));
 }
 void Config::load() {
-#if !defined(MM_NRF52)
   // An NVS partition that nvs_flash_init cannot open holds nothing readable: erased, so the node gets a key and
   // settings again. A Heltec V3 left one after writes lost under the QIO flash driver (before 0.5.1); NimBLE
   // aborts on it when Bluetooth starts.
   esp_err_t nvs=nvs_flash_init();
   if(nvs!=ESP_OK){Serial.printf("NVS unreadable (%s); erased, settings and key start anew\n",esp_err_to_name(nvs));nvs_flash_erase();nvs_flash_init();}
-#endif
   Preferences p; if(!p.begin("meshmesh",false)) {bootCounter=0;Serial.println("ERR NVS unavailable; TX disabled");return;}
   p.getString("name",name,sizeof(name));
   if(!name[0]) strcpy(name,MM_NODE_NAME);
@@ -73,9 +66,6 @@ void Config::load() {
 }
 bool Config::save() {
   Preferences p; if(!p.begin("meshmesh",false)) return false;
-#if defined(MM_NRF52)
-  if(!p.beginBatch())return false;
-#endif
   p.putUChar("n_led",notifyLed);p.putUChar("n_wake",notifyWake);p.putUChar("n_popup",notifyPopup);p.putBool("n_failed",notifyFailed);p.putString("n_words",notifyWords);
   const RadioProfile kept=trial.set()?trial:radio(); // a test is not saved
   p.putString("name",name); p.putFloat("freq",kept.frequency); p.putFloat("bw",kept.bandwidth);
@@ -88,9 +78,6 @@ bool Config::save() {
   if(preset[0])p.putString("preset",preset);else if(p.isKey("preset"))p.remove("preset");
   if(region[0]){p.putString("region",region);p.putBytes("region_key",regionKey,16);}else{p.remove("region");p.remove("region_key");}
   bool saved=true;
-#if defined(MM_NRF52)
-  saved=p.commitBatch();
-#endif
   p.end();return saved;
 }
 bool Config::saveRole(uint8_t next){if(next>=RoleCount)return false;Preferences p;if(!p.begin("meshmesh",false))return false;bool saved=p.putUChar("role",next)==1;p.end();return saved;} // config.role keeps the running role

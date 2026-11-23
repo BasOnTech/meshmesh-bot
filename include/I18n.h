@@ -22,11 +22,7 @@ constexpr uint32_t i18nFnv(const char* s,uint32_t h){while(*s)h=(h^uint8_t(*s++)
 constexpr uint32_t i18nKey(const char* en,const char* ru){return i18nFnv(ru,(i18nFnv(en,0x811c9dc5u)^0x1fu)*0x01000193u);}
 const char* trKey(const char* en,const char* ru,uint32_t key); // ru: nullptr in an image without Russian
 inline const char* trPair(const char* en,const char* ru){return trKey(en,ru,i18nKey(en,ru));}
-#if defined(MM_NO_RU)
-#define MM_RU(s) nullptr
-#else
 #define MM_RU(s) s
-#endif
 #define tr(en,ru) trKey(en,MM_RU(ru),std::integral_constant<uint32_t,i18nKey(en,ru)>::value)
 // "5 games": the number and the noun form its language needs. English and Russian are the arguments
 // (number, space, form); translations place the number with {n} or leave it out.

@@ -1,6 +1,3 @@
-#if defined(MM_NRF52)
-#pragma GCC optimize("Os") // 1 MB flash: the chess messages are not speed-critical (the rest of the nRF52 image is -O2)
-#endif
 #include "ChessNet.h"
 #include "ChessRating.h"
 #include "ChessTour.h"
@@ -398,7 +395,7 @@ String ChessNet::command(const String& line){
   return done?"OK "+verb:"ERR "+verb+" not possible now";
 }
 
-#if !defined(MM_UI_PREVIEW) && !defined(MM_NRF52)
+#if !defined(MM_UI_PREVIEW)
 #include <SD.h>
 bool chessArchiveWrite(const String& name,const String& text){
   if(!hardware.sdOk)return false;SD.mkdir("/meshmesh");SD.mkdir("/meshmesh/chess");
@@ -420,10 +417,6 @@ String chessArchiveRead(const String& name){
   if(!hardware.sdOk||!archiveName(name))return "";File f=SD.open("/meshmesh/chess/"+name);if(!f)return "";String s;s.reserve(f.size()+1);
   while(f.available()&&s.length()<12000)s+=char(f.read());f.close();return s;
 }
-#elif defined(MM_NRF52)
-bool chessArchiveWrite(const String&,const String&){return false;}
-String chessArchiveList(){return "{\"games\":[],\"sd\":false}";}
-String chessArchiveRead(const String&){return "";}
 #endif
 
 #if !defined(MM_UI_PREVIEW)

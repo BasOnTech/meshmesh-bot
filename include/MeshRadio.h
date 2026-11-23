@@ -9,8 +9,6 @@
 #include "Config.h"
 #if defined(MM_RADIO_SX1262)
 using DeviceRadio=SX1262;
-#elif defined(MM_RADIO_SX1276)
-using DeviceRadio=SX1276;
 #else
 using DeviceRadio=LR1110;
 #endif

@@ -1,6 +1,5 @@
 #include "Internet.h"
 Internet internet;
-#if !defined(MM_NO_WIFI)
 #include "App.h"
 #include "Hardware.h"
 #include "Radar.h"
@@ -275,4 +274,3 @@ String Internet::command(const String& line){
   if(line.startsWith("internet tiles "))return setTileUrl(line.substring(15))?"OK tile server set":"ERR tile URL: http(s) with {z} {x} {y}, worker idle";
   return "ERR internet: info|on|off|scan|add {json}|forget SSID|connect SSID|tiles URL|default";
 }
-#endif

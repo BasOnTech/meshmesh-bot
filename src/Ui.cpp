@@ -911,15 +911,9 @@ void drawDiagnostics(){
  footer({{"OK",hardware.fsOk?t("Crypto test + sound","Тест шифрования и звука"):t("Create storage...","Создать хранилище...")},{"BACK",t("Back","Назад")}});
 }
 void drawHelp(){
-#if defined(MM_BOARD_TDECK)
- Hint keys[]={{tr("Ball, swipe","Шар, свайп"),t("Move: menu, lists, map","Перемещение: меню, списки, карта")},{tr("Click","Нажатие"),t("Open / send","Открыть / отправить")},{tr("Hold ball","Удерж. шар"),t("Unlock; in chat: Russian layout","Вход; в чате: русская раскладка")},
-  {tr("Tap","Касание"),t("Open; hints below are keys; title: back","Открыть; кнопки внизу; заголовок - назад")},{"DEL",t("Delete; with no text: back","Удалить; без текста: назад")},{tr("2x space","2×пробел"),t("in text: switch RU/EN","в тексте: RU/EN")},
-  {"L",t("Map: saved maps","Карта: список карт")},{"+ -",t("Map zoom","Масштаб карты")},{"P",t("Nodes: show on map","Узлы: показать на карте")},{"HOME",t("Menu: DEL until the tiles","Меню: DEL до плиток")}};
-#else
  Hint keys[]={{"MSG",t("Chats","Чаты")},{"MAP",t("Map; L - saved maps","Карта; L - список карт")},{"HOME",t("Menu","Главное меню")},{"BACK",t("Previous screen","Предыдущий экран")},{"CTRL",t("Settings","Настройки")},
   {"ADV",t("Announce this node; hold: GPS on/off","Объявить узел; удерж.: GPS вкл/выкл")},{"@",t("function key, not Sym+@: RU/EN in chat","функц. клавиша (не Sym+@): RU/EN в чате")},hardware.micKey?Hint{"MIC",t("Lock screen (there is no microphone)","Блокировка (микрофона нет)")}:Hint{tr("hold OK","удерж. OK"),t("Lock","Блок")},
   {"OK",t("Open / send; twice or hold: unlock","Открыть / отправить; дважды или удерж.: вход")},{tr("2x space","2×пробел"),t("in text: switch RU/EN; Right: capital","в тексте: RU/EN; -> : заглавная")}};
-#endif
  for(int i=0;i<10;i++){int y=24+i*19;int kw=max(30,measure(keys[i].key,small)+10);g().fillRoundRect(10,y,kw,15,3,line);textCenter(10+kw/2,y+11,keys[i].key,ink,small);text(max(50,kw+16),y+12,fit(keys[i].action,258),i%2?dim:ink);}
  footer({{"OK",t("Russian layout","Русская раскладка")},{"BACK",t("Settings","Настройки")}});
 }
@@ -1061,11 +1055,6 @@ String uiStatus(){StaticJsonDocument<1024>d;d["page"]=pageNames[page];d["role"]=
 void uiKey(int key){if(powerOffPending())return;bool asleep=wakeOnly;lastInput=millis();hardware.brightness(config.brightness);wakeOnly=false;dirty=true;keyed=true;if(locked){ // a hold (timed by the M9 keyboard controller, not by us) or two OK presses within a second unlock
   static uint32_t firstOk=0;bool twice=key==Enter&&firstOk&&millis()-firstOk<1000;firstOk=key==Enter&&!twice?millis():0;
   if(key==KeyHold||twice){locked=false;int game=lockGame();if(game==1)chessEnter(const_cast<ChessMatch*>(lockChess()));else if(game==2)duelEnter(const_cast<Duel*>(lockDuel()));}return;}if(asleep)return;
-#if defined(MM_BOARD_TDECK)
- // The T-Deck has no BACK key: DEL goes back when there is no text here to delete (DEL tapped in the footer stays DEL).
- bool erase=realErase;realErase=false;
- if(key==Erase&&!erase&&!editing&&!(page==Chat&&composer.length()))key=KeyBack;
-#endif
  if(key==KeyMic||(key==KeyHold&&!hardware.micKey&&page!=Chat)){locked=true;return;} // M9 V1.1: no MIC key, the long OK press locks (stock firmware)
  if(layoutHelp){layoutHelp=false;return;}
  if(key==KeyAt&&page==Chat){openChatMenu();return;}

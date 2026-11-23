@@ -1,6 +1,3 @@
-#if defined(MM_NRF52)
-#pragma GCC optimize("Os") // 1 MB flash: chat, contacts and the companion frames are not speed-critical (the rest of the nRF52 image is -O2)
-#endif
 #include "MeshRadio.h"
 #include "Notifications.h"
 #include "ChannelPolicy.h"
@@ -67,9 +64,6 @@ void control(const mesh::Packet* packet); // a zero-hop control packet (node dis
 }
 #if defined(MM_RADIO_SX1262)
 constexpr uint32_t irqTxDone=RADIOLIB_SX126X_IRQ_TX_DONE,irqPreamble=RADIOLIB_SX126X_IRQ_PREAMBLE_DETECTED,irqRxDone=RADIOLIB_SX126X_IRQ_RX_DONE;
-#elif defined(MM_RADIO_SX1276)
-// SX127x has no preamble flag in LoRa mode; a valid header marks a packet being received.
-constexpr uint32_t irqTxDone=RADIOLIB_SX127X_CLEAR_IRQ_FLAG_TX_DONE,irqPreamble=RADIOLIB_SX127X_CLEAR_IRQ_FLAG_VALID_HEADER,irqRxDone=RADIOLIB_SX127X_CLEAR_IRQ_FLAG_RX_DONE;
 #else
 constexpr uint32_t irqTxDone=RADIOLIB_LR11X0_IRQ_TX_DONE,irqPreamble=RADIOLIB_LR11X0_IRQ_PREAMBLE_DETECTED,irqRxDone=RADIOLIB_LR11X0_IRQ_RX_DONE;
 #endif
@@ -139,9 +133,6 @@ bool writeStored(const char* path,const char* temp,const void* data,size_t size)
  if(!hardware.fsOk)return false;LittleFS.mkdir("/meshmesh");if(LittleFS.exists(temp))LittleFS.remove(temp);
  File f=LittleFS.open(temp,FILE_WRITE);if(!f)return false;bool ok=f.write((const uint8_t*)data,size)==size;f.close();
  if(!ok){LittleFS.remove(temp);return false;}
-#if defined(MM_NRF52)
- if(LittleFS.exists(path)&&!LittleFS.remove(path))return false; // littlefs v1 of the Adafruit core does not rename over a file
-#endif
  return LittleFS.rename(temp,path);
 }
 class MeshCoreBackend:public BaseChatMesh {
@@ -334,12 +325,7 @@ class MeshCoreBackend:public BaseChatMesh {
  void flush(){if(contactsDue)saveContacts();}
  void tick(){if(!protectedAt||millis()-protectedAt>=5000)protectContacts();loop();if(contactsDue&&int32_t(millis()-contactsDue)>=0)saveContacts();}
 };
-#if defined(MM_RADIO_SX1276)
-// SX127x routes interrupts to fixed DIO pins: only RX done (DIO0) is used, CRC is checked by readData.
-int16_t MeshRadio::startReceiving(){return radio.startReceive();}
-#else
 int16_t MeshRadio::startReceiving(){constexpr uint32_t mask=(1UL<<RADIOLIB_IRQ_RX_DONE)|(1UL<<RADIOLIB_IRQ_CRC_ERR)|(1UL<<RADIOLIB_IRQ_HEADER_ERR)|(1UL<<RADIOLIB_IRQ_TIMEOUT);return radio.startReceive(UINT32_MAX,RADIOLIB_IRQ_RX_DEFAULT_FLAGS,mask);}
-#endif
 String MeshRadio::idText(uint64_t id) const{if(id==meshmesh::Broadcast)return "ALL";char b[17];snprintf(b,sizeof(b),"%04lX%08lX",(unsigned long)(id>>32),(unsigned long)(id&0xffffffffu));return b;}
 static const mesh::LocalIdentity* selfIdentity(MeshCoreBackend* core){return core?&core->self_id:meshServer.identity();}
 const uint8_t* MeshRadio::nodeKey() const{auto* self=selfIdentity(core);return self?self->pub_key:nullptr;}
@@ -391,30 +377,18 @@ bool MeshRadio::recalibrate(){
 }
 bool MeshRadio::startRadio(bool quiet){
  const RadioProfile r=tuned.set()?tuned:config.radio();uint16_t preamble=r.sf<=8?32:16;
-#if defined(MM_RADIO_SX1276)
- radioError=radio.begin(r.frequency,r.bandwidth,r.sf,r.cr,RADIOLIB_SX127X_SYNC_WORD,config.power,preamble,0);
- if(radioError){delay(150);radioError=radio.begin(r.frequency,r.bandwidth,r.sf,r.cr,RADIOLIB_SX127X_SYNC_WORD,config.power,preamble,0);}ready=radioError==0;
-#else
  radioError=radio.begin(r.frequency,r.bandwidth,r.sf,r.cr,RADIOLIB_LR11X0_LORA_SYNC_WORD_PRIVATE,config.power,preamble,pins::radioTcxo);
  if(radioError){delay(150);radioError=radio.begin(r.frequency,r.bandwidth,r.sf,r.cr,RADIOLIB_LR11X0_LORA_SYNC_WORD_PRIVATE,config.power,preamble,pins::radioTcxo);}ready=radioError==0;
-#endif
  if(ready){
 #if defined(MM_HELTEC_V4)
  extern int heltecFemTx;radio.setRfSwitchPins(RADIOLIB_NC,heltecFemTx);
-#elif defined(MM_BOARD_T096)
- radio.setCurrentLimit(140);radio.setRfSwitchPins(RADIOLIB_NC,pins::femTx); // KCT8103L CTX: HIGH while transmitting
-#elif defined(MM_RADIO_SX1276)
- radio.setCurrentLimit(120);radio.setCRC(true);
 #elif defined(MM_RADIO_SX1262)
  radio.setCurrentLimit(140);if(pins::radioRxEn>=0)radio.setRfSwitchPins(pins::radioRxEn,RADIOLIB_NC);
 #else
  static const uint32_t dios[Module::RFSWITCH_MAX_PINS]={RADIOLIB_LR11X0_DIO5,RADIOLIB_LR11X0_DIO6,RADIOLIB_NC,RADIOLIB_NC,RADIOLIB_NC};
  static const Module::RfSwitchMode_t modes[]={{LR11x0::MODE_STBY,{LOW,LOW}},{LR11x0::MODE_RX,{HIGH,LOW}},{LR11x0::MODE_TX,{HIGH,HIGH}},{LR11x0::MODE_TX_HP,{LOW,HIGH}},{LR11x0::MODE_TX_HF,{LOW,LOW}},{LR11x0::MODE_GNSS,{LOW,LOW}},{LR11x0::MODE_WIFI,{LOW,LOW}},END_OF_MODE_TABLE};radio.setRfSwitchTable(dios,modes);
 #endif
- // Station G2: its LNA saturates with the boosted gain (MeshCore keeps it off on this board).
-#if !defined(MM_RADIO_SX1276) && !defined(MM_BOARD_STATION_G2)
  radio.setRxBoostedGainMode(true);
-#endif
  radio.setPacketReceivedAction(onRadioIrq);radioIrq=false;radioError=startReceiving();ready=radioError==0;
  }if(!quiet||!ready){event=ready?"MeshCore radio ready":"Radio error "+String(radioError);dirty=true;}return ready;
 }

@@ -1,6 +1,5 @@
 #!/bin/sh
-# Build and render the screen UI on the host: tools/ui_preview/build.sh m9|tdeck|heltec|gat562|t114 OUTDIR [LANG]
-# tdeck: the M9 interface with the T-Deck keys and the touch checks (it stops at the first failure).
+# Build and render the screen UI on the host: tools/ui_preview/build.sh m9|heltec OUTDIR [LANG]
 # LANG is a code of include/I18n.h (en by default); a list with spaces ("en ru de") renders each into OUTDIR/<code>/.
 set -e
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
@@ -8,12 +7,7 @@ LIB=$ROOT/.pio/libdeps/m9
 BOARD=${1:-m9};OUT=${2:-$ROOT/artifacts/ui-preview};[ -n "$SIM" ]||mkdir -p "$OUT"
 DEF="-DARDUINO=10819 -DMM_UI_PREVIEW=1 -DARDUINOJSON_ENABLE_PROGMEM=0 -DARDUINOJSON_ENABLE_ARDUINO_STREAM=0 -DARDUINOJSON_ENABLE_ARDUINO_PRINT=0 -DARDUINOJSON_ENABLE_STD_STRING=0 -DARDUINOJSON_ENABLE_STD_STREAM=0"
 SRC=$ROOT/src/Ui.cpp
-if [ "$BOARD" = tdeck ];then DEF="$DEF -DMM_BOARD_TDECK=1";fi
 if [ "$BOARD" = heltec ];then DEF="$DEF -DMM_HELTEC_V4=1 -DMM_COMPACT=1";SRC=$ROOT/src/UiHeltec.cpp;fi
-# GAT562: the 128x64 interface with the joystick, without Wi-Fi.
-if [ "$BOARD" = gat562 ];then DEF="$DEF -DMM_HELTEC_V4=1 -DMM_COMPACT=1 -DMM_JOYSTICK=1 -DMM_NO_WIFI=1";SRC=$ROOT/src/UiHeltec.cpp;fi
-# T114: the one-button 128x64 interface drawn at 240x135 on the colour TFT (HiresCanvas), without Wi-Fi.
-if [ "$BOARD" = t114 ];then DEF="$DEF -DMM_HELTEC_V4=1 -DMM_COMPACT=1 -DMM_HIRES=1 -DMM_NO_WIFI=1";SRC=$ROOT/src/UiHeltec.cpp;fi
 # SIM=1: the interactive simulator in an SDL2 window (tools/ui_preview/live.inc) instead of the screenshots; OUTDIR is unused.
 LINK=
 if [ -n "$SIM" ];then DEF="$DEF -DMM_UI_SIM=1 $(sdl2-config --cflags)";LINK=$(sdl2-config --libs);fi

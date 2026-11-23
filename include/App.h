@@ -45,9 +45,6 @@ String connectionCredentials();
 void bleToggle();bool bleActive();
 // The advertised name, "MeshCore-<node name>" as on stock firmware: MeshCore apps find the board by it.
 String bleName();void bleRename(); // a new node name: advertised at once
-#if defined(MM_NRF52)
-void bleSilence(); // power off: Bluetooth quiet, the setting kept
-#endif
 // Radar holders: the web page (Portal.cpp) and the screen pages (Ui.cpp / UiHeltec.cpp).
 bool webRadarActive();bool uiRadarPage();
 String webRadarCommand(const String& line); // "radar web" and "radar do {JSON}"

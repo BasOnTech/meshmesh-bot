@@ -1,6 +1,6 @@
 #!/bin/sh
 # The interactive UI simulator, rebuilt and restarted whenever src/, include/ or i18n/ change:
-#   tools/ui_preview/sim.sh [m9|tdeck|heltec|gat562|t114] [LANG]
+#   tools/ui_preview/sim.sh [m9|heltec] [LANG]
 # Without fswatch (brew install fswatch) it builds and runs once. Window keys: see tools/ui_preview/live.inc.
 # Needs the board libraries in .pio/libdeps/m9 (pio pkg install -e m9) and SDL2 (brew install sdl2).
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)

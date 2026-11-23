@@ -25,11 +25,7 @@ unsigned diceActions(Act* out){
  default:{int i=diceBlock();
   if(i>=0&&dicer.actName(i).length())out[n++]=ActDiceAct;
   if(diceChangeable(i)){
-#if defined(MM_JOYSTICK)
-   out[n++]=ActDicePlus1;out[n++]=ActDiceMinus1;
-#else
    out[n++]=ActDiceTap;
-#endif
    if(dicer.sheet.block[i].kind!=dice::Pips){out[n++]=ActDicePlus5;out[n++]=ActDiceMinus5;}}
   if(dicer.sheet.count>1){out[n++]=ActDiceNextCounter;out[n++]=ActDicePrevBlock;}
   if(dicer.sheet.count<dice::Blocks)out[n++]=ActDiceAddCounter;break;}

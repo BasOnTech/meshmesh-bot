@@ -1,5 +1,5 @@
-// Included by UiHeltec.cpp: checkers and sea battle with contacts (Duel.h) on the 128x64 screen; the T114 draws
-// the same states at 240x135 (UiHires.inc). A page per game lists its games, the latest first; a game fills the screen.
+// Included by UiHeltec.cpp: checkers and sea battle with contacts (Duel.h) on the 128x64 screen.
+// A page per game lists its games, the latest first; a game fills the screen.
 // One button, checkers: on your move a click steps through your pieces that can move, then "Game menu"; hold picks
 // the piece. Then a click steps through its moves (the path on the right, the end marked, the pieces taken crossed),
 // then "Cancel"; hold plays the move. Sea battle: a click steps through the cells next to a ship hit but not sunk
@@ -36,11 +36,7 @@ String duelState(const Duel& g){
 }
 void openDuel(Duel* g){duelOpen=g;duelHeld=-1;duelMenu=duelPaths=false;duelColumn=duelPly=-1;dirty=true;if(!g)return;duels.viewed(*g);
  duelFleet=g->kind==Duel::Sea&&(g->state==Duel::Invited||g->state==Duel::Inviting); // before the first shot: the own fleet, to shuffle it
-#if defined(MM_JOYSTICK)
- duelCursor=g->kind==Duel::Sea?44:7*8+2; // the field's middle; the own bottom row
-#else
  duelCursor=-2;
-#endif
 }
 enum DuelAct {DaAccept,DaDecline,DaDraw,DaAcceptDraw,DaShuffle,DaFleet,DaResign,DaResend,DaDelete,DaList,DaClose};
 unsigned duelActions(const Duel& g,DuelAct* out){unsigned n=0;
@@ -51,9 +47,7 @@ unsigned duelActions(const Duel& g,DuelAct* out){unsigned n=0;
  if(g.state==Duel::Playing){if(g.kind==Duel::Checkers&&g.drawOffer==Duel::OfferedToMe)out[n++]=DaAcceptDraw;else if(g.kind==Duel::Checkers&&g.drawOffer==Duel::NoOffer)out[n++]=DaDraw;out[n++]=DaResign;}
  if(g.active()&&g.link()==ChatMessage::Failed)out[n++]=DaResend;
  if(!g.active())out[n++]=DaDelete;
-#if !defined(MM_JOYSTICK)
  out[n++]=DaList; // the joystick has Back
-#endif
  out[n++]=DaClose;return n;}
 String duelActName(DuelAct a){switch(a){
  case DaAccept:return t("Accept challenge","Принять вызов");case DaDecline:return t("Decline / cancel","Отклонить / отменить");
@@ -84,22 +78,14 @@ unsigned ckMoves(const Duel& g,checkers::Move* l,int* out,int to=-1){unsigned n=
 void ckSettle(const Duel& g){
  if(!ckPicking(g)){duelHeld=-1;duelPaths=false;return;}
  if(duelPly!=int(g.game.plies)){duelPly=g.game.plies;duelHeld=-1;duelPaths=false;duelChoice=0;
-#if !defined(MM_JOYSTICK)
   duelCursor=-2;
-#endif
  }
-#if !defined(MM_JOYSTICK)
  if(duelHeld>=0||duelCursor==-1)return;int p[32];unsigned k=ckPieces(g,p);for(unsigned i=0;i<k;i++)if(p[i]==duelCursor)return;duelCursor=k?p[0]:-1;
-#endif
 }
 // The move offered now: the chosen move of the picked piece (one button) or the chosen path to the cursor (joystick).
 bool ckShown(const Duel& g,checkers::Move& m){
  if(duelHeld<0||duelChoice<0||!ckPicking(g))return false;checkers::Move l[checkers::MaxMoves];int idx[checkers::MaxMoves];
-#if defined(MM_JOYSTICK)
- int to=ckSquare(g,duelCursor%8,duelCursor/8);if(!duelPaths||to<0)return false;unsigned k=ckMoves(g,l,idx,to);
-#else
  unsigned k=ckMoves(g,l,idx);
-#endif
  if(!k)return false;m=l[idx[duelChoice%k]];return true;}
 // The squares a move takes pieces from (the Turkish strike: each once).
 unsigned ckTaken(const Duel& g,const checkers::Move& m,int* out){unsigned k=0;if(!m.capture)return 0;
@@ -112,27 +98,6 @@ String ckChoiceText(const Duel& g){
  checkers::Move m;if(ckShown(g,m))return ckMoveText(m);
  if(duelHeld>=0)return t("Cancel","Отмена");if(duelCursor<0)return t("Game menu","Меню партии");char b[3];checkers::squareName(duelCursor,b);return b;}
 void ckPlay(Duel& g,const checkers::Move& m){bool sent=duels.move(g,m);if(sent)duelHeld=-1;duelPaths=false;duelSent(g,sent);}
-#if defined(MM_JOYSTICK)
-bool ckJoy(Duel& g,bool up,bool down,bool left,bool right,bool ok,bool back){
- ckSettle(g);int x=duelCursor%8,y=duelCursor/8,s=ckSquare(g,x,y);checkers::Move l[checkers::MaxMoves];int idx[checkers::MaxMoves];
- if(duelPaths){unsigned k=s>=0?ckMoves(g,l,idx,s):0;if(!k){duelPaths=false;return true;}
-  if(up||down){duelChoice=(duelChoice+(up?k-1:1))%k;return true;}
-  if(ok)ckPlay(g,l[idx[duelChoice%k]]);else duelPaths=false;return true;}
- if(back){if(duelHeld>=0)duelHeld=-1;else duelOpen=nullptr;return true;}
- if(up)y=(y+7)%8;if(down)y=(y+1)%8;if(left)x=(x+7)%8;if(right)x=(x+1)%8;
- if(up||down||left||right){duelCursor=y*8+x;return true;}
- if(!ok)return true;
- if(g.state!=Duel::Playing){duelMenu=true;duelMenuIndex=0;return true;} // accept, decline or delete
- if(!g.myTurn()){notice(t("Their move","Ход соперника"));return true;}
- if(s>=0&&g.game.pos.own(s)>0){int p[32];unsigned k=ckPieces(g,p);for(unsigned i=0;i<k;i++)if(p[i]==s){duelHeld=s;return true;}
-  unsigned n=g.game.pos.legal(l);notice(n&&l[0].capture?t("You must capture","Бить обязательно"):t("This piece cannot move","Этой шашке хода нет"));return true;}
- if(duelHeld<0){notice(t("Pick your piece","Выберите свою шашку"));return true;}
- unsigned k=s>=0?ckMoves(g,l,idx,s):0;
- if(!k){notice(t("Not a legal move","Так ходить нельзя"));return true;}
- if(k==1)ckPlay(g,l[idx[0]]);else{duelPaths=true;duelChoice=0;} // several paths to the square: up/down choose
- return true;
-}
-#else
 bool ckButton(Duel& g,bool click,bool hold){
  ckSettle(g);
  if(duelHeld<0){int p[32];unsigned k=ckPieces(g,p);
@@ -144,7 +109,6 @@ bool ckButton(Duel& g,bool click,bool hold){
  if(duelChoice<0||!k){duelHeld=-1;return true;} // Cancel: the cursor stays on the piece
  ckPlay(g,l[idx[duelChoice%k]]);return true;
 }
-#endif
 // 8x8 squares: empty dark ones dotted; white men a ring, black men a disc, kings a bullseye (a dot in the ring, a
 // ring cut into the disc). The last move: corner ticks; the picked piece blinks; its other moves end in a dot, the
 // offered one in a frame, with its landings dotted and the pieces it takes crossed.
@@ -164,21 +128,11 @@ void ckBoard(const Duel& g){
  if(offer){for(unsigned i=1;i+1<shown.n;i++){int x,y;ckXY(g,shown.path[i],x,y);c.fillRect(x*8+3,y*8+3,2,2,1);c.drawRect(x*8+2,y*8+2,4,4,1);}
   int x,y;ckXY(g,shown.to(),x,y);c.drawRect(x*8,y*8,8,8,1);c.drawRect(x*8+1,y*8+1,6,6,1);c.fillRect(x*8+3,y*8+3,2,2,1);}
  if(duelHeld>=0&&blink){int x,y;ckXY(g,duelHeld,x,y);c.drawRect(x*8,y*8,8,8,1);}
-#if defined(MM_JOYSTICK)
- {int x=duelCursor%8,y=duelCursor/8;c.drawRect(x*8,y*8,8,8,1);c.drawRect(x*8+1,y*8+1,6,6,1);}
-#else
  if(picking&&duelHeld<0&&duelCursor>=0&&(millis()/400)%3){int x,y;ckXY(g,duelCursor,x,y);c.drawRect(x*8,y*8,8,8,1);c.drawRect(x*8+1,y*8+1,6,6,0);}
-#endif
  c.drawFastVLine(65,0,64,1);bool white=g.mine==checkers::White;
  say(68,8,clipped(g.name,11),small);say(68,17,t("you: ","вы: ")+(white?t("white","белые"):t("black","чёрные")),small);
  String st=duelState(g);if(picking){unsigned k=g.game.pos.legal(l);if(k&&l[0].capture)st=t("must take","надо бить");}
  textLinesAt(st,68,27,picking?1:2,11);
-#if defined(MM_JOYSTICK)
- if(offer){checkers::Move l2[checkers::MaxMoves];int idx[checkers::MaxMoves];unsigned k=ckMoves(g,l2,idx,shown.to());textLinesAt(String(duelChoice%k+1)+"/"+String(k)+" "+ckMoveText(shown),68,36,2,11);}
- else if(g.game.plies)say(68,46,clipped(String((g.game.plies+1)/2)+(g.game.plies%2?". ":"... ")+ckMoveText(g.game.last),11),small);
- say(68,55,clipped(offer?t("^v path, OK","^v путь, OK"):linkText(g.link(),g.autoStopped),11),small);
- say(68,63,t("hold OK: menu","держ.OK: меню"),u8g2_font_4x6_t_cyrillic);
-#else
  if(picking){
   // The current choice, lit when it is "Game menu" or "Cancel"; a long path takes two rows.
   bool word=duelHeld>=0?!offer:duelCursor<0;if(word)c.fillRect(67,29,61,9,1);
@@ -187,7 +141,6 @@ void ckBoard(const Duel& g){
   say(68,63,duelHeld<0?(duelCursor<0?t("hold: menu","держ: меню"):t("hold: pick","держ: взять")):offer?t("hold: move","держ: сходить"):t("hold: cancel","держ: отмена"),u8g2_font_4x6_t_cyrillic);}
  else{if(g.game.plies)say(68,46,clipped(String((g.game.plies+1)/2)+(g.game.plies%2?". ":"... ")+ckMoveText(g.game.last),11),small);
   say(68,55,clipped(linkText(g.link(),g.autoStopped),11),small);say(68,63,t("hold: menu","держ: меню"),u8g2_font_4x6_t_cyrillic);}
-#endif
 }
 #endif
 
@@ -210,15 +163,9 @@ bool seaHunting(const Duel& g,int c){if(duelColumn>=0||c<0||c>=100)return false;
 void seaSettle(const Duel& g){
  if(!seaPicking(g)){duelColumn=-1;return;}
  if(duelPly!=int(g.shots)){duelPly=g.shots;duelColumn=-1;
-#if defined(MM_JOYSTICK)
-  int l[112];if(seaChoices(g,l)&&l[0]>=0&&l[0]<100)duelCursor=l[0]; // finish the ship: the cursor next to it
-#else
   duelCursor=-2;
-#endif
  }
-#if !defined(MM_JOYSTICK)
  int l[112];unsigned k=seaChoices(g,l);for(unsigned i=0;i<k;i++)if(l[i]==duelCursor)return;duelCursor=l[0];
-#endif
 }
 String seaCell(int c){char b[4];sea::cellName(c,b);return b;}
 String seaChoiceText(const Duel& g){
@@ -227,19 +174,6 @@ String seaChoiceText(const Duel& g){
  return seaCell(duelCursor)+(seaHunting(g,duelCursor)?t(": finish",": добить"):String());}
 String seaMark(uint8_t m){return m==sea::Miss?t("miss","мимо"):m==sea::Hit?t("hit","попал"):m==sea::Sunk?t("sunk","потоплен"):String("?");}
 void seaFire(Duel& g,int cell){bool sent=duels.shoot(g,cell);if(sent)duelColumn=-1;duelSent(g,sent);}
-#if defined(MM_JOYSTICK)
-bool seaJoy(Duel& g,bool up,bool down,bool left,bool right,bool ok,bool back){
- seaSettle(g);if(back){duelOpen=nullptr;return true;}
- int x=duelCursor%10,y=duelCursor/10;if(up)y=(y+9)%10;if(down)y=(y+1)%10;if(left)x=(x+9)%10;if(right)x=(x+1)%10;
- if(up||down||left||right){duelCursor=y*10+x;return true;}
- if(!ok)return true;
- if(g.state!=Duel::Playing){duelMenu=true;duelMenuIndex=0;return true;}
- if(!g.myTurn())notice(g.aim>=0?t("Waiting for the answer","Ждём ответа"):t("Their shot","Стреляет соперник"));
- else if(!g.target.open(duelCursor))notice(t("Already known","Уже известно"));
- else seaFire(g,duelCursor);
- return true;
-}
-#else
 bool seaButton(Duel& g,bool click,bool hold){
  seaSettle(g);int l[112];unsigned k=seaChoices(g,l);
  if(click){unsigned i=0;while(i<k&&l[i]!=duelCursor)i++;duelCursor=l[(i+1)%k];return true;}
@@ -248,7 +182,6 @@ bool seaButton(Duel& g,bool click,bool hold){
  if(duelCursor>=100){duelColumn=duelCursor-100;duelCursor=seaChoices(g,l)?l[0]:-1;return true;}
  seaFire(g,duelCursor);return true;
 }
-#endif
 // 6 px cells (5x5 inside, ticked on the frame): their field - a miss or water by a sunk ship a dot, a hit a cross,
 // a sunk ship filled, their fleet shown at the end framed, my shot in flight blinking; my fleet - ships framed, hits
 // crossed, sunk ships filled, their misses dotted. The last shot at the field: its cell framed.
@@ -270,13 +203,9 @@ void seaBoard(const Duel& g){
  auto& c=*hardware.canvas;c.fillScreen(0);seaSettle(g);bool picking=seaPicking(g)&&!duelFleet,blink=(millis()/400)%3;
  seaField(g,duelFleet,0,0);
  // The choice: a cell or a column framed (blinking), the column also marked under the field.
-#if defined(MM_JOYSTICK)
- if(!duelFleet&&g.state==Duel::Playing){int x=duelCursor%10*6,y=duelCursor/10*6;c.drawRect(x,y,7,7,1);if(blink)c.drawRect(x+1,y+1,5,5,0);c.fillRect(x+1,62,5,2,1);}
-#else
  if(picking){int col=duelColumn>=0?duelColumn:duelCursor>=100?duelCursor-100:-1;
   if(col>=0){c.fillRect(col*6+1,62,5,2,1);if(duelColumn<0&&blink)c.drawRect(col*6,0,7,61,1);}
   if(duelCursor>=0&&duelCursor<100&&blink){int x=duelCursor%10*6,y=duelCursor/10*6;c.drawRect(x,y,7,7,1);c.drawRect(x+1,y+1,5,5,0);}}
-#endif
  const uint8_t* tiny=u8g2_font_4x6_t_cyrillic;
  say(64,8,clipped(g.name,12),small);
  if(duelFleet){say(64,17,t("my fleet","мой флот"),small);say(64,26,clipped(g.state==Duel::Playing?t("afloat ","целы ")+String(g.home.shipsLeft())+"/10":duelState(g),12),small);
@@ -284,21 +213,13 @@ void seaBoard(const Duel& g){
  else{bool one=picking||g.state==Duel::Over;textLinesAt(duelState(g),64,17,one?1:2,12);
   int y=one?25:34;say(64,y,t("sunk ","потоплено ")+String(g.target.sunkShips())+"/10",tiny);say(64,y+7,t("mine ","моих ")+String(g.home.shipsLeft())+"/10",tiny);}
  if(picking){bool word=duelCursor<0;if(word)c.fillRect(63,35,65,10,1);say(64,43,clipped(seaChoiceText(g),12),small,!word);
-#if defined(MM_JOYSTICK)
-  say(64,55,t("OK: fire","OK: огонь"),tiny);say(64,63,t("hold OK: menu","держ.OK: меню"),tiny);return;}
-#else
   say(64,55,t("click: next","клик: далее"),tiny);
   say(64,63,duelCursor<0?(duelColumn>=0?t("hold: cancel","держ: отмена"):t("hold: menu","держ: меню")):duelCursor>=100?t("hold: fix","держ: выбрать"):t("hold: fire","держ: огонь"),tiny);return;}
-#endif
  bool unfair=g.state==Duel::Over&&g.revealed&&!g.fair; // their fleet shown at the end: some answer was false
  if(unfair)textLinesAt(t("answers do not match!","ответы не сходятся!"),64,44,2,12);
  else if(!duelFleet&&g.lastOut>=0)say(64,48,t("you ","вы ")+seaCell(g.lastOut)+" "+seaMark(g.target.mark[g.lastOut]),tiny);
  if(!unfair)say(64,55,g.lastIn>=0&&g.state==Duel::Playing?t("they ","они ")+seaCell(g.lastIn)+" "+seaMark(g.lastAnswer==sea::AnswerWin?sea::Sunk:g.lastAnswer):clipped(linkText(g.link(),g.autoStopped),15),tiny);
-#if defined(MM_JOYSTICK)
- say(64,63,t("hold OK: menu","держ.OK: меню"),tiny);
-#else
  say(64,63,duelFleet&&g.state==Duel::Playing?t("click: back","клик: назад"):t("hold: menu","держ: меню"),tiny);
-#endif
 }
 #endif
 
@@ -320,11 +241,7 @@ String duelListSide(const Duel& g){return g.kind==Duel::Sea?String(g.target.sunk
 void drawDuelList(String& title){
  auto& c=*hardware.canvas;Duel::Kind k=duelKind();Duel* games[DuelNet::Max];unsigned n=duelGames(k,games);title=duelName(k)+(n?" "+String(duelSel%n+1)+"/"+String(n):"");
  if(!n){say(0,28,t("No games yet","Игр пока нет"));
-#if defined(MM_JOYSTICK)
-  say(0,40,t("Nodes: OK - invite","Узлы: OK - вызвать"),small);
-#else
   say(0,40,t("Node menu: invite","Меню узла: вызвать"),small);
-#endif
   say(0,49,t("or accept a challenge","или примите вызов"),small);return;}
  duelSel%=n;int first=max(0,min(duelSel-1,int(n)-3));
  for(unsigned i=first;i<n&&i<unsigned(first+3);i++){const Duel& g=*games[i];int y=13+(i-first)*15;bool focus=int(i)==duelSel;
@@ -343,27 +260,6 @@ bool duelMenuKey(Duel& g,bool next,bool prev,bool run){
  if(next||prev){duelMenuIndex=(duelMenuIndex+(prev?k-1:1))%k;return true;}
  duelMenu=false;if(run)duelRun(g,acts[duelMenuIndex%k]);return true;
 }
-#if defined(MM_JOYSTICK)
-// Keys while a game page is shown; false lets the page switch handle them (list view only).
-bool duelKey(int key){
- bool up=key==0xb5,down=key==0xb6,left=key==0xb4,right=key==0xb7,ok=key==13,hold=key==0xa3,back=key==0x86||key==0x82;
- if(!shownDuel()){Duel* games[DuelNet::Max];unsigned n=duelGames(duelKind(),games);
-  if(up||down){if(n)duelSel=(duelSel+(up?n-1:1))%n;return true;}
-  if((ok||hold)&&n){openDuel(games[duelSel%n]);return true;}
-  return false;}
- Duel& g=*duelOpen;
- if(duelMenu)return duelMenuKey(g,down,up,ok||hold);
- if(hold){duelMenu=true;duelMenuIndex=0;return true;}
- if(duelFleet){if(ok||back)duelFleet=false;return true;}
-#if MM_SEA
- if(g.kind==Duel::Sea)return seaJoy(g,up,down,left,right,ok,back);
-#endif
-#if MM_CHECKERS
- if(g.kind==Duel::Checkers)return ckJoy(g,up,down,left,right,ok,back);
-#endif
- return true;
-}
-#else
 // The button while a game page is shown; false lets the page switch handle it (the next screen).
 bool duelButton(int key){
  bool click=key==13||key==0x82,hold=key==0xa3;
@@ -387,7 +283,6 @@ bool duelButton(int key){
 #endif
  return true;
 }
-#endif
 void duelStatus(JsonObject d){
  char id[5];snprintf(id,sizeof id,"%04X",duelOpen->id);d["duel_game"]=id;d["duel_cursor"]=duelCursor;d["duel_held"]=duelHeld;d["duel_choice"]=duelChoice;
  d["duel_column"]=duelColumn;d["duel_fleet"]=duelFleet;d["duel_paths"]=duelPaths;d["duel_menu"]=duelMenu;

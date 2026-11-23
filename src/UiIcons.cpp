@@ -1,6 +1,3 @@
-#if defined(MM_NRF52)
-#pragma GCC optimize("Os") // 1 MB flash: icons and shapes are not speed-critical (the rest of our nRF52 code is -O2)
-#endif
 #include "UiIcons.h"
 #include "Dice.h"
 #include "Modules.h"

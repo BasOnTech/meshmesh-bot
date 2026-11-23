@@ -12,9 +12,6 @@
 #include <esp_heap_caps.h>
 #endif
 #endif
-#if defined(MM_HIRES)
-#include "HiresCanvas.h"
-#endif
 #include <U8g2_for_Adafruit_GFX.h>
 #include <TinyGPSPlus.h>
 #include <RTClib.h>
@@ -28,11 +25,7 @@ class Hardware {
 #else
   Adafruit_ST7789 display;
 #endif
-#if defined(MM_HIRES)
-  HiresCanvas* canvas=nullptr; // 128x64 layout coordinates on the 240x135 TFT
-#else
   GFXcanvas16* canvas=nullptr;
-#endif
 #if !defined(MM_HELTEC_V4) && !defined(MM_COMPACT)
   uint16_t* shown=nullptr; // the frame last sent to the panel (PSRAM): flush() sends only the rows that differ
   bool shownValid=false;   // false: the next flush sends the whole frame
@@ -46,9 +39,6 @@ class Hardware {
   float mag[3]={}, accel[3]={};
   uint16_t batteryMv=0;
   int8_t usbPower=-1; // USB power (charging) from a sense pin: 1 yes, 0 battery, -1 no pin (the screens guess from the voltage)
-#if defined(MM_NRF52)
-  uint16_t batteryNow(); // a reading now (batteryMv: once a second in tick); also before begin()
-#endif
   uint32_t gpsBytes=0, lastKey=0, keyCount=0, utc=0;
   uint8_t keyboardHw=0, keyboardFw=0;
   const char* boardName=MM_BOARD_NAME; // the M9 adds its revision once the keyboard answers (Hardware.cpp)
@@ -72,9 +62,6 @@ class Hardware {
   void begin();
   void tick();
   int readKey();
-#if defined(MM_BOARD_TDECK)
-  char readTouch(int& x,int& y);
-#endif
   void brightness(uint8_t level);
   void setGps(bool enabled);
   void beep();
