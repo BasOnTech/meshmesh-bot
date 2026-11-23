@@ -19,7 +19,7 @@ static void scenario(){
   go(n);shot((std::string("heltec-")+n).c_str());if(!strcmp(n,"radar")){key(0xa3);shot("heltec-radar-menu");key(13);key(13);key(0xa3);for(int i=0;i<4;i++)tick();shot("heltec-homing");key(0xa3);key(0xa3);}if(!strcmp(n,"messages")){key(0xa3);shot("heltec-messages-menu");key(13);key(13);key(0xa3);shot("heltec-messages-older");key(13);key(13);key(0xa3);}if(!strcmp(n,"wifi")){key(0xa3);shot("heltec-wifi-on");}
   if(!strcmp(n,"ble")){for(int i=0;i<2&&!bleActive();i++)key(0xa3);if(!bleActive()){printf("FAIL BLE on\n");exit(1);}if(uiStatus().indexOf("\"menu\":true")>=0)key(0x86);shot("heltec-ble-on");for(int i=0;i<2&&bleActive();i++)key(0xa3);if(uiStatus().indexOf("\"menu\":true")>=0)key(0x86);} // the MeshCore- name and the PIN
   key(13);}
- {ChatMessage m;m.source=0xA1B2C3D40000ULL;m.destination=meshRadio.nodeId;strcpy(m.name,"Heltec V4");strcpy(m.text,"Как слышно? 😀 Жду на точке через 5 минут 👍❤️🔥");m.timestamp=time(nullptr);m.id=77;meshRadio.history[meshRadio.historyCount++]=m;notifications::incoming(m);}shot("heltec-popup");
+ {ChatMessage m;m.source=0xA1B2C3D40000ULL;m.destination=meshRadio.nodeId;strcpy(m.name,"Heltec V4");strcpy(m.text,"How do you copy? 😀 Waiting at the spot in 5 minutes 👍❤️🔥");m.timestamp=time(nullptr);m.id=77;meshRadio.history[meshRadio.historyCount++]=m;notifications::incoming(m);}shot("heltec-popup");
  // Chess with one button: hold on the list opens the game; click steps through the pieces that can move,
  // hold picks one, click steps through its squares (then "Cancel"), hold plays. Each step checks the UI state.
  {auto sayId=[](unsigned id,const char* body){char t[64];snprintf(t,sizeof t,"\xe2\x99\x9f%04X %s",id,body);chessNet.receive(peerId(0),"Heltec V4",t);};
@@ -53,7 +53,7 @@ static void scenario(){
  key(0xb6);key(0xb6);key(13);shot("chat-channel");key(0xb4);if(uiStatus().indexOf("\"page\":\"chat\"")<0){fprintf(stderr,"Left in a channel chat left it: %s\n",uiStatus().c_str());exit(1);}key(0x83);shot("chat-menu-private");key(0x86);key(0x86);
  key(0xb6);key(0xb6);key(0xb6);key(13);shot("channel-add");key(13);key(0x83);for(char ch:std::string("test"))key(ch);shot("channel-add-tag");key(0x83);key(0x86);key(0x86);
  for(int i=0;i<4;i++)key(0xb6);key(13);shot("chat-invite");key(0xb4);shot("chat-invite-joined");key(0x86);
- if(!meshRadio.channel(channels::idOf(meshRadio.channelList[3].secret))||strcmp(meshRadio.channelList[3].name,"Походы")){printf("FAIL invitation not joined\n");exit(1);}
+ if(!meshRadio.channel(channels::idOf(meshRadio.channelList[3].secret))||strcmp(meshRadio.channelList[3].name,"Hiking")){printf("FAIL invitation not joined\n");exit(1);}
  for(int i=0;i<6;i++)key(0xb6);key(13);shot("chat");
  for(char ch:std::string("Privet! Kak dela? 5to novogo @ 5"))key(ch);key(0xb7);shot("compose");key(0xa3);shot("layout");key(0x86);key(0x86);key(0x86);
  key(0x85);shot("map");key(0xb7);key(0xb6);shot("map-browse");key('L');shot("library");key(0x86);
@@ -101,9 +101,9 @@ static void scenario(){
   ChessMatch* a=nullptr;for(auto& m:chessNet.matches)if(m.state==ChessMatch::Inviting)a=&m;
   sayId(0,"Heltec V4",a->id,"yes");play(0,"Heltec V4",a,{"e2e4","e7e5","g1f3","b8c6","f1c4","g8f6"});
   shot("chess-italian");key(0x86);key(13);for(int i=0;i<3;i++)key(0xb6);key(13);key(0xb7);key(0xb5);key(0xb5);shot("chess-held");key(0x86);key('h');shot("chess-help");key(0x86);key(0x86);
-  ChessMatch* b=chessNet.invite(peerId(5),chess::White);sayId(5,"Марат",b->id,"yes");play(5,"Марат",b,{"e2e4","e7e5","d1h5","b8c6","f1c4","g8f6","h5f7"});
+  ChessMatch* b=chessNet.invite(peerId(5),chess::White);sayId(5,"Marat",b->id,"yes");play(5,"Marat",b,{"e2e4","e7e5","d1h5","b8c6","f1c4","g8f6","h5f7"});
   ChessMatch* c=chessNet.invite(peerId(0),chess::White);sayId(0,"Heltec V4",c->id,"yes");play(0,"Heltec V4",c,{"a2a4","b7b5","a4b5","a7a6","b5a6","c8b7","a6b7","b8c6"});
-  sayId(3,"Игорь T-Deck",0x4B1D,"new w · шахматы MeshMesh");
+  sayId(3,"Igor T-Deck",0x4B1D,"new w · MeshMesh chess");
   auto openList=[&](int row){tile("chess");key(13);for(int k=0;k<row;k++)key(0xb6);};
   openList(0);shot("chess-list");
   for(int i=1;i<=4;i++){openList(i);key(13);char n[32];snprintf(n,sizeof n,"chess-open%d",i);shot(n);}
@@ -117,13 +117,13 @@ static void scenario(){
   // the rating tab with two games.
   {auto sayLong=[](int peer,const char* name,unsigned id,const char* body){char t[160];snprintf(t,sizeof t,"\xe2\x99\x9f%04X %s",id,body);chessNet.receive(peerId(peer),name,t);};
    char sig[rating::SigTextSize+1],body[128];uint8_t raw[64];memset(raw,0x33,64);rating::sigText(raw,sig);
-   ChessMatch* d=chessNet.invite(peerId(3),chess::White);sayId(3,"Игорь T-Deck",d->id,"yes");play(3,"Игорь T-Deck",d,{"f2f3","e7e5","g2g4","d8h4"});
+   ChessMatch* d=chessNet.invite(peerId(3),chess::White);sayId(3,"Igor T-Deck",d->id,"yes");play(3,"Igor T-Deck",d,{"f2f3","e7e5","g2g4","d8h4"});
    for(int i=0;i<2;i++){chessNet.tick();tick();}
-   snprintf(body,sizeof body,"sig 1791140000 %s",sig);sayLong(5,"Марат",b->id,body);snprintf(body,sizeof body,"sig 1791150000 %s",sig);sayLong(3,"Игорь T-Deck",d->id,body);
+   snprintf(body,sizeof body,"sig 1791140000 %s",sig);sayLong(5,"Marat",b->id,body);snprintf(body,sizeof body,"sig 1791150000 %s",sig);sayLong(3,"Igor T-Deck",d->id,body);
    for(int i=0;i<2;i++){chessNet.tick();tick();}
    if(b->sign!=ChessMatch::SignStored||d->sign!=ChessMatch::SignStored||rating::book.myElo()==rating::Start){printf("FAIL rated results: %d %d %d\n",b->sign,d->sign,rating::book.myElo());exit(1);}
    // PGN of the won game, and the archive on the SD card.
-   {std::string pg=chessNet.pgn(*b).c_str();if(pg.find("1. e4 e5 2. Qh5 Nc6 3. Bc4 Nf6 4. Qxf7# {checkmate} 1-0")==std::string::npos||pg.find("[White \"M9\"]")==std::string::npos||pg.find("[Black \"Марат\"]")==std::string::npos||pg.find("[Result \"1-0\"]")==std::string::npos){printf("FAIL pgn:\n%s\n",pg.c_str());exit(1);}
+   {std::string pg=chessNet.pgn(*b).c_str();if(pg.find("1. e4 e5 2. Qh5 Nc6 3. Bc4 Nf6 4. Qxf7# {checkmate} 1-0")==std::string::npos||pg.find("[White \"M9\"]")==std::string::npos||pg.find("[Black \"Marat\"]")==std::string::npos||pg.find("[Result \"1-0\"]")==std::string::npos){printf("FAIL pgn:\n%s\n",pg.c_str());exit(1);}
     chessNet.tick();String list=chessArchiveList();char want[16];snprintf(want,sizeof want,"-%04X.pgn",b->id);int at=list.indexOf(want);
     if(at<0){printf("FAIL archive: %s\n",list.c_str());exit(1);}int from=at;while(from>0&&list[from-1]!='"')from--;String name=list.substring(from,at+9);
     StaticJsonDocument<4096> d;deserializeJson(d,chessNet.command("chess archive "+name));if(chessNet.pgn(*b)!=(d["pgn"]|"")){printf("FAIL archive read %s\n",name.c_str());exit(1);}}
@@ -133,7 +133,7 @@ static void scenario(){
    key(0x82);tile("chess");key(13);key(13);shot("chess-pick-rated");key(0x86);key(0x82);}
   // Locked: a challenge arrives; its card stands above the messages, without names when details are off,
   // and holding OK unlocks straight into the game.
-  key(0x88);sayId(5,"Марат",0x5C3E,"new b · шахматы MeshMesh");tick();shot("locked-chess");
+  key(0x88);sayId(5,"Marat",0x5C3E,"new b · MeshMesh chess");tick();shot("locked-chess");
   config.lockDetails=false;tick();shot("locked-chess-hidden");config.lockDetails=true;
   key(0xa3);if(uiStatus().indexOf("\"chess_game\":\"5C3E\"")<0||uiStatus().indexOf("\"locked\":false")<0){printf("FAIL hold on the locked chess card: %s\n",uiStatus().c_str());exit(1);}key(0x86);key(0x82);
   // Swiss tournament, organiser side: the wizard with six contacts, everyone joins, the start comes by
@@ -149,12 +149,12 @@ static void scenario(){
    ChessMatch* fresh=chessNet.invite(peerId(3),chess::White,false);if(!fresh)fail("a finished game gives its board");
    if(!chessNet.find(pendingId))fail("the game waiting for a signature stays");if(chessNet.find(evicted)&&chessNet.find(evicted)!=fresh)fail("the oldest settled game gives its board");
    for(auto& m:chessNet.matches)m=ChessMatch();
-   for(int i=0;i<6;i++)game(i%2?3:0,i%2?"Игорь T-Deck":"Heltec V4",false);
+   for(int i=0;i<6;i++)game(i%2?3:0,i%2?"Igor T-Deck":"Heltec V4",false);
    if(chessNet.room()||chessNet.invite(peerId(5),chess::White,false))fail("six games in progress refuse a seventh");
-   previewSent.clear();char t[64];snprintf(t,sizeof t,"\xe2\x99\x9f" "7777 new w r · шахматы MeshMesh");chessNet.receive(peerId(5),"Марат",t);
+   previewSent.clear();char t[64];snprintf(t,sizeof t,"\xe2\x99\x9f" "7777 new w r · MeshMesh chess");chessNet.receive(peerId(5),"Marat",t);
    if(chessNet.find(0x7777)||previewSent.empty()||previewSent.back().text.find("7777 no")==std::string::npos)fail("a challenge to a full device is declined");}
   {for(auto& m:chessNet.matches)m=ChessMatch(); // free boards for the tournament games
-   const char* extra[]={"Лиля","Ринат","Тимур"};for(int i=0;i<3;i++){auto& p=meshRadio.peers[meshRadio.peerCount++];p=Peer();p.id=peerId(6+i);strcpy(p.name,extra[i]);p.type=1;p.heard=true;p.seen=fakeMillis-60000*(i+1);for(int k=0;k<8;k++)p.publicKey[k]=uint8_t(p.id>>(56-8*k));p.publicKey[8]=0x70+i;}
+   const char* extra[]={"Lilya","Rinat","Timur"};for(int i=0;i<3;i++){auto& p=meshRadio.peers[meshRadio.peerCount++];p=Peer();p.id=peerId(6+i);strcpy(p.name,extra[i]);p.type=1;p.heard=true;p.seen=fakeMillis-60000*(i+1);for(int k=0;k<8;k++)p.publicKey[k]=uint8_t(p.id>>(56-8*k));p.publicKey[8]=0x70+i;}
    auto fail=[](const char* what){printf("FAIL tournament: %s\n",what);exit(1);};
    tile("chess");key(13);key('2');shot("tour-empty");
    key(13);shot("tour-new-name");key(0xb7);for(int i=0;i<6;i++){key(' ');key(0xb6);}shot("tour-new-players");key(13);shot("tour-new-rules");key(13);shot("tour-new-check");
@@ -163,7 +163,7 @@ static void scenario(){
    unsigned invites=0;for(auto& m:previewSent)invites+=m.text.find(" inv ")!=std::string::npos;if(invites!=6)fail("six invitations");
    auto openTour=[&](uint16_t id){char want[24];snprintf(want,sizeof want,"\"tour\":\"%04X\"",id);for(int row=1;row<=3;row++){tile("chess");key(13);key('2');for(int k=0;k<row;k++)key(0xb6);key(13);if(uiStatus().indexOf(want)>=0)return;}fail("tournament page");};
    char cmd[200];auto say=[&](int peer,const char* name,const char* body){snprintf(cmd,sizeof cmd,"\xe2\x99\x9e%04X %s",T->id,body);tour::net.receive(peerId(peer),name,cmd);};
-   const char* names[]={"Heltec V4","","","Игорь T-Deck","","Марат","Лиля","Ринат","Тимур"};int who[]={0,3,5,6,7,8};
+   const char* names[]={"Heltec V4","","","Igor T-Deck","","Marat","Lilya","Rinat","Timur"};int who[]={0,3,5,6,7,8};
    for(int i=0;i<5;i++)say(who[i],names[who[i]],"yes");tour::net.tick();if(T->state!=tour::Inviting)fail("started before everyone answered");
    say(who[5],names[who[5]],"yes");if(T->state!=tour::Inviting)fail("started inside the radio callback");tour::net.tick();if(T->state!=tour::Running||T->round!=1)fail("automatic start");
    auto playerPeer=[&](uint8_t idx)->int{for(int w:who)if(T->players[idx].id==peerId(w))return w;return -1;};
@@ -192,15 +192,15 @@ static void scenario(){
    tour::Row rows[tour::MaxPlayers];unsigned n=tour::net.standings(*T,rows),total=0;for(unsigned i=0;i<n;i++)total+=rows[i].half;if(n!=7||total!=2*4*4)fail("standings: 4 points a round");
    for(unsigned i=1;i<n;i++)if(rows[i].half>rows[i-1].half)fail("standings order");
    openTour(T->id);for(int i=0;i<3;i++)tick();shot("tour-final");key(0xb7);shot("tour-final-games");key(0x86);
-   // Player side: an invitation from Игорь, the player list, a pairing with Марат's key, the standings.
-   uint16_t pid=0xA7C1;auto org=[&](const char* body){snprintf(cmd,sizeof cmd,"\xe2\x99\x9e%04X %s",pid,body);tour::net.receive(peerId(3),"Игорь T-Deck",cmd);};
-   org("inv 5 24 6 Осенняя швейцарка");tour::Tour* P=tour::net.find(pid);if(!P||P->state!=tour::Invited)fail("invitation received");
+   // Player side: an invitation from Igor, the player list, a pairing with Marat's key, the standings.
+   uint16_t pid=0xA7C1;auto org=[&](const char* body){snprintf(cmd,sizeof cmd,"\xe2\x99\x9e%04X %s",pid,body);tour::net.receive(peerId(3),"Igor T-Deck",cmd);};
+   org("inv 5 24 6 Autumn Swiss");tour::Tour* P=tour::net.find(pid);if(!P||P->state!=tour::Invited)fail("invitation received");
    openTour(pid);for(int i=0;i<2;i++)tick();shot("tour-invite");previewSent.clear();key(13);if(P->state!=tour::Running||previewSent.empty()||previewSent.back().text.find(" yes")==std::string::npos)fail("joined");
-   char list[160];snprintf(list,sizeof list,"pl %06lX:Игорь,%06lX:M9,%06lX:Марат,%06lX:Лиля",(unsigned long)(peerId(3)>>40),(unsigned long)(meshRadio.nodeId>>40),(unsigned long)(peerId(5)>>40),(unsigned long)(peerId(6)>>40));org(list);
+   char list[160];snprintf(list,sizeof list,"pl %06lX:Igor,%06lX:M9,%06lX:Marat,%06lX:Lilya",(unsigned long)(peerId(3)>>40),(unsigned long)(meshRadio.nodeId>>40),(unsigned long)(peerId(5)>>40),(unsigned long)(peerId(6)>>40));org(list);
    const Peer* marat=nullptr;for(unsigned i=0;i<meshRadio.peerCount;i++)if(meshRadio.peers[i].id==peerId(5))marat=&meshRadio.peers[i];
    const char* b64="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";std::string key64;
    for(int i=0;i<32;i+=3){uint32_t v=uint32_t(marat->publicKey[i])<<16|(i+1<32?marat->publicKey[i+1]<<8:0)|(i+2<32?marat->publicKey[i+2]:0);key64+=b64[v>>18&63];key64+=b64[v>>12&63];key64+=i+1<32?b64[v>>6&63]:'=';key64+=i+2<32?b64[v&63]:'=';}
-   snprintf(list,sizeof list,"r1 w 6D21 %s Марат",key64.c_str());org(list);
+   snprintf(list,sizeof list,"r1 w 6D21 %s Marat",key64.c_str());org(list);
    ChessMatch* g=chessNet.find(0x6D21);if(!g||g->tour!=pid||g->mine!=chess::White||g->state!=ChessMatch::Playing||g->peer!=peerId(5))fail("the pairing starts my game");
    snprintf(list,sizeof list,"st 1 %06lX:2:3,%06lX:1:4,%06lX:1:2,%06lX:0:3",(unsigned long)(peerId(6)>>40),(unsigned long)(meshRadio.nodeId>>40),(unsigned long)(peerId(3)>>40),(unsigned long)(peerId(5)>>40));org(list);
    for(int i=0;i<2;i++)tick();shot("tour-player");key(0x86);key('1');key(0x82);}
@@ -213,11 +213,11 @@ static void scenario(){
  config.role=RoleRepeater;home();shot("heltec-repeater");key(0xa3);shot("heltec-repeater-menu");key(0x82);key(0x82);key(0xa3);shot("heltec-role-menu");key(0xa3); // holding the current mode closes the list
  config.role=RoleRoom;home();tick();tick();shot("heltec-room");config.role=RoleNormal;
  // An invitation to a channel: its card in Messages, "Join" first in the menu; a channel message names its channel.
- {channels::Channel c{};strcpy(c.name,"Рыбалка");for(int i=0;i<16;i++)c.secret[i]=uint8_t(i*29+3);ChatMessage m;m.source=0xA1B2C3D40000ULL;m.destination=meshRadio.nodeId;strcpy(m.name,"Heltec V4");
+ {channels::Channel c{};strcpy(c.name,"Fishing");for(int i=0;i<16;i++)c.secret[i]=uint8_t(i*29+3);ChatMessage m;m.source=0xA1B2C3D40000ULL;m.destination=meshRadio.nodeId;strcpy(m.name,"Heltec V4");
   strcpy(m.text,channels::link(c).c_str());m.timestamp=time(nullptr);m.id=78;meshRadio.history[meshRadio.historyCount++]=m;}
  home();key(13);shot("heltec-invite");key(0xa3);shot("heltec-invite-menu");key(0xa3);
- if(!meshRadio.channel(channels::idOf(meshRadio.channelList[meshRadio.channelCount-1].secret))||strcmp(meshRadio.channelList[meshRadio.channelCount-1].name,"Рыбалка")){printf("FAIL heltec invitation not joined\n");exit(1);}
- {ChatMessage m;m.source=0xA1B2C3D45555ULL;m.destination=meshRadio.channelList[1].id;strcpy(m.name,"Марат");strcpy(m.text,"Лёд на Кабане держит?");m.timestamp=time(nullptr);m.id=79;meshRadio.history[meshRadio.historyCount++]=m;}
+ if(!meshRadio.channel(channels::idOf(meshRadio.channelList[meshRadio.channelCount-1].secret))||strcmp(meshRadio.channelList[meshRadio.channelCount-1].name,"Fishing")){printf("FAIL heltec invitation not joined\n");exit(1);}
+ {ChatMessage m;m.source=0xA1B2C3D45555ULL;m.destination=meshRadio.channelList[1].id;strcpy(m.name,"Marat");strcpy(m.text,"Is the ice on Kaban holding?");m.timestamp=time(nullptr);m.id=79;meshRadio.history[meshRadio.historyCount++]=m;}
  home();key(13);shot("heltec-channel-message");
  // Storage left by another firmware: "Create storage..." heads the home menu, a second hold formats.
  hardware.fsOk=false;home();previewCommands="";key(0xa3);shot("heltec-format-menu");key(0xa3);shot("heltec-format-armed");key(0xa3);
