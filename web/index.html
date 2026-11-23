@@ -2252,7 +2252,7 @@ async function duelClick(d){
  if(!said)return;const r=await duelCommand(`duel ${a} ${g.id}`,said[0],said[1]);if(r&&a==='remove')go(g.kind)}
 if(typeof document!=='undefined')document.addEventListener('click',e=>{const t=e.target.closest('[data-duel],[data-ck],[data-ckpath],[data-shoot],[data-duelinvite],[data-duelcolor]');if(t&&!t.disabled)duelClick(t.dataset)});
 
-// Wiring. Skipped outside a browser: tools/check_web_*.cjs run the functions above in Node.
+// Wiring. Skipped outside a browser: tests/web/*_check.cjs run the functions above in Node.
 if(typeof window!=='undefined'&&window.addEventListener){
  window.addEventListener('hashchange',show);
  $('back').onclick=()=>go(parent());

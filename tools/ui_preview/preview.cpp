@@ -169,7 +169,7 @@ int main(int argc,char** argv){
  // "--duel": checkers and sea battle (src/games/duel/Duel.cpp) as a server for the protocol and web page checks: a line on stdin,
  // a line on stdout. "recv PEER TEXT" - a direct message from a contact; "ack ID" / "fail ID" - the delivery of a sent
  // message; "sent" - the messages sent since the last "sent" as JSON; "wait SECONDS" - time passes; anything else is a
- // "duel ..." command. tools/duel_check.py runs two of them against each other.
+ // "duel ..." command. tests/duel_check.py runs two of them against each other.
  if(std::string(outDir)=="--duel"){duels.begin();std::string line;size_t done=0;
   while(std::getline(std::cin,line)){fakeMillis+=500;String r;
    if(line.rfind("recv ",0)==0){size_t sp=line.find(' ',5);uint64_t from=strtoull(line.substr(5,sp-5).c_str(),nullptr,16);const Peer* p=meshRadio.findContact(from);

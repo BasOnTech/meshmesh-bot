@@ -328,10 +328,10 @@ is a separate file, `rating.bin` (see “ELO rating”).
   no repeated games, at most one bye per player, alternating colours, the total of points and the standings
   order; the player's side — an invitation, the player list, a pairing with the opponent's key starts the game,
   the standings.
-- `tools/chess/rating_check.sh` — on a computer: signatures with the MeshCore Ed25519 code (another clock or
+- `tests/chess/rating_check.sh` — on a computer: signatures with the MeshCore Ed25519 code (another clock or
   result breaks the signature), base64, ELO 1500 → 1516/1484, the expected change, the daily limit,
   a repeated record, reading the file back and moving old records into the base.
-- `tools/chess/rules_check.sh` — on a computer: perft for six reference positions
+- `tests/chess/rules_check.sh` — on a computer: perft for six reference positions
   (including castling, en passant and promotions), FEN, the move record,
   checkmate, stalemate, repetition, insufficient material, rejection of an illegal move list.
 - `tools/ui_preview/build.sh m9 DIR` — the chess screens (list, selection, board, a piece with
@@ -348,13 +348,13 @@ is a separate file, `rating.bin` (see “ELO rating”).
   no restarts. Part of `finish_on_hardware.py` after the radio check. With `--heltec-screen` the
   Heltec plays its moves on its screen with the one button (USB click and hold events; this does not
   check the physical button).
-- `node tools/chess/companion_check.cjs` — on a computer, for the companion page: perft, the move
+- `node tests/chess/companion_check.cjs` — on a computer, for the companion page: perft, the move
   record and the browser rules' game endings, 300 random games checked half-move by half-move against
-  `src/games/chess/Chess.cpp` (`tools/chess/replay.cpp`); a game between two instances with a lost ACK, a retry,
+  `src/games/chess/Chess.cpp` (`tests/chess/replay.cpp`); a game between two instances with a lost ACK, a retry,
   checkmate, automatic resending, a draw and storage; the companion protocol on a simulator (frames with garbage
   in front of them, contacts, ACK, three attempts with a path reset, “not delivered”).
 - `tools/hw/chess_companion_check.py --companion PORT` — over the radio: the page code in Node
-  (`tools/chess/companion_node.cjs`) through `usb_tcp_bridge.py --raw` and the stock USB companion
+  (`tools/hw/chess_companion_node.cjs`) through `usb_tcp_bridge.py --raw` and the stock USB companion
   against the M9 on MeshMesh: an invitation from the page and checkmate, a repeat and an illegal move as text are ignored,
   an invitation from the M9 and a draw by agreement, an ordinary message lands in “Other messages” as a single copy,
   an ACK for every command, matching positions, the M9 does not restart and does not show the commands in the chat.

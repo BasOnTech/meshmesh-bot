@@ -6,7 +6,7 @@ This check starts two of them, A and B, carries every message one sends to the o
 the same contact), plays whole games with random legal moves and shots, loses some messages on the way
 (their sender gets a failed delivery and resends) and compares both sides after every step.
 
-  tools/duel_check.py PROGRAM [--games N] [--seed S]
+  tests/duel_check.py PROGRAM [--games N] [--seed S]
 """
 import argparse
 import json

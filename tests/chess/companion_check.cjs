@@ -1,7 +1,7 @@
 // Host check of web/chess-companion.js: the browser rules against src/games/chess/Chess.cpp (perft, notation,
 // endings and random games replayed by both), two players exchanging the real command texts with lost
 // ACKs and repeats, and the MeshCore companion protocol against a simulated companion.
-// Run: node tools/chess/companion_check.cjs
+// Run: node tests/chess/companion_check.cjs
 const assert=require('assert'),{execFileSync}=require('child_process'),fs=require('fs'),os=require('os'),path=require('path');
 const ROOT=path.resolve(__dirname,'../..'),C=require(path.join(ROOT,'web/chess-companion.js'));
 const {Position,Game,ChessNet,Companion,StreamFramer,player,uci,Delivered,Failed,Sent}=C;
@@ -40,7 +40,7 @@ for(let i=0;i<300;i++){const g=new Game(),lines=[];
  games.push({moves:g.moves.map(uci).join(' '),lines})}
 const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'mmchess-'));
 try{
- execFileSync('c++',['-std=gnu++17','-O2','-I',path.join(ROOT,'src'),path.join(ROOT,'src/games/chess/Chess.cpp'),path.join(ROOT,'tools/chess/replay.cpp'),'-o',path.join(tmp,'replay')]);
+ execFileSync('c++',['-std=gnu++17','-O2','-I',path.join(ROOT,'src'),path.join(ROOT,'src/games/chess/Chess.cpp'),path.join(ROOT,'tests/chess/replay.cpp'),'-o',path.join(tmp,'replay')]);
  const out=execFileSync(path.join(tmp,'replay'),{input:games.map(g=>g.moves).join('\n')+'\n',maxBuffer:1<<28}).toString().split('end\n');
  let plies=0,ends=new Set();
  games.forEach((g,i)=>{const c=out[i].trim().split('\n');assert.deepStrictEqual(c,g.lines,`game ${i} differs from src/games/chess/Chess.cpp`);plies+=c.length;ends.add(g.lines.at(-1).split(' ').at(-1))});

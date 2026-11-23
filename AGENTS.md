@@ -7,7 +7,7 @@ MeshCore chats and channels (hashtag, link/QR, key, invitations; `docs/channels.
 (default region and per-channel region, search at neighbouring repeaters, companion commands 54/55/63/64; `docs/regions.md`, `src/mesh/Regions.cpp`,
 `src/mesh/RegionSearch.inc`, check `tools/hw/region_check.py`), a radio settings test and the previous profile (`radio try|keep|revert|previous`, `renderNet` in `web/index.html`), LoRa, offline maps (on the device SD or in phone storage in the app — `android/.../api/MapStore.kt`; relief and contour lines from Terrain Tiles during preparation; node map without a base layer — `drawMap` in `web/index.html`; `docs/maps-format.md`), Wi-Fi, BLE, a signal radar, a Wi-Fi CSI motion sensor,
 chess with contacts (M9 screen and the web page of both boards, MeshCore direct messages,
-rated ELO games with a result signed by both nodes' keys — `src/games/chess/ChessRating.cpp`, Swiss-system tournaments — `src/games/chess/ChessTour.cpp`; `docs/chess.md`; draughts and battleship with contacts, unrated — `src/games/duel/Checkers.cpp`, `src/games/duel/Sea.cpp`, `src/games/duel/Duel.cpp`, screens `src/games/duel/UiDuel.inc`, `src/games/duel/UiDuelCompact.inc`, `docs/games.md`, protocol check `tools/duel_check.py`; menu app folders (the "Games" folder) — `src/core/Apps.cpp`; the site page `chess/` plays through a stock MeshCore companion over Web Serial/Bluetooth —
+rated ELO games with a result signed by both nodes' keys — `src/games/chess/ChessRating.cpp`, Swiss-system tournaments — `src/games/chess/ChessTour.cpp`; `docs/chess.md`; draughts and battleship with contacts, unrated — `src/games/duel/Checkers.cpp`, `src/games/duel/Sea.cpp`, `src/games/duel/Duel.cpp`, screens `src/games/duel/UiDuel.inc`, `src/games/duel/UiDuelCompact.inc`, `docs/games.md`, protocol check `tests/duel_check.py`; menu app folders (the "Games" folder) — `src/core/Apps.cpp`; the site page `chess/` plays through a stock MeshCore companion over Web Serial/Bluetooth —
 `web/chess-companion.js`, `tools/site/chess_site.py`), a network pet — a tamagotchi that feeds on radio traffic,
 grows and can die (`src/games/pet/Pet.cpp`, screens `src/games/pet/UiPet.inc`, `src/games/pet/UiPetCompact.inc`;
 `docs/pet.md`), dice — the DIC3R dicer: RPG rolls and formulas, a Warhammer grid, a character sheet of blocks with formulas, D&D and R.E.T. templates, sending a sheet to a contact (`src/games/dice/Dice.cpp`,
@@ -106,8 +106,12 @@ its `Ui*.inc` screens together). Includes are written from `src/`: `#include "ga
 - `tools/` — by purpose: `build/` (version, PlatformIO scripts, packaging), `gen/` (generated headers and
 dictionaries: i18n, fonts, emoji, pet sprites), `site/` (GitHub Pages, screenshots, web demo), `hw/` (USB and BLE
 access, flashing, bridges, maps upload and every check on real boards; they import each other), `ui_preview/` (host
-UI and simulator), `chess/` and the host checks. A tool that imports from another folder adds it to `sys.path`
+UI and simulator). A tool that imports from another folder adds it to `sys.path`
 (e.g. `tools/hw/flash.py` → `tools/build/version.py`). Run them from the repository root.
+- `tests/` — checks that run on the computer alone, against the real sources: `protocol/` (MM/1 packets), `chess/`
+(rules, rated results, the companion page against `Chess.cpp`), `duel_check.py` (checkers and sea battle), `web/`
+(the device page's chat filter and map codec, on data taken from a board). `sh tests/run.sh` runs all of them but
+`web/` (needs `pio run -e m9` first for the libraries).
 - Dependencies are pinned in `platformio.ini`; change them only when necessary.
 
 ```sh
@@ -455,7 +459,7 @@ against the answers. Screens: M9/T-Deck — `src/games/duel/UiDuel.inc`, compact
 sections `checkers`, `sea`, `duel`, the "Games" tile (`games`) and the folder editor in `renderApps` (`web/index.html`), app —
 `DuelNews.kt`. Folders: the `apps` setting — `{NAME id …}`, `-{…}` hidden, `games` — "Games" in the screen language; on the first start of
 0.33.0 the saved order moves the games into the folder once (`appsAddGames`, NVS `apps3`). Protocol check —
-`tools/duel_check.py` (two instances of the code via `tools/ui_preview` `--duel`, message loss; in CI), screens —
+`tests/duel_check.py` (two instances of the code via `tools/ui_preview` `--duel`, message loss; in CI), screens —
 `tools/ui_preview/scenario_games_*.inc` scenarios. For the Chinese T114 to fit with folders: `quickSend::state` and the radio draft
 in zero-initialised memory (not in `.data`), the large T114 font without Russian — `inr24_mr`. Over BLE `set` is at most 255 bytes: the page
 does not save an app order longer than 240 bytes. Not checked on hardware: there were no boards on USB.

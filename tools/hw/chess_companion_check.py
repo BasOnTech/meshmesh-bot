@@ -3,7 +3,7 @@
 
 A board runs the official MeshCore companion (USB build: the Heltec as in docs/repeater.md, or the
 GAT562 with upstream GAT562_30S_Mesh_Kit_companion_radio_usb). web/chess-companion.js, the code of the site's chess page, runs in Node
-(tools/chess/companion_node.cjs) and reaches the companion through tools/hw/usb_tcp_bridge.py with the
+(tools/hw/chess_companion_node.cjs) and reaches the companion through tools/hw/usb_tcp_bridge.py with the
 frames Web Serial carries. Game 1: the page challenges M9 and mates; a repeat and an illegal move
 typed as text are ignored. Game 2: M9 challenges the page, a draw is offered on M9 and accepted on
 the page. A plain message from M9 reaches the page's "other messages". Every command must be
@@ -36,7 +36,7 @@ def wait(what, check, timeout=120):
 class Page:
     """The companion page's code in Node: JSON lines in and out."""
     def __init__(self, listen):
-        self.proc = subprocess.Popen(['node', str(ROOT/'tools/chess/companion_node.cjs'), str(listen)],
+        self.proc = subprocess.Popen(['node', str(ROOT/'tools/hw/chess_companion_node.cjs'), str(listen)],
                                      stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1)
         self.ready = json.loads(self.proc.stdout.readline() or '{}')
         if not self.ready.get('ready'):

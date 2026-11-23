@@ -714,7 +714,7 @@
 > of the subset; the device web page and the Android app are in Russian.
 
 > **Chess with a stock MeshCore companion — the site page `chess/`** (2 October 2026; `docs/chess.md`).
-> On the computer: `node tools/chess/companion_check.cjs` — 174 checks, including 300 random games
+> On the computer: `node tests/chess/companion_check.cjs` — 174 checks, including 300 random games
 > (44,692 plies) that matched `src/games/chess/Chess.cpp` ply by ply. Over the radio: the GAT562 temporarily ran the stock
 > USB companion v1.17.1 (build `GAT562_30S_Mesh_Kit_companion_radio_usb` from `upstream/meshcore-stock`,
 > serial DFU) against the M9 on MeshMesh 0.3.3 (boot 125 before and after). `chess_companion_check.py`: the page
@@ -1082,7 +1082,7 @@ the screen) and the commands `resetpath`/`forget NODE_ID`.
 
 - Headless Chromium on an API mock-up with real device data: screenshots of all
   sections at widths 390 and 1280 px, M9 and Heltec variants, no JavaScript errors.
-- `tools/check_web_chat.cjs` and `tools/check_web_codec.cjs` pass.
+- `tests/web/chat_check.cjs` and `tests/web/codec_check.cjs` pass.
 - Installed on both boards via `tools/hw/flash.py` (M9 boot 76, Heltec 49).
   `tools/hw/wifi_probe.py`: the Heltec received the whole page over Wi-Fi (121,760 bytes),
   checked refusal without a password, all APIs including the new ones, and tile write/read.
