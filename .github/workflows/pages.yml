@@ -24,10 +24,10 @@ jobs:
         with:
           python-version: '3.12'
       - run: |
-          python tools/version.py --check
-          python tools/i18n.py check
+          python tools/build/version.py --check
+          python tools/gen/i18n.py check
           npm ci --prefix tools
-          node tools/web_i18n.cjs check
+          node tools/gen/web_i18n.cjs check
 
   firmware:
     needs: validate
@@ -48,11 +48,11 @@ jobs:
           restore-keys: pio-
       - run: pip install platformio esptool
       - run: pio run -e ${{ matrix.env }}
-      - run: python tools/package.py ${{ matrix.env }}
+      - run: python tools/build/package.py ${{ matrix.env }}
       # The screens in every interface language for the site (host build of the UI; needs the m9 libraries).
       # Required: do not silently publish old screenshots when generation fails.
       - if: matrix.env == 'm9'
-        run: pip install pillow && python tools/site_shots.py artifacts/site-shots
+        run: pip install pillow && python tools/site/site_shots.py artifacts/site-shots
       # Checkers and sea battle: two host copies of src/games/duel/Duel.cpp play whole games, with lost messages resent.
       - if: matrix.env == 'm9'
         run: KEEP=/tmp/duelsrv sh tools/ui_preview/build.sh m9 /tmp/duel-preview en && python tools/duel_check.py /tmp/duelsrv --games 4
@@ -60,7 +60,7 @@ jobs:
       - if: matrix.env == 'm9'
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-core fonts-noto-cjk
-          CHROME=$(command -v google-chrome) python tools/web_shots.py artifacts/web-shots
+          CHROME=$(command -v google-chrome) python tools/site/web_shots.py artifacts/web-shots
       - uses: actions/upload-artifact@v4
         with:
           name: package-${{ matrix.env }}
@@ -79,10 +79,10 @@ jobs:
           pattern: package-*
           path: artifacts
           merge-multiple: true
-      - run: python tools/i18n.py check
+      - run: python tools/gen/i18n.py check
       - run: |
-          python tools/pages.py _site m9 heltec_v4 heltec_v4_r8
-          python tools/publish_check.py _site
+          python tools/site/pages.py _site m9 heltec_v4 heltec_v4_r8
+          python tools/site/publish_check.py _site
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

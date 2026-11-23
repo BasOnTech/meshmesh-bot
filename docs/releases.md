@@ -8,8 +8,8 @@ the MeshCore wire protocol version.
 Before a release, bump the affected component and run:
 
 ```sh
-python tools/version.py --generate
-python tools/version.py --check
+python tools/build/version.py --generate
+python tools/build/version.py --check
 ```
 
 The generated `src/core/Version.h` is committed and checked by PlatformIO. Firmware `status`
@@ -21,7 +21,7 @@ revision; site generation rejects packages from different revisions.
 
 A push to `main` or manual `.github/workflows/pages.yml` run:
 
-1. Checks versions, translations of the screens and the page (`tools/web_i18n.cjs check`).
+1. Checks versions, translations of the screens and the page (`tools/gen/web_i18n.cjs check`).
 2. Builds and packages all 18 targets, all nRF52 language images, ESP32 installer language markers
    and community-board factory images.
 3. Generates site screenshots in every language; failure now blocks publication.

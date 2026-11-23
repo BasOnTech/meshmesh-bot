@@ -18,7 +18,7 @@ uint8_t langStep(uint8_t l,int dir){for(int i=0;i<LangCount;i++){l=(l+LangCount+
 
 namespace {
 uint8_t lang(){return config.lang<LangCount?config.lang:LangEn;}
-// FNV-1a over the parts joined by 0x1f, as tools/i18n.py keys the translations.
+// FNV-1a over the parts joined by 0x1f, as tools/gen/i18n.py keys the translations.
 uint32_t hashParts(std::initializer_list<const char*> parts){
  uint32_t h=0x811c9dc5;bool first=true;
  for(const char* p:parts){if(!first)h=(h^0x1f)*0x01000193;first=false;while(*p)h=(h^uint8_t(*p++))*0x01000193;}
@@ -69,7 +69,7 @@ String installLanguage(){
 #if defined(MM_UI_PREVIEW)
  return "";
 #else
- // The tail of the partition table sector: tools/pages.py writes "MMLANG:<code>" there in partitions-<code>.bin.
+ // The tail of the partition table sector: tools/site/pages.py writes "MMLANG:<code>" there in partitions-<code>.bin.
  if(spi_flash_read(0x8c00,b,16)!=ESP_OK)return "";
 #endif
  b[16]=0;if(strncmp(b,"MMLANG:",7))return "";

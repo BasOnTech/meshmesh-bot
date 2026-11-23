@@ -1,5 +1,5 @@
 #pragma once
-// Emoji on the screens: 12x12 pixel art of about 300 common emoji (EmojiData.h, tools/emoji.py; Twemoji,
+// Emoji on the screens: 12x12 pixel art of about 300 common emoji (EmojiData.h, tools/gen/emoji.py; Twemoji,
 // CC-BY 4.0). Colour screens draw the palette colours; monochrome ones light the main colour group.
 #include <stdint.h>
 #include "ui/EmojiData.h"

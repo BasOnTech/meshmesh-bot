@@ -477,8 +477,8 @@ function docPath(path){
 }
 let lang='en',T={},EN={};
 const L=k=>T[k]??EN[k]??k;
-// Screenshots: generated for each language (tools/site_shots.py); English when one is missing.
-// The device page in the site's language (tools/web_shots.py); the chess page's companion shots are one set.
+// Screenshots: generated for each language (tools/site/site_shots.py); English when one is missing.
+// The device page in the site's language (tools/site/web_shots.py); the chess page's companion shots are one set.
 const shotSrc=n=>n.startsWith('web-chess-')?`img/${n}.webp`:n.startsWith('web-')?`img/${n}-${lang}.webp`:`img/${n}-${lang}.png`;
 const shotFallback='onerror="if(!this.dataset.f){this.dataset.f=1;this.src=this.src.replace(/-[a-z]+\\.(png|webp)$/,\'-en.$1\')}"';
 const svg=(k,col)=>`<svg viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;

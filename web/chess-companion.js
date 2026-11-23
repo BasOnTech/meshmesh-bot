@@ -1,5 +1,5 @@
 // MeshMesh Chess through a stock MeshCore companion (docs/chess.md, "With a stock MeshCore companion").
-// The site's chess page is web/index.html with this file (tools/chess_site.py). The rules port
+// The site's chess page is web/index.html with this file (tools/site/chess_site.py). The rules port
 // src/games/chess/Chess.cpp and the games src/games/chess/ChessNet.cpp: the same text commands, ACKs and resending, so a game
 // with an M9 or a Heltec on MeshMesh goes as between two boards. The radio is the
 // companion's: USB (Web Serial) or Bluetooth (Web Bluetooth), frames of the MeshCore companion
@@ -448,7 +448,7 @@ const hexBytes=h=>h.match(/../g).map(x=>parseInt(x,16));
 // Transports of the browser.
 async function serialTransport(link,port){
  await port.open({baudRate:115200});
- // ESP32-S3 USB Serial/JTAG and nRF52 TinyUSB: DTR on, RTS off (no reset), as tools/device.py.
+ // ESP32-S3 USB Serial/JTAG and nRF52 TinyUSB: DTR on, RTS off (no reset), as tools/hw/device.py.
  try{await port.setSignals({dataTerminalReady:true,requestToSend:false})}catch{}
  const framer=new StreamFramer(f=>link.receive(f)),writer=port.writable.getWriter(),reader=port.readable.getReader();let open=true;
  (async()=>{try{for(;;){const {value,done}=await reader.read();if(done)break;if(value)framer.push(value)}}catch{}open=false;link.detach()})();

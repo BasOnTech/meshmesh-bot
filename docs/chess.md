@@ -257,8 +257,8 @@ on MeshMesh (M9, Heltec, GAT562) or on the same page.
 
 - The rules and games run in the browser: `web/chess-companion.js` is a port of `src/games/chess/Chess.cpp` and
   `src/games/chess/ChessNet.cpp` (the same commands, reception, retries, automatic resending of undelivered commands).
-  `tools/chess_site.py` builds the page from `web/index.html` and this file
-  (`tools/pages.py` puts it into `chess/` on the website); the file is not part of the firmware.
+  `tools/site/chess_site.py` builds the page from `web/index.html` and this file
+  (`tools/site/pages.py` puts it into `chess/` on the website); the file is not part of the firmware.
 - The companion protocol (`upstream/meshcore-stock/examples/companion_radio/MyMesh.cpp`):
   `DEVICE_QUERY` (version 3), `APP_START`, setting the clock (forward only, as in the app),
   `GET_CONTACTS`, `SEND_TXT_MSG`, ACK — `PUSH_SEND_CONFIRMED`, reception — `MSG_WAITING` and
@@ -338,11 +338,11 @@ is a separate file, `rating.bin` (see “ELO rating”).
   its moves, promotion, an undelivered move, a draw offer, help).
 - `tools/ui_preview/build.sh heltec DIR` — one button: the list, a piece, its squares, “Cancel” puts the
   piece back, the move Bf1-c4, the opponent's reply without a pop-up, “Game menu” and “Game list”.
-- `tools/web_usb_bridge.py --port PORT` — the web page in a computer browser with the board's
+- `tools/hw/web_usb_bridge.py --port PORT` — the web page in a computer browser with the board's
   answers over USB (actions really go out over the radio); for visual checking
   without connecting to the device's Wi-Fi. Real HTTP over Wi-Fi, including
   `/api/chess`, is checked by `wifi_probe.py`.
-- `tools/chess_check.py` — over the radio between the M9 and the Heltec: an invitation from the Heltec, acceptance on
+- `tools/hw/chess_check.py` — over the radio between the M9 and the Heltec: an invitation from the Heltec, acceptance on
   the M9 screen, a game to checkmate with matching positions after every half-move, a repeat and
   an illegal move as text are ignored, commands do not get into the chat history,
   no restarts. Part of `finish_on_hardware.py` after the radio check. With `--heltec-screen` the
@@ -353,7 +353,7 @@ is a separate file, `rating.bin` (see “ELO rating”).
   `src/games/chess/Chess.cpp` (`tools/chess/replay.cpp`); a game between two instances with a lost ACK, a retry,
   checkmate, automatic resending, a draw and storage; the companion protocol on a simulator (frames with garbage
   in front of them, contacts, ACK, three attempts with a path reset, “not delivered”).
-- `tools/chess_companion_check.py --companion PORT` — over the radio: the page code in Node
+- `tools/hw/chess_companion_check.py --companion PORT` — over the radio: the page code in Node
   (`tools/chess/companion_node.cjs`) through `usb_tcp_bridge.py --raw` and the stock USB companion
   against the M9 on MeshMesh: an invitation from the page and checkmate, a repeat and an illegal move as text are ignored,
   an invitation from the M9 and a draw by agreement, an ordinary message lands in “Other messages” as a single copy,

@@ -348,7 +348,7 @@ bool MeshRadio::removeContact(uint64_t id){
 Peer* MeshRadio::contact(uint64_t id){for(unsigned i=0;i<peerCount;i++)if(peers[i].id==id)return &peers[i];return nullptr;}
 void MeshRadio::begin(){
  nodeId=ESP.getEfuseMac();loadChannels();
-#if defined(MM_EMULATOR) // QEMU: no transceiver, the chat node still starts for protocol checks (tools/companion_check.py)
+#if defined(MM_EMULATOR) // QEMU: no transceiver, the chat node still starts for protocol checks (tools/hw/companion_check.py)
  applyConfig();
 #else
  if(!applyConfig()){restoreHistory();return;}

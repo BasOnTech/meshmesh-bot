@@ -87,7 +87,7 @@ In the repeater and room modes only the device information request answers: thos
   information, the contact list, channels (reading, joining `#mmtest`), time (read and set), battery and
   storage, the exported card, statistics, and adds, finds, resets the path of and removes a contact;
   an unsupported command answers with an error. Text commands work after frames.
-- The Heltec V4 and T114 over USB frames (`tools/companion_check.py`, both ways): direct messages with
+- The Heltec V4 and T114 over USB frames (`tools/hw/companion_check.py`, both ways): direct messages with
   ACKs, replies, Public, one copy on the peer.
 - 0.10.0, the `meshcore` 2.3.15 library on the Heltec V4 over USB, the T114 as a room and as a repeater:
   admin login, status, CLI (`ver`, `get name`), room and repeater telemetry (voltage, temperature), a room

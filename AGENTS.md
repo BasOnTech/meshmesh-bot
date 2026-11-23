@@ -5,14 +5,14 @@
 The project is firmware for the Elecrow ThinkNode M9 and the Heltec V4 (this fork supports only these two; the upstream MeshMesh also built for nRF52 and other ESP32 boards): a standalone interface,
 MeshCore chats and channels (hashtag, link/QR, key, invitations; `docs/channels.md`, `src/mesh/Channels.cpp`), MeshCore regions
 (default region and per-channel region, search at neighbouring repeaters, companion commands 54/55/63/64; `docs/regions.md`, `src/mesh/Regions.cpp`,
-`src/mesh/RegionSearch.inc`, check `tools/region_check.py`), a radio settings test and the previous profile (`radio try|keep|revert|previous`, `renderNet` in `web/index.html`), LoRa, offline maps (on the device SD or in phone storage in the app — `android/.../api/MapStore.kt`; relief and contour lines from Terrain Tiles during preparation; node map without a base layer — `drawMap` in `web/index.html`; `docs/maps-format.md`), Wi-Fi, BLE, a signal radar, a Wi-Fi CSI motion sensor,
+`src/mesh/RegionSearch.inc`, check `tools/hw/region_check.py`), a radio settings test and the previous profile (`radio try|keep|revert|previous`, `renderNet` in `web/index.html`), LoRa, offline maps (on the device SD or in phone storage in the app — `android/.../api/MapStore.kt`; relief and contour lines from Terrain Tiles during preparation; node map without a base layer — `drawMap` in `web/index.html`; `docs/maps-format.md`), Wi-Fi, BLE, a signal radar, a Wi-Fi CSI motion sensor,
 chess with contacts (M9 screen and the web page of both boards, MeshCore direct messages,
 rated ELO games with a result signed by both nodes' keys — `src/games/chess/ChessRating.cpp`, Swiss-system tournaments — `src/games/chess/ChessTour.cpp`; `docs/chess.md`; draughts and battleship with contacts, unrated — `src/games/duel/Checkers.cpp`, `src/games/duel/Sea.cpp`, `src/games/duel/Duel.cpp`, screens `src/games/duel/UiDuel.inc`, `src/games/duel/UiDuelCompact.inc`, `docs/games.md`, protocol check `tools/duel_check.py`; menu app folders (the "Games" folder) — `src/core/Apps.cpp`; the site page `chess/` plays through a stock MeshCore companion over Web Serial/Bluetooth —
-`web/chess-companion.js`, `tools/chess_site.py`), a network pet — a tamagotchi that feeds on radio traffic,
+`web/chess-companion.js`, `tools/site/chess_site.py`), a network pet — a tamagotchi that feeds on radio traffic,
 grows and can die (`src/games/pet/Pet.cpp`, screens `src/games/pet/UiPet.inc`, `src/games/pet/UiPetCompact.inc`;
 `docs/pet.md`), dice — the DIC3R dicer: RPG rolls and formulas, a Warhammer grid, a character sheet of blocks with formulas, D&D and R.E.T. templates, sending a sheet to a contact (`src/games/dice/Dice.cpp`,
 screens `src/games/dice/UiDice.inc`, `src/games/dice/UiDiceCompact.inc`; `docs/dice.md`), a message's packet path on the web and in the app (repeaters by path hashes, SNR/RSSI, repeats of our own messages —
-`MeshRadio::echo`, `renderMsg` in `web/index.html`), web and app notifications (kinds, mentions, per-chat settings, quiet hours, feed — `alertFor` in `web/index.html`, `android/.../Alerts.kt`), MeshCore repeater and room modes (chosen at boot, `src/mesh/MeshServer.cpp`, `docs/repeater.md`), wardriving — a network coverage map: a log of received packets with position, pings in `#wardrive` with repeater echoes, radar Wi-Fi/BLE on ESP32, CSV/GeoJSON/KML/WiGLE export, phone position from the app (`src/apps/Wardrive.cpp`, `docs/wardrive.md`; recording only with a trusted position, `gpsFix` or a `fix` from the app), backup — settings, node key, channels, contacts, quick send, counters and sheets in one JSON file from the page and the app, selective restore (`backup*` in `web/index.html`, commands `identity`, `identity set`, `contact add`; `docs/backup.md`), diagnostics, the screen interface (emoji on screens — `src/ui/Emoji.cpp`, `tools/emoji.py`), the device web page, the app and the site in 15 languages (section "Languages") and the Android app (`android/`, `docs/android.md`). Communicate with the user
+`MeshRadio::echo`, `renderMsg` in `web/index.html`), web and app notifications (kinds, mentions, per-chat settings, quiet hours, feed — `alertFor` in `web/index.html`, `android/.../Alerts.kt`), MeshCore repeater and room modes (chosen at boot, `src/mesh/MeshServer.cpp`, `docs/repeater.md`), wardriving — a network coverage map: a log of received packets with position, pings in `#wardrive` with repeater echoes, radar Wi-Fi/BLE on ESP32, CSV/GeoJSON/KML/WiGLE export, phone position from the app (`src/apps/Wardrive.cpp`, `docs/wardrive.md`; recording only with a trusted position, `gpsFix` or a `fix` from the app), backup — settings, node key, channels, contacts, quick send, counters and sheets in one JSON file from the page and the app, selective restore (`backup*` in `web/index.html`, commands `identity`, `identity set`, `contact add`; `docs/backup.md`), diagnostics, the screen interface (emoji on screens — `src/ui/Emoji.cpp`, `tools/gen/emoji.py`), the device web page, the app and the site in 15 languages (section "Languages") and the Android app (`android/`, `docs/android.md`). Communicate with the user
 in English. Carry agreed changes through to build, installation and verification
 when the devices are available. Distinguish between an implemented feature, a successful build,
 installed firmware and confirmed hardware operation.
@@ -25,7 +25,7 @@ Do not present old reports or an identical version string as verification of a n
 
 GitHub: this fork, `BasOnTech/meshmesh-bot`, of the public `IKrasnodymov/meshmesh` (MIT; `README.md` — the overview, `docs/` — the detailed documents, all in English), main branch `main`. The site is
 GitHub Pages from `site/` (https://ikrasnodymov.github.io/meshmesh/): `.github/workflows/pages.yml`
-builds all boards and `tools/pages.py` (ESP Web Tools browser-install manifests,
+builds all boards and `tools/site/pages.py` (ESP Web Tools browser-install manifests,
 writing at offsets without erasing NVS). Screen screenshots — `tools/ui_preview`; the interactive simulator in an SDL2 window —
 `tools/ui_preview/sim.sh [m9] [LANG]` (`SIM=1` in `build.sh`, code in `tools/ui_preview/live.inc`; rebuilds via fswatch).
 Keep sources, vendored MeshCore with its licences, tools and
@@ -56,7 +56,7 @@ changes into separate commits (e.g. build flags apart from the code fixes they n
   the transceiver (`MM_RADIO_*`) and native USB (`MM_NATIVE_USB`). Pins — `src/hw/BoardPins.h`, board properties —
   `src/hw/Board.h`; the Heltec — `src/hw/HardwareHeltec.cpp` with `src/ui/UiHeltec.cpp`, the M9 — `src/hw/Hardware.cpp` with `src/ui/Ui.cpp`.
 - Last known ports: M9 `/dev/cu.wchusbserial110`,
-  Heltec `/dev/cu.usbmodem101`; `tools/ports.py`
+  Heltec `/dev/cu.usbmodem101`; `tools/hw/ports.py`
   finds them by USB bridge.
   Check that devices are present and are the expected ones; port names change after
   reconnecting.
@@ -100,17 +100,21 @@ diagnostics), `apps/` (maps, radar, wardrive, counter), `games/<game>/` (chess, 
 its `Ui*.inc` screens together). Includes are written from `src/`: `#include "games/chess/Chess.h"`.
 `lib/MeshProtocol/` — MM/1.
 - `web/index.html` — the source of the web interface. ESP32 firmware serves it and the dictionaries compressed (gzip):
-  `tools/pio_web.py` generates `PortalWeb.h` in the build folder at build time; it is not in Git. The page is English; a further language's dictionary is packed with its keys once (`/i18n/keys.js`) and `/i18n/<lang>.js` carrying the translations in order (`MeshMeshWebDict`). Page text —
-  `L('…')`/`` L`…${x}` `` and `plural(n,…)` (section "Languages"). Demo without a board — `tools/web_demo.py`.
+  `tools/build/pio_web.py` generates `PortalWeb.h` in the build folder at build time; it is not in Git. The page is English; a further language's dictionary is packed with its keys once (`/i18n/keys.js`) and `/i18n/<lang>.js` carrying the translations in order (`MeshMeshWebDict`). Page text —
+  `L('…')`/`` L`…${x}` `` and `plural(n,…)` (section "Languages"). Demo without a board — `tools/site/web_demo.py`.
 - `boards/`, `platformio.ini`, `partitions.csv` — hardware targets and build.
-- `tools/` — packaging, installation, USB control, maps and hardware checks.
+- `tools/` — by purpose: `build/` (version, PlatformIO scripts, packaging), `gen/` (generated headers and
+dictionaries: i18n, fonts, emoji, pet sprites), `site/` (GitHub Pages, screenshots, web demo), `hw/` (USB and BLE
+access, flashing, bridges, maps upload and every check on real boards; they import each other), `ui_preview/` (host
+UI and simulator), `chess/` and the host checks. A tool that imports from another folder adds it to `sys.path`
+(e.g. `tools/hw/flash.py` → `tools/build/version.py`). Run them from the repository root.
 - Dependencies are pinned in `platformio.ini`; change them only when necessary.
 
 ```sh
 .venv/bin/pio run -e m9 -e heltec_v4 -e heltec_v4_r8
-.venv/bin/python tools/package.py m9
-.venv/bin/python tools/package.py heltec_v4
-.venv/bin/python tools/package.py heltec_v4_r8
+.venv/bin/python tools/build/package.py m9
+.venv/bin/python tools/build/package.py heltec_v4
+.venv/bin/python tools/build/package.py heltec_v4_r8
 ```
 
 Build the affected boards. Repeat and extend checks for the errors and changes
@@ -119,7 +123,7 @@ found; do not add tests that merely duplicate the implementation.
 ## Versions and publishing
 
 The public firmware version is SemVer; the single source is
-`versions.properties`. After a change: `python tools/version.py --generate`, then `--check`;
+`versions.properties`. After a change: `python tools/build/version.py --generate`, then `--check`;
 `src/core/Version.h` is generated and committed. Details — `docs/releases.md`.
 The firmware reports `version`, `revision` (Git SHA + `-dirty` locally), `build_sha256`; packages and the site
 include the revision and hashes. Do not treat an identical SemVer as proof of an identical image.
@@ -135,15 +139,15 @@ Firmware screens — English (`src/i18n/I18n.h`; the language number is stored i
 order; upstream Russian and 13 other languages were removed, their stored numbers fall back to English). English is
 written in the code: `t("English")`, `tr("English")`, `count(n,"one","many")`; strings of a table are marked with
 `N_("...")` and read with `trText()`. A further language (Dutch is planned) goes to the end of `Lang`
-with `i18n/firmware/<lang>.json` following `i18n/README.md`: `tools/i18n.py sync`, translate,
-`.venv/bin/python tools/i18n.py generate` (the table; the Latin Extended font subsets need `upstream/fonts`),
-`tools/i18n.py check`, build, and review the screens with `tools/site_shots.py OUTDIR <lang>`.
+with `i18n/firmware/<lang>.json` following `i18n/README.md`: `tools/gen/i18n.py sync`, translate,
+`.venv/bin/python tools/gen/i18n.py generate` (the table; the Latin Extended font subsets need `upstream/fonts`),
+`tools/gen/i18n.py check`, build, and review the screens with `tools/site/site_shots.py OUTDIR <lang>`.
 Site — `site/i18n/en.json`; the detailed documents in `docs/` are English. The device web page — English: the English text in the
 code is the dictionary key of `i18n/web/<lang>.json` for a further language; in `web/index.html` write `L('…')`,
 `` L`…${x}` `` (do not glue a phrase together from pieces), `plural(n,'{n} game','{n} games')`. Then
-`node tools/web_i18n.cjs sync`, `node tools/web_i18n.cjs check` (needs `npm ci --prefix tools`). The page language —
+`node tools/gen/web_i18n.cjs sync`, `node tools/gen/web_i18n.cjs check` (needs `npm ci --prefix tools`). The page language —
 `?lang=`, chosen on the login screen/in "Settings" (`mm-lang`), otherwise the browser language. Page screenshots for
-the site — `tools/web_shots.py` (demo data `tools/web_demo.py`, in CI); `site/img` holds the fallbacks.
+the site — `tools/site/web_shots.py` (demo data `tools/site/web_demo.py`, in CI); `site/img` holds the fallbacks.
 The site's chess page (`chess/`) is the same page in English and gets the same dictionaries.
 The site installs the firmware with the chosen language: `partitions-<lang>.bin` with a tag at 0x8C00; the tag is applied once.
 `src/core/Modules.h` (`MM_CHESS`, `MM_PET`, `MM_DICE`, `MM_WARDRIVE`, `MM_CHECKERS`, `MM_SEA`) comes from the upstream
@@ -153,7 +157,7 @@ nRF52 images: both boards build everything. Cyrillic fonts stay in all images: C
 
 Both original flashes are saved and verified in `backups/` together with metadata.
 Before writing, verify the full backup, the model, MAC and component digests with
-`tools/flash.py`. Use DIO, 80 MHz, 16 MB and the intended offsets of the
+`tools/hw/flash.py`. Use DIO, 80 MHz, 16 MB and the intended offsets of the
 four components. QIO previously caused a boot loop on these boards.
 
 Preserve history, the network key, NVS, calibration and SD cards. NVS is 20 KB on all ESP32 boards and is shared with Wi-Fi and BLE: keep large and frequently
@@ -168,14 +172,14 @@ Authorisation for the necessary updates holds within the agreed
 task; do not ask for it again without a new reason.
 
 ```sh
-.venv/bin/python tools/finish_on_hardware.py --check
-.venv/bin/python tools/finish_on_hardware.py
+.venv/bin/python tools/hw/finish_on_hardware.py --check
+.venv/bin/python tools/hw/finish_on_hardware.py
 ```
 
 The first mode checks the packages without USB. The second installs and verifies
 both boards in sequence, stopping on an error. Run the full pass
 (20–30 min) for the final package, not after every edit: while
-debugging, flash the affected board with `tools/flash.py` and do targeted checks, stating explicitly
+debugging, flash the affected board with `tools/hw/flash.py` and do targeted checks, stating explicitly
 in the report that the full pass was not run. Individual steps
 are written to `logs/finish-*.log`, previous reports are archived. Report the cause of an error
 and the actual state of the installed devices precisely. If the environment
@@ -197,7 +201,7 @@ by disabling BLE in the interface coexistence check.
 One process owns each USB port. Other sessions may be working in the same
 working tree: coordinate USB ports and shared files with them (especially `src/ui/Ui.cpp`)
 and do not build packages from someone else's unfinished edits. Do not start several reads or
-a flash on top of an active check of the same port. Use `tools/device.py`:
+a flash on top of an active check of the same port. Use `tools/hw/device.py`:
 it handles DTR/RTS and the accumulation of partial native-USB replies on the Heltec.
 
 LoRa and BLE checks must confirm a real radio exchange, growth of RX/TX,
@@ -212,7 +216,7 @@ Since 0.4.0 the shared code on all boards waits up to 20 ms for the LoRa IRQ not
 no active send, radar/CSI or probes. This works in all roles, including ordinary chats.
 After a USB/BLE command or a button press the fast loop is held for 1 s (10 s blocked the wait with
 Android's background polling every 8 s). `idle_waits`, `idle_wait_ms`, `idle_radio_events` measure
-the task's waiting, not CPU sleep or current. Check — `tools/power_check.py --port PORT --peer PORT`;
+the task's waiting, not CPU sleep or current. Check — `tools/hw/power_check.py --port PORT --peer PORT`;
 when checking a direct message, do not poll the receiver's USB until the ACK. After a message the screen may
 turn off again on its timer — a late read of `screen_off` does not prove there was no wake-up.
 `docs/power.md`; RXPS and cyclic GPS power are not implemented yet.
@@ -223,7 +227,7 @@ against another firmware. Feedback on the V3 (reading 3–6 % low) — `docs/ver
 (`docs/repeater.md`). The transceiver's IRQ line has a RadioLib edge interrupt: set the level type for
 wake-up only inside a critical section and restore `GPIO_INTR_POSEDGE` after sleep —
 otherwise an interrupt storm (interrupt watchdog on the M9) or lost reception. Bytes that woke the board over
-USB-UART are lost: send a CR before a command (`tools/device.py`, `UsbLink.kt`). Do not change the frequency while
+USB-UART are lost: send a CR before a command (`tools/hw/device.py`, `UsbLink.kt`). Do not change the frequency while
 the Wi-Fi driver or the Bluetooth controller is running: after CSI this caused an M9 panic while loading a map.
 
 Local release 0.4.0: six messages/ACKs from the wait state between the T114 and the V4 went through with BLE enabled
@@ -253,7 +257,7 @@ After switching from repeater to normal mode, the hardware test waits for an adv
   on the same board "freezes".
 - USB `radar` does not output other people's network names or Bluetooth addresses; `radar web` (for the app)
   outputs the names, like the web page, and holds the radar for 10 s, like `/api/radar`.
-- Checks: `tools/radar_check.py`, `tools/csi_check.py` (real radio reception).
+- Checks: `tools/hw/radar_check.py`, `tools/hw/csi_check.py` (real radio reception).
   Motion detection is checked only with a person walking between
   the boards; the automated check confirms only the stream and the change in CSI.
 
@@ -284,12 +288,12 @@ recorded before the clock was set get their time when it is set (`MeshRadio::sta
 A saved compass calibration does not prove accuracy or axis orientation.
 
 Repeater and room modes (`src/mesh/MeshServer.cpp`, `docs/repeater.md`) are checked from the side of the
-official MeshCore companion: `tools/repeater_check.py`, `tools/room_check.py`. For this the Heltec is
+official MeshCore companion: `tools/hw/repeater_check.py`, `tools/hw/room_check.py`. For this the Heltec is
 temporarily flashed with the stock companion from `upstream/meshcore-stock`
 (the `meshmesh_stock_interop` build for our flash layout). Order: JSON snapshots and a full flash
 copy in `backups/` with `verify-flash`, the checks, then the copy is written back and verified.
 The stock firmware formats our LittleFS, so do not install it without a copy.
-`tools/stock_roundtrip.py` is part of the full pass: stock protocol/sources v1.17.1, DIO/dio_qspi,
+`tools/hw/stock_roundtrip.py` is part of the full pass: stock protocol/sources v1.17.1, DIO/dio_qspi,
 a matching bootloader and partition table (only the LittleFS label is replaced with SPIFFS, the geometry is the same).
 The first start can take more than 45 s; the tool waits for USB to be ready. Restoring the full
 16 MB copy is verified byte by byte before starting. Restoring from the bootloader uses a watchdog reset.
@@ -311,7 +315,7 @@ storage or the phone's SD card), the page takes a tile from the phone first (`/p
 map is drawn even without a base layer. Relief: Terrain Tiles elevations (AWS, CORS open) during preparation in the browser/app,
 stepped hillshading (long RLE runs) and contour lines with an interval based on the area's steepness. Overpass cycles through mirrors:
 the main server often answers 504/429. Checked in the Android emulator with the M9 via `usb_tcp_bridge.py`; on a phone,
-over BLE and copying a phone area to a real board's SD — not. `tools/maps.py` does not draw relief.
+over BLE and copying a phone area to a real board's SD — not. `tools/hw/maps.py` does not draw relief.
 Also not checked: a repeater forwarding and refusing to forward a packet with a region (region search at a real
 repeater and region codes in frames are confirmed, `docs/regions.md`), the MeshCore app's region menu, installing with a chosen language from the site in Chrome, and translations by native
 speakers; 12 px Arabic on OLED overlaps neighbouring lines (there is no smaller pixel font).
@@ -404,7 +408,7 @@ Triggering on a discharged battery is not checked; the Chinese T114 image is 712
 
 ## Emoji on screens and T114 backlight (0.32.0)
 
-`tools/emoji.py` builds `src/ui/EmojiData.h` from Twemoji 15.1 (CC-BY 4.0, attribution in the README and the header): ~300 emoji
+`tools/gen/emoji.py` builds `src/ui/EmojiData.h` from Twemoji 15.1 (CC-BY 4.0, attribution in the README and the header): ~300 emoji
 12×12, a shared 31-colour palette, bit packing (local palette, "same as the pixel above", gamma codes; ~10 KB). The pictures
 are cached in `upstream/twemoji`. `src/ui/Emoji.cpp` — lookup and decoder, `src/ui/Emoji.h` — modifiers (FE0F, skin tones,
 ZWJ — zero width), flags as letters, a frame for emoji without a picture, `mono()` for monochrome screens. Drawn by `glyph()`
@@ -432,11 +436,11 @@ key, 128 hex), `identity set`, `contact add {JSON}` (`MeshRadio::privateKeyText/
 is returned only via the access point (`Portal.cpp`). BLE commands are at most 255 bytes: settings are written in chunks of up to 200 bytes,
 a contact's path is not part of the backup. For the Chinese T114 to fit, `Dispatcher::calcRxDelay` and `MeshServer` compute the delay
 via `powf` (the double `pow` is no longer linked, ~3.5 KB; `lib/MeshCore/PATCHES.md`): the Chinese T114 is 709672 bytes.
-Checked: the build of all boards, saving and restoring on the page with `tools/web_demo.py` in the browser. On hardware (the commands
+Checked: the build of all boards, saving and restoring on the page with `tools/site/web_demo.py` in the browser. On hardware (the commands
 `identity`/`contact add`, moving the key to another board, the app over BLE) not checked: the boards were not connected.
 0.30.1 / Android 0.21.1: the backup has a single public key (`node.public_key`), the file name uses local time; without storage
 (`status.storage=false`, nRF52 after Meshtastic/MeshCore) the page shows a "Storage not created" card with `fsformat`
-(`storageCard` in `web/index.html`, demo — `tools/web_demo.py --no-storage`), the site — step `uf2.step4`.
+(`storageCard` in `web/index.html`, demo — `tools/site/web_demo.py --no-storage`), the site — step `uf2.step4`.
 0.30.2: nRF52 creates the storage by itself if there is no file system at the start of the 0xD4000 area (neither `littlefs` nor a
 littlefs v1 block header) — that is where the factory Meshtastic T114 code lives (`foreignCode` in `src/nrf52/Platform.cpp`); a foreign littlefs (MeshCore) and
 our own torn one — still only via `fsformat`. Not checked on hardware.

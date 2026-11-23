@@ -249,7 +249,7 @@ static void scenario(){
   tile("pet");auto snap=[&](const char* n){shot(n);};snap("home-pet");key(13);
 #endif
   if(uiStatus().indexOf("\"page\":\"pet\"")<0){printf("FAIL pet page: %s\n",uiStatus().c_str());exit(1);}
-  // Every species, young and grown, awake at noon (the gallery of tools/pet_sprites.py on the real screens).
+  // Every species, young and grown, awake at noon (the gallery of tools/gen/pet_sprites.py on the real screens).
   {for(unsigned i=0;i<pet::Species;i++){creature.s.species=i;char n[32];
     look(pet::Child,850,900,1000,190,nullptr,pet::NoEffect);snprintf(n,sizeof n,"pet-kind%02u-young",i);snap(n);
     look(pet::Adult,850,900,1000,2600,nullptr,pet::NoEffect);snprintf(n,sizeof n,"pet-kind%02u-grown",i);snap(n);}

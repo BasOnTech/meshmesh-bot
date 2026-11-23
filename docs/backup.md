@@ -3,7 +3,7 @@
 Since 0.30.0 (app 0.21.0) a board's settings can be saved to one JSON file and written back to the same board
 or moved to another one: Settings → Backup on the device page and in the Android app (Wi-Fi, Bluetooth or USB).
 The page reads and writes the copy with the board's ordinary commands, so the same is available over USB and BLE
-(`tools/device.py`).
+(`tools/hw/device.py`).
 
 ## What it holds
 
@@ -98,6 +98,6 @@ If the node key could not be read (home network, older firmware), `identity_erro
 
 ## Verification
 
-`tools/web_demo.py` answers the commands of the backup: saving and restoring were checked in a browser (the file's
+`tools/site/web_demo.py` answers the commands of the backup: saving and restoring were checked in a browser (the file's
 content, the preview of changes, the ticks for another board, the order and content of the commands). The firmware
 commands were built for all boards; the backup has not been checked on hardware yet (see `docs/verification.md`).

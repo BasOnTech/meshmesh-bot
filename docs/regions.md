@@ -106,7 +106,7 @@ A MeshMesh repeater answers the region search and forwards by its regions as the
 
 ## Checked (9 October 2026, Heltec V4, firmware 0.15.0, boots 211–215)
 
-`tools/region_check.py --port PORT` over USB, frames from `txframe`, the region code recomputed independently in
+`tools/hw/region_check.py --port PORT` over USB, frames from `txframe`, the region code recomputed independently in
 Python:
 
 - an advert with the default region: `TRANSPORT_FLOOD`, the code matched; an invalid name is refused;
@@ -121,7 +121,7 @@ Python:
   silent repeater were added afterwards, their success rate was not measured separately;
 - a channel's region (Public too) survives a restart; after a return to an older firmware the channel list is
   still read, as the `channels` format did not change;
-- the web page through `tools/web_usb_bridge.py` in a browser: the "Region" field of the radio settings (saving and
+- the web page through `tools/hw/web_usb_bridge.py` in a browser: the "Region" field of the radio settings (saving and
   clearing), the search with its progress, the channel card's region (`sao`, `*`, reset; an invalid name is
   refused) — checked through the DOM and the board's replies, no screenshot of the page taken;
 - QEMU: the T-LoRa image (classic ESP32, the search buffers on the heap) boots, `regions`, `config`, `channels`

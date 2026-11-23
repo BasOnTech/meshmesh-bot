@@ -76,7 +76,7 @@ of a network must match. Follow your country's radio regulations.
 python3 -m venv .venv
 .venv/bin/pip install -r tools/requirements.txt
 .venv/bin/pio run -e m9            # or heltec_v4, heltec_v4_r8
-.venv/bin/python tools/package.py m9
+.venv/bin/python tools/build/package.py m9
 ```
 
 The screen UI can be rendered on a computer without a board: `tools/ui_preview/build.sh m9 OUTDIR en`.

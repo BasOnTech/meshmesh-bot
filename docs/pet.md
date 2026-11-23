@@ -21,7 +21,7 @@ Pengu, Shroom (a mushroom), Jelly (a slime), Buzz (a bee), Axolotl. A new egg ge
 
 ![Every species on the M9 and the T114](pet-species.png)
 
-The drawings are in `tools/pet_sprites.py` (16×16, two bits a pixel, about 2 KB for all species); it writes
+The drawings are in `tools/gen/pet_sprites.py` (16×16, two bits a pixel, about 2 KB for all species); it writes
 `src/games/pet/PetSprites.h`, and with `--sheet OUT.png` draws every species. The T114 palette takes the colours from there.
 
 Code: `src/games/pet/Pet.cpp`, `src/games/pet/Pet.h` (life, food, saving), `src/games/pet/UiPet.inc` (320×240

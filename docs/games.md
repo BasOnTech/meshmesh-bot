@@ -150,7 +150,7 @@ language, so their images (from the site, the app and `tools/nrf52.py package EN
 games** (`src/core/Modules.h`: `MM_NO_CHECKERS` and `MM_NO_SEA` on nRF52 unless `MM_WITH_GAMES` is set). Folders, and
 the Games folder with chess, the pet and the dice, are there; a checkers or sea battle challenge reaches such a board as
 an ordinary message whose text explains it, and the page and the app hide these games (`status.modules`). The games'
-strings stay out of such an image's translation table (`tools/i18n.py`, the `GAMES` group).
+strings stay out of such an image's translation table (`tools/gen/i18n.py`, the `GAMES` group).
 
 To build an image with the games for your board: `tools/nrf52.py package ENV --with-games` — English and Russian only
 (a `…-with-games` package, no `lang/`). Sizes in 0.33.0 (the limit is 712704 bytes):

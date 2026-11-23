@@ -7,7 +7,7 @@
 // and the owner pets it, feeds it the snacks the traffic earns and treats it when it is ill. Time runs
 // while the device is on (a switched-off device puts it to sleep). Hunger or loneliness wears its health
 // down; at zero it dies (unless death is switched off), leaves a grave and the owner starts a new egg.
-// Fifteen species (PetSprites.h, tools/pet_sprites.py), each with a young and a grown look and its own
+// Fifteen species (PetSprites.h, tools/gen/pet_sprites.py), each with a young and a grown look and its own
 // colours; a new egg gets a random one. A pet is optional: a new device has none until the owner starts
 // an egg, and the owner can let it go. The screens draw it from a 16x16 grid of inks (sprite()); the
 // state is a file in MeshMesh storage.

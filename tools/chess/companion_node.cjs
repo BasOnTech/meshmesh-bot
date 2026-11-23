@@ -1,5 +1,5 @@
-// The browser player of web/chess-companion.js, run in Node for tools/chess_companion_check.py: the
-// companion is reached through tools/usb_tcp_bridge.py with the same frames as Web Serial.
+// The browser player of web/chess-companion.js, run in Node for tools/hw/chess_companion_check.py: the
+// companion is reached through tools/hw/usb_tcp_bridge.py with the same frames as Web Serial.
 // node tools/chess/companion_node.cjs PORT — JSON lines on stdin {"id":1,"do":"command","line":"chess ..."},
 // "do": command | web | show | peers | self | advert | sync | raw; one JSON answer per line on stdout.
 const path=require('path'),net=require('net'),readline=require('readline');

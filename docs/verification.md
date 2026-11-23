@@ -8,13 +8,13 @@
 > («Sending to the device»), after the board's answer with one faint tick («The device took it, waiting for the air»; the
 > board's status 1 is now shown so too instead of a clock), and the board's copy replaces it at the first history read
 > started after the answer; the poll after sending starts at once or when the current one ends. Sends keep their order; on a
-> refusal the bubble goes and the text and reply return to the field. Checked in a browser on `tools/web_demo.py` with 1.2 s
+> refusal the bubble goes and the text and reply return to the field. Checked in a browser on `tools/site/web_demo.py` with 1.2 s
 > per request and one request queue (BLE-like): bubble after 3 ms, tick after the answer, replacement without duplicates,
 > refusal with the text back. Not checked on a phone over BLE or on the boards.
 
 > **0.32.0: emoji on the screens, T114 backlight** (13 November 2026). At a T114 user's request. Emoji: about 300
 > common emoji (faces, hands, hearts, weather, animals, food, things, travel, signs) as 12x12 pictures after Twemoji 15.1
-> (CC-BY 4.0), `tools/emoji.py` → `src/ui/EmojiData.h` (~10 KB). In colour on the M9/T-Deck (12 px), T114 (16 px), T096
+> (CC-BY 4.0), `tools/gen/emoji.py` → `src/ui/EmojiData.h` (~10 KB). In colour on the M9/T-Deck (12 px), T114 (16 px), T096
 > and Wireless Tracker (palette `ColEmoji0…`), as silhouettes on monochrome OLEDs and e-ink. Skin tones, FE0F and ZWJ are
 > not drawn (the base emoji shows), a flag shows its country letters, an emoji without a picture a frame. Before, the M9
 > drew a frame and the compact boards and the T114 skipped emoji. For the Chinese T114 to fit, the T114 leaves out the
@@ -62,13 +62,13 @@
 > `ERR settings storage`; only the screen said so («No storage: menu»). Now the page/app show a «Storage not created»
 > card with a button (`fsformat` + `restart`), the site an nRF52 install step. Backup: the file holds one public key
 > (`node.public_key`), only the private key is applied; the file name uses local time. Checked: the page with
-> `tools/web_demo.py --no-storage` in a browser (card ru/de, `set` refused, two presses, gone after creation), the file name
+> `tools/site/web_demo.py --no-storage` in a browser (card ru/de, `set` refused, two presses, gone after creation), the file name
 > (09-23 at UTC 06:23), the key preview from `node.public_key`, dictionaries; M9 and T114 builds. **Not checked:** the
 > user's actual cause (their board was not seen), the card on a T114 over BLE in the app.
 
 > **0.30.0 / Android 0.21.0: backup** (9 November 2026, `docs/backup.md`). All 18 targets built; the Chinese T114
 > image is 709672 bytes (about 3 KB free: the MeshCore receive delay uses `powf`, the double `pow` is no longer linked).
-> The page with `tools/web_demo.py` in a browser (390×844): saving the file (sections, node key), the restore preview
+> The page with `tools/site/web_demo.py` in a browser (390×844): saving the file (sections, node key), the restore preview
 > (changed settings, unticked ones for another board's copy, unknown settings, new channels, contacts, templates,
 > counters, sheets, node key), the order and content of the commands sent, the 14 dictionaries, the Android tests and
 > the release APK 0.21.0+local with the page. **Not checked:** no boards were connected — the `identity`, `identity set`
@@ -101,10 +101,10 @@
 > connected), T114/GAT562 not flashed (no nRF52 code changed); the full suite was not run.
 
 > **0.22.0 / Android 0.15.0: the device page and the app in 15 languages** (14 October 2026, `d5c53b8`). The Russian text of
-> the page, `host.js` and Kotlin is the key of `i18n/web/<lang>.json` (1431 keys, 14 languages, `tools/web_i18n.cjs check`);
-> ESP32 serves the page and the dictionaries gzip-compressed (`tools/pio_web.py`). Checked: all 15 targets build (T-Beam
+> the page, `host.js` and Kotlin is the key of `i18n/web/<lang>.json` (1431 keys, 14 languages, `tools/gen/web_i18n.cjs check`);
+> ESP32 serves the page and the dictionaries gzip-compressed (`tools/build/pio_web.py`). Checked: all 15 targets build (T-Beam
 > at 94.2% of its 3 MB slot, M9 2.9 MB); Android unit tests and APK; Node checks of the chess page; the demo page
-> (`tools/web_demo.py`) in headless Chromium in all 15 languages, 17 pages each, en, ru, de, ja, ar looked at (Arabic text
+> (`tools/site/web_demo.py`) in headless Chromium in all 15 languages, 17 pages each, en, ru, de, ja, ar looked at (Arabic text
 > right to left inside the left-to-right layout). Android emulator with the V4 through `usb_tcp_bridge.py`: the
 > connection screen and all pages in English from the phone's language, the native notification "MeshMesh connected";
 > changing the language in Settings reloads the page and reconnects by itself (a login race after the reload was found
@@ -138,7 +138,7 @@
 > **0.20.3 / Android 0.13.3 and 0.21.0 / Android 0.14.0: community feedback** (12 October 2026). (1) The app took
 > only `OK…` as an answer, while `quick`, `people`, `wardrive`, `tour`, `server`, `remote …`, `internet info` answer
 > JSON: each request waited 45 s with the rest queued behind it ("Загрузка…", "--:--"). Now any whole JSON line
-> answers (also in `tools/device.py`); a late answer is awaited while bytes arrive (up to 60 s) — otherwise the radar
+> answers (also in `tools/hw/device.py`); a late answer is awaited while bytes arrive (up to 60 s) — otherwise the radar
 > got the history ("reading 'filter'", points vanished). (2) ESP32 over BLE built the history as one string and
 > copied it ("ERR history response memory" on the Heltec V3 without PSRAM): BLE and HTTP now stream it from a
 > `HistoryReply` snapshot; `status` adds `heap_max_block`. (3) The radar skips an answer without `targets` and has a
@@ -192,7 +192,7 @@
 > and relay unchanged. ESP32 classic builds (`tbeam`, `tlora_v2_1_6`, including the published 0.19.0) abort at
 > start in QEMU allocating the history (`new[]` in `MeshRadio`); not checked on hardware, unrelated to wardriving.
 
-> **0.20.0: wardriving, targeted check on M9 and V4** (10 October 2026, intermediate build). Packages 0.20.0 installed with `tools/flash.py`: M9 — `build_sha256=3394D5422378…`, boot 245;
+> **0.20.0: wardriving, targeted check on M9 and V4** (10 October 2026, intermediate build). Packages 0.20.0 installed with `tools/hw/flash.py`: M9 — `build_sha256=3394D5422378…`, boot 245;
 > V4 — `41C5A7944B0D…`, boot 252; revision `1321ce0-dirty` (worktree sources before the commit). Settings,
 > history (64) and keys kept, no restarts during the check. The full run is the entry above.
 >
@@ -337,7 +337,7 @@
 > **0.16.0: packet path** (9 October 2026, no full run). The history keeps the path hashes, SNR/RSSI and repeats of a
 > message; the "Packet path" page in the web and the app. All 15 targets build (T-Beam and T-LoRa after the history
 > moved to the heap; booting these images was not checked, QEMU is not installed); the Chinese T114 image has 41 KB
-> free. Heltec V4 (`tools/flash.py`, boots 218–221, finally revision `b586612`) and T114 (`tools/nrf52.py`, boot 3,
+> free. Heltec V4 (`tools/hw/flash.py`, boots 218–221, finally revision `b586612`) and T114 (`tools/nrf52.py`, boot 3,
 > revision `640a05c` — the same firmware without the page fix); the T114 came back after a RESET by its owner, the
 > radio settings of both boards are kept. On the real network: a V4 message to a private channel was repeated 6 times
 > by 4 repeaters (kept after a restart); a T114 message to a shared private channel reached the V4 directly (0 hops,
@@ -350,7 +350,7 @@
 > regions nearby repeaters serve, companion commands 54/55/63/64, `region_scope` in channel links (`docs/regions.md`).
 > All 15 targets build (T-Beam and T-LoRa after the search buffers moved to the heap; the T-LoRa image boots in QEMU); the
 > Chinese T114 image has 42 KB free, GAT562 72 KB. The `tools/ui_preview` scenarios (M9, T-Deck, Heltec, GAT562, T114)
-> pass. Heltec V4: `tools/flash.py`, boots 211–215, settings, radio profile and history of 64 kept. `tools/region_check.py`
+> pass. Heltec V4: `tools/hw/flash.py`, boots 211–215, settings, radio profile and history of 64 kept. `tools/hw/region_check.py`
 > passes in full: the region codes of the `txframe` frames match an independent HMAC-SHA256. Search on a real network: a
 > third-party MeshCore repeater sent `ru`, `ru-ta`, `ru-ta-kazan` three times, about half of ~12 searches got no answer
 > (the stock repeater's limits and the air). The web page through the USB bridge checked through the DOM, no screenshot.
@@ -368,27 +368,27 @@
 > **0.14.0: order and hiding of the screen's apps** (8 October 2026, no full run). The `apps` setting (`set {JSON}`, the
 > web page, the app through `/api/config`). The M9, Heltec V4, T114, GAT562 and T-Deck build; the Chinese T114 image has
 > 49 KB free, GAT562 78 KB. The `tools/ui_preview` scenarios (M9, T-Deck, Heltec, T114, GAT562 with the joystick) check the
-> tiles and the page cycle with hidden apps. Heltec V4 (`tools/flash.py`, boot 204) and T114 (`tools/nrf52.py`, boot 27),
+> tiles and the page cycle with hidden apps. Heltec V4 (`tools/hw/flash.py`, boot 204) and T114 (`tools/nrf52.py`, boot 27),
 > revision `543b2a6` (the same code before the version bump, the board reports 0.13.1), radio settings and name kept. On each board over USB: an unknown ID, a repeated one and a bare "-" are
 > rejected; "-settings" does not hide the settings; clicks (`uikey`, the physical button unchecked) go from home to
 > Settings, then the rest, never to the hidden Chats and Nodes; an empty string restores the default; no restarts. On the
 > Heltec the choice survived a restart (boot 205). The web page through `web_usb_bridge.py` to the Heltec in headless
 > Chromium: moving, hiding, saving and "default order" reach the board, no JavaScript errors. A T114 screenshot over USB
-> shows the hint "click Settings". The M9 (`tools/flash.py`, package
+> shows the hint "click Settings". The M9 (`tools/hw/flash.py`, package
 > 0.14.0 `3627529`, boot 221, history of 64 and settings kept): the same USB checks, keys over USB — first tile Settings,
 > second Navigation; a screenshot shows no tiles for the hidden Chats, Map, Radar, Solitaire and the arrows move over the
 > shown ones. The APK with the new page is
 > unchecked on a phone. All three boards are back on the default order.
 
 > **0.13.1: a status request asked again, checked on the M9** (8 October 2026, no full run). The M9 went from 0.6.0 via
-> `tools/flash.py` (boot 219, history of 64 kept), then to 0.13.1 (boot 220). The Heltec V4 served as a room, then a
+> `tools/hw/flash.py` (boot 219, history of 64 kept), then to 0.13.1 (boot 220). The Heltec V4 served as a room, then a
 > repeater. From the M9 over USB `remote`: a wrong password (no answer), admin login, CLI `ver`, a post from the screen
 > with ACK (stored by the room), the room's post in the history with its author; the repeater — login, status, CLI,
 > trace (SNR 13 › you 15.75). A room's status right after a login sometimes did not come (the room is then pushing posts
 > to the new member): 0.13.0 showed "no answer", 0.13.1 asks once more; 4 of 4 "login → status" passed, one answer came
 > from the second request (16.6 s). The M9 screen (keys over USB, screenshot): node card → "Server" → the page with the
 > admin login, status, trace and a command reply. The Heltec is back in the normal mode (0.13.1, boot 203, history
-> 64); `tools/companion_check.py` M9 ↔ Heltec passes. The T114 and GAT562 did not get 0.13.1 (not connected).
+> 64); `tools/hw/companion_check.py` M9 ↔ Heltec passes. The T114 and GAT562 did not get 0.13.1 (not connected).
 
 > **0.13.0: other repeaters and rooms from the screen** (8 October 2026, branch `feature/remote`, no full run). 15 boards
 > build; on the nRF52 the web API, chess, pet, channels and server modules are built with `-Os` — the Chinese T114 image
@@ -399,14 +399,14 @@
 > Heltec in headless Chromium: the repeater card with status, replies and trace, no JavaScript errors. The M9, T-Deck,
 > Heltec and T114 screens: `tools/ui_preview` only; physical buttons and the M9 screen not checked. The first build hung
 > on `remote`: an endless recursion after a search-and-replace in `src/mesh/Remote.inc` (fixed before the checks above). The
-> T114 is in the normal mode afterwards (boot 26), `tools/companion_check.py` passes.
+> T114 is in the normal mode afterwards (boot 26), `tools/hw/companion_check.py` passes.
 
 > **0.12.0: radio settings on the Heltec, GAT562, T114 and community board screens** (8 October 2026, no full run).
 > “Settings → Radio...” in the compact interface: frequency digit by digit, bandwidth, SF, CR, power, relay limit,
 > relaying, path hash size; the draft is applied by the “Save” row. 15 boards build; the Chinese T114 image has 2 KB
 > free (6 before), GAT562 32 KB. The `tools/ui_preview` scenarios (Heltec one button, GAT562 joystick, T114) pass and
 > check the state after every step; the screens were viewed (ru, en, de, fr, pt, ar, zh, ja, tr; Arabic on the OLED still
-> overlaps rows). Heltec V4 (`tools/flash.py`, boot 187, `004722ED…`) and T114 (`tools/nrf52.py`, boot 21, `1BC0DCCD…`),
+> overlaps rows). Heltec V4 (`tools/hw/flash.py`, boot 187, `004722ED…`) and T114 (`tools/nrf52.py`, boot 21, `1BC0DCCD…`),
 > revision `1622561-dirty`, history kept. On each board by USB key events (`uikey`; the physical button was not
 > checked): path hash 1 → 2 and save; frequency 868.731 → 868.732 by the last digit, saved, radio restarted (`radio`
 > true), then back to 868.731 (digit 2 → 1 in 9 clicks); “Cancel” after changing SF saved nothing. Then T114 → V4 with
@@ -416,7 +416,7 @@
 > **0.11.0: path hash size in the settings** (8 October 2026, no full run). The `path_hash` setting (1–3 bytes,
 > 1 by default): the M9/T-Deck “Radio” screen, the web page, `set {JSON}`, the MeshCore app command
 > `CMD_SET_PATH_HASH_MODE` (61) and the field in `DEVICE_INFO`. 15 boards build; the Chinese T114 image has 6 KB free;
-> the M9 screen was viewed in `tools/ui_preview` (ru, en, de, fr, ar, zh, ja, ko). Heltec V4 (`tools/flash.py`, boot 185)
+> the M9 screen was viewed in `tools/ui_preview` (ru, en, de, fr, ar, zh, ja, ko). Heltec V4 (`tools/hw/flash.py`, boot 185)
 > and T114 (`tools/nrf52.py`, boot 19) with 0.11.0 images (revision `47a0a7d-dirty`; V4 `01466A2A…`, T114 `7600BE99…`):
 > settings and history kept, default 1; 0 and 4 rejected; the value survives a restart. A V4 → T114 message with
 > 2 bytes (after `resetpath`): ACK, one copy, the V4 got the path return with `path_length=64` (2-byte mode, 0 hops).
@@ -426,14 +426,14 @@
 > unchecked; not checked from a phone.
 
 > **0.10.0: repeaters, rooms and trace in the MeshCore app** (8 October 2026, no full run). 15 boards build; the
-> Chinese T114 image has 6 KB free. Heltec V4 (`tools/flash.py`) and T114 (`tools/nrf52.py`) with a local build; the
+> Chinese T114 image has 6 KB free. Heltec V4 (`tools/hw/flash.py`) and T114 (`tools/nrf52.py`) with a local build; the
 > `meshcore` 2.3.15 Python library on the Heltec over USB, the T114 as a room, then a repeater: admin login, status,
 > CLI (`ver` → `v1.17.1-meshmesh`, `get name`), room and repeater telemetry (voltage, temperature), a room post with
 > ACK, the room's post with its author, own telemetry, trace through the T114 6 of 6 (SNR 12–14 dB per hop), path
 > discovery to the repeater (one of three runs got no answer). A wrong password: the repeater stays silent, as stock
 > does. The first requests after the app's post were refused by the room: neither board's clock was set and the post
 > carried the Mac's time (replay protection); after `set_time` everything passed. The T114 went back to the normal
-> mode afterwards (boot 17), `tools/companion_check.py` passes. Not checked from a phone.
+> mode afterwards (boot 17), `tools/hw/companion_check.py` passes. Not checked from a phone.
 
 > **0.9.0: MeshCore apps (companion protocol)** (8 October 2026, branch `feature/companion`; no boards were connected — not
 > checked on hardware or with a phone, no full run). All 15 boards build; the `tools/ui_preview` scenarios (M9, Heltec,
@@ -444,10 +444,10 @@
 > (`tlora_v2_1_6` with `MM_EMULATOR`, no radio): the third-party `meshcore` 2.3.15 Python library gets device and node
 > information, contacts, channels, time, battery, the contact card and statistics; adds, finds and removes a contact,
 > joins a channel; an unsupported command answers with an error; text commands work after frames.
-> **On hardware (8 October):** Heltec V4 (`tools/flash.py`, boot 179, history of 64 kept) and T114 (`tools/nrf52.py`,
+> **On hardware (8 October):** Heltec V4 (`tools/hw/flash.py`, boot 179, history of 64 kept) and T114 (`tools/nrf52.py`,
 > boot 9, then switched from repeater to the normal mode — boot 10) with images of revision `7d7bc4c-dirty` (the sources
 > of commit `f61c3b0`; Heltec `BCB8B92E…`, T114 `DB47EAC2…`). From a Mac over Bluetooth `MeshCore-T114` is seen with
-> the Nordic UART service and the `MM` mark of company 0xFFFF. `tools/companion_check.py` over USB frames both ways
+> the Nordic UART service and the `MM` mark of company 0xFFFF. `tools/hw/companion_check.py` over USB frames both ways
 > (the app on the T114, the Heltec as the peer, and the reverse): device and node info, the peer in the contacts, a
 > direct message with its ACK (`PUSH_SEND_CONFIRMED`, 1.0–1.3 s; one copy on the peer), the peer's reply and a Public
 > message received by the app, the peer got its ACK, text commands work after frames; no restarts. The first run lost
@@ -482,7 +482,7 @@
 > pass. The web page in headless Chromium hides tiles by `status.modules`.
 
 > **Dice on the M9** (7 October 2026): the `feature/dice` build (before the commit, revision `21405ff-dirty`, image
-> `CA4D4883…`) installed with `tools/flash.py`, boot 218, history (64) and settings kept, `dice` answers; the owner checked
+> `CA4D4883…`) installed with `tools/hw/flash.py`, boot 218, history (64) and settings kept, `dice` answers; the owner checked
 > the screen with the keys — "everything works".
 
 > **Dice (the DIC3R roller)** (7 October 2026, branch `feature/dice`; no board was connected — not checked on
@@ -510,11 +510,11 @@
 > board's screen, the web page and the app) and nRF52 language images without the Russian strings (translation
 > keys at compile time): T114 Chinese 12 KB free (it would be 3), GAT562 Chinese 39 KB. 15 boards built; the
 > screen emulator (m9, tdeck, heltec, gat562, t114) and the Android unit tests passed; Chinese translations
-> are found by the new keys. On hardware (7 October): packages `0c31aa7` installed on the M9 (`tools/flash.py`, ELF
+> are found by the new keys. On hardware (7 October): packages `0c31aa7` installed on the M9 (`tools/hw/flash.py`, ELF
 > `43D98FA1…`, boot 217) and the T114 (`tools/nrf52.py`, ELF `2C7A2937…`, boot 63, repeater role kept); settings
 > and history (64 and 44 records) kept, the pets stayed (their species number is now a new drawing: Lora is Boo,
 > Mote Octomesh). The M9's advert was received and relayed by the T114 (`rx` 1, `relayed` 1), its pet's packets
-> and relays grew. The app in the Android emulator through `tools/usb_tcp_bridge.py` to the M9 showed the "Pet"
+> and relays grew. The app in the Android emulator through `tools/hw/usb_tcp_bridge.py` to the M9 showed the "Pet"
 > section and ran "Pet" (the answer "Мурр"). A repeater's pet gets no "friends": in the server role the MeshCore
 > server keeps the contacts, not the normal role's node list. Bluetooth, the Wi-Fi page, a phone, physical
 > buttons and the GAT562 on 0.5.0 unchecked.
@@ -534,7 +534,7 @@
 > the full run was not done). All 15 boards build; the nRF52 language images fit (the largest, Chinese:
 > GAT562 35 KB free, T114 8 KB). Screen emulator (m9, tdeck, heltec, gat562, t114): shots of the egg, a happy,
 > a hungry and an ill pet and the grave; death at zero health, a new egg with the old pet remembered, hatching
-> after 15 min, no death with death off. This commit was installed with `tools/flash.py` on the M9 (boot 216,
+> after 15 min, no death with death off. This commit was installed with `tools/hw/flash.py` on the M9 (boot 216,
 > ELF `002F361C…`) and the Heltec V4 (boot 165, ELF `BCD57A4F…`): settings and 64 history records kept. Over
 > LoRa, direct messages M9 → Heltec and Heltec → M9 were delivered with ACK: the sender's `acks` and snacks
 > grow, the receiver's `messages`, both `packets`; "friends" are the two nodes each heard (the other board and
@@ -607,7 +607,7 @@
 > Android `0.4.0+local` and the site built; Android unit tests, version/package checks and translation
 > checks passed; 975 UI frames generated. Versions come from `versions.properties`; see `docs/releases.md`.
 > **Local images on hardware**: T114 `2A555B2E…` (boot 36), Heltec V4 `33823E84…` (boot 148),
-> BLE enabled on both. `tools/power_pair_check.py` passed six messages: three each way after
+> BLE enabled on both. `tools/hw/power_pair_check.py` passed six messages: three each way after
 > screen-off, with no receiver USB polling until ACK; one copy, ACK, increasing RX/TX and LoRa
 > notifications, no resets or USB injection. Report: `artifacts/power-040-pair.json`. Original
 > settings and identities preserved; existing T114 history records compared. The original
@@ -668,7 +668,7 @@
 > opened the stored packet, messages arrive after joining; 5 channels kept after an M9 restart; leaving
 > keeps the history, joining again gives the same ID, Public cannot be removed. Compatibility with the
 > official MeshCore companion v1.17.1 (temporarily on the Heltec, full flash copy verified before and after,
-> `tools/channel_check.py`, `artifacts/channel-check.json`): hashtag channel joined by name on both sides,
+> `tools/hw/channel_check.py`, `artifacts/channel-check.json`): hashtag channel joined by name on both sides,
 > a private channel with the key from the MeshMesh link — messages both ways; the invitation received with
 > its key, ACK; an unknown channel counted and opened by its hashtag; leave and rejoin. The first install
 > showed the M9 NVS (20 KB) nearly full: 482 of 504 entries, the contact list (3.5 KB) and the channel block
@@ -686,11 +686,11 @@
 > **15 interface languages — 0.3.7** (2 October 2026; `i18n/README.md`). The M9/T-Deck screens and the OLED
 > boards (Heltec, GAT562, one-button boards) in English, Russian, Ukrainian, Spanish, Portuguese, French, German,
 > Italian, Polish, Turkish, Chinese, Japanese, Korean, Arabic and Indonesian: 861 strings in `i18n/firmware`,
-> `tools/i18n.py check` without errors. Glyphs are subsets of Fusion Pixel 8/12 px (Chinese, Japanese, Korean),
+> `tools/gen/i18n.py check` without errors. Glyphs are subsets of Fusion Pixel 8/12 px (Chinese, Japanese, Korean),
 > ClearlyU 12 (Arabic: joined letters, right-to-left order within a line while the screen layout stays
 > left-to-right) and misc-fixed (Polish and Turkish letters). Checked on the computer: all 14 boards build
 > (GAT562 — 683 of 713 KB flash, about 96%); the screens rendered on the host in 15 languages
-> (`tools/site_shots.py`), the M9 in Arabic, Chinese, German, Japanese and Korean and the OLED in Chinese looked
+> (`tools/site/site_shots.py`), the M9 in Arabic, Chinese, German, Japanese and Korean and the OLED in Chinese looked
 > through; the Russian and English M9 screens match 0.3.6 pixel for pixel. In QEMU (T-Beam, ESP32): the language
 > from `partitions-de.bin` applies on the first start, a partition table without the mark does not change it, a new
 > mark (`ja`) applies once; changing the language with `set` was not checked in QEMU (without a LoRa chip `set`
@@ -836,7 +836,7 @@
 > with targeted checks: M9 — boot #85, ELF `658E6A23169616CF81D0F7CFD8F133283DFFFBEE1BC51079B022ECC38DF4A869`;
 > Heltec — #53, ELF `5AECD5C7A586DA8B06276B8F3510A8D198A93B314DE1BD9205198E16029A4396`;
 > a full run was not performed. Checked: the page in headless Chromium (390 and 1100 px)
-> via `tools/web_usb_bridge.py` to the Heltec — over the radio with the M9, a challenge as white, notifications
+> via `tools/hw/web_usb_bridge.py` to the Heltec — over the radio with the M9, a challenge as white, notifications
 > “MeshMesh M9 accepted the challenge — your move” and “MeshMesh M9: e5 — your move”, move e2–e4
 > by touch, promotion bxa8=Q through the choice window, the M9's draw offer and acceptance
 > by button, deletion by double press (on build #84/#52; afterwards only the CSS of
@@ -867,7 +867,7 @@
 > a rematch with the N key; a move while the Heltec was on another frequency — 3 attempts without ACK,
 > “not delivered” after ~90 s, after the frequency was restored R delivered the move; resignation X×2;
 > deleting finished games with DEL×2 on the board and in the list. Chess commands did not end up in the M9
-> chat history. `tools/chess_check.py` (boots #83/#51): challenge, acceptance on
+> chat history. `tools/hw/chess_check.py` (boots #83/#51): challenge, acceptance on
 > screen, 7 plies to mate, a repeated and an illegal move sent as text ignored,
 > no restarts. Test games were deleted from both boards; 8 chess texts in the
 > Heltec chat history remain from the stage with the old firmware. With physical keys
@@ -1083,8 +1083,8 @@ the screen) and the commands `resetpath`/`forget NODE_ID`.
 - Headless Chromium on an API mock-up with real device data: screenshots of all
   sections at widths 390 and 1280 px, M9 and Heltec variants, no JavaScript errors.
 - `tools/check_web_chat.cjs` and `tools/check_web_codec.cjs` pass.
-- Installed on both boards via `tools/flash.py` (M9 boot 76, Heltec 49).
-  `tools/wifi_probe.py`: the Heltec received the whole page over Wi-Fi (121,760 bytes),
+- Installed on both boards via `tools/hw/flash.py` (M9 boot 76, Heltec 49).
+  `tools/hw/wifi_probe.py`: the Heltec received the whole page over Wi-Fi (121,760 bytes),
   checked refusal without a password, all APIs including the new ones, and tile write/read.
   Reverse run (Heltec — access point, M9 — client): the page and all APIs
   passed; there are no maps on the Heltec, as it has no SD. The Heltec on-screen radar opens

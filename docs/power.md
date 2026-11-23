@@ -18,10 +18,10 @@ time and LoRa notifications received while waiting. They do not measure current 
 `sleeps`, `sleep_ms` and `slow_ms` remain separate ESP32 counters. A lit screen and active use
 retain the fast loop.
 
-Run `python tools/power_check.py --port PORT --peer PEER_PORT`. It temporarily changes only the
+Run `python tools/hw/power_check.py --port PORT --peer PEER_PORT`. It temporarily changes only the
 screen timeout, checks real advert reception during idle, USB and simulated UI wake-up, then
 restores the setting. `nrf52_power_check.py` remains as a compatibility entry point.
-`python tools/power_pair_check.py PORT1 PORT2` checks three direct messages and ACKs in each
+`python tools/hw/power_pair_check.py PORT1 PORT2` checks three direct messages and ACKs in each
 direction without receiver USB polling until ACK, then restores the original roles. See `verification.md`
 for results tied to particular images and remaining limitations.
 
