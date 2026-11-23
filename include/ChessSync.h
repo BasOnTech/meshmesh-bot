@@ -1,7 +1,7 @@
 #pragma once
 #include "Modules.h"
 #include <Arduino.h>
-// Exchange of signed chess results between nodes (docs/chess.md, «Обмен журналами»). A record carries both
+// Exchange of signed chess results between nodes (docs/chess.md, "Ledger exchange"). A record carries both
 // players' keys and signatures, so a node checks it by itself and accepts it from any contact; with the same
 // records every node shows the same ratings, also for games it did not play. Two nodes compare a digest of
 // their newest records, then the record numbers, and send each other the missing records (three messages

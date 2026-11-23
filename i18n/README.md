@@ -1,6 +1,6 @@
 # Translations
 
-MeshMesh speaks English (`en`) and Russian (`ru`); this fork removed the 13 other upstream languages.
+MeshMesh speaks English (`en`); this fork removed Russian and the 13 other upstream languages.
 A new language (Dutch is planned) is added to the end of the language lists with its own files below.
 
 | What | Source | Translations |
@@ -8,8 +8,7 @@ A new language (Dutch is planned) is added to the end of the language lists with
 | Device screens (firmware) | `t("English")`, `tr("English")`, `count(n,"one","many")`, `N_("...")` in tables, in `src/` | `i18n/firmware/<lang>.json` |
 | Website | `site/i18n/en.json` (and `ru.json`) | `site/i18n/<lang>.json` |
 | Device web page and the site's chess page | the English text of `web/index.html` (`L(...)`, `plural(...)`, markup) | `i18n/web/<lang>.json` |
-| Overview | `README.md` | `README.ru.md` (the full Russian guide) |
-| Detailed documents | `docs/*.md` (Russian) | `docs/en/*.md` (English) |
+| Overview and detailed documents | `README.md`, `docs/*.md` | — (English only) |
 
 The website's chess page (`tools/chess_site.py`) is the device page with `web/chess-companion.js`; it uses the
 page's dictionaries.
@@ -90,8 +89,3 @@ same tags. The steps of the installer name buttons of the page (`btn.install`, `
 the same words; the “Erase device” checkbox belongs to ESP Web Tools, which is English only, so keep its
 English name. The page sets `dir="rtl"` for Arabic.
 
-## Overview (README)
-
-`README.<lang>.md` translates `README.md`: the same sections, tables, commands and links. The third
-line lists every language, the current one in bold. Links to detailed documents go to `docs/en/`.
-Code blocks, commands, file names and URLs are not translated.

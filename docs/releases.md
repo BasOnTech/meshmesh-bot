@@ -1,38 +1,39 @@
-# Версии, сборка и публикация
+# Versions, builds and publishing
 
-Единственный источник публичных версий — `versions.properties`: `firmware` для всех плат, в формате
-`MAJOR.MINOR.PATCH`: изменение несовместимого
-поведения — major, новая совместимая функция — minor, исправление — patch. Номер версии протокола MeshCore этим не меняется.
+`versions.properties` is the single source of the public version: `firmware` for all boards, a
+`MAJOR.MINOR.PATCH` value: incompatible behaviour,
+compatible features, then fixes. This does not change
+the MeshCore wire protocol version.
 
-Перед выпуском изменить версию затронутого компонента, затем выполнить:
+Before a release, bump the affected component and run:
 
 ```sh
 python tools/version.py --generate
 python tools/version.py --check
 ```
 
-`include/Version.h` генерируется и хранится в Git. PlatformIO проверяет его соответствие источнику.
-`status` прошивки сообщает `version`, `revision` (Git SHA, с `-dirty` для локальных изменений)
-и `build_sha256` конкретного образа. Одинаковая версия не заменяет сверку SHA-256 при установке.
-Пакеты содержат версию и ревизию в `manifest.json`; сайт запрещает смешивать пакеты разных ревизий.
+The generated `include/Version.h` is committed and checked by PlatformIO. Firmware `status`
+reports `version`, Git `revision` (with `-dirty` for local changes) and the image's `build_sha256`.
+A matching version never replaces a hash check. Package `manifest.json` includes the version and
+revision; site generation rejects packages from different revisions.
 
-## Что происходит при пуше
+## On every push
 
-Пуш в `main` или ручной запуск `.github/workflows/pages.yml` выполняет:
+A push to `main` or manual `.github/workflows/pages.yml` run:
 
-1. Проверку версий и переводов экранов и страницы (`tools/web_i18n.cjs check`).
-2. Сборку и упаковку всех 18 целей. Для nRF52 — все языковые варианты, для ESP32 — образы и
-   языковые метки установщика; для плат сообщества — также factory-образы.
-3. Генерацию скриншотов сайта на всех языках; ошибка теперь останавливает выпуск.
-4. Сборку сайта и шахматной страницы, ZIP-пакетов, манифестов установки, `release.json`.
-   Проверяются хэши, полный набор плат и общая ревизия.
-5. Деплой единого набора на GitHub Pages, только если все обязательные шаги успешны и коммит
-   остаётся текущей вершиной `main`. При ошибке ранее опубликованный сайт остаётся доступным.
+1. Checks versions, translations of the screens and the page (`tools/web_i18n.cjs check`).
+2. Builds and packages all 18 targets, all nRF52 language images, ESP32 installer language markers
+   and community-board factory images.
+3. Generates site screenshots in every language; failure now blocks publication.
+4. Assembles the site, chess page, ZIP packages, installer manifests, `release.json`. Checks hashes,
+   the complete board list and consistent revisions.
+5. Deploys the complete artifact to GitHub Pages only after every required job succeeds and while
+   the commit is still the head of `main`. Failure leaves the previously published site available.
 
-`release.json` на сайте связывает версии с ревизией и SHA-256 образов всех плат. После публикации
-сверять его ревизию с отправленным коммитом. Успешный CI не является
-аппаратной проверкой: результаты на подключённых платах ведутся отдельно в `docs/verification.md`.
+The site's `release.json` ties versions to the source revision and board image hashes. After
+publishing, compare it with the pushed commit. Passing CI is
+not hardware verification; record actual board results separately in `docs/verification.md`.
 
-Пуш **не перепрошивает устройства**. Пользователь обновляет плату через сайт или USB.
-OTA прошивки отсутствует. Документация и `AGENTS.md` обновляются в исходниках перед коммитом;
-CI проверяет и публикует подготовленные материалы, но не пишет отчёты о работе железа самостоятельно.
+A push does not flash boards. Update through the site or USB. Firmware OTA is not implemented.
+Documentation and `AGENTS.md` are edited before the commit. CI validates and publishes prepared
+content; it does not invent hardware reports or update project instructions automatically.

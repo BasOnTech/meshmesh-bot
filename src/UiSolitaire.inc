@@ -1,4 +1,4 @@
-// Klondike solitaire ("Косынка") on the M9 screen. Included by Ui.cpp inside its anonymous
+// Klondike solitaire on the M9 screen. Included by Ui.cpp inside its anonymous
 // namespace: it uses the same drawing helpers, fonts and toasts as the other pages.
 // Arrows move the cursor, Up/Down in a column choose how many cards to take, OK takes and places.
 namespace sol=solitaire;

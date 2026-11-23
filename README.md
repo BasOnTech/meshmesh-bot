@@ -4,8 +4,6 @@ This is the Bas on Tech UI mod of the original MeshMesh. It focuses on creating 
 
 ---
 
-**English** · [Русский](README.ru.md) · [Українська](README.uk.md) · [Español](README.es.md) · [Português](README.pt.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · [Polski](README.pl.md) · [Türkçe](README.tr.md) · [中文](README.zh.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [العربية](README.ar.md) · [Bahasa Indonesia](README.id.md)
-
 **Website and one-click browser install: https://ikrasnodymov.github.io/meshmesh/**
 
 Off-grid messaging firmware for the ThinkNode M9 and Heltec V4 LoRa devices. Messages hop by radio from device to
@@ -23,30 +21,29 @@ MeshCore nodes.
 
 - **Chats** — direct and public messages, ✓✓ delivery receipts, retries, route shown per message; about 300 common emoji drawn on the screens, in colour on colour screens (0.32.0).
 - **Channels** — up to 8 MeshCore channels: join by #hashtag, `meshcore://` link or QR code, name and key;
-  create a private one, invite contacts by direct message, find channels heard on air. [docs/en/channels.md](docs/en/channels.md)
-- **Regions** — MeshCore flood scope: a default region and one per channel, a search of the regions nearby repeaters serve; repeaters set up with the `region` commands. [docs/en/regions.md](docs/en/regions.md)
-- **Network of your city** — the frequency, bandwidth, SF and CR of a local MeshCore network from the community catalogue, written from the website (stock MeshCore boards too) or applied in the app with a test, Keep, Revert and a way back to the previous settings. The board can also find the network on air: it listens to the catalogue profiles and asks the repeaters nearby, and does it by itself near another city (0.29.0). [docs/en/networks.md](docs/en/networks.md)
-- **Backup** — settings, channels with keys, contacts, Quick Send, counters, character sheets and, optionally, the node key in one JSON file from the device page or the app; a restore shows what will change and writes only what you tick, to the same or another board (0.30.0). [docs/en/backup.md](docs/en/backup.md)
+  create a private one, invite contacts by direct message, find channels heard on air. [docs/channels.md](docs/channels.md)
+- **Regions** — MeshCore flood scope: a default region and one per channel, a search of the regions nearby repeaters serve; repeaters set up with the `region` commands. [docs/regions.md](docs/regions.md)
+- **Network of your city** — the frequency, bandwidth, SF and CR of a local MeshCore network from the community catalogue, written from the website (stock MeshCore boards too) or applied in the app with a test, Keep, Revert and a way back to the previous settings. The board can also find the network on air: it listens to the catalogue profiles and asks the repeaters nearby, and does it by itself near another city (0.29.0). [docs/networks.md](docs/networks.md)
+- **Backup** — settings, channels with keys, contacts, Quick Send, counters, character sheets and, optionally, the node key in one JSON file from the device page or the app; a restore shows what will change and writes only what you tick, to the same or another board (0.30.0). [docs/backup.md](docs/backup.md)
 - **Offline maps** — OpenStreetMap with relief and contour lines, kept on the phone (app) or the device SD card; nodes, direct links and GPS on the map, with any board.
-- **Wardriving** — a coverage map of the mesh: packets heard and channel pings with the repeaters that pass them on, logged with a trusted GPS or phone position; Wi-Fi and Bluetooth too on ESP32; export to CSV, GeoJSON, KML and WiGLE. [docs/en/wardrive.md](docs/en/wardrive.md)
+- **Wardriving** — a coverage map of the mesh: packets heard and channel pings with the repeaters that pass them on, logged with a trusted GPS or phone position; Wi-Fi and Bluetooth too on ESP32; export to CSV, GeoJSON, KML and WiGLE. [docs/wardrive.md](docs/wardrive.md)
 - **Nearby nodes** — signal, hops, distance and bearing; contacts, repeaters and rooms.
 - **Signal radar** — Wi-Fi, Bluetooth and LoRa around you, with “warmer / colder” homing.
 - **Motion sensor** — two boards detect a person walking between them (Wi-Fi CSI).
 - **Chess** with your contacts over the mesh, and Klondike solitaire on the M9.
-- **Checkers and sea battle** with your contacts over the mesh (0.33.0): Russian draughts and a 10×10 sea battle, each move an acknowledged message, no rating; all games sit in a Games folder of the menu, and folders can be created, renamed, hidden and filled on the web page or in the app. [docs/en/games.md](docs/en/games.md)
-- **Mesh pet** — a Tamagotchi-like pixel creature on every board that feeds on radio traffic, grows up and can die of hunger or loneliness. [docs/en/pet.md](docs/en/pet.md)
-- **Dice** — the DIC3R dice roller on every board: RPG pools and formulas (2d6+1, d20, d66, d%), a Warhammer grid with a success threshold and a character sheet of blocks (stats, tracks, marks, abilities that roll and spend) with D&D 5e and R.E.T. templates, built on the web page or in the app and sent to a contact over the mesh; the same on the screen, the web page and the app. [docs/en/dice.md](docs/en/dice.md)
+- **Checkers and sea battle** with your contacts over the mesh (0.33.0): Russian draughts and a 10×10 sea battle, each move an acknowledged message, no rating; all games sit in a Games folder of the menu, and folders can be created, renamed, hidden and filled on the web page or in the app. [docs/games.md](docs/games.md)
+- **Mesh pet** — a Tamagotchi-like pixel creature on every board that feeds on radio traffic, grows up and can die of hunger or loneliness. [docs/pet.md](docs/pet.md)
+- **Dice** — the DIC3R dice roller on every board: RPG pools and formulas (2d6+1, d20, d66, d%), a Warhammer grid with a success threshold and a character sheet of blocks (stats, tracks, marks, abilities that roll and spend) with D&D 5e and R.E.T. templates, built on the web page or in the app and sent to a contact over the mesh; the same on the screen, the web page and the app. [docs/dice.md](docs/dice.md)
 - **Chess without MeshMesh on your device**: [the chess page](https://ikrasnodymov.github.io/meshmesh/chess/) plays through a
   board running the official MeshCore Companion firmware, over USB (Web Serial) or Bluetooth (Web Bluetooth), in Chrome or Edge.
 - **Repeater and room server modes** — chosen at boot (M9 screen, Heltec button) or in Settings,
   on the web page, over USB: the device becomes a stock-compatible MeshCore repeater or room server
   with admin login and remote CLI from the MeshCore app; key, contacts and history stay.
-  [docs/en/repeater.md](docs/en/repeater.md)
-- **MeshCore apps** — the stock MeshCore apps connect over Bluetooth or USB and work with the board's chats, contacts and channels (chess stays in the MeshMesh app). [docs/en/companion.md](docs/en/companion.md)
+  [docs/repeater.md](docs/repeater.md)
+- **MeshCore apps** — the stock MeshCore apps connect over Bluetooth or USB and work with the board's chats, contacts and channels (chess stays in the MeshMesh app). [docs/companion.md](docs/companion.md)
 - **GPS and compass**, position sharing, lock screen, phonetic Cyrillic keyboard input.
 - **Web interface** over the device's own Wi-Fi access point or the home Wi-Fi it joins (M9).
-- **Device UI in English and Russian** (Dutch is planned). The website installs the firmware with the language
-  you pick; Settings change it later. The web interface speaks the same languages.
+- **Device UI in English** (Dutch is planned); the web interface too.
 
 ## Boards
 
@@ -87,11 +84,10 @@ The screen UI can be rendered on a computer without a board: `tools/ui_preview/b
 
 ## Documentation
 
-Detailed documentation in English: [channels](docs/en/channels.md), [regions](docs/en/regions.md), [network of your city](docs/en/networks.md), [backup](docs/en/backup.md), [MeshCore compatibility](docs/en/meshcore-migration.md),
-[repeater and room modes](docs/en/repeater.md),
-[chess protocol](docs/en/chess.md), [mesh pet](docs/en/pet.md), [dice](docs/en/dice.md), [map format](docs/en/maps-format.md), [comparison with MeshCore](docs/en/feature-parity.md),
-[hardware verification](docs/en/verification.md). The Russian originals are in [docs/](docs/), with the full
-guide to controls and features in [README.ru.md](README.ru.md).
+Detailed documentation: [channels](docs/channels.md), [regions](docs/regions.md), [network of your city](docs/networks.md), [backup](docs/backup.md), [MeshCore compatibility](docs/meshcore-migration.md),
+[repeater and room modes](docs/repeater.md),
+[chess protocol](docs/chess.md), [mesh pet](docs/pet.md), [dice](docs/dice.md), [map format](docs/maps-format.md), [comparison with MeshCore](docs/feature-parity.md),
+[hardware verification](docs/verification.md).
 
 Not verified yet: LoRa range, GPS accuracy under open sky, compass accuracy, relaying through a
 third repeater. Not implemented: voice, route planning, OTA updates.
@@ -102,19 +98,19 @@ third repeater. Not implemented: voice, route planning, OTA updates.
 [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors. The radar idea follows
 the RSSI tracker and radar HUDs by [Stevee87](https://github.com/Stevee87).
 
-Release 0.4.0: [event waits on every board](docs/en/power.md) and [independent firmware/Android versions and publishing](docs/en/releases.md). Battery-life gains have not been measured.
+Release 0.4.0: [event waits on every board](docs/power.md) and [independent firmware/Android versions and publishing](docs/releases.md). Battery-life gains have not been measured.
 
 Firmware 0.4.1 reduces history-export memory use and reports allocation failures explicitly; Android remains 0.4.0.
 
 Firmware 0.26.0: the sheet's block builder on the M9 and T-Deck screens (E edits a block, A adds one); every board adds a ready D&D 5e and R.E.T. character once.
 
-Firmware 0.25.0 and Android 0.18.0: the [character sheet](docs/en/dice.md#the-character-sheet) replaces the dice counters (they become its tracks); D&D 5e and R.E.T. templates, formulas between blocks, sending a sheet to a contact; the nRF52 libraries are built for size (`-Os`).
+Firmware 0.25.0 and Android 0.18.0: the [character sheet](docs/dice.md#the-character-sheet) replaces the dice counters (they become its tracks); D&D 5e and R.E.T. templates, formulas between blocks, sending a sheet to a contact; the nRF52 libraries are built for size (`-Os`).
 
 Firmware 0.8.1: switching off also writes the dice counters changed in the last two seconds.
 
-Firmware and Android 0.8.0: switch the device off from the Settings menu on its screen, the web page, the app or the USB command `poweroff`; it saves its data, shows "Device is off" and how to turn it on, then enters deep sleep (ESP32), a soft off (nRF52: everything off, the CPU waits for the button) or is cut off by its PMU (T-Beam). Holding the button for about a second, RESET or the power switch turns it on, depending on the board ([docs/en/power.md](docs/en/power.md#power-off)).
+Firmware and Android 0.8.0: switch the device off from the Settings menu on its screen, the web page, the app or the USB command `poweroff`; it saves its data, shows "Device is off" and how to turn it on, then enters deep sleep (ESP32), a soft off (nRF52: everything off, the CPU waits for the button) or is cut off by its PMU (T-Beam). Holding the button for about a second, RESET or the power switch turns it on, depending on the board ([docs/power.md](docs/power.md#power-off)).
 
-Firmware and Android 0.7.0: [dice](docs/en/dice.md) — the DIC3R roller (RPG pools and formulas, a Warhammer grid with a success threshold, counters, characters) on every board, the web page and the app; on the T114 and GAT562 chess, the pet and the dice are [optional modules](docs/en/gat562.md#modules-chosen-before-installing) chosen when building (`tools/nrf52.py package ENV --without …`). Dice checked on the M9 by the owner; the module images not yet on a board.
+Firmware and Android 0.7.0: [dice](docs/dice.md) — the DIC3R roller (RPG pools and formulas, a Warhammer grid with a success threshold, counters, characters) on every board, the web page and the app; on the T114 and GAT562 chess, the pet and the dice are [optional modules](docs/gat562.md#modules-chosen-before-installing) chosen when building (`tools/nrf52.py package ENV --without …`). Dice checked on the M9 by the owner; the module images not yet on a board.
 
 Firmware and Android 0.6.0: reply to a chat message by swiping it from right to left, as in Telegram (double-click on a computer); a channel reply starts with the `@[Name]` mention, a direct one with a short `> …` quote. Checked in the Android emulator's Chrome with test data, not with a board.
 
@@ -124,4 +120,4 @@ Firmware 0.4.3: when the LittleFS partition does not keep writes (as on a user's
 
 Firmware 0.4.2: messages recorded before the clock is set get their exact time once it is set; a spoofed GPS date earlier than the firmware build, or one contradicting the phone/NTP time, is rejected. Android 0.4.1 does not repeat message notifications after that.
 
-[Notifications, quick send, channel retention, periodic NTP and quick counter](docs/en/notifications.md).
+[Notifications, quick send, channel retention, periodic NTP and quick counter](docs/notifications.md).

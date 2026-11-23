@@ -1,68 +1,68 @@
-# Уведомления, быстрая отправка и счётчик
+# Notifications, quick send and counting
 
-Добавлены в прошивке 0.19.0 и Android 0.12.0. Результаты сборок и аппаратной проверки — в [verification.md](verification.md).
+Introduced in firmware 0.19.0 and Android 0.12.0. Build and hardware results are recorded in [verification.md](verification.md).
 
-## Уведомления
+## Notifications
 
-Светодиод, пробуждение экрана и показ входящего сообщения настраиваются независимо: выключено, все сообщения, только упоминания. Настройки доступны в приложении («Настройки → Устройство»), на компактном экране («Настройки → Уведомления»); у M9 пробуждение и окно сообщения — в настройках экрана, остальные параметры — в приложении. У каждого канала есть собственные значения или наследование общих настроек.
+LED, screen wake and incoming-message pop-up are independent: off, all messages or mentions. Each channel may override or inherit them. Configure them in the app's device settings; compact boards also have a Notifications settings page. M9 screen settings expose wake and pop-up controls.
 
-Упоминание — `@[имя узла]` без учёта регистра латиницы и кириллицы; дополнительно можно задать слова через запятую. Обычное имя без этой записи не считается упоминанием. Звук управляется прежней настройкой звука. Очередь уведомлений независима от глубины истории, переполнение видно в `status.notification_dropped`.
+Mentions use `@[node name]`, case-insensitive for Latin and Cyrillic. Optional comma-separated words also trigger mentions. A plain unmarked name does not. Sound uses the existing sound setting. Events are independent of history retention; queue overflow is reported by `status.notification_dropped`.
 
-У Heltec и большинства поддержанных плат один управляемый светодиод: обычное сообщение, упоминание и ошибка различаются ритмом мигания. Раздельных зелёного и красного выводов у этих плат нет; наличие управляемого светодиода сообщает `status.notification_led`. Красный цвет ошибки не обещается.
+Most supported boards have one controllable LED, so ordinary messages, mentions and failures use different blink rates. They do not have separate green and red outputs. `status.notification_led` reports LED availability.
 
-По желанию показываются ошибки отправки. Различаются ошибка радио, отсутствие ACK личного сообщения и отсутствие услышанного повтора канального сообщения за 30 с. Последнее не доказывает недоставку: повтор мог не попасть к отправителю. Статус «доставлено» по-прежнему требует подходящего ACK. Входящее сообщение на компактном экране рисуется без внешней рамки; в режиме костей и ручного счёта оно не перехватывает кнопку.
+Optional failure alerts distinguish radio TX failure, missing direct-message ACK and no channel repeat heard within 30 seconds. Missing a repeat does not prove failed delivery. Delivered still requires the appropriate ACK. Compact incoming-message screens have no outer frame. Dice and manual counting do not let pop-ups consume the next button press.
 
-В вебе и Android («Уведомления») отдельно выбираются входящие всплывающие сообщения: все, упоминания или выключено; сообщения о действиях: все, ошибки или выключено. Ошибки операций остаются доступными в интерфейсе. Системные уведомления Android настраиваются отдельно.
+Web and Android notification settings separately control incoming banners (all, mentions, off) and action feedback (all, errors, off). Operation errors remain visible in the interface. Android system notifications have separate settings.
 
-## Быстрая отправка
+## Quick send
 
-Раздел «Быстрая отправка» содержит 10 общих шаблонов, адресата и необязательное добавление координат. Начальный адресат — Public; после выбора адресат сохраняется по ID. Можно выбрать вступлённый канал, чат-контакт или комнату. Удалённый адресат вызывает ошибку и не подменяется Public. В приложении шаблоны редактируются и сохраняются на плате, затем используются и экраном. Кнопка ↗ в чате открывает быстрый ответ этому собеседнику или каналу.
+Ten shared presets, a recipient and optional GPS attachment are stored on the board. Public is the initial recipient. A selected joined channel, chat contact or room is saved by ID; a removed recipient fails instead of silently falling back to Public. Edit and save presets in the app and use them on the device. The ↗ chat button opens quick reply to that conversation.
 
-С 0.19.1 на всех поддерживаемых платах выбор получателя — отдельная плашка в начале списка, видимая и при прокрутке шаблонов. Она показывает текущий канал или контакт: на M9, T-Deck и T114 выделяется цветом, на компактных экранах — рамкой и инверсией при выборе. Обычное открытие раздела выделяет плашку; подтверждение адресата сохраняет его ID и выделяет первую фразу без отправки. Отмена списка возвращает к плашке.
+Since 0.19.1, all supported boards keep recipient selection in a separate card above the presets, visible while scrolling. It shows the current channel or contact: colour on M9, T-Deck and T114, an outline and selected inversion on compact screens. Normal entry selects the card; confirming a recipient saves its ID and selects the first preset without sending. Cancelling the recipient list returns to the card.
 
-На M9/T-Deck стрелки выбирают, OK на плашке открывает адресатов, OK на фразе отправляет, «назад» выходит. На T-Deck доступны также касания плашки, адресата и шаблона. Стрелка вправо в пустой строке чата открывает быстрый ответ. На однокнопочных платах экраны быстрой отправки, ручного счётчика и костей при перелистывании закрыты: клик переходит дальше, удержание открывает экран (с 0.20.1; ответ из сообщений открывает быструю отправку сразу). В открытой быстрой отправке клик выбирает, удержание открывает адресатов, подтверждает выбранного или отправляет фразу. Строка выхода «< Выход» остаётся в конце и переводит на следующий экран. На GAT562 вверх/вниз выбирают строку, OK выполняет её действие, влево/вправо переключают экран, «назад» отменяет выбор адресата или возвращает домой.
+M9/T-Deck: arrows select, OK on the card opens recipients, OK on a preset sends, back exits. T-Deck also supports taps on the card, recipient and preset. Right with an empty chat composer opens quick reply. One-button devices: while paging, the Quick Send, manual counter and dice pages stay closed: a click moves on, a hold opens the page (since 0.20.1; a reply from messages opens Quick Send directly). Inside Quick Send, click selects; hold opens recipients, confirms the chosen recipient or sends a preset. The "< Exit" row remains at the end and advances to the next page. GAT562: up/down select, OK runs the selected action, left/right change page, back cancels recipient selection or goes home.
 
-Шаблон ограничен 160 байтами UTF-8, при отправке проверяется меньший предел выбранного адресата. По BLE действует общий предел 255 байт команды, включая JSON и экранирование; более длинный шаблон с кавычками/переносами можно сохранить по USB или Wi-Fi. Координаты выключены по умолчанию; добавляются только при свежем доверенном GPS-фиксе и достоверных часах, без конфликта GPS. Устаревшая или подменённая позиция вызывает ошибку, а не отправку старых координат.
+Presets allow at most 160 UTF-8 bytes; sending also checks the recipient's smaller limit. BLE commands have a shared 255-byte encoded limit including JSON and escaping; longer quoted/multiline templates can be saved through USB or Wi-Fi. GPS attachment defaults off and requires a fresh trusted fix, trusted clock and no GPS conflict. Stale or conflicting coordinates produce an error.
 
-USB/BLE/HTTP: `quick` (JSON), `quick do {"action":"set","index":0,"text":"Принято"}`, действия `target` с `to`, `send` с `index` и необязательным `to`, `gps` с `enabled`, `reset`. HTTP: GET/POST `/api/quick`; приложение переводит эти же запросы в команды USB/BLE.
+USB/BLE/HTTP: `quick` returns JSON. `quick do {"action":"set","index":0,"text":"OK"}` edits; `target` takes `to`; `send` takes `index` and optional `to`; `gps` takes `enabled`; `reset` restores defaults. HTTP GET/POST `/api/quick` has the same USB/BLE mappings in Android.
 
-Идея списка шаблонов и выбора канала — из [руководства dt267](https://github.com/dt267/MeshCore-Low-Power-Firmware/blob/main/Companion_Display_Guide.md#quick-send-channel-screen); реализация использует интерфейс и сетевой слой MeshMesh.
+The preset and channel-selection idea comes from the [dt267 guide](https://github.com/dt267/MeshCore-Low-Power-Firmware/blob/main/Companion_Display_Guide.md#quick-send-channel-screen). MeshMesh uses its own UI and network implementation.
 
-## Приоритет и история канала
+## Channel priority and retention
 
-В настройках канала доступны низкий, обычный и высокий приоритет; глубина истории платы — автоматически, 8 или 16; архива Android — автоматически, 8, 16 или 32. Низкий приоритет автоматически оставляет 16 сообщений на плате и 32 в Android. Общая история платы ограничена 64 записями: при заполнении первыми вытесняются старые записи менее важных каналов. Канал с малой глубиной получает место и при заполненной общей истории; дальнейший поток заменяет его собственные старые записи. При конкуренции каналов общий предел остаётся 64. Активная отправка защищена до завершения. Снижение глубины удаляет самые старые записи этого канала.
+Channels have low, normal or high priority. Device limits: automatic, 8 or 16; Android archive limits: automatic, 8, 16 or 32. Automatic low priority retains 16 device messages and 32 Android messages. The board has a global 64-message history and evicts older lower-priority rows first; a channel with a bounded depth receives space even when the global history is full, then replaces its own oldest rows. The shared limit remains 64 when channels compete. Active sends are protected until complete. Reducing a cap removes that channel's oldest rows.
 
-Файл истории сокращается по одной записи за проход основного цикла; предыдущий целый файл сохраняется до завершения нового. Это не блокирует радио длинной записью всей истории. Шаблоны, политика каналов и ручной счёт хранятся в LittleFS в двух проверяемых копиях, а не в ограниченном NVS.
+Compaction writes one row per main-loop iteration and retains the previous complete file until the new snapshot is committed. Presets, channel policies and manual counts use two verified LittleFS copies, keeping large records out of NVS.
 
-Android собирает историю при подключении и фоновом опросе независимо от транспорта. Архив отдельный для каждого публичного ключа узла, сохраняется атомарно; максимум 32 узла, 4096 сообщений на узел и 1024 на обычный чат. Повторный опрос, поздняя установка часов и обновление ACK не создают копий сообщений. Архив содержит только сообщения, которые приложение успело прочитать; обычная веб-страница показывает историю платы.
+Android archives foreground and background reads across all transports, separately by full node public key. Atomic storage is bounded to 32 nodes, 4096 messages per node and 1024 per ordinary conversation. Repeated polls, clock stamping and ACK updates do not duplicate messages. Only messages actually fetched by the app are archived; the standalone web page shows device history.
 
-## Периодическое время по Wi-Fi
+## Periodic Wi-Fi time
 
-На ESP32, включая компактные платы, можно сохранить сеть и включить периодическую NTP-синхронизацию без постоянного Wi-Fi-клиента. С выключенным постоянным клиентом и часами, не обновлявшимися час, плата подключается на срок до 45 с. После успеха отключает Wi-Fi до следующего часа; ошибки дают повтор через 10, 20, 40 и 60 мин. Точка доступа, радар, CSI и Wi-Fi-проверка имеют преимущество. Свежая синхронизация с телефоном откладывает NTP независимо от способа подключения телефона. Веб и Android обновляют часы раз в 30 мин.
+ESP32 boards, including compact ones, can save a network and enable periodic NTP without the persistent Wi-Fi client. With that client off and the clock not refreshed for an hour, a temporary connection lasts at most 45 seconds. Success switches Wi-Fi off until the next hour. Failures retry after 10, 20, 40 and 60 minutes. Access point, radar, CSI and Wi-Fi probes take priority. Fresh phone time postpones NTP regardless of the phone transport; web and Android refresh time every 30 minutes.
 
-Настройка — «Связь → Интернет»: сохранение сети и переключатель периодического времени. Команды: `internet save {"ssid":"...","password":"..."}`, `internet ntp on|off`, `internet` (состояние). `internet add` по-прежнему включает постоянный клиент. По умолчанию периодический NTP выключен; на nRF52 Wi-Fi отсутствует. Результат NTP зависит от доступной сети, не от успешной сборки.
+Configure this in Connection / Internet. Commands: `internet save {"ssid":"...","password":"..."}`, `internet ntp on|off`, `internet` for status. `internet add` still enables the persistent client. Periodic NTP defaults off. nRF52 has no Wi-Fi. NTP success requires an available network and hardware verification.
 
-## Быстрый счётчик
+## Quick counter
 
-С 0.24.0 «Счётчик людей» стал «Быстрым счётчиком»: до 8 карточек со своим названием, цветом и значением 0–999999
-(люди, круги, подходы). Карточка без названия показывается как «Счётчик N». Открытая карточка общая для экрана,
-страницы и приложения; ручной счёт прежних версий переходит в первую карточку. Значения сохраняются через 2 с после
-последнего нажатия (`/meshmesh/tally`), добавление, переименование и удаление — сразу. Последняя карточка не удаляется.
-Модуль работает и в сборке без костей.
+Since 0.24.0 the "People counter" is the "Quick counter": up to 8 cards, each with its own name, colour and value
+0–999999 (people, laps, sets). A card without a name shows as "Counter N". The open card is shared by the screen,
+the page and the app; the manual count of earlier versions becomes the first card. Values are saved 2 s after the
+last press (`/meshmesh/tally`); adding, renaming and deleting are saved at once. The last card cannot be deleted.
+The module works in images without Dice too.
 
-- M9 и T-Deck: экран открывается сразу на карточке — OK/вверх +1, вниз −1, влево/вправо листают карточки
-  (на T-Deck — свайпом), за последней — «Новый счётчик». N или удержание — имя, C — цвет, R дважды — сброс в 0,
-  DEL дважды — удаление, B и W — оценка BLE и Wi-Fi под карточкой.
-- Однокнопочные платы: экран открывается удержанием, затем клик +1, удержание — меню: −1, «Дальше: <имя>»,
-  «Новый счётчик», «Сбросить в 0», «Удалить этот счётчик» (удержание ещё раз в течение 5 с), BLE, Wi-Fi, окно и выход.
-  GAT562: вверх +1, вниз −1, OK — то же меню.
-- Страница и приложение: карточки листаются влево-вправо, нажатие на число — +1, есть −1, «Изменить» (имя и значение),
-  цвет, сброс и удаление с подтверждением, точки-указатели и карточка «Новый счётчик».
+- M9 and T-Deck: the page opens straight on a card — OK/up +1, down −1, left/right turn the cards (a swipe on the
+  T-Deck), and past the last one is "New counter". N or a hold names it, C colours it, R twice resets it to 0,
+  DEL twice deletes it, B and W show the BLE and Wi-Fi estimate under the card.
+- One-button boards: a hold opens the page, then click +1, hold opens the menu: −1, "Next: <name>", "New counter",
+  "Reset to 0", "Delete this counter" (hold again within 5 s), BLE, Wi-Fi, window and exit. GAT562: up +1, down −1,
+  OK the same menu.
+- Page and app: cards swipe left and right, a tap on the number is +1, with −1, "Edit" (name and value), colour,
+  reset and delete with confirmation, dots and a "New counter" card.
 
-Автоматические показатели — устройства BLE и устройства Wi-Fi, отдельно от ручного счёта и друг от друга. Фильтр RSSI −100…−30 dBm, окно 30/60/300 с, необязательный фильтр BLE телефонов/часов. В каждой таблице до 128 временных идентификаторов; переполнение отмечается «+»/нижней границей и счётчиком пропущенных наблюдений. Имена, адреса и содержимое пакетов в счётчике не сохраняются; идентификаторы солятся на каждую загрузку, таблицы остаются в RAM.
+Automatic results are BLE devices and Wi-Fi devices, kept separate from manual counting and from each other. RSSI threshold −100…−30 dBm, window 30/60/300 seconds, optional BLE phone/watch filter. Each table has 128 temporary identifiers and indicates saturation and dropped observations. No names, addresses or payloads are saved by the counter; identifiers are salted per boot and tables stay in RAM.
 
-BLE-сканирование пассивное в фоне, использует существующий контроллер вместе с рекламой и подключениями. Wi-Fi принимает probe request и кадры клиента пассивно, переключая разрешённые каналы; уступает точке доступа, радару, CSI, проверке и Интернету. На nRF52 есть только BLE. Оба автоматических режима выключены по умолчанию.
+Background BLE scanning is passive and shares the existing controller with advertising and connections. Passive Wi-Fi listens to probe requests and client frames, hopping permitted channels; it yields to access point, radar, CSI, probes and Internet. nRF52 supports BLE only. Both automatic modes default off.
 
-Один человек может иметь несколько устройств, телефон может не рекламироваться, адреса могут меняться. Поэтому автоматические числа не являются числом людей и не складываются с ручным счётом. Страница показывает эту оговорку рядом с показателями.
+People may carry multiple devices, devices may not advertise, and addresses may change. Automatic device counts are estimates rather than headcounts and are not added to the manual result. The page explains this beside the indicators.
 
-Команды: `people` (JSON: `counters` с `name`, `value`, `color`, `current`, `counters_max`; `manual` — значение открытой карточки для старых страниц), `people do {"action":"change","delta":1}` (`index` — карточка, по умолчанию открытая), `reset`, `set` с `value`, `select`, `add` с необязательным `name`, `rename` с `name`, `color` с `color` 0–14, `delete`, `window_reset`, `settings` с `ble`, `wifi`, `personal_only`, `window`, `rssi`. HTTP: GET/POST `/api/people`.
+Commands: `people` returns JSON (`counters` with `name`, `value`, `color`, `current`, `counters_max`; `manual` is the open card's value for older pages); `people do {"action":"change","delta":1}` (`index` picks a card, the open one by default), `reset`, `set` with `value`, `select`, `add` with an optional `name`, `rename` with `name`, `color` with `color` 0–14, `delete`, `window_reset`, `settings` with `ble`, `wifi`, `personal_only`, `window`, `rssi`. HTTP GET/POST `/api/people` has matching Android mappings.

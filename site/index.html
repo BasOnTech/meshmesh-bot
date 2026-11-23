@@ -471,11 +471,11 @@ const FEATURES=[
 ];
 const HERO=['m9-home','m9-chat','m9-map','m9-radar','m9-chess-italian','m9-motion'];
 const OLED=['heltec-home','heltec-messages','heltec-nodes','heltec-radar','heltec-gps','heltec-popup'];
-// Documents: the overview in every language; the details in Russian, translated to English (docs/en).
+// Documents: the overview and the details, in English (docs/).
 const DOCS=[['README.md','doc.readme'],['docs/channels.md','doc.channels'],['docs/regions.md','doc.regions'],['docs/networks.md','doc.networks'],['docs/wardrive.md','doc.wardrive'],['docs/meshcore-migration.md','doc.migration'],['docs/companion.md','doc.companion'],['docs/repeater.md','doc.repeater'],['docs/pet.md','doc.pet'],['docs/dice.md','doc.dice'],['docs/chess.md','doc.chess'],['docs/games.md','doc.games'],['docs/maps-format.md','doc.maps'],['docs/feature-parity.md','doc.parity'],['docs/verification.md','doc.verification']];
 function docPath(path){
  if(path==='README.md')return lang==='en'?path:`README.${lang}.md`;
- return path.replace('docs/','docs/en/');
+ return path;
 }
 let lang='en',T={},EN={};
 const L=k=>T[k]??EN[k]??k;

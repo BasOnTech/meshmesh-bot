@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <stddef.h>
-// Sea battle (морской бой): a 10x10 field, columns a..j, rows 1..10; ten ships of 4, 3, 3, 2, 2, 2, 1, 1, 1, 1
+// Sea battle: a 10x10 field, columns a..j, rows 1..10; ten ships of 4, 3, 3, 2, 2, 2, 1, 1, 1, 1
 // cells that do not touch each other, not even at a corner. A hit or a sunk ship lets the shooter fire again.
 // Plain C++ (no Arduino), shared by the screens, the network games and the host checks.
 namespace sea {

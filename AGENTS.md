@@ -5,7 +5,7 @@
 The project is firmware for the Elecrow ThinkNode M9 and the Heltec V4 (this fork supports only these two; the upstream MeshMesh also built for nRF52 and other ESP32 boards): a standalone interface,
 MeshCore chats and channels (hashtag, link/QR, key, invitations; `docs/channels.md`, `src/Channels.cpp`), MeshCore regions
 (default region and per-channel region, search at neighbouring repeaters, companion commands 54/55/63/64; `docs/regions.md`, `src/Regions.cpp`,
-`src/RegionSearch.inc`, check `tools/region_check.py`), city network — a radio profile from the community directory (`site/networks.json`, `tools/networks.py`; the site's `site/netpick.js` (collapsed block, Russian site only) writes it over companion, the page/app — `renderNet` in `web/index.html`, trial and previous profile on the board — `radio try|keep|revert|previous`, on-air network search — `netfind`, `src/NetFind.inc`, the directory digest `include/NetCatalog.h`, `docs/networks.md`), LoRa, offline maps (on the device SD or in phone storage in the app — `android/.../api/MapStore.kt`; relief and contour lines from Terrain Tiles during preparation; node map without a base layer — `drawMap` in `web/index.html`; `docs/maps-format.md`), Wi-Fi, BLE, a signal radar, a Wi-Fi CSI motion sensor,
+`src/RegionSearch.inc`, check `tools/region_check.py`), city network — a radio profile from the community directory (`site/networks.json`, `tools/networks.py`; the page — `renderNet` in `web/index.html`, trial and previous profile on the board — `radio try|keep|revert|previous`, on-air network search — `netfind`, `src/NetFind.inc`, the directory digest `include/NetCatalog.h`, `docs/networks.md`), LoRa, offline maps (on the device SD or in phone storage in the app — `android/.../api/MapStore.kt`; relief and contour lines from Terrain Tiles during preparation; node map without a base layer — `drawMap` in `web/index.html`; `docs/maps-format.md`), Wi-Fi, BLE, a signal radar, a Wi-Fi CSI motion sensor,
 chess with contacts (M9 screen and the web page of both boards, MeshCore direct messages,
 rated ELO games with a result signed by both nodes' keys — `src/ChessRating.cpp`, Swiss-system tournaments — `src/ChessTour.cpp`; `docs/chess.md`; draughts and battleship with contacts, unrated — `src/Checkers.cpp`, `src/Sea.cpp`, `src/Duel.cpp`, screens `src/UiDuel.inc`, `src/UiDuelCompact.inc`, `docs/games.md`, protocol check `tools/duel_check.py`; menu app folders (the "Games" folder) — `src/Apps.cpp`; the site page `chess/` plays through a stock MeshCore companion over Web Serial/Bluetooth —
 `web/chess-companion.js`, `tools/chess_site.py`), a network pet — a tamagotchi that feeds on radio traffic,
@@ -23,7 +23,7 @@ Do not present old reports or an identical version string as verification of a n
 
 ## Repository
 
-GitHub: this fork, `BasOnTech/meshmesh-bot`, of the public `IKrasnodymov/meshmesh` (MIT; `README.md` — English overview, `README.<lang>.md` — its translations, `README.ru.md` — the full Russian one; `docs/en/` — English translations of the detailed documents), main branch `main`. The site is
+GitHub: this fork, `BasOnTech/meshmesh-bot`, of the public `IKrasnodymov/meshmesh` (MIT; `README.md` — the overview, `docs/` — the detailed documents, all in English), main branch `main`. The site is
 GitHub Pages from `site/` (https://ikrasnodymov.github.io/meshmesh/): `.github/workflows/pages.yml`
 builds all boards and `tools/pages.py` (ESP Web Tools browser-install manifests,
 writing at offsets without erasing NVS). Screen screenshots — `tools/ui_preview`; the interactive simulator in an SDL2 window —
@@ -115,7 +115,7 @@ found; do not add tests that merely duplicate the implementation.
 
 The public firmware version is SemVer; the single source is
 `versions.properties`. After a change: `python tools/version.py --generate`, then `--check`;
-`include/Version.h` is generated and committed. Details — `docs/releases.md` and `docs/en/releases.md`.
+`include/Version.h` is generated and committed. Details — `docs/releases.md`.
 The firmware reports `version`, `revision` (Git SHA + `-dirty` locally), `build_sha256`; packages and the site
 include the revision and hashes. Do not treat an identical SemVer as proof of an identical image.
 A push to `main` runs `.github/workflows/pages.yml`: version and translation checks (screens, page, chess),
@@ -133,8 +133,7 @@ written in the code: `t("English")`, `tr("English")`, `count(n,"one","many")`; s
 with `i18n/firmware/<lang>.json` following `i18n/README.md`: `tools/i18n.py sync`, translate,
 `.venv/bin/python tools/i18n.py generate` (the table; the Latin Extended font subsets need `upstream/fonts`),
 `tools/i18n.py check`, build, and review the screens with `tools/site_shots.py OUTDIR <lang>`.
-Site — `site/i18n/en.json` and `ru.json`; detailed documents are translated into
-`docs/en/` together with the edit of the Russian original. The device web page — English: the English text in the
+Site — `site/i18n/en.json`; the detailed documents in `docs/` are English. The device web page — English: the English text in the
 code is the dictionary key of `i18n/web/<lang>.json` for a further language; in `web/index.html` write `L('…')`,
 `` L`…${x}` `` (do not glue a phrase together from pieces), `plural(n,'{n} game','{n} games')`. Then
 `node tools/web_i18n.cjs sync`, `node tools/web_i18n.cjs check` (needs `npm ci --prefix tools`). The page language —
@@ -142,9 +141,9 @@ code is the dictionary key of `i18n/web/<lang>.json` for a further language; in 
 the site — `tools/web_shots.py` (demo data `tools/web_demo.py`, in CI); `site/img` holds the fallbacks.
 The site's chess page (`chess/`) is the same page in English and gets the same dictionaries.
 The site installs the firmware with the chosen language: `partitions-<lang>.bin` with a tag at 0x8C00; the tag is applied once.
-`include/Modules.h` (`MM_CHESS`, `MM_PET`, `MM_DICE`, `MM_WARDRIVE`, `MM_CHECKERS`, `MM_SEA`) and the `MM_LANG_IN`/`MM_NO_RU`
-language subsets in `src/I18n.cpp` and `tools/i18n.py` come from the upstream nRF52 images: both boards build everything. Cyrillic fonts stay in all
-images: Russian messages arrive over the radio.
+`include/Modules.h` (`MM_CHESS`, `MM_PET`, `MM_DICE`, `MM_WARDRIVE`, `MM_CHECKERS`, `MM_SEA`) comes from the upstream
+nRF52 images: both boards build everything. Cyrillic fonts stay in all images: Cyrillic messages arrive over the radio, and the
+phonetic keyboard types them.
 
 ## Installation and data safety
 
@@ -212,7 +211,7 @@ Android's background polling every 8 s). `idle_waits`, `idle_wait_ms`, `idle_rad
 the task's waiting, not CPU sleep or current. Check — `tools/power_check.py --port PORT --peer PORT`;
 when checking a direct message, do not poll the receiver's USB until the ACK. After a message the screen may
 turn off again on its timer — a late read of `screen_off` does not prove there was no wake-up.
-`docs/power.md`, `docs/en/power.md`; RXPS and cyclic GPS power are not implemented yet.
+`docs/power.md`; RXPS and cyclic GPS power are not implemented yet.
 Battery voltage (0.30.3): Heltec V4 — 2.5 dB attenuation and a 4.9 × 1.045 divider. Check new multipliers against the owner's voltmeter, not
 against another firmware. Feedback on the V3 (reading 3–6 % low) — `docs/verification.md`; not yet checked on hardware.
 

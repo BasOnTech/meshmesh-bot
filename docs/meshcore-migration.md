@@ -1,98 +1,98 @@
 # MeshMesh 0.3.0: MeshCore
 
-Радиослой M9 и Heltec V4 переведён с MM/1 на MeshCore. Собственный экран,
-веб-интерфейс, карты, GPS, компас, Wi-Fi и диагностический BLE сохранены.
-Совместимость относится к радио. Сторонний MeshCore companion может видеть M9 и писать ему по радио.
-С 0.9.0 плата сама понимает протокол companion: штатные приложения MeshCore подключаются к ней
-по Bluetooth или USB ([companion.md](companion.md)).
+The radio layer of the M9 and Heltec V4 has been moved from MM/1 to MeshCore. Our own screen,
+web interface, maps, GPS, compass, Wi-Fi and diagnostic BLE are kept.
+Compatibility applies to the radio. A third-party MeshCore companion can see the M9 and message it over the radio.
+Since 0.9.0 the board speaks the companion protocol itself: the stock MeshCore apps connect to it
+over Bluetooth or USB ([companion.md](companion.md)).
 
-## Настройки и обнаружение
+## Settings and discovery
 
-На обоих устройствах: 868.731 MHz, BW 62.5 kHz, SF8, CR 4/6, мощность чипа
-10 dBm. Преамбула MeshCore: 32 символа при SF7–8, 16 при SF9–12; sync word 0x12.
-Параметры радио должны совпадать на стороннем устройстве. Одного совпадения
-частоты недостаточно. Meshtastic и старый MM/1 не поддерживаются этим радиослоем.
+On both devices: 868.731 MHz, BW 62.5 kHz, SF8, CR 4/6, chip power
+10 dBm. MeshCore preamble: 32 symbols at SF7–8, 16 at SF9–12; sync word 0x12.
+The radio parameters must match on the third-party device. Matching the
+frequency alone is not enough. Meshtastic and the old MM/1 are not supported by this radio layer.
 
-После загрузки отправляется advert, далее раз в пять минут. На M9 кнопка ADV
-отправляет advert вручную. Отправьте advert также на стороннем устройстве;
-после получения подписанного объявления узел появится в «Узлах».
-Чат-узлу можно отправить личное сообщение. Ретрансляторы, серверы комнат
-и датчики также отображаются с их ролью; обычный личный чат предназначен
-для роли chat. В карточке узла (0.3.1) можно сбросить найденный путь — следующее
-сообщение пойдёт flood — или удалить контакт; его следующее объявление добавит
-узел снова. Вход в комнату, серверные команды и телеметрия пока не добавлены
-([сравнение](feature-parity.md)).
+An advert is sent after boot, then every five minutes. On the M9 the ADV button
+sends an advert manually. Send an advert from the third-party device as well;
+after a signed advert is received, the node appears in “Nodes”.
+A chat node can be sent a direct message. Repeaters, room servers
+and sensors are also shown with their role; ordinary direct chat is meant
+for the chat role. In the node card (0.3.1) you can reset the discovered route — the next
+message goes by flood — or delete the contact; its next advert adds the
+node again. Room login, server commands and telemetry have not been added yet
+([comparison](feature-parity.md)).
 
-Таблица контактов — 24 узла. Когда она заполнена, объявление нового узла занимает
-место контакта, о котором дольше всего ничего не было слышно (правило MeshCore
-«перезапись при заполнении»). Не вытесняются чат-узлы и узлы, с которыми есть
-переписка в истории или шахматная партия; на практике уходят давно молчащие
-ретрансляторы. Ретранслятору запись не нужна, чтобы пересылать наши сообщения;
-его следующее объявление вернёт его в список. Счётчик — `contacts_replaced` в `status`.
+The contact table holds 24 nodes. When it is full, an advert from a new node takes
+the place of the contact that has not been heard from for the longest time (the MeshCore rule
+“overwrite when full”). Chat nodes and nodes with a conversation in the history
+or a chess game are not evicted; in practice it is long-silent
+repeaters that go. A repeater does not need an entry to relay our messages;
+its next advert returns it to the list. The counter is `contacts_replaced` in `status`.
 
-«Предел ретрансляции» (`hops`, до 0.20.2 — «Предел наших пересылок») = 3: при включённой ретрансляции
-наше устройство пересылает чужой flood-пакет, только если тот прошёл меньше трёх ретрансляторов
-(аналог `flood.max` репитера MeshCore; 0 — не пересылать). Дальность своих сообщений он не ограничивает.
-В MeshCore нет глобального TTL MM/1; это не обещание, что другие ретрансляторы ограничат весь маршрут
-тремя переходами.
-«Размер хэша пути» (с 0.11.0, `path_hash`: 1–3 байта, по умолчанию 2 с 0.24.0; платы со старым значением 1 при обновлении один раз переходят на 2) — сколько байт ключа каждого
-ретранслятора записывается в путь наших flood-пакетов (сообщения, ACK, возврат пути, объявления, запросы).
-2–3 байта реже путают ретрансляторы с одинаковым первым байтом в большой сети, но уменьшают число
-пересылок, помещающихся в путь, а прошивки MeshCore без поддержки многобайтовых путей такие пакеты
-не пересылают. Принимаются и пересылаются пакеты любого размера независимо от настройки; ответ узла
-следует размеру пути запроса. С 0.24.0 режимы репитера и комнаты берут ту же настройку; CLI `set path.hash.mode` меняет её.
-Усиливающая радиочасть Heltec влияет на фактическую выходную мощность:
-значение настройки относится к SX1262, измерение мощности антенны не проводилось.
+“Relay hop limit” (`hops`, “Our relay limit” before 0.20.2) = 3: with relaying on, our device
+forwards another node's flood packet only if it has passed fewer than three repeaters (like `flood.max`
+of a MeshCore repeater; 0 — forward nothing). It does not limit the range of our own messages.
+MeshCore has no global TTL as in MM/1; this is not a promise that other repeaters will limit the whole
+route to three hops.
+“Path hash size” (since 0.11.0, `path_hash`: 1–3 bytes, 2 by default since 0.24.0; boards still on the old 1 move to 2 once on the update) is how many bytes of each
+repeater's key go into the path of our flood packets (messages, ACKs, path returns, adverts, requests).
+2–3 bytes confuse repeaters sharing a first byte less often in a large network, but fewer hops fit in
+the path, and MeshCore firmware without multi-byte paths does not relay such packets. Packets of any
+size are received and relayed whatever the setting; a node's reply follows the path size of the request.
+Since 0.24.0 the repeater and room modes use the same setting; CLI `set path.hash.mode` changes it.
+The Heltec's amplifying radio front end affects the actual output power:
+the setting value applies to the SX1262; antenna power has not been measured.
 
-## Ключи, чаты и подтверждения
+## Keys, chats and delivery receipts
 
-Ключи Ed25519 создаются для каждого устройства и сохраняются в отдельном
-NVS namespace `meshmesh-mc`. Подписанные adverts проверяются ядром MeshCore.
-Полный открытый ключ — идентификатор контакта; короткие адреса нашего UI/API
-являются его первыми восемью байтами. ECDH и шифрование используют полный ключ.
-Контакты и найденные обратные пути сохраняются в NVS с контрольной суммой.
-Даты сообщений/объявлений сохраняют монотонность при перезапуске.
+Ed25519 keys are created for each device and stored in a separate
+NVS namespace `meshmesh-mc`. Signed adverts are verified by the MeshCore core.
+The full public key is the contact identifier; the short addresses of our UI/API
+are its first eight bytes. ECDH and encryption use the full key.
+Contacts and discovered return paths are saved in NVS with a checksum.
+Message/advert timestamps stay monotonic across restarts.
 
-Личные сообщения используют стандартный MeshCore обмен и ACK. «Доставлено»
-появляется только после совпадения ожидаемого ACK. Три попытки ограничены
-тайм-аутом; повторы одной отправки не создают несколько строк истории.
-Первая попытка идёт по известному пути, вторая и третья — затоплением (ответ на flood
-приносит новый путь). Путь «напрямую» берётся, только если узел за последние 30 минут был
-слышен без ретрансляторов и с запасом SNR 5 дБ над порогом SF; иначе первая попытка тоже
-flood. После трёх неудач путь сбрасывается. Маршрут, число ретрансляторов и номер
-удачной попытки показываются у сообщения в чате.
-При перезапуске незавершённые личные отправки становятся неподтверждёнными.
+Direct messages use the standard MeshCore exchange and ACK. “Delivered”
+appears only after the expected ACK matches. Three attempts are bounded by a
+timeout; retries of one send do not create multiple history rows.
+The first attempt goes along the known path, the second and third by flood (the reply to a flood
+brings a new path). The “direct” path is used only if the node was heard in the last 30 minutes
+without repeaters and with an SNR margin of 5 dB above the SF threshold; otherwise the first attempt is also
+flood. After three failures the path is reset. The route, the number of repeaters and the number of
+the successful attempt are shown at the message in the chat.
+On restart, unfinished direct sends become unconfirmed.
 
-Общий чат — стандартный канал Public с общеизвестным ключом MeshCore.
-Он не приватный, имена отправителей в нём не удостоверены и ACK доставки нет.
-Личные исходящие сообщения ограничены 151 байтом UTF-8. Лимит Public зависит
-от длины имени: до 160 байт вместе с префиксом «имя: » (не больше 151 байта текста).
-Интерфейсы показывают фактический лимит; текст не обрезается при отправке.
+The public chat is the standard Public channel with the well-known MeshCore key.
+It is not private, sender names in it are not authenticated, and there is no delivery ACK.
+Outgoing direct messages are limited to 151 bytes of UTF-8. The Public limit depends
+on the name length: up to 160 bytes including the “name: ” prefix (no more than 151 bytes of text).
+The interfaces show the actual limit; text is not truncated when sending.
 
-## Сохранение и откат
+## Preservation and rollback
 
-Старый ключ MM/1, история и настройки сохранены. Старые сообщения помечены
-как архив MM/1; старые MAC-адреса не превращаются автоматически в новые ключи
-контактов. Карты SD и калибровка не форматируются. UI/API показывают последние
-64 сообщения; на накопителе остаются ограниченные журналы истории.
-Снимки данных и исходников до перехода — `backups/before-meshcore-0.3`;
-известные рабочие пакеты 0.2.0 сохранены отдельно в `artifacts`.
+The old MM/1 key, history and settings are kept. Old messages are marked
+as the MM/1 archive; old MAC addresses are not automatically turned into new contact
+keys. SD maps and calibration are not formatted. The UI/API show the last
+64 messages; bounded history logs remain on the storage.
+Snapshots of data and sources before the migration are in `backups/before-meshcore-0.3`;
+known working 0.2.0 packages are kept separately in `artifacts`.
 
-## Источники и проверки
+## Sources and verification
 
 Vendored core: MeshCore fork `ALLFATHER-BV/meshcomod`, tag `core-v1.17.4`, commit
-`edd7ed47f42acf6c64c9fcac551050fdbd531a09`. MIT и исходные заголовки сохранены.
-Две локальные проверки границ перечислены в `lib/MeshCore/PATCHES.md`.
-Аппаратный адаптер, постоянная идентичность и интеграция с UI написаны в MeshMesh.
+`edd7ed47f42acf6c64c9fcac551050fdbd531a09`. The MIT license and original headers are kept.
+Two local bounds checks are listed in `lib/MeshCore/PATCHES.md`.
+The hardware adapter, persistent identity and UI integration are written in MeshMesh.
 
-Независимая эталонная прошивка: официальный `meshcore-dev/MeshCore`,
-`companion-v1.17.1`. Локальная тестовая сборка меняет описание платы/flash/USB
-для подключённого Heltec; её источники радиопротокола не изменены.
-Результат настоящего радиообмена — `artifacts/meshcore-stock-check.json`.
-Окончательную установленную сборку определяют `build_sha256` устройства
-и `app_elf_sha256` пакета, а не только строка версии.
+Independent reference firmware: the official `meshcore-dev/MeshCore`,
+`companion-v1.17.1`. The local test build changes the board/flash/USB description
+for the connected Heltec; its radio protocol sources are unchanged.
+The result of the real radio exchange is `artifacts/meshcore-stock-check.json`.
+The final installed build is identified by the device's `build_sha256`
+and the package's `app_elf_sha256`, not by the version string alone.
 
-Отдельное устройство MeshCore пользователь проверяет сам. Дальность на улице,
-работа через третий ретранслятор, свежий outdoor GPS и точность осей компаса
-остаются отдельными проверками. Карты улиц работают без интернета после загрузки;
-спутниковые изображения, маршруты, голос и OTA пока отсутствуют.
+The user tests their separate MeshCore device on their own. Outdoor range,
+operation through a third repeater, a fresh outdoor GPS fix and compass axis accuracy
+remain separate checks. Street maps work without internet after they are loaded;
+satellite imagery, routes, voice and OTA are not available yet.

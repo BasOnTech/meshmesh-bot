@@ -2,7 +2,7 @@
 #include "Modules.h"
 #include <Arduino.h>
 struct ChessMatch;
-// Swiss chess tournaments over MeshCore direct messages (docs/chess.md, «Турнир»). The organiser's device
+// Swiss chess tournaments over MeshCore direct messages (docs/chess.md, "Tournament (Swiss system)"). The organiser's device
 // keeps the whole tournament: invitations, pairings, results and standings. It pairs automatically:
 // round 1 by lot (seeded by the tournament number), later rounds by score, without repeated games and
 // with alternating colours. Each player gets their pairing with the opponent's key, plays an ordinary

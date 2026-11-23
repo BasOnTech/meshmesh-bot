@@ -57,7 +57,7 @@ fetched, no bulk prefetch. Zoom 3-18 for viewing; uploads keep 10-17.
 Without GPS or a saved view (NVS `mm-map`), the map centres on an approximate IP
 location (get.geojs.io, then ipapi.co; this sends the public IP to that service).
 
-Relief (page and app builder, option «Рельеф и горизонтали»): elevations come from Terrain Tiles
+Relief (page and app builder, option "Relief and contour lines"): elevations come from Terrain Tiles
 (Mapzen terrarium PNG on AWS Open Data, `elevation-tiles-prod`, CORS open; elevation =
 R·256 + G + B/256 − 32768 m; sources SRTM, GMTED, ETOPO1 and others,
 https://registry.opendata.aws/terrain-tiles) at zoom 12 at most, sampled bilinearly. Hillshade

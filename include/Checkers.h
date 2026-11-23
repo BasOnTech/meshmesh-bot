@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <stddef.h>
-// Russian draughts (русские шашки): 8x8, White starts from a1-h2-..., men move forward and capture in all four
+// Russian draughts: 8x8, White starts from a1-h2-..., men move forward and capture in all four
 // directions, kings fly, capturing is compulsory (any capture sequence, not the longest), a man that reaches the
 // last row during a capture continues it as a king, captured pieces leave the board after the move (the Turkish
 // strike: a piece is never jumped twice). Plain C++ (no Arduino), shared by the screens, the network games and the

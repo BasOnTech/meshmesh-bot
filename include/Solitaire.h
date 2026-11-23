@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <stddef.h>
-// Klondike ("Косынка"): rules, scoring, undo and a validated saved form. The screen UI draws it.
+// Klondike: rules, scoring, undo and a validated saved form. The screen UI draws it.
 namespace solitaire {
 // Piles: stock, waste, four foundations, seven tableau columns.
 constexpr uint8_t Stock=0,Waste=1,Foundation=2,Tableau=6,PileCount=13,FaceUp=0x80;

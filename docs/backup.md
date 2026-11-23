@@ -1,72 +1,72 @@
-# Резервная копия
+# Backup
 
-С 0.30.0 (приложение 0.21.0) настройки платы можно сохранить в один файл JSON и вернуть на ту же плату или
-перенести на другую: «Настройки → Резервная копия» на веб-странице устройства и в приложении для Android
-(Wi-Fi, Bluetooth или USB). Копию собирает и записывает страница обычными командами платы, поэтому то же самое
-доступно по USB и BLE (`tools/device.py`).
+Since 0.30.0 (app 0.21.0) a board's settings can be saved to one JSON file and written back to the same board
+or moved to another one: Settings → Backup on the device page and in the Android app (Wi-Fi, Bluetooth or USB).
+The page reads and writes the copy with the board's ordinary commands, so the same is available over USB and BLE
+(`tools/device.py`).
 
-## Что входит
+## What it holds
 
-- **Настройки** (`config`): имя, радиопрофиль, мощность, пересылки, хэш пути, регион, язык и яркость экрана,
-  блокировка, уведомления, часовой пояс, порядок приложений, поиск сети (`net_auto`). Прежний и тестовый
-  радиопрофили (`radio_prev`, `radio_trial`) не переносятся.
-- **Ключ узла** (по желанию, отмечен по умолчанию): закрытый ключ MeshCore в формате экспорта MeshCore —
-  64 байта шестнадцатеричными цифрами. С ним восстановленная или новая плата остаётся для контактов тем же узлом.
-- **Каналы** со ссылками и ключами, регионом и настройками уведомлений, у Public — регион и уведомления.
-- **Контакты**: открытый ключ, имя, тип, координаты. Путь к узлу не сохраняется: после восстановления первое
-  сообщение уходит через всю сеть (flood), и путь находится заново.
-- **Быстрая отправка**: шаблоны, получатель, координаты в сообщении.
-- **Быстрый счётчик**: карточки (название, значение, цвет), открытая карточка, настройки счёта устройств.
-- **Листы персонажей** (модуль костей): строка `MMS1~…` каждого персонажа.
+- **Settings** (`config`): name, radio profile, power, relaying, path hash, region, screen language and
+  brightness, lock, notifications, time zone, app order, network search (`net_auto`). The previous and test radio
+  profiles (`radio_prev`, `radio_trial`) are not carried over.
+- **Node key** (optional, ticked by default): the MeshCore private key in MeshCore's export format — 64 bytes as
+  hexadecimal digits. With it a restored or new board stays the same node for your contacts.
+- **Channels** with their links and keys, region and notification settings; for Public, its region and notifications.
+- **Contacts**: public key, name, type, position. The path to a node is not kept: after a restore the first message
+  goes through the whole mesh (flood) and the path is found again.
+- **Quick Send**: templates, recipient, position in the message.
+- **Quick counter**: cards (name, value, colour), the open card, the device counting settings.
+- **Character sheets** (dice module): the `MMS1~…` text of each character.
 
-Не входят: сообщения (их архив хранит приложение), карты, журнал вардрайва (для него есть экспорт), питомец,
-шахматы и рейтинг, пароль точки доступа Wi-Fi (он новый при каждом запуске) и PIN BLE, уведомления, которые
-хранит сам браузер или приложение. В режиме репитера или комнаты копия содержит настройки и ключ узла, без
-каналов и контактов.
+Not included: messages (the app keeps their archive), maps, the wardrive log (it has its own export), the pet,
+chess and rating, the Wi-Fi access point password (new at every start) and the BLE PIN, notification settings the
+browser or the app keeps itself. In the repeater or room mode the copy holds the settings and the node key, without
+channels and contacts.
 
-Файл открытым текстом содержит ключи каналов и, если отмечен, ключ узла: по ним можно читать личные сообщения
-и закрытые каналы. Храните его как пароль.
+The file holds the channel keys and, if ticked, the node key as plain text: with them one can read your direct
+messages and private channels. Keep it like a password.
 
-## Восстановление
+## Restore
 
-После выбора файла страница сравнивает его с платой и показывает только то, что изменится:
+Once a file is chosen the page compares it with the board and shows only what will change:
 
-- каждую изменённую настройку со старым и новым значением, у каждой своя отметка; копия другой платы
-  (`board` в файле) не отмечает мощность, яркость, порядок приложений, GPS и показ напряжения;
-  о смене радиопрофиля предупреждает отдельно; настройки, неизвестные этой прошивке, перечислены и пропускаются;
-- новые каналы и каналы, у которых отличаются регион или уведомления;
-- новые контакты (существующие не перезаписываются);
-- изменённые шаблоны быстрой отправки, карточки счётчика;
-- листы персонажей с именами, которых на плате нет (общий набор не восстанавливается);
-- ключ узла, если он отличается от текущего.
+- every changed setting with its old and new value, each with its own tick; for a copy of another board (`board`
+  in the file) power, brightness, app order, GPS and the voltage display are left unticked; a change of the radio
+  profile gets its own warning; settings this firmware does not know are listed and skipped;
+- new channels and channels whose region or notifications differ;
+- new contacts (existing ones are not overwritten);
+- changed Quick Send templates, the counter cards;
+- character sheets whose names the board does not have (the general set is not restored);
+- the node key, if it differs from the current one.
 
-Записывается только отмеченное, по порядку: настройки (радиопрофиль одной командой, остальное порциями до
-200 байт — предел записи BLE 255 байт; при ошибке порции настройки повторяются по одной), каналы, контакты,
-быстрая отправка, счётчики, листы и последним — ключ узла. Итог показывается построчно. Новый ключ записывается
-в хранилище и начинает действовать после перезапуска, который плата делает сама через 1,5 с; перед ним
-сохраняются отложенные изменения контактов. С новым ключом плата один раз объявляет себя в сети.
+Only what is ticked is written, in this order: settings (the radio profile in one command, the rest in pieces of up
+to 200 bytes — a BLE write holds 255; if a piece fails, its settings are retried one by one), channels, contacts,
+Quick Send, counters, sheets and, last, the node key. The result is shown line by line. A new key is stored and
+takes effect after a restart the board makes by itself 1.5 s later; contact changes still pending are saved first.
+With the new key the board announces itself once.
 
-Не включайте одновременно две платы с одним ключом: сеть не различит их, ответы и подтверждения будут
-приходить на обе.
+Do not run two boards with the same key at once: the mesh cannot tell them apart, and replies and acknowledgements
+reach both.
 
-## Команды
+## Commands
 
-Новые команды прошивки (USB, BLE, `/api/command`):
+New firmware commands (USB, BLE, `/api/command`):
 
-| Команда | Ответ |
+| Command | Answer |
 |---|---|
 | `identity` | `{"private_key":"<128 hex>","public_key":"<64 hex>"}` |
 | `identity set <128 hex>` | `OK identity saved; restarting`, `OK identity unchanged`, `ERR identity: …` |
-| `contact add {"key":"<64 hex>","name":"…","type":1,"lat":55.79,"lon":49.12}` | `OK contact saved` (уже известный контакт не меняется) |
+| `contact add {"key":"<64 hex>","name":"…","type":1,"lat":55.79,"lon":49.12}` | `OK contact saved` (a contact already known stays as it is) |
 
-`identity` и `identity set` по Wi-Fi работают только через точку доступа платы: по домашней сети страница
-передаётся без шифрования, и плата отвечает `ERR the key is given out on the device access point only`.
-Ключ принимается только если из него получается открытый ключ, допустимый в MeshCore (не начинается с 00 или FF).
+Over Wi-Fi, `identity` and `identity set` work only through the board's access point: on a home network the page
+travels unencrypted, and the board answers `ERR the key is given out on the device access point only`. A key is
+accepted only if it gives a public key MeshCore allows (not starting with 00 or FF).
 
-Остальное копия берёт и пишет существующими командами: `config`/`set`, `channels`/`channel do`, `nodes`,
+Everything else is read and written with existing commands: `config`/`set`, `channels`/`channel do`, `nodes`,
 `quick`/`quick do`, `people`/`people do`, `dice char use`, `dice sheet export`, `dice sheet put`.
 
-## Формат файла
+## File format
 
 ```json
 {"format":"meshmesh-backup","version":1,"created":"2026-11-09T07:09:28Z","firmware":"0.30.0",
@@ -79,25 +79,25 @@
  "sheets":[{"name":"…","general":false,"text":"MMS1~…"}]}
 ```
 
-Открытый ключ в файле один — `node.public_key`: по нему видно, с какого узла копия, и с ним сравнивается текущая плата.
-При восстановлении применяется только закрытый ключ `identity.private_key`, открытый плата вычисляет из него сама и хранит
-вместе с закрытым (одна запись `identity` в хранилище MeshCore). Копии 0.30.0 повторяли открытый ключ в
-`identity.public_key`; он не применяется, страница берёт его только для предпросмотра.
+The file holds one public key, `node.public_key`: it shows which node the copy is from and is compared with the
+current board. A restore applies only the private key `identity.private_key`; the board derives the public key from it
+and keeps both together (one `identity` record in the MeshCore storage). Copies made by 0.30.0 repeat the public key in
+`identity.public_key`; it is not applied, the page uses it only for the preview.
 
-Имя файла — `meshmesh-backup-<имя>-ГГГГ-ММ-ДД-ЧЧ-ММ.json` по местному времени телефона или компьютера (с 0.30.1;
-в 0.30.0 — UTC); `created` внутри файла — UTC в формате ISO 8601.
+The file name is `meshmesh-backup-<name>-YYYY-MM-DD-HH-MM.json` in the local time of the phone or computer (since 0.30.1;
+UTC in 0.30.0); `created` inside the file is UTC in ISO 8601.
 
-Если ключ узла не удалось получить (домашняя сеть, старая прошивка), вместо `identity` записывается
-`identity_error`. Разделы отсутствуют, если на плате нет соответствующей функции.
+If the node key could not be read (home network, older firmware), `identity_error` is written instead of
+`identity`. A section is missing when the board does not have that feature.
 
-## Пределы
+## Limits
 
-- Старая прошивка (до 0.30.0) сохраняет копию без ключа узла и не принимает контакты; остальное работает.
-- Таблица контактов вмещает 24 узла: при заполненной таблице новый контакт вытесняет давно не слышанный.
-- Каналов не больше 8 вместе с Public, персонажей — 6.
+- Older firmware (before 0.30.0) saves a copy without the node key and does not take contacts; the rest works.
+- The contact table holds 24 nodes: when it is full a new contact replaces one not heard for a long time.
+- At most 8 channels including Public, and 6 characters.
 
-## Проверка
+## Verification
 
-`tools/web_demo.py` отвечает на команды копии: сохранение и восстановление проверены в браузере
-(состав файла, предпросмотр изменений, отметки другой платы, порядок и содержание команд). Команды прошивки
-собраны для всех плат; на железе копия пока не проверена (см. `docs/verification.md`).
+`tools/web_demo.py` answers the commands of the backup: saving and restoring were checked in a browser (the file's
+content, the preview of changes, the ticks for another board, the order and content of the commands). The firmware
+commands were built for all boards; the backup has not been checked on hardware yet (see `docs/verification.md`).
