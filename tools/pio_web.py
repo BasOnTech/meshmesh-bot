@@ -2,9 +2,9 @@
 # in the build folder: web/index.html, the page's dictionaries (i18n/web/<lang>.json) and the networks catalogue
 # (site/networks.json), each compressed with gzip and sent with Content-Encoding: gzip (src/Portal.cpp). The header
 # is rewritten only when its contents change.
-# The dictionaries share their keys, the Russian text, which is most of each: i18n/keys.js has them once, and
+# The dictionaries share their keys, the English text, which is most of each: i18n/keys.js has them once, and
 # i18n/<lang>.js the translations in their order; it loads keys.js and makes globalThis.MeshMeshWebDict as
-# tools/web_i18n.cjs build does (about 300 KB less flash than whole dictionaries).
+# tools/web_i18n.cjs build does. English is the source and needs none: without LANGS the page is sent alone.
 import gzip
 import json
 import os
@@ -13,7 +13,7 @@ try:
     Import('env')  # noqa: F821
 except NameError:  # imported by a check, not run by PlatformIO
     env = None
-LANGS = ['en']
+LANGS = []  # the languages after English, as tools/web_i18n.cjs
 
 
 def packed(data):
@@ -52,15 +52,18 @@ def build(env):
               array('portalPage', packed(page)), 'static const size_t portalPageSize=sizeof(portalPage);\n']
     langs = []
     keys, files = dictionaries(root)
-    header.append(array('portalKeys', packed(keys)))
+    header.append(f'#define PORTAL_LANG_COUNT {len(LANGS)}\n')
+    if LANGS:
+        header.append(array('portalKeys', packed(keys)))
     for code in LANGS:
         header.append(array('portalLang_' + code, packed(files[code])))
         langs.append(f'{{"{code}",portalLang_{code},sizeof(portalLang_{code})}}')
     with open(os.path.join(root, 'site', 'networks.json'), encoding='utf-8') as f:
         networks = json.dumps(json.load(f), ensure_ascii=False, separators=(',', ':')).encode()
     header.append(array('portalNetworks', packed(networks)))
-    header.append('struct PortalLang{const char* code;const uint8_t* data;size_t size;};\n')
-    header.append('static const PortalLang portalLangs[]={' + ','.join(langs) + '};\n')
+    if LANGS:
+        header.append('struct PortalLang{const char* code;const uint8_t* data;size_t size;};\n')
+        header.append('static const PortalLang portalLangs[]={' + ','.join(langs) + '};\n')
     text = ''.join(header)
 
     os.makedirs(out_dir, exist_ok=True)

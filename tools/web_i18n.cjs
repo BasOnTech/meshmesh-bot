@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// Languages of the device page (i18n/README.md). The Russian text of web/index.html is the key of
+// Languages of the device page (i18n/README.md). The English text of web/index.html is the key of
 // i18n/web/<lang>.json:
-//   L('текст'), L`текст ${x}` (the key has {0}, {1}… for the values) and the markup of web/index.html;
-//   plural(n,'одна','две','пять') — the key "одна|две|пять", its value the forms of the language with {n};
+//   L('text'), L`text ${x}` (the key has {0}, {1}… for the values) and the markup of web/index.html;
+//   plural(n,'{n} message','{n} messages') — the key "{n} message|{n} messages", its value the forms of the language with {n};
 //   "_pieces" — the letters K Q R B N of the chess notation.
 // Needs acorn: npm ci --prefix tools.
 //   node tools/web_i18n.cjs sync          keys of the code into every dictionary (new ones empty, old ones go)
@@ -12,8 +12,8 @@
 'use strict';
 const fs=require('fs'),path=require('path');
 const ROOT=path.resolve(__dirname,'..'),DIR=path.join(ROOT,'i18n/web');
-const LANGS=['en'];
-const CYR=/[А-Яа-яЁё]/;
+const LANGS=[]; // the languages after English, each with i18n/web/<lang>.json
+const WORD=/[A-Za-z]{2}/; // markup text worth translating
 
 function keys(){
  const acorn=require('acorn'),out=new Map(),add=(k,kind,where)=>{if(!out.has(k))out.set(k,{kind,where})};
@@ -28,7 +28,7 @@ function keys(){
     add(a.value,'text',line)}
    if(n.type==='TaggedTemplateExpression'&&n.tag.type==='Identifier'&&n.tag.name==='L')
     add(n.quasi.quasis.map((q,i)=>(i?`{${i-1}}`:'')+q.value.cooked).join(''),'text',line);
-   if(n.type==='CallExpression'&&n.callee.type==='Identifier'&&n.callee.name==='plural'&&n.arguments.length===4){
+   if(n.type==='CallExpression'&&n.callee.type==='Identifier'&&n.callee.name==='plural'&&n.arguments.length===3){
     const f=n.arguments.slice(1);
     if(f.every(a=>a.type==='Literal'&&typeof a.value==='string'))add(f.map(a=>a.value).join('|'),'plural',line);
     else if(!f.every(a=>a.type==='Identifier'))throw Error(`${line}: plural() takes the forms as strings`)}
@@ -40,8 +40,8 @@ function keys(){
  for(const m of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)){scan(m[1],'web/index.html',html.slice(0,m.index+m[0].indexOf('>')+1).split('\n').length-1);markup=markup.replace(m[0],'')}
  markup=markup.replace(/<style[\s\S]*?<\/style>/g,'').replace(/(<textarea[^>]*>)[\s\S]*?(<\/textarea>)/g,'$1$2');
  const decode=s=>s.replace(/&nbsp;/g,'\u00a0').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&#(\d+);/g,(m,n)=>String.fromCodePoint(+n)).replace(/&amp;/g,'&');
- for(const part of markup.split(/<[^>]*>/)){const t=decode(part).trim();if(CYR.test(t))add(t,'markup','web/index.html')}
- for(const m of markup.matchAll(/\s(?:title|placeholder|aria-label|value)="([^"]*)"/g)){const t=decode(m[1]).trim();if(CYR.test(t))add(t,'markup','web/index.html')}
+ for(const part of markup.split(/<[^>]*>/)){const t=decode(part).trim();if(WORD.test(t))add(t,'markup','web/index.html')}
+ for(const m of markup.matchAll(/\s(?:title|placeholder|aria-label|value)="([^"]*)"/g)){const t=decode(m[1]).trim();if(WORD.test(t))add(t,'markup','web/index.html')}
  return out}
 
 const file=l=>path.join(DIR,l+'.json');

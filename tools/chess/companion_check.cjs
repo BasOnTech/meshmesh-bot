@@ -124,9 +124,9 @@ async function until(cond,what,ms=3000){const end=Date.now()+ms;while(!cond()){i
  ok(link.self.name==='Stock'&&link.self.freq===868.731&&link.self.bw===62.5&&link.self.sf===8&&link.self.cr===6,'self info');
  ok(link.deviceInfo().version==='v1.17.1'&&link.deviceInfo().model==='Heltec V4','device info');
  const peers=link.peers();ok(peers.length===2&&peers[0].id==='BBBBBBBBBBBB'&&peers[0].name==='Bob'&&peers[0].type===1&&peers[0].heard&&peers[0].age_seconds<120&&peers[0].path_length===1,'contacts '+JSON.stringify(peers[0]));
- fake.incoming('♟1A2B new w · шахматы MeshMesh: вы играете чёрными');
+ fake.incoming('♟1A2B new w · MeshMesh chess: you play Black');
  await until(()=>net.json().length===1&&net.json()[0].state==='invited','a challenge from the radio');
- fake.incoming('Привет',false);await until(()=>others[0]==='Привет','other messages are kept for the page (old frame format)');
+ fake.incoming('Hello',false);await until(()=>others[0]==='Hello','other messages are kept for the page (old frame format)');
  ok(net.command('chess accept 1A2B')==='OK accept','accept through the page command');
  await until(()=>fake.sent.length===1&&net.json()[0].out_status===Delivered,'ACK from the companion delivers');
  ok(fake.sent[0].text==='♟1A2B yes'&&fake.sent[0].to==='BBBBBBBBBBBB'&&fake.sent[0].attempt===0,'text and recipient '+JSON.stringify(fake.sent[0]));

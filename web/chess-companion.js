@@ -1,7 +1,7 @@
-// MeshMesh Chess through a stock MeshCore companion (docs/chess.md, «Со штатной MeshCore companion»).
+// MeshMesh Chess through a stock MeshCore companion (docs/chess.md, "With a stock MeshCore companion").
 // The site's chess page is web/index.html with this file (tools/chess_site.py). The rules port
 // src/Chess.cpp and the games src/ChessNet.cpp: the same text commands, ACKs and resending, so a game
-// with an M9, a Heltec or a GAT562 on MeshMesh goes as between two boards. The radio is the
+// with an M9 or a Heltec on MeshMesh goes as between two boards. The radio is the
 // companion's: USB (Web Serial) or Bluetooth (Web Bluetooth), frames of the MeshCore companion
 // protocol (upstream/meshcore-stock/examples/companion_radio/MyMesh.cpp). The games are kept in this
 // browser, separately for every companion key.
@@ -133,12 +133,10 @@ class Game{
 // "♟3F2A 5 g1f3 3. Nf3": a tag, the game number, then the command; the rest is for a human reader.
 const Tag='♟',Queued=1,Sent=2,Delivered=3,Failed=4,MaxMatches=12;
 // Automatic resending: after 2, 5 and 10 minutes, then every 15; at once when the other player is
-// heard again (at most every 2 min); stops after 24 h without confirmation ("Повторить отправку" resends).
+// heard again (at most every 2 min); stops after 24 h without confirmation ("Resend" resends).
 const RetryDelays=[120000,300000,600000,900000],RetryWindow=86400000,HeardGap=120000;
 const retryDelay=n=>RetryDelays[Math.min(n,3)],inFlight=s=>s===Queued||s===Sent;
 const hex4=n=>n.toString(16).toUpperCase().padStart(4,'0');
-// The text for a human reader in the page's language (web/chess-i18n.js); Russian without it.
-const say=s=>globalThis.MeshMeshChessI18n?globalThis.MeshMeshChessI18n.t(s):s;
 
 class Match{
  constructor(){
@@ -165,7 +163,7 @@ class ChessNet{
   for(const m of this.matches){
    if(!m.pending()||m.sending()||m.autoStopped)continue;
    if(!m.openSince)m.openSince=now;
-   if(now-m.openSince>RetryWindow){m.autoStopped=true;m.retryAt=0;this.note(m.name+': нет подтверждения 24 ч');continue}
+   if(now-m.openSince>RetryWindow){m.autoStopped=true;m.retryAt=0;this.note(m.name+': no confirmation for 24 h');continue}
    const p=this.env.contact(m.peer),heard=p&&p.heardAt>m.triedAt&&now-m.triedAt>=HeardGap; // they are on air again
    if(!m.retryAt&&!heard){m.retryAt=now+retryDelay(m.retries);continue}
    if(heard||now>=m.retryAt)this.retry(m)}}
@@ -201,7 +199,7 @@ class ChessNet{
    if(m.outId===id&&m.outStatus!==Delivered){m.outStatus=status;hit=true}
    if(!hit)continue;
    if(status===Delivered){this.confirmed(m);if(m.pending())m.retryAt=this.env.now()} // the next open command goes at once
-   if(status===Failed&&!m.retries)this.note(m.name+': не подтвердил, повторю автоматически');
+   if(status===Failed&&!m.retries)this.note(m.name+': not confirmed, will retry automatically');
    this.changed(m);return}}
  // Their move answers my last move, and "yes" my challenge: those arrived even when the ACK was lost.
  received(m,move){
@@ -223,10 +221,10 @@ class ChessNet{
   if(a==='new'){
    if(b[0]!=='w'&&b[0]!=='b')return false;if(m)return true;
    m=this.slot();
-   if(!m){this.env.send(from,`${Tag}${c.slice(0,4)} no`);this.note(name+': вызов отклонён, нет свободной доски');return true}
+   if(!m){this.env.send(from,`${Tag}${c.slice(0,4)} no`);this.note(name+': challenge declined, no free board');return true}
    Object.assign(m,{peer:from,id,name,mine:b[0]==='w'?Black:White,state:'invited',started:this.env.unix()});m.game.reset();
-   this.news(m,name+' вызывает на партию в шахматы');this.changed(m);return true}
-  if(!m){this.note('Шахматы: ход в неизвестной партии');return true}
+   this.news(m,name+' challenges you to a game of chess');this.changed(m);return true}
+  if(!m){this.note('Chess: a move in an unknown game');return true}
   m.name=name;const g=m.game,theirs=m.mine^1;
   if(a[0]>='1'&&a[0]<='9'){
    const ply=parseInt(a,10);
@@ -234,27 +232,27 @@ class ChessNet{
    if(m.state!=='playing')return true;
    if(ply&&ply===g.plies&&((ply-1)&1)===theirs){const was=uci(g.moves[ply-1]);if(was===b||(b.length===4&&was.startsWith(b)))return true} // repeat
    const mv=ply===g.plies+1&&g.pos.side===theirs?g.pos.parseUci(b):0;
-   if(!mv){this.note(`${m.name}: ход не принят (${b})`);return true}
+   if(!mv){this.note(`${m.name}: move not accepted (${b})`);return true}
    const san=g.pos.san(mv);g.play(mv);this.received(m,true);if(m.drawOffer==='mine')m.drawOffer='';
    this.judge(m);
-   this.news(m,`${m.name}: ${san}`+(m.state==='over'?(m.won()?', вы победили':m.lost()?', вы проиграли':', ничья'):g.pos.inCheck()?', шах, ваш ход':', ваш ход'));this.changed(m);return true}
-  if(a==='yes'){if(m.state!=='inviting')return true;m.state='playing';this.received(m,false);this.news(m,m.name+' принял вызов: играем');this.changed(m);return true}
+   this.news(m,`${m.name}: ${san}`+(m.state==='over'?(m.won()?', you won':m.lost()?', you lost':', draw'):g.pos.inCheck()?', check, your move':', your move'));this.changed(m);return true}
+  if(a==='yes'){if(m.state!=='inviting')return true;m.state='playing';this.received(m,false);this.news(m,m.name+' accepted the challenge: playing');this.changed(m);return true}
   if(a==='no'){
-   if(m.state==='inviting'){this.finish(m,'','declined');this.news(m,m.name+' отказался от партии')}
-   else if(m.state==='invited'||(m.state==='playing'&&!g.plies)){this.finish(m,'','cancelled');this.news(m,m.name+' отменил партию')}
+   if(m.state==='inviting'){this.finish(m,'','declined');this.news(m,m.name+' declined the game')}
+   else if(m.state==='invited'||(m.state==='playing'&&!g.plies)){this.finish(m,'','cancelled');this.news(m,m.name+' cancelled the game')}
    else return true;
    this.changed(m);return true}
-  if(a==='draw?'){if(m.state!=='playing'||m.drawOffer==='theirs')return true;if(m.drawOffer==='mine'){this.finish(m,'draw','agreed');this.news(m,'Ничья по соглашению')}else{m.drawOffer='theirs';this.news(m,m.name+' предлагает ничью')}this.changed(m);return true}
-  if(a==='draw'){if(m.state!=='playing'||m.drawOffer!=='mine')return true;this.received(m,false);this.finish(m,'draw','agreed');this.news(m,m.name+' согласился на ничью');this.changed(m);return true}
-  if(a==='resign'){if(m.state!=='playing')return true;this.finish(m,m.mine===White?'white':'black','resigned');this.news(m,m.name+' сдался: вы победили');this.changed(m);return true}
+  if(a==='draw?'){if(m.state!=='playing'||m.drawOffer==='theirs')return true;if(m.drawOffer==='mine'){this.finish(m,'draw','agreed');this.news(m,'Draw by agreement')}else{m.drawOffer='theirs';this.news(m,m.name+' offers a draw')}this.changed(m);return true}
+  if(a==='draw'){if(m.state!=='playing'||m.drawOffer!=='mine')return true;this.received(m,false);this.finish(m,'draw','agreed');this.news(m,m.name+' agreed to a draw');this.changed(m);return true}
+  if(a==='resign'){if(m.state!=='playing')return true;this.finish(m,m.mine===White?'white':'black','resigned');this.news(m,m.name+' resigned: you won');this.changed(m);return true}
   return true} // a newer command this version does not know
  // The player's actions. Each one changes the game here first and then sends one command.
  invite(peer,color){
-  const p=this.env.contact(peer);if(!p||p.type!==1){this.note('Шахматы: выберите чат-контакт');return null}
-  const m=this.slot();if(!m){this.note('Шахматы: все доски заняты, завершите партию');return null}
+  const p=this.env.contact(peer);if(!p||p.type!==1){this.note('Chess: choose a chat contact');return null}
+  const m=this.slot();if(!m){this.note('Chess: all boards are busy, finish a game');return null}
   let id;do id=1+this.env.random(0xffff);while(this.matches.some(x=>x!==m&&x.id===id));
   Object.assign(m,{peer,id,name:p.name,mine:color===2?this.env.random(2):color&1,state:'inviting',started:this.env.unix()});m.game.reset();
-  this.send(m,`${Tag}${hex4(id)} new ${m.mine===White?'w':'b'} · ${say(m.mine===White?'шахматы MeshMesh: вы играете чёрными':'шахматы MeshMesh: вы играете белыми')}`);
+  this.send(m,`${Tag}${hex4(id)} new ${m.mine===White?'w':'b'} · ${(m.mine===White?'MeshMesh chess: you play Black':'MeshMesh chess: you play White')}`);
   this.changed(m);return m}
  accept(m){if(m.state!=='invited')return false;m.state='playing';m.unseen=false;this.send(m,`${Tag}${hex4(m.id)} yes`);this.changed(m);return true}
  decline(m){
@@ -320,7 +318,7 @@ class ChessNet{
    if(m.moveOpen)m.moveStatus=Failed;
    if(m.pending()){m.openSince=now;m.retryAt=now+60000} // resend a minute after the start
    m.changedAt=now-(1000-this.matches.length);this.matches.push(m)}
-  if(dropped)this.note('Шахматы: повреждённая партия удалена');
+  if(dropped)this.note('Chess: a damaged game was removed');
   return dropped}
 }
 
@@ -373,7 +371,7 @@ class Companion{
   if(this.onState)this.onState()}
  detach(){
   if(!this.connected)return;this.connected=false;
-  if(this.pending){this.pending.reject(Error('Нет связи с companion'));this.pending=null}
+  if(this.pending){this.pending.reject(Error('No connection to the companion'));this.pending=null}
   for(const s of this.sends.values())if(inFlight(s.status)){clearTimeout(s.timer);this.status(s,Failed)}
   try{this.transport&&this.transport.close()}catch{}
   this.transport=null;if(this.onState)this.onState()}
@@ -381,8 +379,8 @@ class Companion{
  deviceInfo(){const f=this.device;return f?{model:cstr(f.subarray(20,60)),version:cstr(f.subarray(60,80))}:null}
  command(data,expect,timeout=6000){
   const run=()=>new Promise((resolve,reject)=>{
-   if(!this.connected){reject(Error('Нет связи с companion'));return}
-   const timer=setTimeout(()=>{if(this.pending&&this.pending.timer===timer){this.pending=null;reject(Error('Companion не ответил'))}},timeout);
+   if(!this.connected){reject(Error('No connection to the companion'));return}
+   const timer=setTimeout(()=>{if(this.pending&&this.pending.timer===timer){this.pending=null;reject(Error('The companion did not answer'))}},timeout);
    this.pending={expect,resolve:f=>{clearTimeout(timer);resolve(f)},reject:e=>{clearTimeout(timer);reject(e)},timer};
    this.transport.write(new Uint8Array(data)).catch(e=>{if(this.pending&&this.pending.timer===timer){this.pending=null;clearTimeout(timer);reject(e)}})});
   const p=this.queue.then(run,run);this.queue=p.catch(()=>{});return p}
@@ -391,7 +389,7 @@ class Companion{
   if(code>=0x80){this.push(f);return}
   if(this.contactsIn&&(code===RESP.contact||code===RESP.contactsStart)){if(code===RESP.contact)this.contactsIn.push(f);return}
   const p=this.pending;if(!p)return;
-  if(p.expect.includes(code)||code===RESP.err){this.pending=null;if(code===RESP.err&&!p.expect.includes(RESP.err))p.reject(Error('Ошибка companion '+(f[1]??'')));else p.resolve(f)}}
+  if(p.expect.includes(code)||code===RESP.err){this.pending=null;if(code===RESP.err&&!p.expect.includes(RESP.err))p.reject(Error('Companion error '+(f[1]??'')));else p.resolve(f)}}
  push(f){
   const code=f[0];
   if(code===PUSH.ack){const ack=u32(f,1);for(const s of this.sends.values())if(s.acks.includes(ack)){clearTimeout(s.timer);if(s.status!==Delivered)this.status(s,Delivered)}return}
@@ -425,7 +423,7 @@ class Companion{
    if(type===1)return; // command data for a server
    this.heard.set(from,Date.now());const c=this.contacts.get(from);
    if(this.onMessage)this.onMessage(from,c?c.name:from,text)}
-  else if(this.onOther){const i=f[0]===RESP.channelMsgV3?4:1;this.onOther('',`Канал ${f[i]}`,text8.decode(f.subarray(i+7)))}}
+  else if(this.onOther){const i=f[0]===RESP.channelMsgV3?4:1;this.onOther('',`Channel ${f[i]}`,text8.decode(f.subarray(i+7)))}}
  // Returns the message id; the status goes to onDelivery(id, Queued/Sent/Delivered/Failed).
  sendText(peer,text){
   if(!this.connected||!this.contacts.has(peer))return 0;
@@ -454,7 +452,7 @@ async function serialTransport(link,port){
  try{await port.setSignals({dataTerminalReady:true,requestToSend:false})}catch{}
  const framer=new StreamFramer(f=>link.receive(f)),writer=port.writable.getWriter(),reader=port.readable.getReader();let open=true;
  (async()=>{try{for(;;){const {value,done}=await reader.read();if(done)break;if(value)framer.push(value)}}catch{}open=false;link.detach()})();
- return {write:async d=>{if(!open)throw Error('Порт закрыт');await writer.write(StreamFramer.wrap(d))},
+ return {write:async d=>{if(!open)throw Error('Port closed');await writer.write(StreamFramer.wrap(d))},
   close:async()=>{open=false;try{await reader.cancel()}catch{}try{reader.releaseLock();writer.releaseLock()}catch{}try{await port.close()}catch{}}}}
 const NUS='6e400001-b5a3-f393-e0a9-e50e24dcca9e',NUS_RX='6e400002-b5a3-f393-e0a9-e50e24dcca9e',NUS_TX='6e400003-b5a3-f393-e0a9-e50e24dcca9e';
 async function bleTransport(link,device){
@@ -493,33 +491,30 @@ style.textContent='.cmp{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:cen
 document.head.appendChild(style);
 // The start screen: connect instead of the Wi-Fi password.
 const login=$('login');for(const el of login.querySelectorAll('form,details'))el.hidden=true;
-login.querySelector('.brand small').textContent='Шахматы через MeshCore companion';
+login.querySelector('.brand small').textContent='Chess through a MeshCore companion';
 const box=document.createElement('div');box.className='card pad';
-box.innerHTML=`<p class="small muted">Подключите устройство со штатной прошивкой MeshCore Companion (USB или Bluetooth). Ходы уходят обычными личными сообщениями MeshCore; соперник играет на MeshMesh (M9, Heltec, GAT562) или здесь же.</p>
+box.innerHTML=`<p class="small muted">Connect a device running the stock MeshCore Companion firmware (USB or Bluetooth). Moves go as ordinary MeshCore direct messages; your opponent plays on MeshMesh (M9, Heltec) or on this page.</p>
 <div class="cmpbtns"><button class="btn primary" id="cmpUsb"${hasSerial?'':' disabled'}>${ic('bolt')}USB (Web Serial)</button><button class="btn soft" id="cmpBle"${hasBle?'':' disabled'}>${ic('ble')}Bluetooth</button></div>
-<p class="small muted cmpwhy" id="cmpWhy">${hasSerial||hasBle?'Пока страница подключена, штатное приложение MeshCore к этому устройству не подключайте: сообщения заберёт кто-то один.':'Этот браузер не умеет Web Serial и Web Bluetooth. Откройте страницу в Chrome или Edge на компьютере либо в Chrome на Android.'}</p>`;
+<p class="small muted cmpwhy" id="cmpWhy">${hasSerial||hasBle?'While this page is connected, do not connect the MeshCore app to the same device: only one of them will get the messages.':'This browser has neither Web Serial nor Web Bluetooth. Open the page in Chrome or Edge on a computer, or in Chrome on Android.'}</p>`;
 login.insertBefore(box,login.querySelector('.foot'));
-// The language of this page (web/chess-i18n.js): on the start screen and under the games.
-const langRow=()=>{const r=document.createElement('p');r.className='small muted';r.style.cssText='display:flex;gap:8px;align-items:center;justify-content:center;margin:12px 4px';r.innerHTML=`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg>${globalThis.MeshMeshChessI18n?MeshMeshChessI18n.select():''}`;return r};
-if(globalThis.MeshMeshChessI18n)box.appendChild(langRow());
 // The link card above the games, and messages that were not chess (they leave the companion's queue here).
 const card=document.createElement('div');card.className='card cmp';const other=document.createElement('div');
-$('p-chess').insertBefore(card,$('p-chess').firstChild);$('p-chess').appendChild(other);if(globalThis.MeshMeshChessI18n)$('p-chess').appendChild(langRow());
+$('p-chess').insertBefore(card,$('p-chess').firstChild);$('p-chess').appendChild(other);
 other.dataset.notr=''; // other people's messages are not translated
-const hint=$('p-chess').querySelector('p.faint');if(hint)hint.textContent='Ходы идут личными сообщениями MeshCore с подтверждением доставки и проходят через ретрансляторы. Соперник играет на MeshMesh (M9, Heltec, GAT562) или на такой же странице. Партии хранятся в этом браузере отдельно для каждого companion; ходы соперника, пришедшие без страницы, ждут в очереди companion (до 16 сообщений).';
+const hint=$('p-chess').querySelector('p.faint');if(hint)hint.textContent='Moves go as MeshCore direct messages with delivery receipts and pass through repeaters. Your opponent plays on MeshMesh (M9, Heltec) or on a page like this one. Games are kept in this browser, separately for each companion; moves that arrive while the page is closed wait in the companion\'s queue (up to 16 messages).';
 
 function draw(){clearTimeout(drawTimer);drawTimer=setTimeout(()=>{if(auth)refreshChess(false)},150)}
 function peersNow(){peers=link.peers();fetchedAt=Date.now()}
 function renderCard(){
  const s=link.self,on=link.connected,d=link.deviceInfo();
- card.innerHTML=`${ic(link.kind==='ble'?'ble':'bolt',on?'ok':'bad')}<span class="who"><b>${esc(s?s.name:'Companion')}</b><small>${on?`${link.kind==='ble'?'Bluetooth':'USB'} · ${s.freq.toFixed(3)} МГц · SF${s.sf} · BW ${s.bw} · CR 4/${s.cr}${d&&d.version?' · '+esc(d.version):''}`:'нет связи — ходы ждут подключения'}</small></span>`
-  +`<span class="acts">${on?`<button class="btn" data-cmp="advert" title="Объявить себя по сети">Объявить</button><button class="btn" data-cmp="off">Отключить</button>`:`<button class="btn primary" data-cmp="again">Подключить</button>`}</span>`;
- other.innerHTML=others.length?`<h3>Другие сообщения</h3><div class="list others">${others.map(m=>`<div class="row">${avatar(m.from||'0',m.name,m.from?1:0)}<span class="main"><b>${esc(m.name)}</b><small>${esc(m.text)}</small></span><span class="side"><span>${timeText(m.at)}</span></span></div>`).join('')}</div><p class="small muted cmpwhy">Эти сообщения companion отдал странице; в приложении MeshCore их уже не будет.</p>`:''}
+ card.innerHTML=`${ic(link.kind==='ble'?'ble':'bolt',on?'ok':'bad')}<span class="who"><b>${esc(s?s.name:'Companion')}</b><small>${on?`${link.kind==='ble'?'Bluetooth':'USB'} · ${s.freq.toFixed(3)} MHz · SF${s.sf} · BW ${s.bw} · CR 4/${s.cr}${d&&d.version?' · '+esc(d.version):''}`:'not connected — moves wait for the connection'}</small></span>`
+  +`<span class="acts">${on?`<button class="btn" data-cmp="advert" title="Advertise yourself to the network">Advertise</button><button class="btn" data-cmp="off">Disconnect</button>`:`<button class="btn primary" data-cmp="again">Connect</button>`}</span>`;
+ other.innerHTML=others.length?`<h3>Other messages</h3><div class="list others">${others.map(m=>`<div class="row">${avatar(m.from||'0',m.name,m.from?1:0)}<span class="main"><b>${esc(m.name)}</b><small>${esc(m.text)}</small></span><span class="side"><span>${timeText(m.at)}</span></span></div>`).join('')}</div><p class="small muted cmpwhy">The companion handed these messages to this page; they will not appear in the MeshCore app.</p>`:''}
 card.addEventListener('click',async e=>{const b=e.target.closest('[data-cmp]');if(!b)return;const a=b.dataset.cmp;
- if(a==='advert'){try{await link.advert();notify('Объявление отправлено по сети','ok')}catch(err){notify(err.message,'bad')}}
+ if(a==='advert'){try{await link.advert();notify('Advert sent to the network','ok')}catch(err){notify(err.message,'bad')}}
  else if(a==='off'){lastPort=null;lastDevice=null;link.detach()}
  else if(a==='again')connect(link.kind||'usb',true)});
-link.onState=()=>{renderCard();if(link.connected)peersNow();else notify('Связь с companion потеряна','warn');hud();draw()};
+link.onState=()=>{renderCard();if(link.connected)peersNow();else notify('Connection to the companion lost','warn');hud();draw()};
 link.onContacts=()=>{peersNow();renderCard();draw()};
 link.onOther=(from,name,text)=>{others.unshift({from,name,text,at:Math.floor(Date.now()/1000)});others.length=Math.min(others.length,20);notify(`${name}: ${text}`,'info');renderCard()};
 net.onChange=draw;
@@ -528,10 +523,10 @@ net.onChange=draw;
 companion={
  async request(path,data){
   if(path==='/api/chess')return net.web();
-  if(path.startsWith('/api/chess?id=')){const m=net.find(parseInt(path.slice(14),16));if(!m)throw Error('Нет такой партии');return net.detail(m)}
+  if(path.startsWith('/api/chess?id=')){const m=net.find(parseInt(path.slice(14),16));if(!m)throw Error('No such game');return net.detail(m)}
   if(path==='/api/command'&&data&&/^chess( |$)/.test(data.command))return net.command(data.command);
-  throw Error('Недоступно через companion')},
- icons(){return `<span class="${link.connected?'ok':'bad'}" title="${link.connected?'Companion подключён':'Нет связи'}">${ic(link.kind==='ble'?'ble':'bolt')}</span><span class="clock" id="clock">${clockText()}</span>`}};
+  throw Error('Not available through a companion')},
+ icons(){return `<span class="${link.connected?'ok':'bad'}" title="${link.connected?'Companion connected':'Not connected'}">${ic(link.kind==='ble'?'ble':'bolt')}</span><span class="clock" id="clock">${clockText()}</span>`}};
 
 async function connect(kind,again){
  if(busy)return;busy=true;
@@ -540,16 +535,16 @@ async function connect(kind,again){
   let transport;
   if(kind==='ble'){
    const device=again&&lastDevice?lastDevice:await navigator.bluetooth.requestDevice({filters:[{services:[NUS]},{namePrefix:'MeshCore'}],optionalServices:[NUS]});
-   lastDevice=device;notify('Подключаюсь по Bluetooth…','muted');transport=await bleTransport(link,device)}
+   lastDevice=device;notify('Connecting over Bluetooth…','muted');transport=await bleTransport(link,device)}
   else{
-   const port=again&&lastPort?lastPort:await navigator.serial.requestPort();lastPort=port;notify('Подключаюсь по USB…','muted');transport=await serialTransport(link,port)}
+   const port=again&&lastPort?lastPort:await navigator.serial.requestPort();lastPort=port;notify('Connecting over USB…','muted');transport=await serialTransport(link,port)}
   await link.attach(transport,kind);
   game.load();net.linked();link.sync();config={name:link.self.name,utc_offset:-new Date().getTimezoneOffset()};clockBase={unix:Math.floor(Date.now()/1000),at:Date.now()};
   auth='companion';$('login').hidden=true;$('app').hidden=false;
   for(const v of document.querySelectorAll('.version'))v.textContent='Chess · '+(link.deviceInfo()?.version||'MeshCore');
   peersNow();renderCard();await refreshChess(true);route='';if(!/^#(chess|board)/.test(location.hash))location.hash='#chess';show();
-  notify(`Подключено: ${link.self.name}`,'ok')}
- catch(e){link.detach();if(e&&e.name!=='NotFoundError')notify('Не удалось подключиться: '+(e.message||e),'bad')}
+  notify(`Connected: ${link.self.name}`,'ok')}
+ catch(e){link.detach();if(e&&e.name!=='NotFoundError')notify('Could not connect: '+(e.message||e),'bad')}
  finally{busy=false}}
 $('cmpUsb').onclick=()=>connect('usb',false);$('cmpBle').onclick=()=>connect('ble',false);
 // A port allowed earlier is opened again without asking.

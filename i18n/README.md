@@ -7,17 +7,12 @@ A new language (Dutch is planned) is added to the end of the language lists with
 |---|---|---|
 | Device screens (firmware) | `t("English")`, `tr("English")`, `count(n,"one","many")`, `N_("...")` in tables, in `src/` | `i18n/firmware/<lang>.json` |
 | Website | `site/i18n/en.json` (and `ru.json`) | `site/i18n/<lang>.json` |
-| Device web page and Android app | the Russian text of `web/index.html` (`L(...)`, `plural(...)`, markup), `android/.../assets/host.js` and the app's Kotlin `I18n.t(...)` | `i18n/web/<lang>.json` |
-| Chess page of the website (`chess/`) | the Russian text of `web/index.html` and `web/chess-companion.js`, listed in `i18n/chess/en.json` | `i18n/chess/<lang>.json` |
+| Device web page and the site's chess page | the English text of `web/index.html` (`L(...)`, `plural(...)`, markup) | `i18n/web/<lang>.json` |
 | Overview | `README.md` | `README.ru.md` (the full Russian guide) |
 | Detailed documents | `docs/*.md` (Russian) | `docs/en/*.md` (English) |
 
-The website's chess page is built from the device page; `web/chess-i18n.js` translates what the page's own
-dictionaries leave in Russian as it is drawn. Its dictionaries use the Russian
-text as the key (`{0}` keeps a name or number, `{r}` is translated again, `_pieces` gives the piece letters
-K Q R B N of the notation). After changing chess strings in `web/index.html`, add them to every
-`i18n/chess/<lang>.json` and run `node tools/chess/i18n_check.cjs`; `tools/chess_site.py` checks keys and
-placeholders when the site is built.
+The website's chess page (`tools/chess_site.py`) is the device page with `web/chess-companion.js`; it uses the
+page's dictionaries.
 
 ```sh
 python3 tools/i18n.py sync        # after changing strings in src/: new ones appear empty, removed ones go
@@ -67,26 +62,25 @@ width: `cells` is the English text in 6-pixel columns.
 ## Device page and app
 
 The page picks its language from `?lang=`, then the one chosen on the page (`mm-lang`), then the browser's,
-and loads `i18n/<lang>.js` (boards: `/i18n/<lang>.js` from the firmware; app: its assets). The app's own
-texts and notifications follow the page's language. `i18n/web/<lang>.json` maps the Russian text to the
-translation:
+and loads `i18n/<lang>.js` (boards: `/i18n/<lang>.js` from the firmware). English is the source and needs
+none. `i18n/web/<lang>.json` maps the English text to the translation:
 
 ```json
-"Удалить канал «{0}»?": "Delete channel “{0}”?",
-"сообщение|сообщения|сообщений": {"one": "{n} message", "other": "{n} messages"},
-"_pieces": "K Q R B N"
+"Delete channel “{0}”?": "Kanaal “{0}” verwijderen?",
+"{n} message|{n} messages": {"one": "{n} bericht", "other": "{n} berichten"},
+"_pieces": "K D T L P"
 ```
 
 - **Placeholders.** `{0}`, `{1}`… are names, numbers or pieces of markup; keep every one, in any order.
-  Plural forms (keys `a|b|c` from `plural(n,…)`) are objects with the categories of the language, as for
+  Plural forms (keys `one|other` from `plural(n,…)`) are objects with the categories of the language, as for
   the firmware, and `{n}` where the number goes.
 - **Markup and edges.** Keep tags (`<b>`, `<small>`, `<code>`…) and entities, and the leading and trailing
-  spaces or punctuation of a key (` · пароль сохранён` is glued to another text).
+  spaces or punctuation of a key (` · password saved` is glued to another text).
 - **Words.** Use the terms of the device screens of the same language (`i18n/firmware/<lang>.json`) for
   apps, settings and actions. Names and keys stay as for the firmware. Short labels (buttons, tabs, compass
-  points С В Ю З) stay short. `_pieces` are the piece letters K Q R B N of the chess notation.
+  points N E S W) stay short. `_pieces` are the piece letters K Q R B N of the chess notation.
 - After changing page or app texts: `node tools/web_i18n.cjs sync`, translate the new entries
-  (`node tools/web_i18n.cjs todo de`), then `node tools/web_i18n.cjs check`. The tool needs
+  (`node tools/web_i18n.cjs todo LANG`), then `node tools/web_i18n.cjs check`. The tool needs
   `npm ci --prefix tools` once.
 
 ## Website

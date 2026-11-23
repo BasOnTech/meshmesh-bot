@@ -95,7 +95,7 @@ device has one LoRa transceiver, different radio profiles require switching.
 
 - `src/`, `include/` — the application and drivers; `lib/MeshProtocol/` — MM/1.
 - `web/index.html` — the source of the web interface. ESP32 firmware serves it and the dictionaries compressed (gzip):
-  `tools/pio_web.py` generates `PortalWeb.h` in the build folder at build time; it is not in Git. Since 0.29.0 the Russian dictionary keys are stored once (`/i18n/keys.js`), and `/i18n/<lang>.js` carries the translations in order and assembles `MeshMeshWebDict` (about 300 KB less flash; the page and the app did not change). Page text —
+  `tools/pio_web.py` generates `PortalWeb.h` in the build folder at build time; it is not in Git. The page is English; a further language's dictionary is packed with its keys once (`/i18n/keys.js`) and `/i18n/<lang>.js` carrying the translations in order (`MeshMeshWebDict`). Page text —
   `L('…')`/`` L`…${x}` `` and `plural(n,…)` (section "Languages"). Demo without a board — `tools/web_demo.py`.
 - `boards/`, `platformio.ini`, `partitions.csv` — hardware targets and build.
 - `tools/` — packaging, installation, USB control, maps and hardware checks.
@@ -134,14 +134,13 @@ with `i18n/firmware/<lang>.json` following `i18n/README.md`: `tools/i18n.py sync
 `.venv/bin/python tools/i18n.py generate` (the table; the Latin Extended font subsets need `upstream/fonts`),
 `tools/i18n.py check`, build, and review the screens with `tools/site_shots.py OUTDIR <lang>`.
 Site — `site/i18n/en.json` and `ru.json`; detailed documents are translated into
-`docs/en/` together with the edit of the Russian original. The device web page and the app — English and Russian:
-the Russian text in the code is the dictionary key of `i18n/web/<lang>.json`; in `web/index.html` and `host.js` write `L('…')`, `` L`…${x}` ``
-(do not glue a phrase together from pieces), `plural(n,'одна','две','пять')`, in Kotlin — `I18n.t("… {0}", x)`. Then
-`node tools/web_i18n.cjs sync`, translate the new entries in `i18n/web/en.json`, `node tools/web_i18n.cjs check`
-(needs `npm ci --prefix tools`). The page language — `?lang=`, chosen on the login screen/in "Settings" (`mm-lang`),
-otherwise the browser language; the app passes it through `MeshNative.language`. Page screenshots for the site — `tools/web_shots.py` (demo data `tools/web_demo.py`, in CI); `site/img` holds the ru/en fallbacks.
-The site's chess page (`chess/`) gets the same dictionaries and additionally translates at render time
-(`web/chess-i18n.js`, `i18n/chess/<lang>.json`, check `node tools/chess/i18n_check.cjs`): add new chess strings there too.
+`docs/en/` together with the edit of the Russian original. The device web page — English: the English text in the
+code is the dictionary key of `i18n/web/<lang>.json` for a further language; in `web/index.html` write `L('…')`,
+`` L`…${x}` `` (do not glue a phrase together from pieces), `plural(n,'{n} game','{n} games')`. Then
+`node tools/web_i18n.cjs sync`, `node tools/web_i18n.cjs check` (needs `npm ci --prefix tools`). The page language —
+`?lang=`, chosen on the login screen/in "Settings" (`mm-lang`), otherwise the browser language. Page screenshots for
+the site — `tools/web_shots.py` (demo data `tools/web_demo.py`, in CI); `site/img` holds the fallbacks.
+The site's chess page (`chess/`) is the same page in English and gets the same dictionaries.
 The site installs the firmware with the chosen language: `partitions-<lang>.bin` with a tag at 0x8C00; the tag is applied once.
 `include/Modules.h` (`MM_CHESS`, `MM_PET`, `MM_DICE`, `MM_WARDRIVE`, `MM_CHECKERS`, `MM_SEA`) and the `MM_LANG_IN`/`MM_NO_RU`
 language subsets in `src/I18n.cpp` and `tools/i18n.py` come from the upstream nRF52 images: both boards build everything. Cyrillic fonts stay in all

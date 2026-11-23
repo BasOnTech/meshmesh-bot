@@ -2,10 +2,10 @@
 """Screenshots of the device page for the site, in every language: tools/web_demo.py with made-up data in a
 headless Chromium.
 
-tools/web_shots.py OUTDIR [LANG...]   (English and Russian by default)
+tools/web_shots.py OUTDIR [LANG...]   (English by default)
 Writes OUTDIR/web-<name>-<lang>.webp, the phone at 390x844 CSS pixels x2 and the desktop at 1280x800 x2.
 Chromium: $CHROME, otherwise google-chrome / chromium on the PATH or Playwright's headless shell.
-tools/pages.py copies them into the site; the ones in site/img (ru, en) stay as the fallback.
+tools/pages.py copies them into the site; the ones in site/img stay as the fallback.
 """
 import glob
 import os
@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/'tools'))
 import web_demo  # noqa: E402
 
-LANGS = ['en', 'ru'] + web_demo.LANGS[1:]
+LANGS = web_demo.LANGS
 ANNA = next(m for m in web_demo.messages('en') if m['name'] == 'Anna' and m['destination'] == 'FFFFFFFFFFFFFFFF')
 MINE = next(m for m in web_demo.messages('en') if m['outgoing'] and m.get('echoes'))
 key = lambda m: f"{m['source']}.{m['session']}.{m['id']}"  # msgKey() of the page
