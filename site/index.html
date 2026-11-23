@@ -148,35 +148,6 @@ esp-web-install-button{display:inline-block}
 .fwlang label{color:var(--ink);font-weight:600;font-size:15px}
 .fwlang select{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;font:500 15px Inter,system-ui,sans-serif;padding:8px 10px}
 .fwlang small{color:var(--faint);font-size:13px;flex-basis:100%}
-/* network of a city (netpick.js): Russian only, folded */
-html:not([lang=ru]) #netPick{display:none}
-#netPick{margin-top:28px;padding-top:20px;padding-bottom:20px}
-#netPick summary{display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none}
-#netPick summary::-webkit-details-marker{display:none}
-#netPick summary h3{margin:0}
-#netPick summary span{color:var(--dim);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-#netPick summary i{margin-inline-start:auto;color:var(--dim);font-style:normal;transition:transform .15s}
-#netPick[open] summary i{transform:rotate(180deg)}
-#netPick[open] summary{margin-bottom:12px}
-#netPick .small{font-size:14px;color:var(--dim);margin:8px 0}
-#netPick ol{margin-top:18px}
-#netPick ol li>div{flex:1;min-width:0}
-#netPick ol li b.stp{display:block;color:var(--ink);margin:2px 0 10px}
-#netPick .note{margin-top:10px}
-#netPick .btn{height:40px;padding:0 16px;font-size:15px}
-#netPick a.small,.linkbtn{color:var(--accent)}
-.linkbtn{background:none;border:0;padding:0;font:inherit;cursor:pointer}
-#netQ{flex:1;min-width:160px;height:40px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;font:500 15px Inter,system-ui,sans-serif;padding:0 12px}
-.netrow{display:flex;align-items:stretch;gap:6px;margin-top:6px}
-.netrow button{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;text-align:start;padding:8px 12px;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
-.netrow button:hover{border-color:#3a4a5c}
-.netrow.on button{border-color:var(--accent);background:rgba(31,194,174,.08)}
-.netrow.on button b::before{content:"✓ ";color:var(--accent)}
-.netrow button span{color:var(--dim)}
-.netrow button small{margin-inline-start:auto;color:var(--faint);font-size:12px;white-space:nowrap}
-.netrow a{display:grid;place-items:center;width:36px;border:1px solid var(--line);border-radius:10px;color:var(--dim)}
-.netrow a:hover{text-decoration:none;color:var(--accent)}
-@media (max-width:600px){#netPick ol li{display:block;position:relative}#netPick ol li::before{position:absolute;top:0;inset-inline-start:0}#netPick ol li b.stp{padding-inline-start:38px;line-height:26px}}
 /* docs */
 .docs{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:40px}
 .doc{display:block;padding:20px;background:var(--card);border:1px solid var(--line);border-radius:14px;color:var(--ink);transition:border-color .15s,transform .15s}
@@ -405,20 +376,6 @@ footer a{color:var(--dim)}
     </div>
    </div>
   </div>
-  <details class="panel" id="netPick">
-   <summary><h3 data-i18n="net.title"></h3><span id="netSum"></span><i>▾</i></summary>
-   <p class="small" data-i18n="net.lead"></p>
-   <ol>
-    <li><div><b class="stp" data-i18n="net.choose"></b>
-     <div class="row"><input id="netQ" autocomplete="off" data-i18n-placeholder="net.search"><button class="btn" type="button" data-net-do="locate"><span data-i18n="net.nearby"></span></button></div>
-     <p class="small" id="netPos" hidden></p>
-     <div id="netChosen"></div>
-     <div id="netList"></div>
-     <p class="small"><span id="netCat"></span> <a class="small" href="https://github.com/VoxMesh/meshcore-local-networks" target="_blank" rel="noopener">VoxMesh</a> · <button class="linkbtn" type="button" data-net-do="update"><span data-i18n="net.update"></span></button></p>
-    </div></li>
-    <li><div><b class="stp" data-i18n="net.connect"></b><div id="netBoard"></div><div class="note" id="netStatus" hidden></div></div></li>
-   </ol>
-  </details>
  </div>
 </section>
 
@@ -459,7 +416,7 @@ footer a{color:var(--dim)}
 <script>
 const REPO='https://github.com/IKrasnodymov/meshmesh';
 // Site and device languages (include/I18n.h order); site/i18n/<code>.json holds the page text.
-const LANGS=[['en','English'],['ru','Русский']];
+const LANGS=[['en','English']];
 const CODES=LANGS.map(l=>l[0]);
 const ICONS={
  chat:'<path d="M4 5h16v11H8l-4 4z"/>',map:'<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>',
@@ -518,7 +475,7 @@ const OLED=['heltec-home','heltec-messages','heltec-nodes','heltec-radar','helte
 const DOCS=[['README.md','doc.readme'],['docs/channels.md','doc.channels'],['docs/regions.md','doc.regions'],['docs/networks.md','doc.networks'],['docs/wardrive.md','doc.wardrive'],['docs/meshcore-migration.md','doc.migration'],['docs/companion.md','doc.companion'],['docs/repeater.md','doc.repeater'],['docs/pet.md','doc.pet'],['docs/dice.md','doc.dice'],['docs/chess.md','doc.chess'],['docs/games.md','doc.games'],['docs/maps-format.md','doc.maps'],['docs/feature-parity.md','doc.parity'],['docs/verification.md','doc.verification']];
 function docPath(path){
  if(path==='README.md')return lang==='en'?path:`README.${lang}.md`;
- return lang==='ru'?path:path.replace('docs/','docs/en/');
+ return path.replace('docs/','docs/en/');
 }
 let lang='en',T={},EN={};
 const L=k=>T[k]??EN[k]??k;
@@ -532,7 +489,7 @@ function loadDict(code){return dicts[code]||(dicts[code]=fetch(`i18n/${code}.jso
 function pickLang(){
  const q=new URLSearchParams(location.search).get('lang');if(CODES.includes(q))return q;
  try{const s=localStorage.getItem('mm-lang');if(CODES.includes(s))return s}catch(e){}
- for(const l of navigator.languages||[navigator.language||'']){const c=(l||'').toLowerCase().split('-')[0];if(CODES.includes(c))return c;if(c==='be')return 'ru'}
+ for(const l of navigator.languages||[navigator.language||'']){const c=(l||'').toLowerCase().split('-')[0];if(CODES.includes(c))return c}
  return 'en';
 }
 async function setLang(code,remember){
@@ -650,6 +607,5 @@ fetch('firmware/boards.json').then(r=>r.json()).then(j=>{VERSION=j.version;BOARD
 setLang(pickLang(),false).then(heroStart);
 setTimeout(()=>document.documentElement.classList.remove('loading'),2500); // never stay hidden
 </script>
-<script type="module" src="netpick.js"></script>
 </body>
 </html>

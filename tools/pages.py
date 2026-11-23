@@ -56,7 +56,7 @@ def main():
     shutil.copytree(ROOT/'site', out)
     build_chess(out)  # chess/: the chess page for a stock MeshCore companion
     shots = ROOT/'artifacts'/'site-shots'
-    if shots.exists():  # screenshots in every language over the committed ru/en ones
+    if shots.exists():  # screenshots over the committed ones in site/img
         for f in shots.glob('*.png'):
             shutil.copyfile(f, out/'img'/f.name)
         # Every screen a feature card shows must have been made (tools/site_shots.py lists them by name).
@@ -65,7 +65,7 @@ def main():
         if missing:
             raise SystemExit('feature screenshots missing (add them to tools/site_shots.py): ' + ' '.join(missing))
     web_shots = ROOT/'artifacts'/'web-shots'
-    if web_shots.exists():  # the device page in every language (tools/web_shots.py) over the committed ru/en ones
+    if web_shots.exists():  # the device page (tools/web_shots.py) over the committed ones
         for f in web_shots.glob('*.webp'):
             shutil.copyfile(f, out/'img'/f.name)
     boards = []
