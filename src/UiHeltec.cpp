@@ -45,7 +45,7 @@ ChatMessage incomingPopup{};uint8_t ledPattern=0;
 unsigned unreadCount=0;struct {uint64_t source=0;uint32_t session=0,id=0;} newest;
 const uint8_t* activeFont=nullptr;
 const uint8_t* const small=u8g2_font_5x8_t_cyrillic;const uint8_t* const body=u8g2_font_6x13_t_cyrillic;const uint8_t* const bold=u8g2_font_6x13B_t_cyrillic;
-#define t(en,ru) String(tr(en,ru)) // a macro: tr() keys its translation at compile time (I18n.h)
+#define t(en) String(tr(en)) // a macro: tr() keys its translation at compile time (I18n.h)
 // Lengths in 6 px columns: CJK glyphs take two.
 unsigned chars(const String& value){unsigned n=0;for(unsigned i=0;i<value.length();)n+=glyphCells(utf8Next(value,i));return n;}
 String clipped(const String& value,unsigned count){unsigned i=0,n=0,cut=0;while(i<value.length()){unsigned at=i,w=glyphCells(utf8Next(value,i));if(n+w>count){i=at;break;}if(n+w+2<=count)cut=i;n+=w;}return i<value.length()&&count>2?value.substring(0,cut)+"..":value.substring(0,i);}
@@ -90,28 +90,28 @@ void textLinesAt(const String& value,int x,int y,unsigned rows,unsigned cols){
 }
 // The delivery of a game's last command (ChessNet.h, Duel.h): stopped - resending gave up.
 String linkText(uint8_t link,bool stopped){
- switch(link){case ChatMessage::Queued:return t("sending","отправка");case ChatMessage::Sent:return t("no ACK yet","ждём ACK");
- case ChatMessage::Delivered:return t("delivered","доставлено");case ChatMessage::Failed:return stopped?t("not delivered","не доставлено"):t("will resend","повторю");}
+ switch(link){case ChatMessage::Queued:return t("sending");case ChatMessage::Sent:return t("no ACK yet");
+ case ChatMessage::Delivered:return t("delivered");case ChatMessage::Failed:return stopped?t("not delivered"):t("will resend");}
  return "";
 }
 String clockText(time_t at){if(at<1700000000)return "--:--";at+=config.utcOffset*60;tm* v=gmtime(&at);char b[6];snprintf(b,sizeof b,"%02d:%02d",v->tm_hour,v->tm_min);return b;}
-String ago(uint32_t ms){uint32_t s=ms/1000;if(s<60)return String(s)+t("s","с");if(s<3600)return String(s/60)+t("m","м");if(s<86400)return String(s/3600)+t("h","ч");return String(s/86400)+t("d","д");}
-String pathText(const Peer& p){if(p.pathLength==255)return t("path ?","путь ?");if(!(p.pathLength&63))return t("direct","напрямую");return String(p.pathLength&63)+t(" hops"," хоп.");}
-String typeText(uint8_t type){switch(type){case 2:return t("repeater","ретранслятор");case 3:return t("room","комната");case 4:return t("sensor","датчик");}return t("chat","чат");}
+String ago(uint32_t ms){uint32_t s=ms/1000;if(s<60)return String(s)+t("s");if(s<3600)return String(s/60)+t("m");if(s<86400)return String(s/3600)+t("h");return String(s/86400)+t("d");}
+String pathText(const Peer& p){if(p.pathLength==255)return t("path ?");if(!(p.pathLength&63))return t("direct");return String(p.pathLength&63)+t(" hops");}
+String typeText(uint8_t type){switch(type){case 2:return t("repeater");case 3:return t("room");case 4:return t("sensor");}return t("chat");}
 // The latest answer of a repeater or room, or of a route trace, in two short lines (empty when none).
 String remoteLogin(const Peer& p){
  remote::Session* s=remote::find(p.id);if(!s||s->login==remote::Idle)return "";
- switch(s->login){case remote::Waiting:return t("login: waiting","вход: ждём");case remote::Done:return s->admin?t("logged in: admin","вход: админ"):t("logged in","вход выполнен");case remote::Refused:return t("login refused","вход: отказ");default:return t("login: no answer","вход: нет ответа");}
+ switch(s->login){case remote::Waiting:return t("login: waiting");case remote::Done:return s->admin?t("logged in: admin"):t("logged in");case remote::Refused:return t("login refused");default:return t("login: no answer");}
 }
 String remoteResult(const Peer& p){
  auto& tr=remote::trace;
  if(tr.id==p.id&&tr.state!=remote::Idle){
-  if(tr.state==remote::Waiting)return t("trace: waiting","трасса: ждём");if(tr.state!=remote::Done)return t("trace: no answer","трасса: нет ответа");
-  String r;for(unsigned i=0;i<tr.hops;i++)r+=String(tr.snr[i]/4.0f,0)+">";return t("SNR ","SNR ")+r+String(tr.snr[tr.hops]/4.0f,0);
+  if(tr.state==remote::Waiting)return t("trace: waiting");if(tr.state!=remote::Done)return t("trace: no answer");
+  String r;for(unsigned i=0;i<tr.hops;i++)r+=String(tr.snr[i]/4.0f,0)+">";return t("SNR ")+r+String(tr.snr[tr.hops]/4.0f,0);
  }
  remote::Session* s=remote::find(p.id);if(!s||s->status==remote::Idle)return "";
- if(s->status!=remote::Done)return s->status==remote::Waiting?t("status: waiting","статус: ждём"):t("status: no answer","статус: нет ответа");
- return String(s->battery/1000.0f,2)+t("V up ","В ")+String(s->uptime/3600)+t("h rx ","ч прм ")+String(s->received);
+ if(s->status!=remote::Done)return s->status==remote::Waiting?t("status: waiting"):t("status: no answer");
+ return String(s->battery/1000.0f,2)+t("V up ")+String(s->uptime/3600)+t("h rx ")+String(s->received);
 }
 bool distanceTo(const Peer& p,float& metres,float& bearing){
  if(!p.position||!hardware.gpsFix())return false;double la1=hardware.gps.location.lat()*M_PI/180,la2=p.latitude*M_PI/180,dl=(p.longitude-hardware.gps.location.lng())*M_PI/180;
@@ -128,14 +128,14 @@ uint64_t signalId=0;RadarTarget::Kind signalKind=RadarTarget::Wifi;bool signalMa
 int shownSignal(){if(!signalManual&&radar.count){signalId=radar.targets[0].id;signalKind=radar.targets[0].kind;return 0;}for(unsigned i=0;i<radar.count;i++)if(radar.targets[i].id==signalId&&radar.targets[i].kind==signalKind)return i;if(!radar.count)return -1;signalId=radar.targets[0].id;signalKind=radar.targets[0].kind;return 0;}
 String signalName(const RadarTarget& r){
  if(r.name[0])return r.name;
- if(r.kind==RadarTarget::Ble)switch(r.device){case RadarTarget::Phone:return t("phone","телефон");case RadarTarget::Watch:return t("watch","часы");case RadarTarget::Audio:return t("headphones","наушники");case RadarTarget::Personal:return t("phone/watch","телефон/часы");default:return t("BLE device","BLE-устройство");}
- return r.kind==RadarTarget::Wifi?t("hidden network","скрытая сеть"):meshRadio.idText(r.id);}
+ if(r.kind==RadarTarget::Ble)switch(r.device){case RadarTarget::Phone:return t("phone");case RadarTarget::Watch:return t("watch");case RadarTarget::Audio:return t("headphones");case RadarTarget::Personal:return t("phone/watch");default:return t("BLE device");}
+ return r.kind==RadarTarget::Wifi?t("hidden network"):meshRadio.idText(r.id);}
 const char* kindLetter(const RadarTarget& r){return r.kind==RadarTarget::Lora?"L ":r.kind==RadarTarget::Ble?"B ":"W ";}
 float signalLevel(int rssi){return constrain((rssi+100)/65.f,0.f,1.f);} // -100 .. -35 dBm
 bool homingFresh(){return radar.fresh();}
 String wifiState(){
- switch(radar.wifi){case Radar::WifiPortal:return t("Wi-Fi: access point","Wi-Fi: точка доступа");case Radar::WifiBusy:return t("Wi-Fi busy","Wi-Fi занят");case Radar::WifiFailed:return t("Wi-Fi error","Ошибка Wi-Fi");default:return radar.sweeps?"":t("scanning...","сканирую...");}}
-String bleState(){return radar.ble==Radar::BleBusy?t("BLE busy","BLE занят"):radar.ble==Radar::BleFailed?t("BLE error","Ошибка BLE"):"";}
+ switch(radar.wifi){case Radar::WifiPortal:return t("Wi-Fi: access point");case Radar::WifiBusy:return t("Wi-Fi busy");case Radar::WifiFailed:return t("Wi-Fi error");default:return radar.sweeps?"":t("scanning...");}}
+String bleState(){return radar.ble==Radar::BleBusy?t("BLE busy"):radar.ble==Radar::BleFailed?t("BLE error"):"";}
 // Server roles show the pages that still mean something: no chats, nodes or radar.
 bool pageShown(int p){
  if(p==WardrivePage&&!MM_WARDRIVE)return false;
@@ -219,14 +219,14 @@ void showPage(int next){
  if(page==Signals){signalManual=false;radar.open();}else if(!webRadarActive()&&!wardrive::holdsRadar())radar.close();if(page==QuickPage){quickTargets=false;quickIndex=0;}if(page==Messages){messageOffset=0;unreadCount=0;}}
 // An app's name in a folder's list.
 String appName(int p){
- switch(p){case Messages:return t("Messages","Сообщения");case QuickPage:return t("Quick send","Быстрая отправка");case Nodes:return t("Nodes","Узлы");case Gps:return "GPS";
- case Signals:return t("Radar","Радар");case WardrivePage:return t("Wardrive","Вардрайв");case PeoplePage:return t("Quick counter","Быстрый счётчик");case Chess:return t("Chess","Шахматы");
- case CheckersPage:return t("Checkers","Шашки");case SeaPage:return t("Sea battle","Морской бой");case PetPage:return t("Pet","Питомец");case DicePage:return t("Dice","Кости");
- case Wifi:return "Wi-Fi";case Ble:return "Bluetooth";case Settings:return t("Settings","Настройки");case NotifyPage:return t("Notifications","Уведомления");case FolderPage:return appsFolderName(folderAt);}
- return t("Modules","Модули");}
+ switch(p){case Messages:return t("Messages");case QuickPage:return t("Quick send");case Nodes:return t("Nodes");case Gps:return "GPS";
+ case Signals:return t("Radar");case WardrivePage:return t("Wardrive");case PeoplePage:return t("Quick counter");case Chess:return t("Chess");
+ case CheckersPage:return t("Checkers");case SeaPage:return t("Sea battle");case PetPage:return t("Pet");case DicePage:return t("Dice");
+ case Wifi:return "Wi-Fi";case Ble:return "Bluetooth";case Settings:return t("Settings");case NotifyPage:return t("Notifications");case FolderPage:return appsFolderName(folderAt);}
+ return t("Modules");}
 // Device role: offered for 5 s after boot (click: next, hold: choose) and from the menus.
 bool rolePick=false,rolePickBoot=false;int roleSel=0;uint32_t rolePickAt=0;
-String roleShort(int r){return r==RoleRepeater?t("Repeater","Репитер"):r==RoleRoom?t("Room server","Комната"):t("Normal","Обычный");}
+String roleShort(int r){return r==RoleRepeater?t("Repeater"):r==RoleRoom?t("Room server"):t("Normal");}
 // Boards without a screen (XIAO, a T-Beam without OLED) skip the boot choice: a press there would
 // change the mode unseen. The web page, BLE and USB change it instead.
 bool screenPresent(){
@@ -263,21 +263,21 @@ bool radioEdit=false,radioEditing=false;int radioRow=0,radioDigit=0;
 alignas(Config) uint8_t radioDraftSpace[sizeof(Config)];Config& radioDraft=*reinterpret_cast<Config*>(radioDraftSpace);
 void openRadio(){new(radioDraftSpace) Config(config);radioEdit=true;radioEditing=false;radioRow=0;radioDigit=0;dirty=true;}
 String radioName(int i){
- switch(i){case RowFreq:return t("Frequency","Частота");case RowBw:return t("Bandwidth","Полоса");case RowSf:return "SF";case RowCr:return "CR";
- case RowPower:return t("Power","Мощность");case RowHops:return t("Relay limit","Предел перес.");case RowRelay:return t("Relaying","Ретрансляция");case RowHash:return t("Path hash","Хэш пути");
- case RowRegion:return t("Region","Регион");case RowFind:return t("Find regions","Найти регионы");case RowNet:return t("Find network","Найти сеть");
- case RowPrev:return config.trial.set()?t("Test","Тест"):t("Previous","Прежние");
- case RowSave:return t("Save","Сохранить");default:return t("Cancel","Отмена");}
+ switch(i){case RowFreq:return t("Frequency");case RowBw:return t("Bandwidth");case RowSf:return "SF";case RowCr:return "CR";
+ case RowPower:return t("Power");case RowHops:return t("Relay limit");case RowRelay:return t("Relaying");case RowHash:return t("Path hash");
+ case RowRegion:return t("Region");case RowFind:return t("Find regions");case RowNet:return t("Find network");
+ case RowPrev:return config.trial.set()?t("Test"):t("Previous");
+ case RowSave:return t("Save");default:return t("Cancel");}
 }
 String radioValue(const Config& c,int i){
  switch(i){case RowFreq:return String(c.frequency,3);case RowBw:return String(c.bandwidth,1);case RowSf:return String(c.sf);case RowCr:return "4/"+String(c.cr);
- case RowPower:return String(c.power)+" dBm";case RowHops:return String(c.hops);case RowRelay:return c.relay?t("on","вкл"):t("off","выкл");
- case RowHash:return plural(c.pathHash,"byte","bytes","байт","байта","байт");
- case RowRegion:return c.region[0]?String(c.region):String(t("none","нет"));
- case RowPrev:return config.trial.set()?t("keep","оставить"):config.previous.set()?String(config.previous.frequency,3)+"/"+String(config.previous.sf):String("-");
+ case RowPower:return String(c.power)+" dBm";case RowHops:return String(c.hops);case RowRelay:return c.relay?t("on"):t("off");
+ case RowHash:return plural(c.pathHash,"byte","bytes");
+ case RowRegion:return c.region[0]?String(c.region):String(t("none"));
+ case RowPrev:return config.trial.set()?t("keep"):config.previous.set()?String(config.previous.frequency,3)+"/"+String(config.previous.sf):String("-");
  case RowNet:{auto& s=netfind::state;if(netfind::running())return String(s.step+1)+"/"+String(s.count);
   return s.phase==netfind::State::Done?(s.best!=255?"SF"+String(s.results[s.best].radio.sf)+" "+String(s.results[s.best].radio.frequency,3):String("-")):String("");}
- case RowFind:{auto& s=regions::search;return regions::searching()?String(s.repeaters)+t(" rpt..."," ретр..."):s.state==regions::Search::Done?plural(s.count,"found","found","найден","найдено","найдено"):String("");}}return "";
+ case RowFind:{auto& s=regions::search;return regions::searching()?String(s.repeaters)+t(" rpt..."):s.state==regions::Search::Done?plural(s.count,"found","found"):String("");}}return "";
 }
 bool radioChanged(){for(int i=0;i<RowSave;i++)if(radioValue(radioDraft,i)!=radioValue(config,i))return true;return false;}
 // The frequency digit being set: 0 - megahertz (863..870), 1..3 - the kilohertz digits.
@@ -297,21 +297,21 @@ void radioStep(int dir){
  case RowRelay:d.relay=!d.relay;break;
  case RowHash:d.pathHash=1+(d.pathHash-1+dir+3)%3;break;
  case RowRegion:strlcpy(d.region,regions::cycle(d.region,dir,false).c_str(),sizeof d.region);break;
- case RowFind:if(!regions::find())notice(t("Radio offline","Радио недоступно"));break;
+ case RowFind:if(!regions::find())notice(t("Radio offline"));break;
  case RowNet:{auto& s=netfind::state;if(netfind::running()){netfind::stop();break;}
   if(s.phase==netfind::State::Done&&s.best!=255&&!config.sameRadio(s.results[s.best].radio)){String r=netfind::use(s.best);bool done=r.startsWith("OK");if(done)radioDraft.setRadio(config.radio());
-   notice(done?t("Radio test: restart returns","Тест: перезапуск вернёт"):r.startsWith("ERR radio busy")?t("Radio busy, retry","Радио занято, повторите"):r.substring(4));break;}
-  if(!netfind::start(false))notice(meshRadio.busy()||regions::searching()?t("Radio busy, retry","Радио занято, повторите"):t("Radio offline","Радио недоступно"));break;}
- case RowPrev:{if(!config.trial.set()&&!config.previous.set()){notice(t("No previous settings","Прежних настроек нет"));break;}
+   notice(done?t("Radio test: restart returns"):r.startsWith("ERR radio busy")?t("Radio busy, retry"):r.substring(4));break;}
+  if(!netfind::start(false))notice(meshRadio.busy()||regions::searching()?t("Radio busy, retry"):t("Radio offline"));break;}
+ case RowPrev:{if(!config.trial.set()&&!config.previous.set()){notice(t("No previous settings"));break;}
   String r=executeCommand(config.trial.set()?"radio keep":"radio previous");bool done=r.startsWith("OK");if(done)radioDraft.setRadio(config.radio());
-  notice(done?t("Radio settings changed","Настройки радио изменены"):r.startsWith("ERR radio busy")?t("Radio busy, retry","Радио занято, повторите"):r.substring(4));break;}
+  notice(done?t("Radio settings changed"):r.startsWith("ERR radio busy")?t("Radio busy, retry"):r.substring(4));break;}
  }dirty=true;
 }
 void radioSave(){
- if(!radioChanged()){radioEdit=false;notice(t("Nothing to save","Изменений нет"));return;}
+ if(!radioChanged()){radioEdit=false;notice(t("Nothing to save"));return;}
  StaticJsonDocument<256> j;auto& d=radioDraft;j["frequency"]=d.frequency;j["bandwidth"]=d.bandwidth;j["sf"]=int(d.sf);j["cr"]=int(d.cr);j["power"]=int(d.power);j["hops"]=int(d.hops);j["relay"]=d.relay;j["path_hash"]=int(d.pathHash);j["region"]=d.region;
  String r=applySettings(j.as<JsonObjectConst>());bool saved=r.startsWith("OK");if(saved)radioEdit=false;
- notice(saved?t("Settings saved","Настройки сохранены"):r.startsWith("ERR radio busy")?t("Radio busy, retry","Радио занято, повторите"):r.substring(4));
+ notice(saved?t("Settings saved"):r.startsWith("ERR radio busy")?t("Radio busy, retry"):r.substring(4));
 }
 void radioButton(bool click,bool hold){
  if(radioEditing){if(click)radioStep(1);else if(hold){if(radioRow==RowFreq&&radioDigit<3)radioDigit++;else{radioEditing=false;radioDigit=0;}}return;}
@@ -321,8 +321,8 @@ void radioButton(bool click,bool hold){
 }
 // The key hints of the radio screen: what a click and a hold (or the joystick) do now.
 String radioHint(){
- if(radioEditing)return radioRow==RowFreq?t("click-digit+ hold-next","клик-цифра+ держ-далее"):t("click-change hold-done","клик-изм. держ-готово");
- return radioRow==RowSave?t("click-next hold-save","клик-далее держ-сохр."):radioRow==RowCancel?t("click-next hold-leave","клик-далее держ-выйти"):t("click-next hold-change","клик-далее держ-изм.");
+ if(radioEditing)return radioRow==RowFreq?t("click-digit+ hold-next"):t("click-change hold-done");
+ return radioRow==RowSave?t("click-next hold-save"):radioRow==RowCancel?t("click-next hold-leave"):t("click-next hold-change");
 }
 
 #if MM_WARDRIVE
@@ -330,10 +330,10 @@ String radioHint(){
 bool wardriveList=false;
 String wdHash(const uint8_t* h,uint8_t size){String s;char b[3];for(uint8_t i=0;i<size&&i<3;i++){snprintf(b,3,"%02X",h[i]);s+=b;}return s;}
 String wdSnr(int8_t q){char b[12];snprintf(b,sizeof b,"%+.1f",q/4.0f);return b;}
-String wdMode(){if(!wardrive::running())return t("Off","Выключен");String s;if(wardrive::settings.passive)s=t("Listening","Приём");if(wardrive::settings.ping)s+=String(s.length()?" + ":"")+t("pings","пинги");if(wardrive::settings.nets)s+=String(s.length()?" + ":"")+"Wi-Fi";return s;}
-String wdPosition(){int32_t lat,lon;bool phone;if(!wardrive::position(lat,lon,phone))return t("No position: GPS/phone","Нет позиции: GPS/тел.");return String(phone?t("Phone ","Тел. "):"GPS ")+String(lat/1e6,5)+" "+String(lon/1e6,5);}
-String wdCounts(){String s=plural(wardrive::points(),"point","points","точка","точки","точек");if(wardrive::settings.nets||wardrive::nets())s+=" · Wi-Fi "+String(wardrive::nets());return s;}
-String wdLast(){const auto& r=wardrive::last();if(wardrive::pinging())return t("Ping: listening...","Пинг: слушаю...");if(!r.done)return t("No pings yet","Пингов пока нет");if(!r.count)return t("Ping: nobody repeated","Пинг: никто не ответил");return t("Ping: ","Пинг: ")+String(r.count)+t(" rpt, "," ретр., ")+wdHash(r.hash,r.size)+" "+wdSnr(r.snr);}
+String wdMode(){if(!wardrive::running())return t("Off");String s;if(wardrive::settings.passive)s=t("Listening");if(wardrive::settings.ping)s+=String(s.length()?" + ":"")+t("pings");if(wardrive::settings.nets)s+=String(s.length()?" + ":"")+"Wi-Fi";return s;}
+String wdPosition(){int32_t lat,lon;bool phone;if(!wardrive::position(lat,lon,phone))return t("No position: GPS/phone");return String(phone?t("Phone "):"GPS ")+String(lat/1e6,5)+" "+String(lon/1e6,5);}
+String wdCounts(){String s=plural(wardrive::points(),"point","points");if(wardrive::settings.nets||wardrive::nets())s+=" · Wi-Fi "+String(wardrive::nets());return s;}
+String wdLast(){const auto& r=wardrive::last();if(wardrive::pinging())return t("Ping: listening...");if(!r.done)return t("No pings yet");if(!r.count)return t("Ping: nobody repeated");return t("Ping: ")+String(r.count)+t(" rpt, ")+wdHash(r.hash,r.size)+" "+wdSnr(r.snr);}
 unsigned wdOrder(unsigned* order,const wardrive::Repeater*& list){unsigned n=wardrive::repeaters(list);for(unsigned i=0;i<n;i++)order[i]=i;
  std::sort(order,order+n,[&](unsigned a,unsigned b){unsigned x=list[a].echoes*4+list[a].rx,y=list[b].echoes*4+list[b].rx;return x!=y?x>y:list[a].snr>list[b].snr;});return n;}
 #endif
@@ -348,8 +348,8 @@ constexpr unsigned MenuMax=14;
 // Channels are added on the web page or in the app; here: an invitation in a message and a hashtag heard on air.
 const HeardChannel* heardTag(){for(unsigned i=0;i<meshRadio.heardCount;i++)if(meshRadio.heard[i].name[0])return &meshRadio.heard[i];return nullptr;}
 String channelTag(uint64_t id){const channels::Channel* c=meshRadio.channel(id);return channels::isPublic(c?c->secret:channels::publicSecret)?String(" #"):" "+String(c->name[0]=='#'?"":"#")+c->name;}
-String messageText(const ChatMessage& m){String name;uint8_t key[16];return channels::parseLink(m.text,name,key)?t("Invitation to channel ","Приглашение в канал ")+name:String(m.text);}
-void joinedNotice(MeshRadio::ChannelResult r,const String& name){notice(r==MeshRadio::ChannelAdded?t("Joined ","Вступили: ")+name:r==MeshRadio::ChannelExists?t("Already in ","Уже в канале ")+name:r==MeshRadio::ChannelFull?t("8 channels at most","Не больше 8 каналов"):t("Not joined","Не удалось вступить"));}
+String messageText(const ChatMessage& m){String name;uint8_t key[16];return channels::parseLink(m.text,name,key)?t("Invitation to channel ")+name:String(m.text);}
+void joinedNotice(MeshRadio::ChannelResult r,const String& name){notice(r==MeshRadio::ChannelAdded?t("Joined ")+name:r==MeshRadio::ChannelExists?t("Already in ")+name:r==MeshRadio::ChannelFull?t("8 channels at most"):t("Not joined"));}
 unsigned actions(Act* out){
  unsigned n=0;switch(page){
  case Home:
@@ -416,67 +416,67 @@ bool keepsMenu(Act a){
  if(a>=ActDiceRoll&&a<=ActDiceExit)return diceKeeps(a);
 #endif
  return (a==ActPeopleDelete&&tallyArmed)||a==ActFormat||a==ActPowerOff||a==ActSound||a==ActNextSignal||a==ActOlder||a==ActNewer||a==ActNextNode||a==ActChessNext||a==ActDuelNext||a==ActLanguage||a==ActBattery||a==ActDoubleBack||a==ActScreen||a==ActContrast||a==ActPetDeath||a==ActPetRelease;}
-String flag(bool value){return value?t("On","Вкл"):t("Off","Выкл");}
+String flag(bool value){return value?t("On"):t("Off");}
 String actName(Act a){
- if(a>=ActPeopleMinus&&a<=ActPeopleExit){switch(a){case ActPeopleMinus:return "-1";case ActPeopleNext:return t("Next: ","Дальше: ")+people::name((people::tally.current+1)%people::tally.count);case ActPeopleAdd:return t("New counter","Новый счётчик");
- case ActPeopleDelete:return tallyArmed?t("Hold again: delete","Держите ещё: удалить"):t("Delete this counter","Удалить этот счётчик");case ActPeopleReset:return t("Reset to 0","Сбросить в 0");case ActPeopleBle:return "BLE: "+flag(people::settings.ble);case ActPeopleWifi:return "Wi-Fi: "+flag(people::settings.wifi);case ActPeopleWindow:return t("Window: ","Окно: ")+String(people::settings.window)+"s";case ActPeopleRssi:return "RSSI: "+String(people::settings.rssi);case ActPeoplePersonal:return t("Phones/watches only: ","Только телефоны/часы: ")+flag(people::settings.personal);case ActPeopleClear:return t("Clear device window","Сбросить окно устройств");default:return "< "+t("Exit","Выход");}}
+ if(a>=ActPeopleMinus&&a<=ActPeopleExit){switch(a){case ActPeopleMinus:return "-1";case ActPeopleNext:return t("Next: ")+people::name((people::tally.current+1)%people::tally.count);case ActPeopleAdd:return t("New counter");
+ case ActPeopleDelete:return tallyArmed?t("Hold again: delete"):t("Delete this counter");case ActPeopleReset:return t("Reset to 0");case ActPeopleBle:return "BLE: "+flag(people::settings.ble);case ActPeopleWifi:return "Wi-Fi: "+flag(people::settings.wifi);case ActPeopleWindow:return t("Window: ")+String(people::settings.window)+"s";case ActPeopleRssi:return "RSSI: "+String(people::settings.rssi);case ActPeoplePersonal:return t("Phones/watches only: ")+flag(people::settings.personal);case ActPeopleClear:return t("Clear device window");default:return "< "+t("Exit");}}
 
 #if MM_DICE
  if(a>=ActDiceRoll&&a<=ActDiceExit)return diceActName(a);
 #endif
  const ChatMessage* m=shownMessage();bool publicChat=m&&channels::isChannel(m->destination);
  switch(a){
- case ActQuick:return t("Quick send","Быстрая отправка");
+ case ActQuick:return t("Quick send");
 #if MM_WARDRIVE
- case ActWardriveRun:return wardrive::running()?t("Stop wardrive","Остановить вардрайв"):t("Start: listen + ping","Старт: приём + пинги");
- case ActWardrivePing:return t("Ping now","Пинг сейчас");
- case ActWardriveView:return wardriveList?t("Show summary","Показать сводку"):t("Repeaters heard","Слышимые ретрансляторы");
+ case ActWardriveRun:return wardrive::running()?t("Stop wardrive"):t("Start: listen + ping");
+ case ActWardrivePing:return t("Ping now");
+ case ActWardriveView:return wardriveList?t("Show summary"):t("Repeaters heard");
  case ActWardriveNets:return "Wi-Fi/BLE: "+flag(wardrive::settings.nets);
 #endif
- case ActNotify:return t("Notifications","Уведомления");
- case ActNotifyLed:case ActNotifyWake:case ActNotifyPopup:{uint8_t mode=a==ActNotifyLed?config.notifyLed:a==ActNotifyWake?config.notifyWake:config.notifyPopup;return (a==ActNotifyLed?String("LED: "):a==ActNotifyWake?t("Wake: ","Экран: "):t("Popup: ","Окно: "))+(mode==0?t("off","выкл."):mode==1?t("all","все"):String("@"));}
- case ActNotifyFailed:return t("TX alert: ","Ошибка TX: ")+(config.notifyFailed?t("on","вкл."):t("off","выкл."));
- case ActWrite:return page==Nodes?t("Write message...","Написать...")
-  :page==Messages&&m&&!publicChat?t("Write reply...","Ответить текстом..."):t("Write to channel...","Написать в канал...");
- case ActFormat:return t("Create storage...","Создать хранилище...");
- case ActJoin:{String name;uint8_t key[16];channels::parseLink(m?m->text:"",name,key);return t("Join ","Вступить: ")+name;}
- case ActJoinHeard:{const HeardChannel* h=heardTag();return t("Join heard ","Вступить: ")+(h?h->name:"");}
- case ActChess:return t("Chess: invite","Шахматы: вызвать");
- case ActChessOpen:return t("Open game","Открыть");
- case ActChessNext:return t("Next game","Следующая партия");
- case ActCheckers:return t("Checkers: invite","Шашки: вызвать");case ActSea:return t("Sea battle: invite","Морской бой: вызвать");
- case ActDuelOpen:return t("Open game","Открыть");case ActDuelNext:return t("Next game","Следующая игра");
- case ActSound:return config.sound?t("Sound: on","Звук: вкл."):t("Sound: off","Звук: выкл.");
- case ActRole:return t("Device mode...","Режим работы...");case ActForward:return meshServer.view().forwarding?t("Forwarding: off","Пересылка: выкл."):t("Forwarding: on","Пересылка: вкл.");
- case ActAdvert:return t("Announce node","Объявить узел");case ActReplyOk:return t("Reply: OK","Ответить: OK")+String(publicChat?" #":"");case ActReplyAck:return t("Reply: Got it","Ответить: Принято");
- case ActOlder:return t("Older message","Предыдущее");case ActNewer:return t("Newer message","Следующее");case ActNextNode:return t("Next node","Следующий узел");case ActNodeOk:return t("Send: OK","Написать: OK");case ActResetPath:return t("Reset path","Сбросить путь");
- case ActRemoteLogin:{Peer* p=shownNode();return p&&remote::saved(p->id)?t("Log in","Войти"):t("Log in as guest","Войти гостем");}case ActRemoteStatus:return t("Server status","Статус сервера");case ActTrace:return t("Trace route","Трассировка");
- case ActGps:return config.gps?t("Turn GPS off","Выключить GPS"):t("Turn GPS on","Включить GPS");case ActPosition:return t("Share position","Передать позицию");
- case ActWifi:return portalActive()?t("Turn Wi-Fi off","Выключить Wi-Fi"):t("Turn Wi-Fi on","Включить Wi-Fi");case ActBle:return bleActive()?t("Turn BLE off","Выключить BLE"):t("Turn BLE on","Включить BLE");
- case ActLanguage:return t("Language: ","Язык: ")+langNames[config.lang<LangCount?config.lang:0];case ActBattery:return config.batteryVolts?t("Battery: volts","Батарея: вольты"):t("Battery: percent","Батарея: проценты");
- case ActDoubleBack:return config.doubleBack?t("Double click: back","Двойной клик: назад"):t("Double click: off","Двойной клик: выкл.");
- case ActScreen:return t("Screen off: ","Гасить: ")+(config.dimAfter?String(config.dimAfter)+t(" s"," с"):t("never","никогда"));case ActContrast:return t("Contrast: ","Контраст: ")+String(config.brightness);
- case ActHoming:{int i=shownSignal();return t("Home in: ","Пеленг: ")+(i>=0?signalName(radar.targets[i]):String("-"));}case ActNextSignal:return t("Next signal","Следующий сигнал");
- case ActCsiBeacon:return radar.csi==Radar::CsiBeacon?t("Stop beacon","Выключить маяк"):t("CSI beacon: on","Маяк CSI: включить");
- case ActCsiSensor:return radar.csi==Radar::CsiSensor?t("CSI motion: off","Движение CSI: выкл."):t("CSI sensor","Приёмник CSI");
- case ActCalibrate:return t("Calibrate (10 s still)","Калибровка (10 с тихо)");
- case ActStopHoming:return t("Stop homing","Остановить пеленг");case ActResetPeak:return t("Reset peak","Сбросить пик");
- case ActPetCuddle:return creature.s.stage==pet::Egg?t("Knock","Постучать"):t("Pet","Погладить");
- case ActPetFeed:return t("Feed a snack: ","Кормить, вкусн.: ")+String(creature.s.snacks);case ActPetHeal:return t("Heal","Лечить");case ActPetEgg:return t("New egg","Новое яйцо");
- case ActPetAdopt:return t("Start a pet","Завести питомца");case ActPetRelease:return t("Let it go...","Отпустить...");
- case ActPetDeath:return creature.s.mortal?t("Death: on","Смерть: вкл."):t("Death: off","Смерть: выкл.");
- case ActPowerOff:return t("Turn off...","Выключить...");case ActRadio:return t("Radio...","Радио...");
- case ActSelfTest:return t("Encryption test","Тест шифрования");case ActClose:return t("< Close menu","< Закрыть меню");
+ case ActNotify:return t("Notifications");
+ case ActNotifyLed:case ActNotifyWake:case ActNotifyPopup:{uint8_t mode=a==ActNotifyLed?config.notifyLed:a==ActNotifyWake?config.notifyWake:config.notifyPopup;return (a==ActNotifyLed?String("LED: "):a==ActNotifyWake?t("Wake: "):t("Popup: "))+(mode==0?t("off"):mode==1?t("all"):String("@"));}
+ case ActNotifyFailed:return t("TX alert: ")+(config.notifyFailed?t("on"):t("off"));
+ case ActWrite:return page==Nodes?t("Write message...")
+  :page==Messages&&m&&!publicChat?t("Write reply..."):t("Write to channel...");
+ case ActFormat:return t("Create storage...");
+ case ActJoin:{String name;uint8_t key[16];channels::parseLink(m?m->text:"",name,key);return t("Join ")+name;}
+ case ActJoinHeard:{const HeardChannel* h=heardTag();return t("Join heard ")+(h?h->name:"");}
+ case ActChess:return t("Chess: invite");
+ case ActChessOpen:return t("Open game");
+ case ActChessNext:return t("Next game");
+ case ActCheckers:return t("Checkers: invite");case ActSea:return t("Sea battle: invite");
+ case ActDuelOpen:return t("Open game");case ActDuelNext:return t("Next game");
+ case ActSound:return config.sound?t("Sound: on"):t("Sound: off");
+ case ActRole:return t("Device mode...");case ActForward:return meshServer.view().forwarding?t("Forwarding: off"):t("Forwarding: on");
+ case ActAdvert:return t("Announce node");case ActReplyOk:return t("Reply: OK")+String(publicChat?" #":"");case ActReplyAck:return t("Reply: Got it");
+ case ActOlder:return t("Older message");case ActNewer:return t("Newer message");case ActNextNode:return t("Next node");case ActNodeOk:return t("Send: OK");case ActResetPath:return t("Reset path");
+ case ActRemoteLogin:{Peer* p=shownNode();return p&&remote::saved(p->id)?t("Log in"):t("Log in as guest");}case ActRemoteStatus:return t("Server status");case ActTrace:return t("Trace route");
+ case ActGps:return config.gps?t("Turn GPS off"):t("Turn GPS on");case ActPosition:return t("Share position");
+ case ActWifi:return portalActive()?t("Turn Wi-Fi off"):t("Turn Wi-Fi on");case ActBle:return bleActive()?t("Turn BLE off"):t("Turn BLE on");
+ case ActLanguage:return t("Language: ")+langNames[config.lang<LangCount?config.lang:0];case ActBattery:return config.batteryVolts?t("Battery: volts"):t("Battery: percent");
+ case ActDoubleBack:return config.doubleBack?t("Double click: back"):t("Double click: off");
+ case ActScreen:return t("Screen off: ")+(config.dimAfter?String(config.dimAfter)+t(" s"):t("never"));case ActContrast:return t("Contrast: ")+String(config.brightness);
+ case ActHoming:{int i=shownSignal();return t("Home in: ")+(i>=0?signalName(radar.targets[i]):String("-"));}case ActNextSignal:return t("Next signal");
+ case ActCsiBeacon:return radar.csi==Radar::CsiBeacon?t("Stop beacon"):t("CSI beacon: on");
+ case ActCsiSensor:return radar.csi==Radar::CsiSensor?t("CSI motion: off"):t("CSI sensor");
+ case ActCalibrate:return t("Calibrate (10 s still)");
+ case ActStopHoming:return t("Stop homing");case ActResetPeak:return t("Reset peak");
+ case ActPetCuddle:return creature.s.stage==pet::Egg?t("Knock"):t("Pet");
+ case ActPetFeed:return t("Feed a snack: ")+String(creature.s.snacks);case ActPetHeal:return t("Heal");case ActPetEgg:return t("New egg");
+ case ActPetAdopt:return t("Start a pet");case ActPetRelease:return t("Let it go...");
+ case ActPetDeath:return creature.s.mortal?t("Death: on"):t("Death: off");
+ case ActPowerOff:return t("Turn off...");case ActRadio:return t("Radio...");
+ case ActSelfTest:return t("Encryption test");case ActClose:return t("< Close menu");
  default:break;
  }return "";
 }
-void reply(const String& text){const ChatMessage* m=shownMessage();if(!m)return;uint64_t to=channels::isChannel(m->destination)?m->destination:m->outgoing?m->destination:m->source;bool sent=to!=meshRadio.nodeId&&meshRadio.sendMessage(text,to);notice(sent?t("Reply ","Ответ ")+text+t(" queued"," в очереди"):t("Reply not queued","Ответ не отправлен"));}
+void reply(const String& text){const ChatMessage* m=shownMessage();if(!m)return;uint64_t to=channels::isChannel(m->destination)?m->destination:m->outgoing?m->destination:m->source;bool sent=to!=meshRadio.nodeId&&meshRadio.sendMessage(text,to);notice(sent?t("Reply ")+text+t(" queued"):t("Reply not queued"));}
 void run(Act a){
  if(a!=ActPeopleDelete)tallyArmed=0;
  if(a>=ActPeopleMinus&&a<=ActPeopleExit){if(a==ActPeopleMinus){people::change(-1);return;}
   if(a==ActPeopleNext){people::select((people::tally.current+1)%people::tally.count);return;}
   if(a==ActPeopleAdd){if(people::add())notice(people::name(people::tally.current));return;}
-  if(a==ActPeopleDelete){if(tallyArmed&&millis()-tallyArmed<5000){tallyArmed=0;String gone=people::name(people::tally.current);if(people::remove(people::tally.current))notice(t("Deleted: ","Удалён: ")+gone);}else tallyArmed=millis();return;}if(a==ActPeopleExit){showPage(nextPage());return;}StaticJsonDocument<128>d;d["action"]=a==ActPeopleReset?"reset":a==ActPeopleClear?"window_reset":"settings";if(a==ActPeopleBle)d["ble"]=!people::settings.ble;if(a==ActPeopleWifi)d["wifi"]=!people::settings.wifi;if(a==ActPeopleWindow)d["window"]=people::settings.window==30?60:people::settings.window==60?300:30;if(a==ActPeopleRssi)d["rssi"]=people::settings.rssi>=-40?-100:people::settings.rssi+5;if(a==ActPeoplePersonal)d["personal_only"]=!people::settings.personal;String r=people::command(d.as<JsonObjectConst>());notice(!r.startsWith("OK")?r:a==ActPeopleReset?t("Counter reset","Счётчик сброшен"):a==ActPeopleClear?t("New device window","Новое окно устройств"):actName(a));return;}
+  if(a==ActPeopleDelete){if(tallyArmed&&millis()-tallyArmed<5000){tallyArmed=0;String gone=people::name(people::tally.current);if(people::remove(people::tally.current))notice(t("Deleted: ")+gone);}else tallyArmed=millis();return;}if(a==ActPeopleExit){showPage(nextPage());return;}StaticJsonDocument<128>d;d["action"]=a==ActPeopleReset?"reset":a==ActPeopleClear?"window_reset":"settings";if(a==ActPeopleBle)d["ble"]=!people::settings.ble;if(a==ActPeopleWifi)d["wifi"]=!people::settings.wifi;if(a==ActPeopleWindow)d["window"]=people::settings.window==30?60:people::settings.window==60?300:30;if(a==ActPeopleRssi)d["rssi"]=people::settings.rssi>=-40?-100:people::settings.rssi+5;if(a==ActPeoplePersonal)d["personal_only"]=!people::settings.personal;String r=people::command(d.as<JsonObjectConst>());notice(!r.startsWith("OK")?r:a==ActPeopleReset?t("Counter reset"):a==ActPeopleClear?t("New device window"):actName(a));return;}
 
 #if MM_DICE
  if(a>=ActDiceRoll&&a<=ActDiceExit){diceRun(a);return;}
@@ -486,8 +486,8 @@ void run(Act a){
  case ActNotify:showPage(NotifyPage);break;
 #if MM_WARDRIVE
  case ActWardriveRun:case ActWardriveNets:{StaticJsonDocument<128>d;d["action"]=a==ActWardriveRun&&wardrive::running()?"stop":"settings";if(a==ActWardriveNets)d["nets"]=!wardrive::settings.nets;else if(!wardrive::running()){d["passive"]=true;d["ping"]=true;}
-  String r=wardrive::command(d.as<JsonObjectConst>());notice(r.startsWith("ERR")?r:a==ActWardriveNets?"Wi-Fi/BLE: "+flag(wardrive::settings.nets):wardrive::running()?t("Wardrive on","Вардрайв включён"):t("Wardrive off","Вардрайв выключен"));break;}
- case ActWardrivePing:{int32_t lat,lon;bool phone;notice(wardrive::ping()?t("Ping queued","Пинг в очереди"):!wardrive::position(lat,lon,phone)?t("No position yet","Позиции пока нет"):t("A ping is under way","Пинг уже идёт"));break;}
+  String r=wardrive::command(d.as<JsonObjectConst>());notice(r.startsWith("ERR")?r:a==ActWardriveNets?"Wi-Fi/BLE: "+flag(wardrive::settings.nets):wardrive::running()?t("Wardrive on"):t("Wardrive off"));break;}
+ case ActWardrivePing:{int32_t lat,lon;bool phone;notice(wardrive::ping()?t("Ping queued"):!wardrive::position(lat,lon,phone)?t("No position yet"):t("A ping is under way"));break;}
  case ActWardriveView:wardriveList=!wardriveList;break;
 #endif
  case ActNotifyLed:notice(applyOne("notify_led",(config.notifyLed+1)%3));break;
@@ -495,8 +495,8 @@ void run(Act a){
  case ActNotifyPopup:notice(applyOne("notify_popup",(config.notifyPopup+1)%3));break;
  case ActNotifyFailed:notice(applyOne("notify_failed",!config.notifyFailed));break;
  case ActFormat:{static uint32_t armed=0;
-  if(!armed||millis()-armed>5000){armed=millis();notice(t("Hold again: erase","Удерж. ещё: стереть"));break;}
-  armed=0;String r=executeCommand("fsformat");if(r.startsWith("OK"))executeCommand("restart");notice(r.startsWith("OK")?t("Storage created, restart","Создано, перезапуск"):r);break;}
+  if(!armed||millis()-armed>5000){armed=millis();notice(t("Hold again: erase"));break;}
+  armed=0;String r=executeCommand("fsformat");if(r.startsWith("OK"))executeCommand("restart");notice(r.startsWith("OK")?t("Storage created, restart"):r);break;}
  case ActJoin:{const ChatMessage* m=shownMessage();String name;uint8_t key[16];if(m&&channels::parseLink(m->text,name,key))joinedNotice(meshRadio.joinLink(m->text),name);break;}
  case ActJoinHeard:{const HeardChannel* h=heardTag();if(h){String name=h->name;joinedNotice(meshRadio.joinHashtag(name),name);}break;}
  case ActWrite:
@@ -504,7 +504,7 @@ void run(Act a){
 #if MM_CHESS
  case ActChess:
   if(Peer* p=shownNode()){ // the board shows the invitation; no news popup for it
-   uint32_t before=chessNet.events;ChessMatch* m=chessNet.invite(p->id,2);if(m){showPage(Chess);openChess(m);notice(t("Challenge sent","Вызов отправлен"));}else if(chessNet.events!=before)notice(chessNet.event);chessSeen=chessNet.events;}
+   uint32_t before=chessNet.events;ChessMatch* m=chessNet.invite(p->id,2);if(m){showPage(Chess);openChess(m);notice(t("Challenge sent"));}else if(chessNet.events!=before)notice(chessNet.event);chessSeen=chessNet.events;}
   break;
  case ActChessOpen:{ChessMatch* games[ChessNet::MaxMatches];unsigned g=chessGames(games);if(g)openChess(games[chessSel%g]);break;}
  case ActChessNext:chessSel++;menuIndex=0;break;
@@ -513,46 +513,46 @@ void run(Act a){
  case ActCheckers:case ActSea:
   if(Peer* p=shownNode()){ // the game screen shows the invitation; no news popup for it
    uint32_t before=duels.events;Duel* g=duels.invite(p->id,a==ActSea?Duel::Sea:Duel::Checkers);
-   if(g){showPage(duelPageOf(*g));openDuel(g);notice(t("Challenge sent","Вызов отправлен"));}else if(duels.events!=before)notice(duels.event);duelSeen=duels.events;}
+   if(g){showPage(duelPageOf(*g));openDuel(g);notice(t("Challenge sent"));}else if(duels.events!=before)notice(duels.event);duelSeen=duels.events;}
   break;
  case ActDuelOpen:{Duel* games[DuelNet::Max];unsigned g=duelGames(duelKind(),games);if(g)openDuel(games[duelSel%g]);break;}
  case ActDuelNext:duelSel++;menuIndex=0;break;
 #endif
  case ActRole:openRolePick(false);break;case ActRadio:openRadio();break;
- case ActForward:{String r=meshServer.command(meshServer.view().forwarding?"set repeat off":"set repeat on");notice(r.startsWith("OK")?(meshServer.view().forwarding?t("Forwarding on","Пересылка вкл."):t("Forwarding off","Пересылка выкл.")):r);break;}
- case ActAdvert:notice(meshRadio.sendHello()?t("Node announced","Узел объявлен"):t("Announcement failed","Объявление не отправлено"));break;
- case ActReplyOk:reply("OK");break;case ActReplyAck:reply(t("Got it","Принято"));break;
+ case ActForward:{String r=meshServer.command(meshServer.view().forwarding?"set repeat off":"set repeat on");notice(r.startsWith("OK")?(meshServer.view().forwarding?t("Forwarding on"):t("Forwarding off")):r);break;}
+ case ActAdvert:notice(meshRadio.sendHello()?t("Node announced"):t("Announcement failed"));break;
+ case ActReplyOk:reply("OK");break;case ActReplyAck:reply(t("Got it"));break;
  case ActOlder:messageOffset++;shownMessage();break;case ActNewer:messageOffset=max(0,messageOffset-1);break;case ActNextNode:nodeIndex++;menuIndex=0;break;
- case ActNodeOk:{Peer* p=shownNode();bool sent=p&&meshRadio.sendMessage("OK",p->id);notice(sent?t("OK queued","OK в очереди"):t("Not queued","Не отправлено"));break;}
- case ActResetPath:{Peer* p=shownNode();notice(p&&!meshRadio.busy()&&meshRadio.resetPath(p->id)?t("Path reset","Путь сброшен"):t("Path reset failed","Путь не сброшен"));break;}
- case ActRemoteLogin:case ActRemoteStatus:case ActTrace:{Peer* p=shownNode();bool sent=p&&(a==ActRemoteLogin?remote::login(p->id,""):a==ActRemoteStatus?remote::status(p->id):remote::traceTo(p->id));notice(sent?t("Sent, waiting","Отправлено, ждём"):t("Not sent","Не отправлено"));break;}
- case ActGps:notice(applyOne("gps",!config.gps).startsWith("OK")?"GPS: "+String(config.gps?t("on","вкл"):t("off","выкл")):t("Radio busy, retry","Радио занято, повторите"));break;
- case ActPosition:notice(meshRadio.sendPosition()?t("Position shared","Позиция передана"):t("Needs a GPS fix","Нужна позиция GPS"));break;
+ case ActNodeOk:{Peer* p=shownNode();bool sent=p&&meshRadio.sendMessage("OK",p->id);notice(sent?t("OK queued"):t("Not queued"));break;}
+ case ActResetPath:{Peer* p=shownNode();notice(p&&!meshRadio.busy()&&meshRadio.resetPath(p->id)?t("Path reset"):t("Path reset failed"));break;}
+ case ActRemoteLogin:case ActRemoteStatus:case ActTrace:{Peer* p=shownNode();bool sent=p&&(a==ActRemoteLogin?remote::login(p->id,""):a==ActRemoteStatus?remote::status(p->id):remote::traceTo(p->id));notice(sent?t("Sent, waiting"):t("Not sent"));break;}
+ case ActGps:notice(applyOne("gps",!config.gps).startsWith("OK")?"GPS: "+String(config.gps?t("on"):t("off")):t("Radio busy, retry"));break;
+ case ActPosition:notice(meshRadio.sendPosition()?t("Position shared"):t("Needs a GPS fix"));break;
  case ActWifi:portalToggle();break;case ActBle:bleToggle();break;
  case ActSound:applyOne("sound",!config.sound);hardware.beep();break;
  case ActLanguage:applyOne("lang",langCodes[langStep(config.lang,1)]);break;case ActBattery:applyOne("battery_volts",!config.batteryVolts);break;
  case ActDoubleBack:applyOne("double_back",!config.doubleBack);break;
  case ActScreen:{const uint16_t steps[]={0,15,30,60,120,300};int i=0;while(i<5&&steps[i]!=config.dimAfter)i++;applyOne("dim_after",steps[(i+1)%6]);break;}
  case ActContrast:{const uint8_t steps[]={10,60,150,255};int i=0;while(i<3&&steps[i]<config.brightness)i++;applyOne("brightness",steps[(i+1)%4]);break;}
- case ActHoming:{int i=shownSignal();signalManual=true;if(i>=0&&radar.track(i)){pingedSamples=radar.samples;notice(t("Homing started","Пеленг начат"));}break;}
+ case ActHoming:{int i=shownSignal();signalManual=true;if(i>=0&&radar.track(i)){pingedSamples=radar.samples;notice(t("Homing started"));}break;}
  case ActNextSignal:{int i=shownSignal();signalManual=true;if(i>=0){i=(i+1)%radar.count;signalId=radar.targets[i].id;signalKind=radar.targets[i].kind;}menuIndex=0;break;}
- case ActStopHoming:radar.untrack();break;case ActResetPeak:radar.resetPeak();notice(t("Peak reset","Пик сброшен"));break;
+ case ActStopHoming:radar.untrack();break;case ActResetPeak:radar.resetPeak();notice(t("Peak reset"));break;
  case ActCsiBeacon:radar.setCsi(radar.csi==Radar::CsiBeacon?Radar::CsiOff:Radar::CsiBeacon);break;
  case ActCsiSensor:radar.setCsi(radar.csi==Radar::CsiSensor?Radar::CsiOff:Radar::CsiSensor);break;
- case ActCalibrate:if(radar.beaconHeard()){radar.calibrate();notice(t("Calibrating 10 s","Калибровка 10 с"));}else notice(t("No beacon heard","Маяк не слышен"));break;
+ case ActCalibrate:if(radar.beaconHeard()){radar.calibrate();notice(t("Calibrating 10 s"));}else notice(t("No beacon heard"));break;
 #if MM_PET
  case ActPetCuddle:creature.cuddle();break;case ActPetFeed:creature.feed();break;case ActPetHeal:creature.heal();break;case ActPetEgg:creature.newEgg();break; // it answers in its bubble
  case ActPetDeath:notice(creature.setMortal(!creature.s.mortal));break;
  case ActPetAdopt:creature.newEgg();menuOpen=false;break;
  case ActPetRelease:{static uint32_t armed=0;if(!armed||millis()-armed>5000){armed=millis();
-  notice(t("Hold again: let it go","Удерж. ещё: отпустить"));
+  notice(t("Hold again: let it go"));
   break;}armed=0;notice(creature.release());menuOpen=false;break;}
 #endif
  case ActPowerOff:{static uint32_t armed=0;if(!armed||millis()-armed>5000){armed=millis();
-  notice(t("Hold again: turn off","Удерж. ещё: выключить"));
+  notice(t("Hold again: turn off"));
   break;}armed=0;powerOff();menuOpen=false;break;}
  case ActClose:default:break;
- case ActSelfTest:{bool valid=meshRadio.selfTest();meshRadio.event=valid?"Encryption test OK":"Encryption test FAILED";notice(valid?t("Encryption: OK","Шифрование: OK"):t("Encryption: ERROR","Шифрование: ошибка"));break;}
+ case ActSelfTest:{bool valid=meshRadio.selfTest();meshRadio.event=valid?"Encryption test OK":"Encryption test FAILED";notice(valid?t("Encryption: OK"):t("Encryption: ERROR"));break;}
  }
 }
 
@@ -586,21 +586,21 @@ void footer(const String& hint){
 }
 String hint(){
 #if MM_DICE
- if(diceTapOn())return t("click+ hold- 5s:exit","клик+ держ- 5с:выход");
+ if(diceTapOn())return t("click+ hold- 5s:exit");
 #endif
- Act acts[MenuMax];unsigned n=actions(acts);if(!n)return "";return n==1?t("hold: ","держ: ")+actName(acts[0]):t("hold: menu","держ: меню");}
+ Act acts[MenuMax];unsigned n=actions(acts);if(!n)return "";return n==1?t("hold: ")+actName(acts[0]):t("hold: menu");}
 unsigned quickTargetCount(){return quickSend::targetCount();}
 uint64_t quickTarget(unsigned i){return quickSend::target(i);}
-String quickName(uint64_t id){const auto* ch=meshRadio.channel(id);const Peer* p=meshRadio.findContact(id);return ch?String(ch->name):p?String(p->name):t("Choose recipient","Выберите получателя");}
-String quickLabel(unsigned i){if(!i)return t("Choose recipient","Выберите получателя");if(i<=quickSend::Count)return quickSend::state.text[i-1][0]?String(quickSend::state.text[i-1]):String("--");return "< "+t("Exit","Выход");}
+String quickName(uint64_t id){const auto* ch=meshRadio.channel(id);const Peer* p=meshRadio.findContact(id);return ch?String(ch->name):p?String(p->name):t("Choose recipient");}
+String quickLabel(unsigned i){if(!i)return t("Choose recipient");if(i<=quickSend::Count)return quickSend::state.text[i-1][0]?String(quickSend::state.text[i-1]):String("--");return "< "+t("Exit");}
 bool quickKey(int key){if(page!=QuickPage)return false;if(key==0x86){if(quickTargets){quickTargets=false;quickIndex=0;}else{quickReply=false;showPage(Home);}return true;}bool click=key==13||key==0x82||key==0xb6,hold=key==0xa3;
  if(click){if(quickTargets){unsigned n=quickTargetCount();if(n)quickTargetIndex=(quickTargetIndex+1)%n;}else quickIndex=(quickIndex+1)%(quickSend::Count+2);}
- if(hold){if(quickTargets){if(!quickTargetCount()){notice(t("No recipients","Нет получателей"));quickTargets=false;quickIndex=0;return true;}quickTargetIndex%=quickTargetCount();StaticJsonDocument<128>d;d["action"]="target";d["to"]=meshRadio.idText(quickTarget(quickTargetIndex));String r=quickSend::command(d.as<JsonObjectConst>());notice(r);if(r.startsWith("OK")){quickReply=quickTargets=false;quickIndex=1;}}
+ if(hold){if(quickTargets){if(!quickTargetCount()){notice(t("No recipients"));quickTargets=false;quickIndex=0;return true;}quickTargetIndex%=quickTargetCount();StaticJsonDocument<128>d;d["action"]="target";d["to"]=meshRadio.idText(quickTarget(quickTargetIndex));String r=quickSend::command(d.as<JsonObjectConst>());notice(r);if(r.startsWith("OK")){quickReply=quickTargets=false;quickIndex=1;}}
  else if(!quickIndex){quickTargets=true;quickTargetIndex=0;}
  else if(quickIndex>quickSend::Count){quickReply=false;showPage(nextPage());}
  else notice(quickSend::send(quickIndex-1,quickReply?quickReplyTo:0));}return true;}
 void drawQuickMono(){auto& c=*hardware.canvas;
- if(quickTargets){say(0,20,fitted(t("Choose recipient","Выберите получателя"),128,small),small);unsigned n=quickTargetCount();int first=max(0,min(int(quickTargetIndex)-1,int(n)-3));
+ if(quickTargets){say(0,20,fitted(t("Choose recipient"),128,small),small);unsigned n=quickTargetCount();int first=max(0,min(int(quickTargetIndex)-1,int(n)-3));
   for(unsigned i=first;i<n&&i<unsigned(first+3);i++){int y=23+(i-first)*11;bool focus=i==quickTargetIndex;if(focus)c.fillRect(0,y,128,11,1);say(2,y+9,fitted(quickName(quickTarget(i)),124,small),small,focus?0:1);}return;}
  bool focus=!quickIndex&&appOpen;c.drawRoundRect(0,12,128,17,3,1);if(focus)c.fillRoundRect(0,12,128,17,3,1);
  say(3,25,fitted(quickName(quickReply?quickReplyTo:quickSend::state.to),112,body),body,focus?0:1);c.fillTriangle(119,17,119,23,123,20,focus?0:1);
@@ -611,20 +611,20 @@ void drawMenu(){
  c.fillRect(0,12,128,45,0);c.drawRect(0,12,128,45,1);
  for(unsigned i=first;i<n&&i<unsigned(first+3);i++){int y=14+(i-first)*14;bool focus=int(i)==menuIndex;if(focus)c.fillRect(2,y,124,13,1);say(5,y+10,clipped(actName(acts[i]),20),body,focus?0:1);}
  c.fillRect(0,57,128,7,0);
- footer(t("click-next hold-run","клик-далее держ-ОК"));
+ footer(t("click-next hold-run"));
 }
 void drawPopup(const ChatMessage& m){
  auto& c=*hardware.canvas;c.fillScreen(0);c.drawRect(3,3,11,8,1);c.drawLine(3,3,8,7,1);c.drawLine(13,3,8,7,1);
- say(18,11,clipped(String(m.name)+(channels::isChannel(m.destination)?channelTag(m.destination):String()),18),bold);textLines(messageText(m),25,3);sayRight(126,62,t("click: close","клик: закрыть"));
+ say(18,11,clipped(String(m.name)+(channels::isChannel(m.destination)?channelTag(m.destination):String()),18),bold);textLines(messageText(m),25,3);sayRight(126,62,t("click: close"));
 }
-String newsTitle(){return newsKind==1?t("Checkers","Шашки"):newsKind==2?t("Sea battle","Морской бой"):newsKind?t("Games","Игры"):t("Chess","Шахматы");}
+String newsTitle(){return newsKind==1?t("Checkers"):newsKind==2?t("Sea battle"):newsKind?t("Games"):t("Chess");}
 void drawChessPopup(){
  auto& c=*hardware.canvas;c.fillScreen(0);c.drawRect(0,0,128,64,1);
  if(newsKind==2){c.fillTriangle(3,8,13,8,11,11,1);c.fillRect(5,8,7,3,1);c.fillRect(7,4,3,4,1);} // a ship
  else if(newsKind==1){c.fillCircle(8,7,4,1);c.drawCircle(8,7,2,0);} // a draughts man
  else{c.fillCircle(8,5,2,1);c.fillTriangle(8,5,5,10,11,10,1);c.fillRect(4,10,9,2,1);} // a pawn
  say(18,11,newsTitle(),bold);textLines(chessPopupText,25,3);
- if(config.role==RoleNormal)sayRight(126,62,t("hold: open the game","держ: открыть партию"),small);
+ if(config.role==RoleNormal)sayRight(126,62,t("hold: open the game"),small);
 }
 // Hold (OK) on news: the game it is about, or its game's list.
 void openNews(){
@@ -638,11 +638,11 @@ void openNews(){
 }
 void drawRolePick(){
  auto& c=*hardware.canvas;c.fillScreen(0);
- for(int r=0;r<RoleCount;r++){int y=21+r*12;bool focus=r==roleSel;if(focus)c.fillRect(0,y-10,128,12,1);say(3,y,roleShort(r),body,!focus);if(r==config.role)sayRight(125,y,t("now","сейчас"),small,!focus);}
+ for(int r=0;r<RoleCount;r++){int y=21+r*12;bool focus=r==roleSel;if(focus)c.fillRect(0,y-10,128,12,1);say(3,y,roleShort(r),body,!focus);if(r==config.role)sayRight(125,y,t("now"),small,!focus);}
  uint32_t gone=millis()-rolePickAt;unsigned left=gone>=5000?0:(5000-gone+999)/1000;
- header(t("Device mode","Режим работы"));
- sayRight(128,63,rolePickBoot?t("as now in ","как сейчас через ")+String(left)+t("s","с"):
- t("click-next hold-choose","клик-далее держ-выбор")
+ header(t("Device mode"));
+ sayRight(128,63,rolePickBoot?t("as now in ")+String(left)+t("s"):
+ t("click-next hold-choose")
  ,small);
  if(action.length()&&millis()-actionAt<3500){c.fillRect(0,36,128,20,0);c.drawRect(0,36,128,20,1);say(3,50,clipped(action,20));}
  hardware.flush();
@@ -655,14 +655,14 @@ void drawRadioEdit(){
   if(radioValue(config,r)!=v)c.fillRect(x-4,y-5,2,2,!focus); // changed, not saved yet
   if(focus&&radioEditing){unsigned a=0,b=v.length();if(r==RowFreq)radioDigitSpan(v,a,b);int u=x+width(v.substring(0,a),small);String part=v.substring(a,b);
    c.fillRect(u-1,y-9,width(part,small)+2,11,0);say(u,y,part,small,1);}}
- header(t("Radio","Радио")+(radioChanged()?" *":""));sayRight(128,63,radioHint(),small);
+ header(t("Radio")+(radioChanged()?" *":""));sayRight(128,63,radioHint(),small);
  if(action.length()&&millis()-actionAt<3500){c.fillRect(0,36,128,20,0);c.drawRect(0,36,128,20,1);say(3,50,clipped(action,20));}
  hardware.flush();
 }
 // Power off pending (Power.cpp): what turns the board on again.
 String powerOnHint(){int way=powerOnWay();
- if(way==-2)return t("the power key","кнопка питания");if(way<0)return t("RESET or power switch","RESET или выключатель");
- return t("hold ","удержать ")+MM_BUTTON;
+ if(way==-2)return t("the power key");if(way<0)return t("RESET or power switch");
+ return t("hold ")+MM_BUTTON;
 }
 // The quick counter: the open card's name and count, a dot for every card and the devices nearby when counted.
 String tallyNear(){String s;if(people::settings.ble)s="BLE "+String(people::count(false))+(people::saturated(false)?"+":"");
@@ -676,16 +676,16 @@ void drawTallyMono(){
 }
 bool farewell=false; // the board is about to turn off: the last frame
 void drawOff(){
- auto& c=*hardware.canvas;c.fillScreen(0);say(0,24,farewell?t("Device is off","Устройство выключено"):t("Turning off...","Выключение..."),bold);
- say(0,44,t("To turn on:","Включить:"),small);say(0,54,powerOnHint(),small);hardware.flush();
+ auto& c=*hardware.canvas;c.fillScreen(0);say(0,24,farewell?t("Device is off"):t("Turning off..."),bold);
+ say(0,44,t("To turn on:"),small);say(0,54,powerOnHint(),small);hardware.flush();
 }
 // Server home: role, radio, traffic and the passwords an owner needs for the MeshCore app.
 void drawServerHome(){
  ServerView v=meshServer.view();bool room=config.role==RoleRoom;
- say(0,21,roleShort(config.role),bold);if(meshRadio.ready)sayRight(128,20,String(config.frequency,3)+t(" MHz"," МГц"));else sayRight(128,20,hardware.fsOk?t("Radio error","Ошибка радио"):t("No storage","Нет хранилища"));
- say(0,31,room?t("posts ","постов ")+String(v.posts)+t("  in ","  вошли ")+String(v.clients):"RX "+String(meshRadio.rxCount)+" TX "+String(meshRadio.txCount)+t(" fwd "," перес. ")+String(meshRadio.relayed),small);
- say(0,40,t("admin ","админ ")+v.password,small);
- say(0,49,(room?t("room ","комната "):t("guest ","гость "))+(v.guest.length()?v.guest:t("none","нет"))+(v.forwarding?"":t("  no fwd","  без перес.")),small);
+ say(0,21,roleShort(config.role),bold);if(meshRadio.ready)sayRight(128,20,String(config.frequency,3)+t(" MHz"));else sayRight(128,20,hardware.fsOk?t("Radio error"):t("No storage"));
+ say(0,31,room?t("posts ")+String(v.posts)+t("  in ")+String(v.clients):"RX "+String(meshRadio.rxCount)+" TX "+String(meshRadio.txCount)+t(" fwd ")+String(meshRadio.relayed),small);
+ say(0,40,t("admin ")+v.password,small);
+ say(0,49,(room?t("room "):t("guest "))+(v.guest.length()?v.guest:t("none"))+(v.forwarding?"":t("  no fwd")),small);
 }
 // What an app has for the player: unread messages, games waiting for a move or an answer.
 unsigned appNews(int p){
@@ -710,57 +710,57 @@ void draw(){
  if(chessPopupAt&&millis()-chessPopupAt<8000){drawChessPopup();hardware.flush();return;}
  chessPopupAt=0;String title;
  switch(page){
- case PeoplePage:title=t("Quick counter","Быстрый счётчик");drawTallyMono();break;
- case QuickPage:title=t("Quick send","Быстрая отправка");drawQuickMono();break;
+ case PeoplePage:title=t("Quick counter");drawTallyMono();break;
+ case QuickPage:title=t("Quick send");drawQuickMono();break;
 #if MM_WARDRIVE
- case WardrivePage:title=t("Wardrive","Вардрайв");
-  if(wardriveList){unsigned order[24];const wardrive::Repeater* l;unsigned n=wdOrder(order,l);if(!n)say(0,30,t("No repeaters yet","Ретрансляторов нет"),small);
-   for(unsigned i=0;i<n&&i<4;i++){auto& e=l[order[i]];say(0,20+i*9,clipped(wdHash(e.hash,e.size)+" "+wdSnr(e.snr)+t("dB echo ","дБ эхо ")+String(e.echoes)+" rx "+String(e.rx),25),small);}}
+ case WardrivePage:title=t("Wardrive");
+  if(wardriveList){unsigned order[24];const wardrive::Repeater* l;unsigned n=wdOrder(order,l);if(!n)say(0,30,t("No repeaters yet"),small);
+   for(unsigned i=0;i<n&&i<4;i++){auto& e=l[order[i]];say(0,20+i*9,clipped(wdHash(e.hash,e.size)+" "+wdSnr(e.snr)+t("dB echo ")+String(e.echoes)+" rx "+String(e.rx),25),small);}}
   else{say(0,21,clipped(wdMode(),21),bold);say(0,32,clipped(wdPosition(),25),small);say(0,41,clipped(wdCounts(),25),small);say(0,50,clipped(wdLast(),25),small);}break;
 #endif
- case NotifyPage:title=t("Notifications","Уведомления");say(0,28,t("LED / screen / popup","LED / экран / окно"),small);say(0,42,t("hold: menu","держ: меню"),small);break;
+ case NotifyPage:title=t("Notifications");say(0,28,t("LED / screen / popup"),small);say(0,42,t("hold: menu"),small);break;
  case Home:{title=config.name;if(config.role!=RoleNormal){drawServerHome();break;}say(0,31,clockText(time(nullptr)),u8g2_font_10x20_t_cyrillic);
-  if(meshRadio.ready){sayRight(128,20,String(config.frequency,3)+t(" MHz"," МГц"));sayRight(128,30,"SF"+String(config.sf)+" BW"+String(config.bandwidth,1));}else sayRight(128,24,t("Radio error ","Ошибка радио ")+String(meshRadio.radioError));
+  if(meshRadio.ready){sayRight(128,20,String(config.frequency,3)+t(" MHz"));sayRight(128,30,"SF"+String(config.sf)+" BW"+String(config.bandwidth,1));}else sayRight(128,24,t("Radio error ")+String(meshRadio.radioError));
   unsigned near=0;for(unsigned i=0;i<meshRadio.peerCount;i++)if(meshRadio.peers[i].heard&&millis()-meshRadio.peers[i].seen<1800000)near++;
-  say(0,43,"RX "+String(meshRadio.rxCount)+"  TX "+String(meshRadio.txCount)+t("  near "," рядом ")+String(near),small);
-  unsigned mv=hardware.batteryMv;say(0,52,(mv>4250?t("USB power","Питание USB"):String(mv/1000.f,2)+"V")+(config.relay?t("  relay on","  ретрансляция"):""),small);break;}
- case Messages:{const ChatMessage* m=shownMessage();title=t("Messages","Сообщения")+(m?" "+String(meshRadio.historyCount-messageOffset)+"/"+String(meshRadio.historyCount):"");
-  if(m){String who=m->outgoing?t("You","Вы"):String(m->name);if(channels::isChannel(m->destination))who+=channelTag(m->destination);const char* states[]={"",tr("queued","очередь"),tr("sent","отправл."),tr("delivered","доставл."),tr("no ACK","нет ACK")};
+  say(0,43,"RX "+String(meshRadio.rxCount)+"  TX "+String(meshRadio.txCount)+t("  near ")+String(near),small);
+  unsigned mv=hardware.batteryMv;say(0,52,(mv>4250?t("USB power"):String(mv/1000.f,2)+"V")+(config.relay?t("  relay on"):""),small);break;}
+ case Messages:{const ChatMessage* m=shownMessage();title=t("Messages")+(m?" "+String(meshRadio.historyCount-messageOffset)+"/"+String(meshRadio.historyCount):"");
+  if(m){String who=m->outgoing?t("You"):String(m->name);if(channels::isChannel(m->destination))who+=channelTag(m->destination);const char* states[]={"",tr("queued"),tr("sent"),tr("delivered"),tr("no ACK")};
    String route=meshRadio.routeText(*m,true),st=m->outgoing?String(states[m->status])+(route.length()?" "+route:String()):(route.length()?route+" ":String())+clockText(m->timestamp);say(0,23,clipped(who,20-chars(st)),bold);sayRight(128,22,st);textLines(messageText(*m),36,2);}
-  else{say(0,30,t("No messages yet","Сообщений ещё нет"));say(0,44,t("They appear here","Здесь появятся входящие"),small);}break;}
- case Nodes:{unsigned order[24];unsigned n=sortedNodes(order);Peer* p=shownNode();title=t("Nodes","Узлы")+(n?" "+String(nodeIndex%n+1)+"/"+String(n):"");
+  else{say(0,30,t("No messages yet"));say(0,44,t("They appear here"),small);}break;}
+ case Nodes:{unsigned order[24];unsigned n=sortedNodes(order);Peer* p=shownNode();title=t("Nodes")+(n?" "+String(nodeIndex%n+1)+"/"+String(n):"");
   if(p){say(0,23,clipped(p->name,21),bold);say(0,33,typeText(p->type)+", "+pathText(*p),small);
    String login=remoteLogin(*p),result=remoteResult(*p);
    if(login.length()||result.length()){say(0,42,login.length()?login:String(int(p->rssi))+" dBm SNR "+String(p->snr,1),small);say(0,51,result,small);break;}
-   say(0,42,p->heard?String(int(p->rssi))+" dBm SNR "+String(p->snr,1)+", "+ago(millis()-p->seen):t("saved, not heard","сохранён, не слышен"),small);
-   float metres,bearing;if(distanceTo(*p,metres,bearing)){const char* dirs[]={tr("N","С"),tr("NE","СВ"),tr("E","В"),tr("SE","ЮВ"),tr("S","Ю"),tr("SW","ЮЗ"),tr("W","З"),tr("NW","СЗ")};int k=int((bearing+22.5f)/45)%8;say(0,51,(metres<1000?String(int(metres))+t(" m "," м "):String(metres/1000,1)+t(" km "," км "))+dirs[k],small);}
-   else if(p->position)say(0,51,t("has GPS position","есть GPS-позиция"),small);}
-  else{say(0,30,t("No nodes heard","Узлы пока не найдены"));say(0,44,t("hold: announce","держите: объявить"),small);}break;}
+   say(0,42,p->heard?String(int(p->rssi))+" dBm SNR "+String(p->snr,1)+", "+ago(millis()-p->seen):t("saved, not heard"),small);
+   float metres,bearing;if(distanceTo(*p,metres,bearing)){const char* dirs[]={tr("N"),tr("NE"),tr("E"),tr("SE"),tr("S"),tr("SW"),tr("W"),tr("NW")};int k=int((bearing+22.5f)/45)%8;say(0,51,(metres<1000?String(int(metres))+t(" m "):String(metres/1000,1)+t(" km "))+dirs[k],small);}
+   else if(p->position)say(0,51,t("has GPS position"),small);}
+  else{say(0,30,t("No nodes heard"));say(0,44,t("hold: announce"),small);}break;}
  case Signals:{
-  if(radar.csi==Radar::CsiSensor){title=t("Motion CSI","Движение CSI");bool heard=radar.beaconHeard();
-   String state=radar.wifi!=Radar::WifiReady?t("no Wi-Fi: AP on?","нет Wi-Fi: точка?"):!heard?t("no beacon","нет маяка"):radar.csiStale?t("CSI frozen","CSI стоит"):radar.calibrateUntil?t("calibrating","калибровка"):radar.moving?t("MOTION","ДВИЖЕНИЕ"):t("still","тихо");
+  if(radar.csi==Radar::CsiSensor){title=t("Motion CSI");bool heard=radar.beaconHeard();
+   String state=radar.wifi!=Radar::WifiReady?t("no Wi-Fi: AP on?"):!heard?t("no beacon"):radar.csiStale?t("CSI frozen"):radar.calibrateUntil?t("calibrating"):radar.moving?t("MOTION"):t("still");
    say(0,31,state,u8g2_font_10x20_t_cyrillic);
    float threshold=radar.motionThreshold(),scale=max(threshold*2.5f,radar.activity*1.1f);
    c.drawRect(0,36,128,6,1);if(heard)c.fillRect(1,37,max(1,int(126*min(1.f,radar.activity/scale))),4,1);c.drawFastVLine(1+int(125*threshold/scale),34,10,1);
-   say(0,52,String(radar.activity*1000,1)+t(" / thr "," / порог ")+String(threshold*1000,1)+(radar.baseline>0?"":"*"),small);
-   say(30,62,String(radar.csiRate)+t("/s","/с"),small);}
-  else if(radar.tracking){const RadarTarget& f=radar.focus;bool fresh=homingFresh();int trend=radar.trend();title=t("Homing","Пеленг");
+   say(0,52,String(radar.activity*1000,1)+t(" / thr ")+String(threshold*1000,1)+(radar.baseline>0?"":"*"),small);
+   say(30,62,String(radar.csiRate)+t("/s"),small);}
+  else if(radar.tracking){const RadarTarget& f=radar.focus;bool fresh=homingFresh();int trend=radar.trend();title=t("Homing");
    say(0,21,clipped(String(kindLetter(f))+signalName(f),21),bold);
    int shown=lroundf(radar.fast);say(0,41,radar.samples?String(shown):String("--"),u8g2_font_10x20_t_cyrillic);say(radar.samples&&shown<=-100?42:34,41,"dBm",small);
    bool wifiLost=(f.kind==RadarTarget::Wifi&&radar.wifi!=Radar::WifiReady)||(f.kind==RadarTarget::Ble&&radar.ble!=Radar::BleReady);
-   sayRight(128,31,wifiLost?(f.kind==RadarTarget::Ble?bleState():wifiState()):!fresh?(radar.samples>1?t("lost","потерян"):t("no signal","нет сигнала")):trend>0?t("stronger","теплее"):trend<0?t("weaker","холоднее"):t("steady","ровно"),bold);
+   sayRight(128,31,wifiLost?(f.kind==RadarTarget::Ble?bleState():wifiState()):!fresh?(radar.samples>1?t("lost"):t("no signal")):trend>0?t("stronger"):trend<0?t("weaker"):t("steady"),bold);
    if(fresh&&!wifiLost){int x=70,y=25;if(trend>0)c.fillTriangle(x,y+4,x+8,y+4,x+4,y-2,1);else if(trend<0)c.fillTriangle(x,y-2,x+8,y-2,x+4,y+4,1);}
-   sayRight(128,41,t("peak ","пик ")+(radar.samples?String(int(lroundf(radar.peak))):String("-")),small);
+   sayRight(128,41,t("peak ")+(radar.samples?String(int(lroundf(radar.peak))):String("-")),small);
    c.drawRect(0,45,128,6,1);if(radar.samples)c.fillRect(1,46,max(1,int(126*signalLevel(shown))),4,1);if(radar.samples){int px=1+int(125*signalLevel(lroundf(radar.peak)));c.drawFastVLine(px,43,10,1);}
-   String st=f.kind==RadarTarget::Lora?String(radar.samples)+t(" pkts"," пак."):String(radar.rate)+t("/s","/с");say(30,62,st,small);}
+   String st=f.kind==RadarTarget::Lora?String(radar.samples)+t(" pkts"):String(radar.rate)+t("/s");say(30,62,st,small);}
   else{bool beacon=radar.csi==Radar::CsiBeacon;int sel=shownSignal();
    // Beacon: sweeps and BLE pause, so the title shows the beacon instead of the counts.
-   title=beacon?t("CSI beacon ","Маяк CSI ")+String(radar.csiRate)+t("/s","/с"):t("Radar","Радар")+
+   title=beacon?t("CSI beacon ")+String(radar.csiRate)+t("/s"):t("Radar")+
    " W"+String(radar.counted(RadarTarget::Wifi))+
    " B"+String(radar.counted(RadarTarget::Ble))+" L"+String(radar.counted(RadarTarget::Lora));
    String st=beacon?String():wifiState();if(!st.length()&&!beacon)st=bleState();
-   if(sel<0){say(0,30,beacon?t("Beacon on","Маяк включён"):t("No signals yet","Сигналов пока нет"));say(0,44,st.length()?st:beacon?t("hold: switch off","держите: выключить"):
-    t("Wi-Fi and LoRa","Wi-Fi и LoRa")
+   if(sel<0){say(0,30,beacon?t("Beacon on"):t("No signals yet"));say(0,44,st.length()?st:beacon?t("hold: switch off"):
+    t("Wi-Fi and LoRa")
    ,small);}
    else{unsigned rows=st.length()?3:4; // a status line takes the 4th row, clear of the bottom hint
     int first=max(0,min(sel-1,int(radar.count)-int(rows)));for(int i=first;i<int(radar.count)&&i<first+int(rows);i++){const RadarTarget& r=radar.targets[i];int y=19+(i-first)*10;
@@ -768,14 +768,14 @@ void draw(){
     if(st.length())say(0,49,clipped(st,25),small);}}
   break;}
  case Gps:{title="GPS";bool fix=hardware.gpsFix();
-  say(0,23,!config.gps?t("GPS off","GPS выключен"):fix?t("Position fix","Позиция есть"):hardware.clockConflict?t("Old GPS date","Старая дата GPS"):hardware.gps.passedChecksum()?t("Searching sky","Поиск спутников"):t("No data from GPS","Нет данных GPS"),bold);
-  say(0,33,t("Satellites ","Спутники ")+String(hardware.gps.satellites.value())+"  NMEA "+String(hardware.gps.passedChecksum()),small);
+  say(0,23,!config.gps?t("GPS off"):fix?t("Position fix"):hardware.clockConflict?t("Old GPS date"):hardware.gps.passedChecksum()?t("Searching sky"):t("No data from GPS"),bold);
+  say(0,33,t("Satellites ")+String(hardware.gps.satellites.value())+"  NMEA "+String(hardware.gps.passedChecksum()),small);
   if(fix)say(0,42,String(hardware.gps.location.lat(),5)+", "+String(hardware.gps.location.lng(),5),small);
-  say(0,51,t("Clock ","Часы ")+clockText(time(nullptr))+" "+(hardware.clockSource=="unset"?t("not set","не задано"):hardware.clockSource),small);break;}
- case Wifi:title="Wi-Fi";if(portalActive()){say(0,23,"MM-"+meshRadio.idText(meshRadio.nodeId).substring(6),bold);say(0,36,portalPassword());say(0,48,"192.168.4.1",small);}else{say(0,27,t("Access point off","Точка доступа выкл."));say(0,41,t("Web chat and settings","Веб-чат и настройки"),small);}break;
- case Ble:title="Bluetooth";if(bleActive()){String n=bleName();say(0,23,n,width(n,bold)<=128?bold:small);say(0,37,"PIN "+String(blePin()),bold);}else{say(0,27,t("Bluetooth off","Bluetooth выкл."));say(0,41,t("Secure pairing","Защищённое сопряжение"),small);}break;
- case Settings:title=t("Settings","Настройки");say(0,20,t("Language: ","Язык: ")+langNames[config.lang<LangCount?config.lang:0],small);say(0,28,t("Battery: ","Батарея: ")+(config.batteryVolts?t("volts","вольты"):t("percent","проценты")),small);
-  say(0,36,t("Screen off: ","Гасить экран: ")+(config.dimAfter?String(config.dimAfter)+t(" s"," с"):t("never","никогда")),small);say(0,44,t("Contrast: ","Контраст: ")+String(config.brightness),small);
+  say(0,51,t("Clock ")+clockText(time(nullptr))+" "+(hardware.clockSource=="unset"?t("not set"):hardware.clockSource),small);break;}
+ case Wifi:title="Wi-Fi";if(portalActive()){say(0,23,"MM-"+meshRadio.idText(meshRadio.nodeId).substring(6),bold);say(0,36,portalPassword());say(0,48,"192.168.4.1",small);}else{say(0,27,t("Access point off"));say(0,41,t("Web chat and settings"),small);}break;
+ case Ble:title="Bluetooth";if(bleActive()){String n=bleName();say(0,23,n,width(n,bold)<=128?bold:small);say(0,37,"PIN "+String(blePin()),bold);}else{say(0,27,t("Bluetooth off"));say(0,41,t("Secure pairing"),small);}break;
+ case Settings:title=t("Settings");say(0,20,t("Language: ")+langNames[config.lang<LangCount?config.lang:0],small);say(0,28,t("Battery: ")+(config.batteryVolts?t("volts"):t("percent")),small);
+  say(0,36,t("Screen off: ")+(config.dimAfter?String(config.dimAfter)+t(" s"):t("never")),small);say(0,44,t("Contrast: ")+String(config.brightness),small);
   say(0,52,String(config.frequency,3)+" SF"+String(config.sf)+" CR4/"+String(config.cr)+" "+String(config.power)+"dBm",small);break;
 #if MM_CHESS
  case Chess:if(chessOpen&&chessOpen->state!=ChessMatch::Free){drawChessBoard(*chessOpen);return;}chessOpen=nullptr;drawChessList(title);break;
@@ -790,20 +790,20 @@ void draw(){
 #if MM_DICE
  case DicePage:title=diceTitle();drawDiceMono();break;
 #endif
- default:title=t("Modules","Модули");say(0,21,"LoRa "+String(meshRadio.ready?"OK":"ERR")+"  FS "+String(hardware.fsOk?"OK":"ERR")+"  GPS "+String(!config.gps?"-":hardware.gps.passedChecksum()?"OK":"?"),small);
-  say(0,30,String(ESP.getFreeHeap()/1024)+"K RAM"+(ESP.getPsramSize()?"  "+String(ESP.getFreePsram()/1024)+"K PSRAM":String()),small);say(0,39,t("relayed ","переслано ")+String(meshRadio.relayed)+t("  rejected ","  откл. ")+String(meshRadio.rejected),small);
-  say(0,48,t("up ","работа ")+ago(millis())+t("  boot ","  загр. ")+String(config.bootCounter),small);
+ default:title=t("Modules");say(0,21,"LoRa "+String(meshRadio.ready?"OK":"ERR")+"  FS "+String(hardware.fsOk?"OK":"ERR")+"  GPS "+String(!config.gps?"-":hardware.gps.passedChecksum()?"OK":"?"),small);
+  say(0,30,String(ESP.getFreeHeap()/1024)+"K RAM"+(ESP.getPsramSize()?"  "+String(ESP.getFreePsram()/1024)+"K PSRAM":String()),small);say(0,39,t("relayed ")+String(meshRadio.relayed)+t("  rejected ")+String(meshRadio.rejected),small);
+  say(0,48,t("up ")+ago(millis())+t("  boot ")+String(config.bootCounter),small);
  }
  header(title);
  if(menuOpen)drawMenu();else footer(page==FolderPage?
- t("hold: open","держ: открыть"):
- appClosed()?t("hold: open","держ: открыть"):page==PeoplePage?
- t("click +1 hold-menu","клик +1 держ-меню"):
+ t("hold: open"):
+ appClosed()?t("hold: open"):page==PeoplePage?
+ t("click +1 hold-menu"):
 #if MM_DICE
- page==DicePage?(dicer.s.mode==dice::Sheet?t("click-next hold-menu","клик-далее держ-меню"):t("click-roll hold-menu","клик-бросок держ-меню")):
+ page==DicePage?(dicer.s.mode==dice::Sheet?t("click-next hold-menu"):t("click-roll hold-menu")):
 #endif
  page==QuickPage?
- (quickTargets||!quickIndex||quickIndex>quickSend::Count?t("click-next hold-run","клик-далее держ-ОК"):t("click-next hold-send","клик-выбор держ-слать")):
+ (quickTargets||!quickIndex||quickIndex>quickSend::Count?t("click-next hold-run"):t("click-next hold-send")):
  hint());
  if(action.length()&&millis()-actionAt<3500){c.fillRect(0,36,128,20,0);c.drawRect(0,36,128,20,1);say(3,50,clipped(action,20));}
  hardware.flush();
@@ -854,7 +854,7 @@ static void uiKeyNow(int key){
   return;}
  if(radioEdit){radioButton(key==13||key==0x82,key==0xa3);return;}
  if(rolePick){if(key==0x86){rolePick=false;return;}if(key==13||key==0x82){roleSel=(roleSel+1)%RoleCount;rolePickBoot=false;return;}
-  if(key==0xa3){if(roleSel==config.role){rolePick=false;return;}String r=setRole(roleSel);notice(r.startsWith("OK")?t("Restarting: ","Перезапуск: ")+roleShort(roleSel):r);if(!r.startsWith("OK"))rolePick=false;}return;}
+  if(key==0xa3){if(roleSel==config.role){rolePick=false;return;}String r=setRole(roleSel);notice(r.startsWith("OK")?t("Restarting: ")+roleShort(roleSel):r);if(!r.startsWith("OK"))rolePick=false;}return;}
  if(popupAt){popupAt=0;if(key==13)return;}
  if(chessPopupAt&&page!=DicePage){chessPopupAt=0;if(key==0xa3)openNews();return;}
  if(page==FolderPage&&!menuOpen){uint8_t p[AppsMax];if(key==0xa3){if(folderPages(folderAt,p))showPage(p[0]);}else if(key==0x86)showPage(Home);else if(key==13||key==0x82)showPage(nextPage());return;}
@@ -922,12 +922,12 @@ void uiTick(){
 #endif
    if(!counting&&notifications::enabled(notifications::mode(e.message,config.notifyPopup,2),e.mention)){popupAt=now;menuOpen=false;}
    hardware.beep();dirty=true;
-  }else if(config.notifyFailed&&(e.kind==notifications::TxError||e.kind==notifications::Unconfirmed)){ledAt=now;ledPattern=3;notice(e.kind==notifications::TxError?t("Radio TX error","Ошибка передачи"):channels::isChannel(e.message.destination)?t("No repeat heard","Повтор не услышан"):t("Delivery not confirmed","Доставка не подтверждена"));}
+  }else if(config.notifyFailed&&(e.kind==notifications::TxError||e.kind==notifications::Unconfirmed)){ledAt=now;ledPattern=3;notice(e.kind==notifications::TxError?t("Radio TX error"):channels::isChannel(e.message.destination)?t("No repeat heard"):t("Delivery not confirmed"));}
   if(wake){if(screenOff){screenOff=false;hardware.brightness(config.brightness);}lastInput=now;}
  }
  // A network found by the automatic search (NetFind.h): told once, the screen wakes.
  {static uint16_t netSeen=0;auto& s=netfind::state;if(s.found!=netSeen){netSeen=s.found;if(s.best!=255){auto& r=s.results[s.best];
-  notice(t("Network nearby: ","Рядом сеть: ")+(r.place!=255?netfind::placeName(r.place)+" ":String())+"SF"+String(r.radio.sf));ledAt=now;ledPattern=1;
+  notice(t("Network nearby: ")+(r.place!=255?netfind::placeName(r.place)+" ":String())+"SF"+String(r.radio.sf));ledAt=now;ledPattern=1;
   if(screenOff){screenOff=false;hardware.brightness(config.brightness);}lastInput=now;dirty=true;}}}
  // Game news: a popup (none while counting or rolling), the LED and the screen awake. News of the game on the
  // screen updates the board instead of covering it (show false).

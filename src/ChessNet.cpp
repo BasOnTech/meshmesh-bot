@@ -52,7 +52,7 @@ void ChessNet::tick(){
   for(auto& m:matches){
     if(m.state==ChessMatch::Free||!m.pending()||m.sending()||m.autoStopped)continue;
     if(!m.openSince)m.openSince=now;
-    if(now-m.openSince>RetryWindow){m.autoStopped=true;m.retryAt=0;event=String(m.name)+tr(": no confirmation for 24 h, R resends",": нет подтверждения 24 ч, R — повторить");events++;eventMatch=&m;dirty=true;continue;}
+    if(now-m.openSince>RetryWindow){m.autoStopped=true;m.retryAt=0;event=String(m.name)+tr(": no confirmation for 24 h, R resends");events++;eventMatch=&m;dirty=true;continue;}
     Peer* p=nullptr;for(unsigned i=0;i<meshRadio.peerCount;i++)if(meshRadio.peers[i].id==m.peer)p=&meshRadio.peers[i];
     bool heard=p&&p->heard&&int32_t(p->seen-m.triedAt)>0&&now-m.triedAt>=HeardGap; // they are on air again
     if(!m.retryAt&&!heard){m.retryAt=now+retryDelay(m.retries);dirty=true;continue;}
@@ -112,7 +112,7 @@ void ChessNet::delivery(uint32_t id,uint8_t status){
     if(m.outId==id&&m.outStatus!=Delivered){m.outStatus=status;hit=true;}
     if(!hit)continue;
     if(status==Delivered){confirmed(m);if(m.pending())m.retryAt=millis();} // the next open command goes at once
-    if(status==Failed&&!m.retries){event=String(m.name)+tr(": not confirmed, will resend",": не подтвердил, повторю автоматически");events++;eventMatch=&m;}
+    if(status==Failed&&!m.retries){event=String(m.name)+tr(": not confirmed, will resend");events++;eventMatch=&m;}
     changed(m,status==Delivered||status==Failed);return;
   }
 }
@@ -146,12 +146,12 @@ void ChessNet::signResult(ChessMatch& m){
 void ChessNet::storeResult(ChessMatch& m){
   uint8_t c[rating::CoreSize],bytes[rating::CoreSize+4];if(!core(m,c)){m.sign=ChessMatch::SignBad;changed(m);return;}
   rating::signedBytes(bytes,c,m.theirTime);
-  if(!MeshRadio::nodeVerify(m.peerKey,m.theirSig,bytes,sizeof bytes)){m.sign=ChessMatch::SignBad;news(m,String(m.name)+tr(": signatures differ, the game is not rated",": подписи не сошлись, партия без рейтинга"));changed(m);return;}
+  if(!MeshRadio::nodeVerify(m.peerKey,m.theirSig,bytes,sizeof bytes)){m.sign=ChessMatch::SignBad;news(m,String(m.name)+tr(": signatures differ, the game is not rated"));changed(m);return;}
   rating::Record r;memcpy(r.core,c,sizeof c);bool white=m.mine==White;
   r.timeW=white?m.myTime:m.theirTime;r.timeB=white?m.theirTime:m.myTime;memcpy(r.sigW,white?m.mySig:m.theirSig,64);memcpy(r.sigB,white?m.theirSig:m.mySig,64);
   rating::book.add(r,m.name);m.sign=ChessMatch::SignStored;m.archived=false; // the archive copy gets the ratings // a record already there (a second copy of the game) counts once
   if(const rating::Delta* d=rating::book.delta(m.peer,m.id)){int diff=d->after-d->before;
-    news(m,tr("Rating: ","Рейтинг: ")+String(d->before)+" > "+String(d->after)+" ("+(diff>=0?"+":"")+String(diff)+")"+(d->counted?String():String(tr(", over the daily limit",", сверх дневного предела"))));}
+    news(m,tr("Rating: ")+String(d->before)+" > "+String(d->after)+" ("+(diff>=0?"+":"")+String(diff)+")"+(d->counted?String():String(tr(", over the daily limit"))));}
   changed(m);
 }
 void ChessNet::judge(ChessMatch& m){
@@ -172,12 +172,12 @@ bool ChessNet::receive(uint64_t from,const char* name,const char* text){
   if(!strcmp(a,"new")){
     if(b[0]!='w'&&b[0]!='b')return false;if(m)return true;
     m=slot();
-    if(!m){meshRadio.sendGame(String(Tag)+String(c).substring(0,4)+" no",from);event=String(name)+tr(": challenge refused, no free board",": вызов отклонён, нет свободной доски");events++;dirty=true;return true;}
+    if(!m){meshRadio.sendGame(String(Tag)+String(c).substring(0,4)+" no",from);event=String(name)+tr(": challenge refused, no free board");events++;dirty=true;return true;}
     *m=ChessMatch();m->peer=from;m->id=id;strlcpy(m->name,name,sizeof m->name);m->mine=b[0]=='w'?Black:White;m->state=ChessMatch::Invited;m->started=unixNow();m->game.reset();
     m->rated=!strcmp(f,"r");for(unsigned i=0;i<meshRadio.peerCount;i++)if(meshRadio.peers[i].id==from)memcpy(m->peerKey,meshRadio.peers[i].publicKey,32);
-    news(*m,String(name)+tr(" challenges you to chess"," вызывает на партию в шахматы"));hardware.ping(1320,120);changed(*m);return true;
+    news(*m,String(name)+tr(" challenges you to chess"));hardware.ping(1320,120);changed(*m);return true;
   }
-  if(!m){event=tr("Chess: move for an unknown game","Шахматы: ход в неизвестной партии");events++;dirty=true;return true;}
+  if(!m){event=tr("Chess: move for an unknown game");events++;dirty=true;return true;}
   strlcpy(m->name,name,sizeof m->name);auto& g=m->game;uint8_t theirs=m->mine^1;
   if(a[0]>='1'&&a[0]<='9'){
     unsigned ply=strtoul(a,nullptr,10);
@@ -186,12 +186,12 @@ bool ChessNet::receive(uint64_t from,const char* name,const char* text){
     if(m->state!=ChessMatch::Playing)return true;
     Move mv;
     if(ply&&ply==g.plies&&((ply-1)&1)==theirs){char was[6];uci(g.moves[ply-1],was);if(!strcmp(was,b)||(strlen(b)==4&&!strncmp(was,b,4)))return true;} // repeat
-    if(ply!=g.plies+1u||g.pos.side!=theirs||!g.pos.parseUci(b,mv)){event=String(m->name)+tr(": move not accepted (",": ход не принят (")+b+")";events++;dirty=true;return true;}
+    if(ply!=g.plies+1u||g.pos.side!=theirs||!g.pos.parseUci(b,mv)){event=String(m->name)+tr(": move not accepted (")+b+")";events++;dirty=true;return true;}
     char san[12];g.pos.san(mv,san,sizeof san);g.play(mv);received(*m,true);if(m->drawOffer==ChessMatch::OfferedByMe)m->drawOffer=ChessMatch::NoOffer;
     judge(*m);
     String what=String(m->name)+": "+chessLocalSan(san);
-    if(m->state==ChessMatch::Over)what+=m->won()?tr(" · you won",", вы победили"):m->lost()?tr(" · you lost",", вы проиграли"):tr(" · draw",", ничья");
-    else what+=g.pos.inCheck()?tr(" · check, your move",", шах, ваш ход"):tr(" · your move",", ваш ход");
+    if(m->state==ChessMatch::Over)what+=m->won()?tr(" · you won"):m->lost()?tr(" · you lost"):tr(" · draw");
+    else what+=g.pos.inCheck()?tr(" · check, your move"):tr(" · your move");
     news(*m,what);hardware.ping(1100,60);changed(*m);return true;
   }
   if(!strcmp(a,"sig")){ // their signature of the result; checked in tick() once mine is made
@@ -199,29 +199,29 @@ bool ChessNet::receive(uint64_t from,const char* name,const char* text){
     const char* t=strstr(c+5,"sig ");char* e=nullptr;unsigned long time=strtoul(t+4,&e,10);if(!e||*e!=' '||!rating::sigParse(e+1,m->theirSig))return true;
     m->theirTime=time;m->theirSigned=true;changed(*m,false);return true;
   }
-  if(!strcmp(a,"yes")){if(m->state!=ChessMatch::Inviting)return true;m->state=ChessMatch::Playing;received(*m,false);news(*m,String(m->name)+tr(" accepted: game on"," принял вызов: играем"));hardware.ping(1320,120);changed(*m);return true;}
+  if(!strcmp(a,"yes")){if(m->state!=ChessMatch::Inviting)return true;m->state=ChessMatch::Playing;received(*m,false);news(*m,String(m->name)+tr(" accepted: game on"));hardware.ping(1320,120);changed(*m);return true;}
   if(!strcmp(a,"no")){
-    if(m->state==ChessMatch::Inviting){finish(*m,ChessMatch::Undecided,ChessMatch::Declined);news(*m,String(m->name)+tr(" declined the game"," отказался от партии"));}
-    else if(m->state==ChessMatch::Invited||(m->state==ChessMatch::Playing&&!g.plies)){finish(*m,ChessMatch::Undecided,ChessMatch::Cancelled);news(*m,String(m->name)+tr(" cancelled the game"," отменил партию"));}
+    if(m->state==ChessMatch::Inviting){finish(*m,ChessMatch::Undecided,ChessMatch::Declined);news(*m,String(m->name)+tr(" declined the game"));}
+    else if(m->state==ChessMatch::Invited||(m->state==ChessMatch::Playing&&!g.plies)){finish(*m,ChessMatch::Undecided,ChessMatch::Cancelled);news(*m,String(m->name)+tr(" cancelled the game"));}
     else return true;
     changed(*m);return true;
   }
-  if(!strcmp(a,"draw?")){if(m->state!=ChessMatch::Playing||m->drawOffer==ChessMatch::OfferedToMe)return true;if(m->drawOffer==ChessMatch::OfferedByMe){finish(*m,ChessMatch::Drawn,ChessMatch::Agreed);news(*m,tr("Draw agreed","Ничья по соглашению"));}else{m->drawOffer=ChessMatch::OfferedToMe;news(*m,String(m->name)+tr(" offers a draw"," предлагает ничью"));}changed(*m);return true;}
-  if(!strcmp(a,"draw")){if(m->state!=ChessMatch::Playing||m->drawOffer!=ChessMatch::OfferedByMe)return true;received(*m,false);finish(*m,ChessMatch::Drawn,ChessMatch::Agreed);news(*m,String(m->name)+tr(" accepted the draw"," согласился на ничью"));changed(*m);return true;}
-  if(!strcmp(a,"resign")){if(m->state!=ChessMatch::Playing)return true;finish(*m,m->mine==White?ChessMatch::WhiteWon:ChessMatch::BlackWon,ChessMatch::Resigned);news(*m,String(m->name)+tr(" resigned: you won"," сдался: вы победили"));hardware.ping(1760,200);changed(*m);return true;}
+  if(!strcmp(a,"draw?")){if(m->state!=ChessMatch::Playing||m->drawOffer==ChessMatch::OfferedToMe)return true;if(m->drawOffer==ChessMatch::OfferedByMe){finish(*m,ChessMatch::Drawn,ChessMatch::Agreed);news(*m,tr("Draw agreed"));}else{m->drawOffer=ChessMatch::OfferedToMe;news(*m,String(m->name)+tr(" offers a draw"));}changed(*m);return true;}
+  if(!strcmp(a,"draw")){if(m->state!=ChessMatch::Playing||m->drawOffer!=ChessMatch::OfferedByMe)return true;received(*m,false);finish(*m,ChessMatch::Drawn,ChessMatch::Agreed);news(*m,String(m->name)+tr(" accepted the draw"));changed(*m);return true;}
+  if(!strcmp(a,"resign")){if(m->state!=ChessMatch::Playing)return true;finish(*m,m->mine==White?ChessMatch::WhiteWon:ChessMatch::BlackWon,ChessMatch::Resigned);news(*m,String(m->name)+tr(" resigned: you won"));hardware.ping(1760,200);changed(*m);return true;}
   return true; // a newer command this version does not know
 }
 
 // The player's actions. Each one changes the game here first and then sends one command.
 ChessMatch* ChessNet::invite(uint64_t peer,int color,bool rated){
   Peer* p=nullptr;for(unsigned i=0;i<meshRadio.peerCount;i++)if(meshRadio.peers[i].id==peer)p=&meshRadio.peers[i];
-  if(!p||p->type!=1){event=tr("Chess: choose a chat contact","Шахматы: выберите чат-контакт");events++;dirty=true;return nullptr;}
-  ChessMatch* m=slot();if(!m){event=tr("Chess: six games in progress, finish one","Шахматы: идут шесть партий, завершите одну");events++;dirty=true;return nullptr;}
+  if(!p||p->type!=1){event=tr("Chess: choose a chat contact");events++;dirty=true;return nullptr;}
+  ChessMatch* m=slot();if(!m){event=tr("Chess: six games in progress, finish one");events++;dirty=true;return nullptr;}
   uint16_t id;do id=1+random(0xffff);while(find(id));
   *m=ChessMatch();m->peer=peer;m->id=id;strlcpy(m->name,p->name,sizeof m->name);m->mine=color==2?random(2):color&1;m->state=ChessMatch::Inviting;m->started=unixNow();m->game.reset();
   m->rated=rated;memcpy(m->peerKey,p->publicKey,32);
   char head[20];snprintf(head,sizeof head,"%s%04X new %c%s",Tag,id,m->mine==White?'w':'b',rated?" r":"");
-  send(*m,String(head)+(m->mine==White?tr(" · MeshMesh chess: you play Black"," · шахматы MeshMesh: вы играете чёрными"):tr(" · MeshMesh chess: you play White"," · шахматы MeshMesh: вы играете белыми")));
+  send(*m,String(head)+(m->mine==White?tr(" · MeshMesh chess: you play Black"):tr(" · MeshMesh chess: you play White")));
   changed(*m);return m;
 }
 ChessMatch* ChessNet::tourGame(uint64_t peer,const uint8_t key[32],const char* name,uint16_t id,int color,uint16_t tourId,uint8_t round){
@@ -272,7 +272,7 @@ void ChessNet::save(){
     put(w,&m.tour,2);put(w,&m.round,1);put(w,&m.tourReported,1);
   }
   *countAt=n;uint32_t crc=crc32(buf,w-buf);put(w,&crc,4);
-  if(!chessStoreWrite(buf,w-buf)){event=tr("Chess: cannot save games","Шахматы: не удалось сохранить партии");events++;}
+  if(!chessStoreWrite(buf,w-buf)){event=tr("Chess: cannot save games");events++;}
   free(buf);
 }
 void ChessNet::load(){
@@ -300,18 +300,10 @@ void ChessNet::load(){
     if(m.pending()){m.openSince=millis();m.retryAt=millis()+60000;} // resend a minute after the start
     m.changedAt=millis()-(count-i);slot++;
   }
-  free(buf);if(dropped){event=tr("Chess: a damaged game was dropped","Шахматы: повреждённая партия удалена");events++;}dirty=true;
+  free(buf);if(dropped){event=tr("Chess: a damaged game was dropped");events++;}dirty=true;
 }
 
-String chessLocalSan(const char* san){
-  String out;
-  for(const char* c=san;*c;c++){
-    bool piece=strchr("KQRBN",*c)&&(c==san||c[-1]=='=');
-    if(piece&&config.lang==LangRu){switch(*c){case 'K':out+="Кр";break;case 'Q':out+="Ф";break;case 'R':out+="Л";break;case 'B':out+="С";break;default:out+="К";}}
-    else out+=*c;
-  }
-  return out;
-}
+String chessLocalSan(const char* san){return String(san);} // the letters of the interface language: English K Q R B N
 // PGN: the Seven Tag Roster plus the termination as a comment; times are the device's own (UTC date).
 String ChessNet::pgn(const ChessMatch& m) const{
   auto tag=[](const char* k,const String& v){String s=v;s.replace("\\","");s.replace("\"","'");return String("[")+k+" \""+s+"\"]\n";};

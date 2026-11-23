@@ -32,7 +32,7 @@ void bigSuit(uint8_t s,int cx,int cy,int a,uint16_t c){
  case 3:{int r=a*9/10;d.fillCircle(cx,cy-a,r,c);d.fillCircle(cx-a-1,cy+a/2,r,c);d.fillCircle(cx+a+1,cy+a/2,r,c);d.fillCircle(cx,cy,max(1,a/2),c);d.fillTriangle(cx,cy,cx-a,cy+2*a+1,cx+a,cy+2*a+1,c);break;}
  }
 }
-String rankName(uint8_t r){static const char* en[]={"A","2","3","4","5","6","7","8","9","10","J","Q","K"};static const char* ru[]={"Т","2","3","4","5","6","7","8","9","10","В","Д","К"};return config.lang==LangRu?ru[r]:en[r];}
+String rankName(uint8_t r){static const char* names[]={"A","2","3","4","5","6","7","8","9","10","J","Q","K"};return names[r];}
 String playTime(uint32_t s){char b[16];if(s>=3600)snprintf(b,sizeof b,"%lu:%02lu:%02lu",(unsigned long)(s/3600),(unsigned long)(s/60%60),(unsigned long)(s%60));else snprintf(b,sizeof b,"%lu:%02lu",(unsigned long)(s/60),(unsigned long)(s%60));return b;}
 
 // Screen positions: stock, waste, a gap and the foundations on top; seven columns below.
@@ -109,15 +109,15 @@ void gameLoad(){
 }
 void gameOpen(){gameLoad();gameClockAt=millis();gameHeld=-1;gameHelp=false;gameNewArmed=false;if(game.finishable()){gameFinishing=true;gameStepAt=millis();}}
 void gameLeave(){gameHeld=-1;gameFinishing=false;gameSave();}
-String gameTitle(){return t("Solitaire","Косынка")+(game.draw==3?t(" · draw 3"," · по 3"):String());}
-String gameTileDetail(){gameLoad();if(game.counted&&!game.won())return count(game.moves,"move","moves","ход","хода","ходов")+" · "+playTime(game.seconds);if(gamePlayed)return t("Won ","Побед ")+String(gameWins)+t(" of "," из ")+String(gamePlayed);return t("Klondike","Классика");}
+String gameTitle(){return t("Solitaire")+(game.draw==3?t(" · draw 3"):String());}
+String gameTileDetail(){gameLoad();if(game.counted&&!game.won())return count(game.moves,"move","moves")+" · "+playTime(game.seconds);if(gamePlayed)return t("Won ")+String(gameWins)+t(" of ")+String(gamePlayed);return t("Klondike");}
 bool gameAnimating(){return gameFinishing||(gameWonAt&&millis()-gameWonAt<16000);}
 
 // After every action: statistics, the winning moment, automatic finish and a delayed save.
 void gameAfter(bool wasCounted){
  if(game.counted&&!wasCounted){gamePlayed++;gameStatsSave();}
  if(game.won()&&!gameWonAt){gameWonAt=millis();gameFinishing=false;if(!gameWinRecorded){gameWinRecorded=true;gameWins++;if(!gameBest||game.seconds<gameBest)gameBest=game.seconds;gameStatsSave();}hardware.ping(1760,200);gameUnsaved=true;gameSave();return;}
- if(!gameFinishing&&game.finishable()){gameFinishing=true;gameStepAt=millis();notice(t("All cards open: collecting","Все карты открыты: собираю"),ok);}
+ if(!gameFinishing&&game.finishable()){gameFinishing=true;gameStepAt=millis();notice(t("All cards open: collecting"),ok);}
  gameUnsaved=true;gameChangedAt=millis();gameNewArmed=false;
 }
 uint8_t gamePick(){uint8_t k=game.movable(gameCursor);return sol::isTableau(gameCursor)?min(gameDepth,k):min<uint8_t>(k,1);}
@@ -134,18 +134,18 @@ void gameAct(bool automatic){
   int to=automatic?game.target(gameHeld,gameHeldCount):gameCursor;
   if(to==gameHeld&&!automatic){gameHeld=-1;return;}
   if(to>=0&&game.move(gameHeld,gameHeldCount,to)){gameHeld=-1;gameDepth=1;hardware.ping(1400,12);gameAfter(was);}
-  else{hardware.ping(260,60);notice(t("Cannot go there","Сюда нельзя"),warn);}
+  else{hardware.ping(260,60);notice(t("Cannot go there"),warn);}
   return;
  }
- if(gameCursor==sol::Stock){if(game.turnStock()){hardware.ping(900,8);gameAfter(was);}else notice(t("Stock is empty","Колода пуста"),dim);return;}
- uint8_t n=gamePick();if(!n){notice(t("No cards to take here","Здесь нечего взять"),dim);return;}
+ if(gameCursor==sol::Stock){if(game.turnStock()){hardware.ping(900,8);gameAfter(was);}else notice(t("Stock is empty"),dim);return;}
+ uint8_t n=gamePick();if(!n){notice(t("No cards to take here"),dim);return;}
  if(!automatic){gameHeld=gameCursor;gameHeldCount=n;return;}
  int to=game.target(gameCursor,n);
- if(to>=0&&game.move(gameCursor,n,to)){gameDepth=1;hardware.ping(1400,12);gameAfter(was);}else{hardware.ping(260,60);notice(t("No place for these cards","Этим картам некуда лечь"),warn);}
+ if(to>=0&&game.move(gameCursor,n,to)){gameDepth=1;hardware.ping(1400,12);gameAfter(was);}else{hardware.ping(260,60);notice(t("No place for these cards"),warn);}
 }
 void gameNew(){
- if(game.counted&&!game.won()&&!gameNewArmed){gameNewArmed=true;notice(t("N again: new game (this one counts as lost)","N ещё раз: новая партия, эта будет проиграна"),warn);return;}
- gameDeal();notice(game.draw==3?t("New game: draw 3","Новая партия: сдача по 3"):t("New game","Новая партия"),ok);
+ if(game.counted&&!game.won()&&!gameNewArmed){gameNewArmed=true;notice(t("N again: new game (this one counts as lost)"),warn);return;}
+ gameDeal();notice(game.draw==3?t("New game: draw 3"):t("New game"),ok);
 }
 bool gameKey(int key){
  if(key>='A'&&key<='Z')key+=32;
@@ -156,11 +156,11 @@ bool gameKey(int key){
  if(key==KeyLeft||key==KeyRight||key==KeyUp||key==KeyDown){gameMoveCursor(key);return true;}
  if(key==Enter){gameAct(false);return true;}
  if(key==' '||key==KeyHold){gameAct(true);return true;}
- if(key==Erase||key=='u'){gameFinishing=false;gameHeld=-1;if(game.undo()){gameWonAt=0;gameDepth=1;gameUnsaved=true;gameChangedAt=millis();}else notice(t("Nothing to undo","Нечего отменять"),dim);return true;}
- if(key=='p'){gameHeld=-1;if(game.hint(gameHint)){gameHintAt=millis();gameCursor=gameHint.from;gameDepth=gameHint.count;if(gameHint.from==sol::Stock)notice(game.pile[sol::Stock].n?t("Hint: turn the stock","Подсказка: сдайте из колоды"):t("Hint: turn the waste over","Подсказка: переверните колоду"),info);}else notice(t("No useful moves: undo or start again","Полезных ходов нет: отмените или начните заново"),warn);return true;}
+ if(key==Erase||key=='u'){gameFinishing=false;gameHeld=-1;if(game.undo()){gameWonAt=0;gameDepth=1;gameUnsaved=true;gameChangedAt=millis();}else notice(t("Nothing to undo"),dim);return true;}
+ if(key=='p'){gameHeld=-1;if(game.hint(gameHint)){gameHintAt=millis();gameCursor=gameHint.from;gameDepth=gameHint.count;if(gameHint.from==sol::Stock)notice(game.pile[sol::Stock].n?t("Hint: turn the stock"):t("Hint: turn the waste over"),info);}else notice(t("No useful moves: undo or start again"),warn);return true;}
  if(key=='a'){if(game.won())return true;gameHeld=-1;gameFinishing=true;gameStepAt=millis();return true;}
  if(key=='n'){gameNew();return true;}
- if(key=='d'){gameNextDraw=gameNextDraw==1?3:1;gameStatsSave();if(!game.counted){gameDeal();notice(gameNextDraw==3?t("Draw 3: dealt again","Сдача по 3: карты пересданы"):t("Draw 1: dealt again","Сдача по 1: карты пересданы"),ok);}else notice(gameNextDraw==3?t("Next game: draw 3","Следующая партия: сдача по 3"):t("Next game: draw 1","Следующая партия: сдача по 1"),info);return true;}
+ if(key=='d'){gameNextDraw=gameNextDraw==1?3:1;gameStatsSave();if(!game.counted){gameDeal();notice(gameNextDraw==3?t("Draw 3: dealt again"):t("Draw 1: dealt again"),ok);}else notice(gameNextDraw==3?t("Next game: draw 3"):t("Next game: draw 1"),info);return true;}
  if(key=='h'){gameHelp=true;return true;}
  return false;
 }
@@ -178,12 +178,12 @@ void gameStatus(JsonDocument& d){
 }
 void drawGameHelp(){
  uint16_t* px=g().getBuffer();for(int i=0;i<320*240;i++)px[i]=(px[i]>>1)&0x7bef;
- panel(6,24,308,194,cardHi,10);g().drawRoundRect(6,24,308,194,10,line);text(16,42,t("Solitaire keys","Клавиши «Косынки»"),ink,bold);
- Hint keys[]={{"<>",t("Choose a pile","Выбор стопки")},{"^v",t("In a column: how many cards","В столбце: сколько карт взять")},{"OK",t("Take / put; on the stock: turn","Взять / положить; на колоде: сдать")},
-  {"SPC",t("Move automatically (or hold OK)","Переложить само (или удерж. OK)")},{"DEL",t("Undo (also U)","Отменить ход (или U)")},{"P",t("Hint","Подсказка")},{"A",t("Collect to foundations","Собрать в дома")},
-  {"N",t("New game","Новая партия")},{"D",game.draw==3||gameNextDraw==3?t("Draw 1 / 3 (now: 3)","Сдача по 1 / 3 (сейчас: по 3)"):t("Draw 1 / 3 (now: 1)","Сдача по 1 / 3 (сейчас: по 1)")}};
+ panel(6,24,308,194,cardHi,10);g().drawRoundRect(6,24,308,194,10,line);text(16,42,t("Solitaire keys"),ink,bold);
+ Hint keys[]={{"<>",t("Choose a pile")},{"^v",t("In a column: how many cards")},{"OK",t("Take / put; on the stock: turn")},
+  {"SPC",t("Move automatically (or hold OK)")},{"DEL",t("Undo (also U)")},{"P",t("Hint")},{"A",t("Collect to foundations")},
+  {"N",t("New game")},{"D",game.draw==3||gameNextDraw==3?t("Draw 1 / 3 (now: 3)"):t("Draw 1 / 3 (now: 1)")}};
  for(int i=0;i<9;i++){int y=50+i*16;g().fillRoundRect(16,y,26,13,3,line);if(!strcmp(keys[i].key,"<>")){tri(24,y+6,3,3,ink);tri(33,y+6,1,3,ink);}else if(!strcmp(keys[i].key,"^v")){tri(24,y+7,0,3,ink);tri(33,y+5,2,3,ink);}else textCenter(29,y+10,keys[i].key,ink,small);text(50,y+11,keys[i].action,i%2?dim:ink);}
- text(16,207,fit(t("Played ","Сыграно ")+String(gamePlayed)+t(" · won "," · побед ")+String(gameWins)+(gameBest?t(" · best "," · лучшее ")+playTime(gameBest):String())+t(" · score "," · очки ")+String(game.score),290,small),faint,small);
+ text(16,207,fit(t("Played ")+String(gamePlayed)+t(" · won ")+String(gameWins)+(gameBest?t(" · best ")+playTime(gameBest):String())+t(" · score ")+String(game.score),290,small),faint,small);
 }
 void drawGame(){
  auto& d=g();d.fillRect(0,21,320,199,felt);
@@ -197,20 +197,20 @@ void drawGame(){
  for(uint8_t p=sol::Tableau;p<sol::PileCount;p++){const sol::Pile& s=game.pile[p];if(!s.n){slot(pileX(p),TabY,rankName(12));continue;}for(int i=0;i<s.n;i++){int y=cardY(p,i);drawCardAt(pileX(p),y,s.c[i],i+1<s.n?cardY(p,i+1)-y:CardH);}}
  if(gameWonAt){
   uint32_t age=millis()-gameWonAt;if(age<16000)drawCascade(age);
-  panel(40,88,240,92,cardHi,10);d.drawRoundRect(40,88,240,92,10,ok);textCenter(160,114,t("You won!","Победа!"),ok,big);
-  textCenter(160,134,playTime(game.seconds)+" · "+count(game.moves,"move","moves","ход","хода","ходов")+" · "+count(game.score,"point","points","очко","очка","очков"),ink);
-  textCenter(160,152,t("Won ","Побед ")+String(gameWins)+t(" of "," из ")+String(gamePlayed)+(gameBest?t(" · best "," · лучшее ")+playTime(gameBest):String()),dim,small);
-  textCenter(160,170,t("N: new game   BACK: menu","N: новая партия   BACK: меню"),dim,small);
-  footer({{"N",t("New game","Новая партия")},{"DEL",t("Undo","Отмена")},{"BACK",t("Menu","Меню")}});return;
+  panel(40,88,240,92,cardHi,10);d.drawRoundRect(40,88,240,92,10,ok);textCenter(160,114,t("You won!"),ok,big);
+  textCenter(160,134,playTime(game.seconds)+" · "+count(game.moves,"move","moves")+" · "+count(game.score,"point","points"),ink);
+  textCenter(160,152,t("Won ")+String(gameWins)+t(" of ")+String(gamePlayed)+(gameBest?t(" · best ")+playTime(gameBest):String()),dim,small);
+  textCenter(160,170,t("N: new game   BACK: menu"),dim,small);
+  footer({{"N",t("New game")},{"DEL",t("Undo")},{"BACK",t("Menu")}});return;
  }
  // Hint, held cards and cursor.
  if(gameHintAt){mark(gameHint.from,gameHint.count,info);if(gameHint.from!=sol::Stock)mark(gameHint.to,1,ok);}
  if(gameHeld>=0)mark(gameHeld,gameHeldCount,warn);
  if(!gameFinishing)mark(gameCursor,gameHeld>=0?1:max<int>(1,gamePick()),accent);
  if(gameHeld>=0){int x,y,w,h;pileRect(gameCursor,game.pile[gameCursor].n-1,x,y,w,h);tri(x+w/2,max(24,y-5),2,5,warn);}
- String stats=count(game.moves,"move","moves","ход","хода","ходов")+" · "+playTime(game.seconds);
- if(gameHeld>=0)footer({{"OK",t("Put","Положить")},{"SPC",t("Auto","Само")},{"BACK",t("Cancel","Отмена")}});
- else footer({{"OK",gameCursor==sol::Stock?t("Turn","Сдать"):t("Take","Взять")},{"SPC",t("Auto","Само")},{"H",t("Keys","Клавиши")}});
+ String stats=count(game.moves,"move","moves")+" · "+playTime(game.seconds);
+ if(gameHeld>=0)footer({{"OK",t("Put")},{"SPC",t("Auto")},{"BACK",t("Cancel")}});
+ else footer({{"OK",gameCursor==sol::Stock?t("Turn"):t("Take")},{"SPC",t("Auto")},{"H",t("Keys")}});
  d.fillRect(314-measure(stats,small)-8,222,measure(stats,small)+10,18,bar);textRight(314,234,stats,dim,small);
  if(gameHelp)drawGameHelp();
 }

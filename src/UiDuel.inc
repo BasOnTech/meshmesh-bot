@@ -15,31 +15,31 @@ constexpr int SeaX=18,SeaY=35,SeaCell=17,HomeX=210,HomeY=37,HomeCell=9;
 
 bool duelPage(){return page==CheckersList||page==SeaList||page==DuelPick||page==CheckersBoard||page==SeaBoard;}
 bool duelNeeds(const Duel& g){return g.state==Duel::Invited||g.myTurn()||(g.state==Duel::Playing&&g.drawOffer==Duel::OfferedToMe);}
-String duelTileDetail(int kind){unsigned w=duels.waiting(kind),n=duels.count(kind);if(w)return count(w,"game waits","games wait","ждёт хода","ждут хода","ждут хода");if(n)return count(n,"game","games","игра","игры","игр");return t("With contacts","С контактами");}
+String duelTileDetail(int kind){unsigned w=duels.waiting(kind),n=duels.count(kind);if(w)return count(w,"game waits","games wait");if(n)return count(n,"game","games");return t("With contacts");}
 String duelTitle(){
- if(page==DuelPick)return duelKind==Duel::Sea?t("New sea battle","Новый морской бой"):t("New checkers game","Новая партия в шашки");
- bool sea=page==SeaList||page==SeaBoard;String name=sea?t("Sea battle","Морской бой"):t("Checkers","Шашки");
+ if(page==DuelPick)return duelKind==Duel::Sea?t("New sea battle"):t("New checkers game");
+ bool sea=page==SeaList||page==SeaBoard;String name=sea?t("Sea battle"):t("Checkers");
  return (page==CheckersBoard||page==SeaBoard)&&duelOpen&&duelOpen->state!=Duel::Free?name+" · "+duelOpen->name:name;
 }
 // One line about the state of a game, for the list and for the game page (board: the draw offer has its own strip).
 String duelState(const Duel& g,bool board=false){
  bool sea=g.kind==Duel::Sea;
  switch(g.state){
- case Duel::Inviting:return t("Invitation sent","Приглашение отправлено");
- case Duel::Invited:return sea?t("Invites you to play","Зовёт сыграть"):t("Invites you: you play ","Зовёт: вы играете ")+colorName(g.mine,true);
+ case Duel::Inviting:return t("Invitation sent");
+ case Duel::Invited:return sea?t("Invites you to play"):t("Invites you: you play ")+colorName(g.mine,true);
  case Duel::Playing:
-  if(g.drawOffer==Duel::OfferedToMe&&!board)return t("Offers a draw","Предлагает ничью");
-  if(sea)return g.aim>=0?t("Waiting for the answer","Ждём ответа"):g.myTurn()?t("Your shot","Ваш выстрел"):t("Their shot","Стреляет соперник");
-  return g.myTurn()?t("Your move","Ваш ход"):t("Their move","Ход соперника");
+  if(g.drawOffer==Duel::OfferedToMe&&!board)return t("Offers a draw");
+  if(sea)return g.aim>=0?t("Waiting for the answer"):g.myTurn()?t("Your shot"):t("Their shot");
+  return g.myTurn()?t("Your move"):t("Their move");
  case Duel::Over:{
-  if(g.reason==Duel::Declined)return t("Invitation declined","Приглашение отклонено");
-  if(g.reason==Duel::Cancelled)return t("Game cancelled","Игра отменена");
-  bool won=g.result==Duel::Won;String r=won?t("You won","Победа"):g.result==Duel::Lost?t("You lost","Поражение"):t("Draw","Ничья");
+  if(g.reason==Duel::Declined)return t("Invitation declined");
+  if(g.reason==Duel::Cancelled)return t("Game cancelled");
+  bool won=g.result==Duel::Won;String r=won?t("You won"):g.result==Duel::Lost?t("You lost"):t("Draw");
   switch(g.reason){
-  case Duel::Resigned:return r+(won?t(": they resigned",": соперник сдался"):t(": you resigned",": вы сдались"));
-  case Duel::Agreed:return r+t(" by agreement"," по соглашению");
-  case Duel::Quiet:return r+t(": 15 king moves each",": 15 ходов дамками");
-  case Duel::Rules:return r+(sea?(won?t(": their fleet sunk",": флот соперника потоплен"):t(": your fleet sunk",": ваш флот потоплен")):(won?t(": they cannot move",": у соперника нет ходов"):t(": you cannot move",": у вас нет ходов")));
+  case Duel::Resigned:return r+(won?t(": they resigned"):t(": you resigned"));
+  case Duel::Agreed:return r+t(" by agreement");
+  case Duel::Quiet:return r+t(": 15 king moves each");
+  case Duel::Rules:return r+(sea?(won?t(": their fleet sunk"):t(": your fleet sunk")):(won?t(": they cannot move"):t(": you cannot move")));
   default:return r;}
  }
  default:return "";
@@ -47,14 +47,14 @@ String duelState(const Duel& g,bool board=false){
 }
 uint16_t duelStateColor(const Duel& g){if(duelNeeds(g))return accent;if(g.state==Duel::Over)return g.result==Duel::Won?ok:g.result==Duel::Lost?bad:dim;return dim;}
 String duelDelivery(const Duel& g){
- switch(g.link()){case ChatMessage::Queued:return t("sending","отправляется");case ChatMessage::Sent:return t("sent, no ACK yet","отправлено, ждём ACK");case ChatMessage::Delivered:return t("delivered","доставлено");
- case ChatMessage::Failed:{if(g.autoStopped)return t("not delivered (R)","не доставлено (R)");int32_t s=duels.retryIn(g);
-  return s<0?t("not delivered, resending","не доставлено, повторяю"):s<60?t("not delivered, retry now","не доставлено, повтор сейчас"):t("not delivered, retry in ","не доставлено, повтор через ")+String((s+59)/60)+t(" min"," мин");}}
+ switch(g.link()){case ChatMessage::Queued:return t("sending");case ChatMessage::Sent:return t("sent, no ACK yet");case ChatMessage::Delivered:return t("delivered");
+ case ChatMessage::Failed:{if(g.autoStopped)return t("not delivered (R)");int32_t s=duels.retryIn(g);
+  return s<0?t("not delivered, resending"):s<60?t("not delivered, retry now"):t("not delivered, retry in ")+String((s+59)/60)+t(" min");}}
  return "";
 }
 String ckLast(const Duel& g){if(!g.game.plies)return "";char b[40];ck::moveText(g.game.last,b,sizeof b);return b;}
 // Sea battle: the answer to a shot in words.
-String seaWord(uint8_t answer){return answer==sea::AnswerMiss?t("miss","мимо"):answer==sea::AnswerHit?t("hit","ранен"):answer==sea::AnswerSunk||answer==sea::AnswerWin?t("sunk","потоплен"):String();}
+String seaWord(uint8_t answer){return answer==sea::AnswerMiss?t("miss"):answer==sea::AnswerHit?t("hit"):answer==sea::AnswerSunk||answer==sea::AnswerWin?t("sunk"):String();}
 String seaScore(const Duel& g){return String(g.target.sunkShips())+":"+String(sea::Ships-g.home.shipsLeft());} // ships sunk by me : by them
 
 // The list: games that need the player first, then the newest.
@@ -67,8 +67,8 @@ void drawDuelList(){
  bool sea=duelKind==Duel::Sea;duelSortRows();int total=1+duelRowCount;if(selected>=total)selected=total-1;int first=max(0,selected-3);
  for(int i=first;i<total&&i<first+4;i++){
   int y=24+(i-first)*48;bool focus=selected==i;listRow(y,45,focus);target(8,y,304,45,i);
-  if(i==0){g().fillCircle(32,y+22,15,rgb(0x14524b));g().fillRect(31,y+14,3,17,accent);g().fillRect(24,y+21,17,3,accent);text(56,y+18,t("New game","Новая игра"),ink,bold);
-   text(56,y+36,fit(!duels.room()?t("Six games in progress: finish one","Идут шесть игр: завершите одну"):t("Invite a chat contact","Позвать чат-контакт"),244,small),dim,small);continue;}
+  if(i==0){g().fillCircle(32,y+22,15,rgb(0x14524b));g().fillRect(31,y+14,3,17,accent);g().fillRect(24,y+21,17,3,accent);text(56,y+18,t("New game"),ink,bold);
+   text(56,y+36,fit(!duels.room()?t("Six games in progress: finish one"):t("Invite a chat contact"),244,small),dim,small);continue;}
   const Duel& m=*duelRows[i-1];Peer* p=peerOf(m.peer);avatar(32,y+22,15,m.peer,m.name,p?p->type:-1);
   if(sea){g().fillCircle(45,y+34,7,bg);icon(IcShip,45,y+34,5,info,bg);}else colorDisc(45,y+34,m.mine);
   String right=m.updated?timeText(m.updated):String();int rw=measure(right,small);
@@ -80,30 +80,30 @@ void drawDuelList(){
   if(m.unseen||duelNeeds(m))g().fillCircle(300,y+33,4,accent);
  }
  scrollbar(first,4,total,24,190);
- if(!duelRowCount){String rows[4];unsigned n=wrap(sea?t("Shots travel as direct MeshCore messages with delivery confirmation. Ten ships each, placed at random; a hit shoots again. The other player needs MeshMesh with sea battle.","Выстрелы идут личными сообщениями MeshCore с подтверждением доставки. У каждого десять кораблей, расставленных случайно; попал - стреляй ещё. Сопернику нужен MeshMesh с морским боем."):t("Moves travel as direct MeshCore messages with delivery confirmation. Russian draughts: capturing is compulsory, kings fly. The other player needs MeshMesh with checkers.","Ходы идут личными сообщениями MeshCore с подтверждением доставки. Русские шашки: бить обязательно, дамка ходит далеко. Сопернику нужен MeshMesh с шашками."),rows,4,296);
+ if(!duelRowCount){String rows[4];unsigned n=wrap(sea?t("Shots travel as direct MeshCore messages with delivery confirmation. Ten ships each, placed at random; a hit shoots again. The other player needs MeshMesh with sea battle."):t("Moves travel as direct MeshCore messages with delivery confirmation. Russian draughts: capturing is compulsory, kings fly. The other player needs MeshMesh with checkers."),rows,4,296);
   for(unsigned k=0;k<n;k++)textCenter(160,100+k*16,rows[k],faint);}
  bool over=selected>0&&duelRows[selected-1]->state==Duel::Over;
- if(over)footer({{"OK",t("Open","Открыть")},{"DEL",duelRemoveArmed?t("Sure?","Удалить?"):t("Remove","Удалить")},{"BACK",t("Menu","Меню")}});
- else footer({{"OK",selected?t("Open","Открыть"):t("Choose","Выбрать")},{"^v",t("Select","Выбор")},{"BACK",t("Menu","Меню")}});
+ if(over)footer({{"OK",t("Open")},{"DEL",duelRemoveArmed?t("Sure?"):t("Remove")},{"BACK",t("Menu")}});
+ else footer({{"OK",selected?t("Open"):t("Choose")},{"^v",t("Select")},{"BACK",t("Menu")}});
 }
 // The contact to play with: chat contacts, the most recently heard first (as chess); checkers also takes the colour.
 void drawDuelPick(){
  chessSortPeers();bool sea=duelKind==Duel::Sea;panel(8,24,304,30,card,7);
- if(sea){icon(IcShip,24,39,7,info,card);text(38,43,fit(t("Your fleet is placed at random; S reshuffles it before the first shot","Флот расставится случайно; S перемешает его до первого выстрела"),268,small),dim,small);}
- else{text(18,43,t("You play","Вы играете"),dim);String colors[]={t("White","Белыми"),t("Black","Чёрными"),t("Random","Случайно")};int cx=222;tri(cx-58,39,3,4,accent);tri(cx+58,39,1,4,accent);
+ if(sea){icon(IcShip,24,39,7,info,card);text(38,43,fit(t("Your fleet is placed at random; S reshuffles it before the first shot"),268,small),dim,small);}
+ else{text(18,43,t("You play"),dim);String colors[]={t("White"),t("Black"),t("Random")};int cx=222;tri(cx-58,39,3,4,accent);tri(cx+58,39,1,4,accent);
   if(duelPickColor<2)colorDisc(cx-42,39,duelPickColor);textCenter(cx+(duelPickColor<2?6:0),44,colors[duelPickColor],ink,bold);target(8,24,304,30,-KeyRight);}
- if(!chessPeerCount){textCenter(160,110,t("No chat contacts yet","Чат-контактов пока нет"),ink,bold);textCenter(160,132,t("Press ADV to announce this node and wait","Нажмите ADV, чтобы объявить узел, и"),dim);textCenter(160,148,t("for the other player's announcement","дождитесь объявления соперника"),dim);footer({{"ADV",t("Announce","Объявить")},{"BACK",t("Back","Назад")}});return;}
+ if(!chessPeerCount){textCenter(160,110,t("No chat contacts yet"),ink,bold);textCenter(160,132,t("Press ADV to announce this node and wait"),dim);textCenter(160,148,t("for the other player's announcement"),dim);footer({{"ADV",t("Announce")},{"BACK",t("Back")}});return;}
  if(selected>=int(chessPeerCount))selected=chessPeerCount-1;int first=max(0,selected-2);
  for(int i=first;i<int(chessPeerCount)&&i<first+3;i++){
   const Peer& p=meshRadio.peers[chessPeers[i]];int y=60+(i-first)*48;bool focus=selected==i;listRow(y,45,focus);target(8,y,304,45,i);avatar(32,y+22,15,p.id,p.name,p.type);
   text(56,y+18,fit(p.name,244,bold),ink,bold);
-  String info=(p.heard?(millis()-p.seen<60000?ago(0):ago(millis()-p.seen)+t(" ago"," назад"))+" · ":String())+pathText(p);
-  bool busy=false;for(auto& g:duels.games)busy|=g.active()&&g.peer==p.id&&g.kind==duelKind;if(busy)info=t("A game with them is on · ","Игра с ним уже идёт · ")+info;
+  String info=(p.heard?(millis()-p.seen<60000?ago(0):ago(millis()-p.seen)+t(" ago"))+" · ":String())+pathText(p);
+  bool busy=false;for(auto& g:duels.games)busy|=g.active()&&g.peer==p.id&&g.kind==duelKind;if(busy)info=t("A game with them is on · ")+info;
   text(56,y+36,fit(info,244,small),p.heard&&millis()-p.seen<1800000?ok:dim,small);
  }
  scrollbar(first,3,chessPeerCount,60,154);
- if(sea)footer({{"OK",t("Invite","Позвать")},{"^v",t("Select","Выбор")},{"BACK",t("Back","Назад")}});
- else footer({{"OK",t("Invite","Позвать")},{"<>",t("Colour","Цвет")},{"^v",t("Select","Выбор")},{"BACK",t("Back","Назад")}});
+ if(sea)footer({{"OK",t("Invite")},{"^v",t("Select")},{"BACK",t("Back")}});
+ else footer({{"OK",t("Invite")},{"<>",t("Colour")},{"^v",t("Select")},{"BACK",t("Back")}});
 }
 
 // Checkers board: my side at the bottom (White: a1 bottom left; Black: a1 top right). Pieces stand on the dark squares.
@@ -148,20 +148,20 @@ void drawCheckers(){
 }
 // Pieces of a colour: "12" or "9 + 2 kings".
 String ckPieces(const Duel& m,uint8_t color){unsigned all=m.game.pos.count(color),kings=0;for(int8_t p:m.game.pos.board)kings+=p==(color==ck::White?ck::King:-ck::King);
- return kings?String(all-kings)+" + "+count(kings,"king","kings","дамка","дамки","дамок"):count(all,"man","men","шашка","шашки","шашек");}
+ return kings?String(all-kings)+" + "+count(kings,"king","kings"):count(all,"man","men");}
 void drawCheckersSide(){
  const Duel& m=*duelOpen;int x=204,w=110;
  // The opponent on top, the player at the bottom, as on the board.
  panel(x,24,w,38,card,6);colorDisc(x+10,36,m.mine^1);text(x+20,40,fit(m.name,w-24,bold),ink,bold);text(x+6,55,fit(ckPieces(m,m.mine^1),w-10,small),dim,small);
- text(x+2,76,t("Last move","Последний ход"),faint,small);
+ text(x+2,76,t("Last move"),faint,small);
  if(m.game.plies){colorDisc(x+7,88,m.game.pos.side^1);String rows[3];unsigned n=wrap(ckLast(m),rows,3,w-20);for(unsigned i=0;i<n;i++)text(x+16,92+i*14,rows[i],ink);}
- else text(x+2,92,fit(m.state==Duel::Inviting?t("Waiting for reply","Ждём ответа"):m.state==Duel::Invited?t("OK accepts","OK - принять"):t("No moves yet","Ходов ещё нет"),w-4,small),faint,small);
+ else text(x+2,92,fit(m.state==Duel::Inviting?t("Waiting for reply"):m.state==Duel::Invited?t("OK accepts"):t("No moves yet"),w-4,small),faint,small);
  if(m.state==Duel::Playing){
-  if(m.drawOffer==Duel::OfferedToMe){panel(x,150,w,22,rgb(0x14524b),6);textCenter(x+w/2,164,t("Draw? D accepts","Ничья? D - да"),ink,small);}
-  else if(m.drawOffer==Duel::OfferedByMe){panel(x,150,w,22,card,6);textCenter(x+w/2,164,fit(t("You offered a draw","Вы предложили ничью"),w-8,small),dim,small);}
-  else if(m.myTurn()){ck::Move list[ck::MaxMoves];unsigned n=ckMoves(list);if(n&&list[0].capture){panel(x,150,w,22,rgb(0x4a3410),6);textCenter(x+w/2,164,fit(t("You must capture","Бить обязательно"),w-8,small),warn,small);}}
+  if(m.drawOffer==Duel::OfferedToMe){panel(x,150,w,22,rgb(0x14524b),6);textCenter(x+w/2,164,t("Draw? D accepts"),ink,small);}
+  else if(m.drawOffer==Duel::OfferedByMe){panel(x,150,w,22,card,6);textCenter(x+w/2,164,fit(t("You offered a draw"),w-8,small),dim,small);}
+  else if(m.myTurn()){ck::Move list[ck::MaxMoves];unsigned n=ckMoves(list);if(n&&list[0].capture){panel(x,150,w,22,rgb(0x4a3410),6);textCenter(x+w/2,164,fit(t("You must capture"),w-8,small),warn,small);}}
  }
- panel(x,176,w,42,card,6);colorDisc(x+10,188,m.mine);text(x+20,192,t("You","Вы"),ink,bold);textRight(x+w-6,191,String(m.game.pos.count(m.mine)),dim,small);
+ panel(x,176,w,42,card,6);colorDisc(x+10,188,m.mine);text(x+20,192,t("You"),ink,bold);textRight(x+w-6,191,String(m.game.pos.count(m.mine)),dim,small);
  String rows[2];unsigned n=wrap(duelState(m,true),rows,2,w-10,small);String deliver=duelDelivery(m);bool failed=m.link()==ChatMessage::Failed;
  if(n==1&&deliver.length()&&(failed||!m.myTurn())){text(x+6,204,rows[0],duelStateColor(m),small);text(x+6,214,fit(deliver,w-10,small),failed?bad:faint,small);}
  else for(unsigned i=0;i<n;i++)text(x+6,204+i*10,rows[i],duelStateColor(m),small);
@@ -195,43 +195,43 @@ void drawSeaHome(){
 }
 void drawSeaSide(){
  const Duel& m=*duelOpen;int x=198,w=116;
- text(x,31,t("Your fleet","Ваш флот"),dim,small);unsigned left=m.home.shipsLeft();textRight(314,31,String(left)+"/"+String(sea::Ships),left<sea::Ships?warn:ok,small);
+ text(x,31,t("Your fleet"),dim,small);unsigned left=m.home.shipsLeft();textRight(314,31,String(left)+"/"+String(sea::Ships),left<sea::Ships?warn:ok,small);
  drawSeaHome();
  String rows[2];unsigned n=wrap(duelState(m,true),rows,2,w,bold);for(unsigned i=0;i<n;i++)text(x,145+i*14,rows[i],duelStateColor(m),bold);
  int y=n>1?178:166;
  if(m.state==Duel::Playing||m.state==Duel::Over){
-  text(x,y,fit(t("Sunk: ","Потоплено: ")+String(m.target.sunkShips())+t(" of "," из ")+String(sea::Ships),w,small),ink,small);y+=11;
-  if(m.lastOut>=0){char c[4];sea::cellName(m.lastOut,c);uint8_t mk=m.target.mark[m.lastOut];text(x,y,fit(t("You: ","Вы: ")+c+" "+seaWord(mk==sea::Miss?sea::AnswerMiss:mk==sea::Hit?sea::AnswerHit:sea::AnswerSunk),w,small),mk==sea::Miss?dim:ok,small);y+=11;}
-  if(m.lastIn>=0){char c[4];sea::cellName(m.lastIn,c);text(x,y,fit(t("They: ","Соперник: ")+c+" "+seaWord(m.lastAnswer),w,small),m.lastAnswer==sea::AnswerMiss?dim:bad,small);y+=11;}
- }else{text(x,y,fit(t("S reshuffles your fleet","S - перемешать ваш флот"),w,small),faint,small);y+=11;}
+  text(x,y,fit(t("Sunk: ")+String(m.target.sunkShips())+t(" of ")+String(sea::Ships),w,small),ink,small);y+=11;
+  if(m.lastOut>=0){char c[4];sea::cellName(m.lastOut,c);uint8_t mk=m.target.mark[m.lastOut];text(x,y,fit(t("You: ")+c+" "+seaWord(mk==sea::Miss?sea::AnswerMiss:mk==sea::Hit?sea::AnswerHit:sea::AnswerSunk),w,small),mk==sea::Miss?dim:ok,small);y+=11;}
+  if(m.lastIn>=0){char c[4];sea::cellName(m.lastIn,c);text(x,y,fit(t("They: ")+c+" "+seaWord(m.lastAnswer),w,small),m.lastAnswer==sea::AnswerMiss?dim:bad,small);y+=11;}
+ }else{text(x,y,fit(t("S reshuffles your fleet"),w,small),faint,small);y+=11;}
  String deliver=duelDelivery(m);bool failed=m.link()==ChatMessage::Failed;
- if(m.state==Duel::Over&&m.revealed&&!m.fair)text(x,214,fit(t("Answers do not match the fleet!","Ответы не сходятся с флотом!"),w,small),bad,small);
- else if(m.state==Duel::Over&&m.result==Duel::Lost&&!m.revealed&&m.reason==Duel::Rules)text(x,214,fit(t("Waiting for their fleet","Ждём расстановку соперника"),w,small),faint,small);
+ if(m.state==Duel::Over&&m.revealed&&!m.fair)text(x,214,fit(t("Answers do not match the fleet!"),w,small),bad,small);
+ else if(m.state==Duel::Over&&m.result==Duel::Lost&&!m.revealed&&m.reason==Duel::Rules)text(x,214,fit(t("Waiting for their fleet"),w,small),faint,small);
  else if(deliver.length()&&y<=214)text(x,214,fit(deliver,w,small),failed?bad:faint,small);
 }
 void drawDuelHelp(){
  uint16_t* px=g().getBuffer();for(int i=0;i<320*240;i++)px[i]=(px[i]>>1)&0x7bef;bool sea=duelOpen&&duelOpen->kind==Duel::Sea;
- panel(6,24,308,194,cardHi,10);g().drawRoundRect(6,24,308,194,10,line);text(16,42,sea?t("Sea battle keys","Клавиши морского боя"):t("Checkers keys","Клавиши шашек"),ink,bold);
- Hint keys[]={{"<>",sea?t("Aim at their field (also ^v)","Прицел по полю соперника (и ^v)"):t("Move the cursor (also ^v)","Курсор по доске (и ^v)")},{"OK",sea?t("Fire; a hit shoots again","Выстрел; попал - стреляйте ещё"):t("Take a man / put it","Взять шашку / поставить")},
-  {"BACK",sea?t("To the games","К играм"):t("Put back / to the games","Вернуть шашку / к играм")},{sea?"S":"D",sea?t("Reshuffle the fleet before the first shot","Перемешать флот до первого выстрела"):t("Offer a draw / accept one","Предложить / принять ничью")},
-  {"X",t("Resign (press twice)","Сдаться (дважды)")},{"R",t("Resend what was not delivered","Повторить недоставленное")},{"N",t("Play again after the game","Сыграть ещё раз после игры")},{"DEL",t("Decline, cancel, remove","Отказ, отмена, удаление")}};
+ panel(6,24,308,194,cardHi,10);g().drawRoundRect(6,24,308,194,10,line);text(16,42,sea?t("Sea battle keys"):t("Checkers keys"),ink,bold);
+ Hint keys[]={{"<>",sea?t("Aim at their field (also ^v)"):t("Move the cursor (also ^v)")},{"OK",sea?t("Fire; a hit shoots again"):t("Take a man / put it")},
+  {"BACK",sea?t("To the games"):t("Put back / to the games")},{sea?"S":"D",sea?t("Reshuffle the fleet before the first shot"):t("Offer a draw / accept one")},
+  {"X",t("Resign (press twice)")},{"R",t("Resend what was not delivered")},{"N",t("Play again after the game")},{"DEL",t("Decline, cancel, remove")}};
  for(int i=0;i<8;i++){int y=52+i*17;g().fillRoundRect(16,y,30,13,3,line);if(!strcmp(keys[i].key,"<>")){tri(26,y+6,3,3,ink);tri(35,y+6,1,3,ink);}else textCenter(31,y+10,keys[i].key,ink,small);text(54,y+11,fit(keys[i].action,252),i%2?dim:ink);}
- text(16,202,fit(sea?t("Shots are sent as direct messages with ACK.","Выстрелы идут личными сообщениями с ACK."):t("Moves are sent as direct messages with ACK.","Ходы идут личными сообщениями с ACK."),290,small),faint,small);
+ text(16,202,fit(sea?t("Shots are sent as direct messages with ACK."):t("Moves are sent as direct messages with ACK."),290,small),faint,small);
 }
 void drawDuelGame(){
- if(!duelOpen||duelOpen->state==Duel::Free){textCenter(160,110,t("The game was removed","Игра удалена"),dim);footer({{"BACK",t("Games","Игры")}});return;}
+ if(!duelOpen||duelOpen->state==Duel::Free){textCenter(160,110,t("The game was removed"),dim);footer({{"BACK",t("Games")}});return;}
  const Duel& m=*duelOpen;bool sea=m.kind==Duel::Sea,failed=m.link()==ChatMessage::Failed;
  if(sea){drawSeaTarget();drawSeaSide();}else{drawCheckers();drawCheckersSide();}
- String resign=duelResignArmed?t("Sure?","Сдаться?"):t("Resign","Сдаться");
- if(m.state==Duel::Invited){if(sea)footer({{"OK",t("Accept","Принять")},{"S",t("Shuffle","Перемешать")},{"DEL",t("Decline","Отказать")},{"BACK",t("Games","Игры")}});else footer({{"OK",t("Accept","Принять")},{"DEL",t("Decline","Отказать")},{"BACK",t("Games","Игры")}});}
- else if(m.state==Duel::Inviting)footer({failed?Hint{"R",t("Resend","Повторить")}:Hint{"DEL",t("Cancel","Отменить")},sea?Hint{"S",t("Shuffle","Перемешать")}:Hint{"H",t("Keys","Клавиши")},{"BACK",t("Games","Игры")}});
- else if(m.state==Duel::Over)footer({failed?Hint{"R",t("Resend","Повторить")}:Hint{"N",t("Again","Ещё раз")},{"DEL",duelRemoveArmed?t("Sure?","Удалить?"):t("Remove","Удалить")},{"BACK",t("Games","Игры")}});
- else if(failed)footer({{"R",t("Resend","Повторить")},{"X",resign},{"BACK",t("Games","Игры")}});
- else if(sea&&m.myTurn())footer({{"OK",t("Fire","Огонь")},{"<>",t("Aim","Прицел")},m.canShuffle()?Hint{"S",t("Shuffle","Перемешать")}:Hint{"X",resign},{"H",t("Keys","Клавиши")}});
- else if(sea)footer({{"X",resign},m.canShuffle()?Hint{"S",t("Shuffle","Перемешать")}:Hint{"H",t("Keys","Клавиши")},{"BACK",t("Games","Игры")}});
- else if(duelHeld>=0)footer({{"OK",t("Put","Поставить")},{"BACK",t("Put back","Вернуть")},{"H",t("Keys","Клавиши")}});
- else if(m.myTurn())footer({{"OK",t("Take","Взять")},{"D",m.drawOffer==Duel::OfferedToMe?t("Draw: yes","Ничья: да"):t("Draw","Ничья")},{"X",resign},{"H",t("Keys","Клавиши")}});
- else footer({{"D",t("Draw","Ничья")},{"X",resign},{"H",t("Keys","Клавиши")},{"BACK",t("Games","Игры")}});
+ String resign=duelResignArmed?t("Sure?"):t("Resign");
+ if(m.state==Duel::Invited){if(sea)footer({{"OK",t("Accept")},{"S",t("Shuffle")},{"DEL",t("Decline")},{"BACK",t("Games")}});else footer({{"OK",t("Accept")},{"DEL",t("Decline")},{"BACK",t("Games")}});}
+ else if(m.state==Duel::Inviting)footer({failed?Hint{"R",t("Resend")}:Hint{"DEL",t("Cancel")},sea?Hint{"S",t("Shuffle")}:Hint{"H",t("Keys")},{"BACK",t("Games")}});
+ else if(m.state==Duel::Over)footer({failed?Hint{"R",t("Resend")}:Hint{"N",t("Again")},{"DEL",duelRemoveArmed?t("Sure?"):t("Remove")},{"BACK",t("Games")}});
+ else if(failed)footer({{"R",t("Resend")},{"X",resign},{"BACK",t("Games")}});
+ else if(sea&&m.myTurn())footer({{"OK",t("Fire")},{"<>",t("Aim")},m.canShuffle()?Hint{"S",t("Shuffle")}:Hint{"X",resign},{"H",t("Keys")}});
+ else if(sea)footer({{"X",resign},m.canShuffle()?Hint{"S",t("Shuffle")}:Hint{"H",t("Keys")},{"BACK",t("Games")}});
+ else if(duelHeld>=0)footer({{"OK",t("Put")},{"BACK",t("Put back")},{"H",t("Keys")}});
+ else if(m.myTurn())footer({{"OK",t("Take")},{"D",m.drawOffer==Duel::OfferedToMe?t("Draw: yes"):t("Draw")},{"X",resign},{"H",t("Keys")}});
+ else footer({{"D",t("Draw")},{"X",resign},{"H",t("Keys")},{"BACK",t("Games")}});
  if(duelHelp)drawDuelHelp();
 }
 
@@ -246,41 +246,41 @@ void duelBackToList(){Duel* was=duelOpen;change(was&&was->kind==Duel::Sea?SeaLis
 void duelInvite(uint64_t peer){
  Duel* m=duels.invite(peer,duelKind,duelKind==Duel::Checkers?duelPickColor:2);duelEventsSeen=duels.events;if(!m){notice(duels.event,bad);return;}
  duelEnter(m);bool failed=m->link()==ChatMessage::Failed;
- notice(failed?t("Not sent now: will resend","Сейчас не отправлено: повторю"):m->kind==Duel::Sea?t("Invitation sent","Приглашение отправлено"):t("Invitation sent: you play ","Приглашение отправлено: вы играете ")+colorName(m->mine,true),failed?bad:ok);
+ notice(failed?t("Not sent now: will resend"):m->kind==Duel::Sea?t("Invitation sent"):t("Invitation sent: you play ")+colorName(m->mine,true),failed?bad:ok);
 }
 void ckPlay(const ck::Move& mv){
  Duel& m=*duelOpen;
- if(duels.move(m,mv)){duelHeld=-1;hardware.ping(1400,12);if(m.state==Duel::Over)hardware.ping(m.result==Duel::Won?1760:600,200);if(m.link()==ChatMessage::Failed)notice(t("Not sent now: will resend automatically","Сейчас не отправлено: повторю автоматически"),warn);}
- else{hardware.ping(260,60);notice(t("Move refused","Ход не принят"),bad);}
+ if(duels.move(m,mv)){duelHeld=-1;hardware.ping(1400,12);if(m.state==Duel::Over)hardware.ping(m.result==Duel::Won?1760:600,200);if(m.link()==ChatMessage::Failed)notice(t("Not sent now: will resend automatically"),warn);}
+ else{hardware.ping(260,60);notice(t("Move refused"),bad);}
 }
 void ckAct(){
  Duel& m=*duelOpen;
- if(m.state==Duel::Invited){if(duels.accept(m))notice(t("Accepted: you play ","Принято: вы играете ")+colorName(m.mine,true),ok);return;}
- if(!m.myTurn()){notice(m.state==Duel::Playing?t("Wait for their move","Дождитесь хода соперника"):m.state==Duel::Inviting?t("Waiting for the reply","Ждём ответа на приглашение"):t("The game is over","Игра окончена"),dim);return;}
- int s=ckSquare();if(s<0){notice(t("Men stand on the dark squares","Шашки стоят на тёмных полях"),dim);return;}
+ if(m.state==Duel::Invited){if(duels.accept(m))notice(t("Accepted: you play ")+colorName(m.mine,true),ok);return;}
+ if(!m.myTurn()){notice(m.state==Duel::Playing?t("Wait for their move"):m.state==Duel::Inviting?t("Waiting for the reply"):t("The game is over"),dim);return;}
+ int s=ckSquare();if(s<0){notice(t("Men stand on the dark squares"),dim);return;}
  if(s==duelHeld){duelHeld=-1;return;}
  ck::Move list[ck::MaxMoves];unsigned n=ckMoves(list);
  if(duelHeld>=0)for(unsigned i=0;i<n;i++)if(list[i].from()==duelHeld&&list[i].to()==s){ck::Move mv=list[i];ckPlay(mv);return;} // the first of the moves with this start and end
  if(ckCanTake(s)){duelHeld=s;return;}
  bool mine=m.game.pos.own(s)>0;hardware.ping(260,60);
- notice(n&&list[0].capture?t("Capture is compulsory","Бить обязательно"):duelHeld>=0&&!mine?t("Cannot go there","Сюда нельзя"):mine?t("This man cannot move","Эта шашка не может ходить"):t("Choose one of your men","Выберите свою шашку"),warn);
+ notice(n&&list[0].capture?t("Capture is compulsory"):duelHeld>=0&&!mine?t("Cannot go there"):mine?t("This man cannot move"):t("Choose one of your men"),warn);
 }
 void seaAct(){
  Duel& m=*duelOpen;
- if(m.state==Duel::Invited){if(duels.accept(m))notice(t("Accepted: their shot first","Принято: первым стреляет соперник"),ok);return;}
- if(!m.myTurn()){notice(m.state!=Duel::Playing?(m.state==Duel::Inviting?t("Waiting for the reply","Ждём ответа на приглашение"):t("The game is over","Игра окончена")):m.aim>=0?t("Waiting for the answer to your shot","Ждём ответа на ваш выстрел"):t("Wait for their shot","Дождитесь выстрела соперника"),dim);return;}
- if(!m.target.open(seaCursor)){hardware.ping(260,60);notice(t("Already known: aim elsewhere","Уже известно: цельтесь в другое место"),warn);return;}
- if(duels.shoot(m,seaCursor)){hardware.ping(1400,12);char c[4];sea::cellName(seaCursor,c);notice(m.link()==ChatMessage::Failed?t("Not sent now: will resend automatically","Сейчас не отправлено: повторю автоматически"):t("Fire: ","Огонь: ")+c,m.link()==ChatMessage::Failed?warn:info);}
- else notice(t("Shot refused","Выстрел не принят"),bad);
+ if(m.state==Duel::Invited){if(duels.accept(m))notice(t("Accepted: their shot first"),ok);return;}
+ if(!m.myTurn()){notice(m.state!=Duel::Playing?(m.state==Duel::Inviting?t("Waiting for the reply"):t("The game is over")):m.aim>=0?t("Waiting for the answer to your shot"):t("Wait for their shot"),dim);return;}
+ if(!m.target.open(seaCursor)){hardware.ping(260,60);notice(t("Already known: aim elsewhere"),warn);return;}
+ if(duels.shoot(m,seaCursor)){hardware.ping(1400,12);char c[4];sea::cellName(seaCursor,c);notice(m.link()==ChatMessage::Failed?t("Not sent now: will resend automatically"):t("Fire: ")+c,m.link()==ChatMessage::Failed?warn:info);}
+ else notice(t("Shot refused"),bad);
 }
 bool duelKey(int key){
  if(key>='A'&&key<='Z')key+=32;
  if(page==CheckersList||page==SeaList){
   if(key!=Erase)duelRemoveArmed=false;
   if(key==KeyUp||key==KeyDown){duelSortRows();int total=1+duelRowCount;selected=(selected+(key==KeyUp?-1:1)+total)%total;return true;}
-  if(key==Enter||key==KeyHold){duelSortRows();if(!selected){if(!duels.room()){notice(t("Six games in progress: finish one","Идут шесть игр: завершите одну"),warn);return true;}pickReturn=page;change(DuelPick);}else duelEnter(duelRows[selected-1]);return true;}
-  if(key==Erase&&selected){duelSortRows();Duel& m=*duelRows[selected-1];if(m.state!=Duel::Over){notice(t("Only finished games can be removed","Удалить можно только оконченную игру"),dim);return true;}
-   if(!duelRemoveArmed){duelRemoveArmed=true;notice(t("DEL again removes the game","DEL ещё раз удалит игру"),warn);return true;}duelRemoveArmed=false;duels.remove(m);notice(t("Game removed","Игра удалена"),ok);return true;}
+  if(key==Enter||key==KeyHold){duelSortRows();if(!selected){if(!duels.room()){notice(t("Six games in progress: finish one"),warn);return true;}pickReturn=page;change(DuelPick);}else duelEnter(duelRows[selected-1]);return true;}
+  if(key==Erase&&selected){duelSortRows();Duel& m=*duelRows[selected-1];if(m.state!=Duel::Over){notice(t("Only finished games can be removed"),dim);return true;}
+   if(!duelRemoveArmed){duelRemoveArmed=true;notice(t("DEL again removes the game"),warn);return true;}duelRemoveArmed=false;duels.remove(m);notice(t("Game removed"),ok);return true;}
   if(key==KeyBack){change(Home,true);return true;}
   return key==KeyLeft||key==KeyRight;
  }
@@ -303,27 +303,27 @@ bool duelKey(int key){
  if(key==Enter||key==KeyHold||key==' '){if(sea)seaAct();else ckAct();return true;}
  if(key==KeyBack){if(duelHeld>=0)duelHeld=-1;else duelBackToList();return true;}
  if(key=='h'){duelHelp=true;return true;}
- if(key=='r'){if(duels.resend(m))notice(t("Sent again","Отправлено повторно"),ok);else notice(m.sending()?t("Already sending","Уже отправляется"):m.link()==ChatMessage::Failed?t("Radio busy, will resend","Радио занято, повторю автоматически"):t("Nothing to resend","Повторять нечего"),dim);return true;}
- if(key=='s'&&sea){if(duels.shuffle(m)){hardware.ping(1100,20);notice(t("Fleet reshuffled","Флот перемешан"),ok);}else notice(t("Too late: they have shot at it","Поздно: по флоту уже стреляли"),dim);return true;}
+ if(key=='r'){if(duels.resend(m))notice(t("Sent again"),ok);else notice(m.sending()?t("Already sending"):m.link()==ChatMessage::Failed?t("Radio busy, will resend"):t("Nothing to resend"),dim);return true;}
+ if(key=='s'&&sea){if(duels.shuffle(m)){hardware.ping(1100,20);notice(t("Fleet reshuffled"),ok);}else notice(t("Too late: they have shot at it"),dim);return true;}
  if(key=='d'&&!sea){
   bool theirs=m.drawOffer==Duel::OfferedToMe;
-  if(duels.draw(m))notice(theirs?t("Draw accepted","Ничья принята"):t("Draw offered","Ничья предложена"),theirs?ok:info);
-  else notice(m.drawOffer==Duel::OfferedByMe?t("Draw already offered","Ничья уже предложена"):t("No game in progress","Игра не идёт"),dim);return true;
+  if(duels.draw(m))notice(theirs?t("Draw accepted"):t("Draw offered"),theirs?ok:info);
+  else notice(m.drawOffer==Duel::OfferedByMe?t("Draw already offered"):t("No game in progress"),dim);return true;
  }
  if(key=='x'){
-  if(m.state!=Duel::Playing){notice(t("No game in progress","Игра не идёт"),dim);return true;}
-  if(!duelResignArmed){duelResignArmed=true;notice(t("X again resigns the game","X ещё раз - сдаться"),warn);return true;}
-  duelResignArmed=false;duelHeld=-1;duels.resign(m);hardware.ping(600,200);notice(t("You resigned","Вы сдались"),dim);return true;
+  if(m.state!=Duel::Playing){notice(t("No game in progress"),dim);return true;}
+  if(!duelResignArmed){duelResignArmed=true;notice(t("X again resigns the game"),warn);return true;}
+  duelResignArmed=false;duelHeld=-1;duels.resign(m);hardware.ping(600,200);notice(t("You resigned"),dim);return true;
  }
  if(key=='n'){
-  if(m.state!=Duel::Over){notice(t("Finish this game first","Сначала завершите игру"),dim);return true;}
+  if(m.state!=Duel::Over){notice(t("Finish this game first"),dim);return true;}
   duelKind=m.kind;duelPickColor=sea?2:m.mine^1;duelInvite(m.peer);return true;
  }
  if(key==Erase){
   bool fresh=m.state==Duel::Playing&&(sea?!m.shots&&m.aim<0:!m.game.plies);
-  if(m.state==Duel::Invited||m.state==Duel::Inviting||fresh){bool mineInvite=m.state!=Duel::Invited;if(duels.decline(m))notice(mineInvite?t("Game cancelled","Игра отменена"):t("Invitation declined","Приглашение отклонено"),dim);return true;}
-  if(m.state==Duel::Over){if(!duelRemoveArmed){duelRemoveArmed=true;notice(t("DEL again removes the game","DEL ещё раз удалит игру"),warn);return true;}duelRemoveArmed=false;Duel::Kind k=m.kind;duels.remove(m);duelOpen=nullptr;change(k==Duel::Sea?SeaList:CheckersList);notice(t("Game removed","Игра удалена"),ok);return true;}
-  notice(t("Resign with X","Сдаться - клавиша X"),dim);return true;
+  if(m.state==Duel::Invited||m.state==Duel::Inviting||fresh){bool mineInvite=m.state!=Duel::Invited;if(duels.decline(m))notice(mineInvite?t("Game cancelled"):t("Invitation declined"),dim);return true;}
+  if(m.state==Duel::Over){if(!duelRemoveArmed){duelRemoveArmed=true;notice(t("DEL again removes the game"),warn);return true;}duelRemoveArmed=false;Duel::Kind k=m.kind;duels.remove(m);duelOpen=nullptr;change(k==Duel::Sea?SeaList:CheckersList);notice(t("Game removed"),ok);return true;}
+  notice(t("Resign with X"),dim);return true;
  }
  return false;
 }
@@ -347,7 +347,7 @@ void drawLockDuel(int y){
  const Duel& m=*lockDuel();bool sea=m.kind==Duel::Sea;String head,sub;
  panel(40,y,240,40,card,8);ring(40,y,240,40,8,rgb(0x14524b));icon(sea?IcShip:IcCheckers,62,y+20,9,accent,card);
  if(config.lockDetails){head=String(m.name);if(!sea&&m.game.plies&&(m.myTurn()||m.state==Duel::Over))head+=": "+ckLast(m);sub=duelState(m);}
- else{head=sea?t("Sea battle","Морской бой"):t("Checkers","Шашки");sub=duelTileDetail(m.kind);}
+ else{head=sea?t("Sea battle"):t("Checkers");sub=duelTileDetail(m.kind);}
  text(80,y+16,fit(head,192,bold),ink,bold);text(80,y+32,fit(sub,192,small),duelStateColor(m),small);
 }
 void duelTick(){

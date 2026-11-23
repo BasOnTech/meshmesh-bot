@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Interface languages of the firmware: strings, translations, tables and fonts.
 
-English and Russian live in the code: t("English","Русский"), tr(...) and
-count(n,"one","many","ру1","ру2","ру5"). The other languages are in
-i18n/firmware/<lang>.json, keyed by a hash of the English and Russian text, so a
-changed source string drops its old translation.
+English lives in the code: t("English"), tr(...), count(n,"one","many") and N_("...") for strings
+read from tables (trText). Other languages are in i18n/firmware/<lang>.json, keyed by a hash of
+the English text, so a changed source string drops its old translation.
 
 tools/i18n.py sync       add new strings to every language file, drop removed ones
 tools/i18n.py check      every string translated, same edges and placeholders, fits, glyphs exist
@@ -26,22 +25,20 @@ DIR = ROOT/'i18n'/'firmware'
 
 # Order matters: the index is the stored language number (Config::lang, I18n.h).
 # A new language goes to the end with its file i18n/firmware/<code>.json and its PLURALS entry.
-LANGS = [('en', 'English'), ('ru', 'Русский')]
+LANGS = [('en', 'English')]
 CODES = [c for c, _ in LANGS]
-TRANSLATED = CODES[2:]  # en and ru are in the code
+TRANSLATED = CODES[1:]  # en is in the code
 CATEGORIES = ['zero', 'one', 'two', 'few', 'many', 'other']
-PLURALS = {'en': ['one', 'other'], 'ru': ['one', 'few', 'many']}
+PLURALS = {'en': ['one', 'other']}
 # Interface families: the 320x240 keyboard interface and the 128x64 one; shared files go to both.
 FULL = ['src/Ui.cpp', 'src/UiServer.inc', 'src/UiSolitaire.inc', 'src/UiChess.inc', 'src/UiTour.inc', 'src/UiChannels.inc', 'src/UiPet.inc', 'src/UiDice.inc', 'src/UiTally.inc', 'src/UiRemote.inc', 'src/UiDuel.inc']
 COMPACT = ['src/UiHeltec.cpp', 'src/UiChessCompact.inc', 'src/UiPetCompact.inc', 'src/UiDiceCompact.inc', 'src/UiDuelCompact.inc']
 SHARED = ['src/ChessNet.cpp', 'src/ChessTour.cpp', 'src/ChessSync.cpp', 'src/MeshRadio.cpp', 'src/Internet.cpp', 'src/MeshServer.cpp', 'src/App.cpp', 'src/Pet.cpp', 'src/Dice.cpp', 'src/QuickSend.cpp', 'src/People.cpp', 'src/Duel.cpp', 'src/Apps.cpp']
 
 LIT = r'"(?:[^"\\\n]|\\.)*"'
-TEXT = re.compile(r'(?<![A-Za-z0-9_.>])(?:t|tr)\(\s*(' + LIT + r')\s*,\s*(' + LIT + r')\s*\)')
-COUNT = re.compile(r'(?<![A-Za-z0-9_.>])(?:count|plural)\((?:[^;"]|\["[^"]*"\])*?,\s*(' + LIT + r')\s*,\s*(' + LIT + r')\s*,\s*(' + LIT + r')\s*,\s*(' + LIT + r')\s*,\s*(' + LIT + r')\s*\)')
+TEXT = re.compile(r'(?<![A-Za-z0-9_.>])(?:t|tr|N_)\(\s*(' + LIT + r')\s*\)')
+COUNT = re.compile(r'(?<![A-Za-z0-9_.>])(?:count|plural)\((?:[^;"]|\["[^"]*"\])*?,\s*(' + LIT + r')\s*,\s*(' + LIT + r')\s*\)')
 PLACEHOLDER = re.compile(r'%[-+ 0#]*\d*(?:\.\d+)?[a-z]|\{[a-z]+\}')
-# {"English","Русский"} pairs in tables read with tr(pair[0],pair[1]) (Ui.cpp netError)
-PAIR = re.compile(r'\{\s*(' + LIT + r')\s*,\s*(' + LIT + r')\s*\}')
 
 
 def c_string(literal):
@@ -97,16 +94,15 @@ def extract():
             lines = path.read_text().split('\n')
             for n, line in enumerate(lines, 1):
                 found = [('text', m) for m in TEXT.finditer(line)] + [('plural', m) for m in COUNT.finditer(line)]
-                found += [('text', m) for m in PAIR.finditer(line) if re.search('[А-Яа-яЁё]', m.group(2)) and not re.search('[А-Яа-яЁё]', m.group(1))]
                 for kind, m in found:
                     parts = [c_string(g) for g in m.groups()]
                     k = key(*parts)
                     e = entries.setdefault(k, {'kind': kind, 'families': set(), 'where': [], 'files': set()})
                     e['files'].add(name)
                     if kind == 'text':
-                        e['en'], e['ru'] = parts
+                        e['en'] = parts[0]
                     else:
-                        e['en'], e['ru'] = {'one': parts[0], 'other': parts[1]}, {'one': parts[2], 'few': parts[3], 'many': parts[4]}
+                        e['en'] = {'one': parts[0], 'other': parts[1]}
                     e['families'].add(family)
                     if len(e['where']) < 3:
                         e['where'].append(f'{name}:{n}: {line.strip()[:220]}')
@@ -133,7 +129,7 @@ def sync():
         new = {}
         for k, e in sorted(entries.items(), key=lambda kv: (kv[1]['where'][0])):
             prev = old.get(k, {})
-            item = {'en': e['en'], 'ru': e['ru']}
+            item = {'en': e['en']}
             if e['kind'] == 'text':
                 item['text'] = prev.get('text', '')
             else:
@@ -141,7 +137,7 @@ def sync():
                 item['forms'] = {c: forms.get(c, '') for c in PLURALS[code]}
             new[k] = item
         save(code, new)
-    source = {k: {'where': e['where'], 'families': e['families'], 'cells': max(cells(e['en'] if e['kind'] == 'text' else e['en']['other']), cells(e['ru'] if e['kind'] == 'text' else e['ru']['many']))} for k, e in entries.items()}
+    source = {k: {'where': e['where'], 'families': e['families'], 'cells': cells(e['en'] if e['kind'] == 'text' else e['en']['other'])} for k, e in entries.items()}
     (DIR/'source.json').write_text(json.dumps(source, ensure_ascii=False, indent=1, sort_keys=True) + '\n')
     print(len(entries), 'strings;', ', '.join(f'{c}: {missing(c)} untranslated' for c in TRANSLATED))
 
@@ -183,7 +179,7 @@ def check(strict=True):
                 continue
             where = e['where'][0].split(': ')[0]
             values = [item.get('text', '')] if e['kind'] == 'text' else [item['forms'].get(c, '') for c in PLURALS[code]]
-            sources = [e['en'], e['ru']] if e['kind'] == 'text' else list(e['en'].values()) + list(e['ru'].values())
+            sources = [e['en']] if e['kind'] == 'text' else list(e['en'].values())
             for v in values:
                 if not v:
                     errors.append(f'{code} {k} {where}: not translated: {sources[0]!r}')
@@ -238,7 +234,7 @@ def check_site():
         for k, v in d.items():
             if k in en and (not v.strip() or tags(v) != tags(en[k])):
                 errors.append(f'site {code} {k}: empty or HTML tags differ from English: {v!r}')
-            if code != 'ru' and re.search('[А-Яа-яЁё]', v):
+            if re.search('[А-Яа-яЁё]', v):
                 errors.append(f'site {code} {k}: Cyrillic left: {v!r}')
     return errors
 
@@ -280,7 +276,7 @@ def table(entries, family, games=True):
 
 def table_header(entries):
     lines = ['// Generated by tools/i18n.py from i18n/firmware/*.json; do not edit.', '#pragma once', '#include <stdint.h>',
-             f'// Languages after en and ru, in Config::lang order: {" ".join(TRANSLATED) or "none"}']
+             f'// Languages after en, in Config::lang order: {" ".join(TRANSLATED) or "none"}']
     if not TRANSLATED:  # src/I18n.cpp looks nothing up
         return '\n'.join(lines + ['#define MM_I18N_TABLE 0']) + '\n'
     lines += ['#define MM_I18N_TABLE 1', 'namespace i18nTable {',

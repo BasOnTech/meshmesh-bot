@@ -35,7 +35,7 @@ uint32_t entropy(){return esp_random();} // the hardware generator: each egg its
 #endif
 uint32_t fnv(const uint8_t* p,size_t n){uint32_t h=2166136261u;while(n--)h=(h^*p++)*16777619u;return h;}
 uint32_t mix(uint64_t v){uint32_t h=uint32_t(v^(v>>32))*2654435761u;return h^(h>>15);}
-#define t(en,ru) String(tr(en,ru)) // a macro: tr() keys its translation at compile time (I18n.h)
+#define t(en) String(tr(en)) // a macro: tr() keys its translation at compile time (I18n.h)
 }
 uint16_t clampPoints(int v){return v<0?0:v>Full?Full:v;}
 
@@ -65,16 +65,16 @@ void Pet::say(const String& text,Effect e){speech=text;speechAt=millis();chatAt=
 void Pet::gain(int food,int joy,uint32_t xp){
   if(!alive()||s.stage==Egg)return;
   unsigned before=level();s.food=clampPoints(s.food+food);s.joy=clampPoints(s.joy+joy);s.xp+=xp;
-  unsigned after=level();if(after>before)say(t("Level ","Уровень ")+String(after),Sparkle);
+  unsigned after=level();if(after>before)say(t("Level ")+String(after),Sparkle);
   // The stage follows the level, but no faster than the age allows: a busy repeater does not grow up in an hour.
   uint8_t byLevel=after>=10?Adult:after>=6?Teen:after>=3?Child:Baby,byAge=s.age>=3*86400?Adult:s.age>=86400?Teen:s.age>=7200?Child:Baby;
-  uint8_t next=min(byLevel,byAge);if(next>s.stage){s.stage=next;say(t("I grew up: ","Я подрос: ")+stageName(next),Sparkle);save(true);}
+  uint8_t next=min(byLevel,byAge);if(next>s.stage){s.stage=next;say(t("I grew up: ")+stageName(next),Sparkle);save(true);}
   events++;
 }
 // Time with the device on: hunger and boredom grow, health follows them; at night it sleeps and needs less.
 void Pet::elapse(uint32_t seconds){
   if(!alive()||!seconds)return;s.age+=seconds;
-  if(s.stage==Egg){if(s.age>=900){s.stage=Baby;s.food=s.joy=800;say(t("Hello! I am ","Привет! Я ")+String(s.name),Sparkle);save(true);}events++;return;}
+  if(s.stage==Egg){if(s.age>=900){s.stage=Baby;s.food=s.joy=800;say(t("Hello! I am ")+String(s.name),Sparkle);save(true);}events++;return;}
   bool sleeping=asleep(),server=config.role!=RoleNormal;
   auto drain=[&](uint16_t& value,uint32_t& rest,uint32_t perHour){rest+=perHour*seconds;uint32_t points=rest/3600;rest%=3600;value=clampPoints(int(value)-int(min<uint32_t>(points,Full)));};
   drain(s.food,foodRest,sleeping?15:40);drain(s.joy,joyRest,sleeping?0:server?12:30);
@@ -82,16 +82,16 @@ void Pet::elapse(uint32_t seconds){
   if(hurt)drain(s.health,healthRest,hurt);
   else if(s.food>=300&&s.joy>=300){healthRest+=25*seconds;s.health=clampPoints(s.health+int(min<uint32_t>(healthRest/3600,Full)));healthRest%=3600;}
   // A crumb found in the air every six hours: a quiet network with a caring owner still feeds it.
-  crumbRest+=seconds;if(crumbRest>=6*3600){crumbRest-=6*3600;if(s.snacks<9){s.snacks++;say(t("Found a crumb in the air","Нашёл крошку в эфире"));}}
+  crumbRest+=seconds;if(crumbRest>=6*3600){crumbRest-=6*3600;if(s.snacks<9){s.snacks++;say(t("Found a crumb in the air"));}}
   // No owner in the server roles: it eats a snack itself when hungry.
-  if(server&&s.food<250&&s.snacks){s.snacks--;s.food=clampPoints(s.food+300);say(t("Yum","Ням"),Food);}
+  if(server&&s.food<250&&s.snacks){s.snacks--;s.food=clampPoints(s.food+300);say(t("Yum"),Food);}
   if(s.health==0){if(s.mortal)die();else s.health=1;}
   events++;
 }
 void Pet::die(){
   Grave g={};strlcpy(g.name,s.name,sizeof g.name);g.age=s.age;g.level=level();g.cause=s.food==0?Hunger:Loneliness;g.species=s.species;
   memmove(s.graves+1,s.graves,sizeof(Grave)*(Graves-1));s.graves[0]=g;if(s.graveCount<Graves)s.graveCount++;
-  s.cause=g.cause;s.stage=Dead;say(String(s.name)+t(" is gone"," больше нет"));save(true);
+  s.cause=g.cause;s.stage=Dead;say(String(s.name)+t(" is gone"));save(true);
 }
 bool Pet::known(uint32_t id) const{for(auto v:s.friendIds)if(v==id)return true;return false;}
 void Pet::tick(){
@@ -107,63 +107,63 @@ void Pet::tick(){
   if(rx){glowAt=now;s.packets+=rx;snackPackets+=rx;gain(2*rx,server?int(rx):0,rx);events++;}
   if(relayed){s.relays+=relayed;snackPackets+=relayed;gain(2*relayed,2*relayed,relayed);}
   while(snackPackets>=25){snackPackets-=25;if(s.snacks<9&&alive()&&s.stage!=Egg)s.snacks++;}
-  if(received&&alive()&&s.stage!=Egg){s.messages+=received;gain(15*received,40*received,5*received);say(t("A message, how tasty","Сообщение! Вкусно"),Hearts);}
-  if(delivered&&alive()&&s.stage!=Egg){s.acks+=delivered;if(s.snacks<9)s.snacks++;gain(0,40*delivered,10*delivered);say(t("Delivered, a snack for me","Доставлено! Мне вкусняшка"),Hearts);}
-  if(winsPrimed){uint32_t wins=rating::book.players[0].wins;if(wins>seenWins&&alive()&&s.stage!=Egg){s.wins+=wins-seenWins;gain(0,200,50);say(t("We won at chess","Мы выиграли в шахматы"),Sparkle);}seenWins=wins;}
+  if(received&&alive()&&s.stage!=Egg){s.messages+=received;gain(15*received,40*received,5*received);say(t("A message, how tasty"),Hearts);}
+  if(delivered&&alive()&&s.stage!=Egg){s.acks+=delivered;if(s.snacks<9)s.snacks++;gain(0,40*delivered,10*delivered);say(t("Delivered, a snack for me"),Hearts);}
+  if(winsPrimed){uint32_t wins=rating::book.players[0].wins;if(wins>seenWins&&alive()&&s.stage!=Egg){s.wins+=wins-seenWins;gain(0,200,50);say(t("We won at chess"),Sparkle);}seenWins=wins;}
   // New friends: nodes heard on air for the first time in its life.
   if(alive()&&s.stage!=Egg)for(unsigned i=0;i<meshRadio.peerCount;i++){const Peer& p=meshRadio.peers[i];if(!p.heard)continue;uint32_t id=mix(p.id)|1;if(known(id))continue;
-    s.friendIds[s.friendNext]=id;s.friendNext=(s.friendNext+1)%FriendSlots;s.friends++;gain(0,150,30);say(t("New friend: ","Новый друг: ")+String(p.name),Hearts);save(true);break;}
+    s.friendIds[s.friendNext]=id;s.friendNext=(s.friendNext+1)%FriendSlots;s.friends++;gain(0,150,30);say(t("New friend: ")+String(p.name),Hearts);save(true);break;}
   // A walk: the IMU (M9) feels the device carried about.
   if(hardware.imuSample&&alive()&&s.stage!=Egg){float a=sqrtf(hardware.accel[0]*hardware.accel[0]+hardware.accel[1]*hardware.accel[1]+hardware.accel[2]*hardware.accel[2]);
-    if(fabsf(a-1)>0.25f&&++walkSeconds>=30){walkSeconds=0;s.walks++;gain(0,60,3);say(t("A walk, wheee","Гуляем! Ура"),Hearts);}}
+    if(fabsf(a-1)>0.25f&&++walkSeconds>=30){walkSeconds=0;s.walks++;gain(0,60,3);say(t("A walk, wheee"),Hearts);}}
   if(alive()&&!asleep()&&now-chatAt>120000)chatter();
   if(saveDue&&now>=saveDue)save();else if(now-lastSave>=600000)save();
 }
 void Pet::chatter(){
   uint32_t r=random(1000);String line;
   switch(mood()){
-  case Happy:{static const char* const lines[][2]={{"Packets are tasty today","Пакеты сегодня вкусные"},{"I love this mesh","Обожаю эту сеть"},{"Beep-boop","Бип-буп"}};line=trPair(lines[r%3][0],lines[r%3][1]);break;}
-  case Content:line=r%2?t("Listening to the air...","Слушаю эфир..."):t("Pet me?","Погладишь?");break;
-  case Hungry:line=r%2?t("Hungry: the air is empty","Голодно: эфир пуст"):t("A snack?","Вкусняшку?");break;
-  case Lonely:line=r%2?t("Write to someone?","Напиши кому-нибудь?"):t("It's lonely here","Мне одиноко");break;
-  case Sick:line=t("I feel bad... heal me","Мне плохо... полечи");break;
-  default:if(s.stage==Egg)line=t("*tap tap*","*тук-тук*");break;
+  case Happy:{static const char* const lines[]={N_("Packets are tasty today"),N_("I love this mesh"),N_("Beep-boop")};line=trText(lines[r%3]);break;}
+  case Content:line=r%2?t("Listening to the air..."):t("Pet me?");break;
+  case Hungry:line=r%2?t("Hungry: the air is empty"):t("A snack?");break;
+  case Lonely:line=r%2?t("Write to someone?"):t("It's lonely here");break;
+  case Sick:line=t("I feel bad... heal me");break;
+  default:if(s.stage==Egg)line=t("*tap tap*");break;
   }
   if(line.length())say(line);else chatAt=millis();
 }
 String Pet::cuddle(){
-  if(!has())return t("No pet","Нет питомца");if(!alive())return t("It is gone","Питомца нет");if(s.stage==Egg){say(t("*tap tap*","*тук-тук*"));return speech;}
-  if(millis()-cuddleAt<20000&&cuddleAt){say(t("Enough for now","Хватит пока"));return speech;}
-  cuddleAt=millis();s.cuddles++;gain(0,asleep()?30:100,1);say(asleep()?t("Zzz... purr","Хрр... мурр"):t("Purr","Мурр"),Hearts);save(true);return speech;
+  if(!has())return t("No pet");if(!alive())return t("It is gone");if(s.stage==Egg){say(t("*tap tap*"));return speech;}
+  if(millis()-cuddleAt<20000&&cuddleAt){say(t("Enough for now"));return speech;}
+  cuddleAt=millis();s.cuddles++;gain(0,asleep()?30:100,1);say(asleep()?t("Zzz... purr"):t("Purr"),Hearts);save(true);return speech;
 }
 String Pet::feed(){
-  if(!has())return t("No pet","Нет питомца");if(!alive())return t("It is gone","Питомца нет");if(s.stage==Egg)return t("Eggs do not eat","Яйца не едят");
-  if(!s.snacks){say(t("No snacks: traffic brings them","Нет вкусняшек: их приносит эфир"));return speech;}
-  if(s.food>=950){say(t("I'm full","Я сыт"));return speech;}
-  s.snacks--;gain(300,20,2);say(t("Yum","Ням"),Food);save(true);return speech;
+  if(!has())return t("No pet");if(!alive())return t("It is gone");if(s.stage==Egg)return t("Eggs do not eat");
+  if(!s.snacks){say(t("No snacks: traffic brings them"));return speech;}
+  if(s.food>=950){say(t("I'm full"));return speech;}
+  s.snacks--;gain(300,20,2);say(t("Yum"),Food);save(true);return speech;
 }
 String Pet::heal(){
-  if(!has())return t("No pet","Нет питомца");if(!alive())return t("It is gone","Питомца нет");if(s.stage==Egg)return t("Eggs do not get ill","Яйца не болеют");
-  if(s.health>=800){say(t("I'm healthy","Я здоров"));return speech;}
-  if(millis()-healAt<300000&&healAt){say(t("Medicine works slowly","Лекарство действует не сразу"));return speech;}
-  if(!s.snacks){say(t("Medicine costs a snack","Лекарство стоит вкусняшку"));return speech;}
-  healAt=millis();s.snacks--;s.health=clampPoints(s.health+300);gain(0,0,2);say(t("Better now","Уже лучше"),Medicine);save(true);return speech;
+  if(!has())return t("No pet");if(!alive())return t("It is gone");if(s.stage==Egg)return t("Eggs do not get ill");
+  if(s.health>=800){say(t("I'm healthy"));return speech;}
+  if(millis()-healAt<300000&&healAt){say(t("Medicine works slowly"));return speech;}
+  if(!s.snacks){say(t("Medicine costs a snack"));return speech;}
+  healAt=millis();s.snacks--;s.health=clampPoints(s.health+300);gain(0,0,2);say(t("Better now"),Medicine);save(true);return speech;
 }
 String Pet::newEgg(){
-  if(alive())return t("Your pet is alive","Питомец жив");
+  if(alive())return t("Your pet is alive");
   Grave graves[Graves];memcpy(graves,s.graves,sizeof graves);uint8_t count=s.graveCount;uint16_t generation=s.stage==Dead?s.generation+1:s.generation;bool mortal=s.mortal;
   s=State();memcpy(s.graves,graves,sizeof graves);s.graveCount=count;s.generation=generation;s.mortal=mortal;s.species=entropy()%Species;
-  hatchName();foodRest=joyRest=healthRest=crumbRest=0;say(t("A new egg","Новое яйцо"),Sparkle);save();return speech;
+  hatchName();foodRest=joyRest=healthRest=crumbRest=0;say(t("A new egg"),Sparkle);save();return speech;
 }
 // Letting it go: no grave, the memory of earlier pets and the death setting stay; the next egg is a new generation.
 String Pet::release(){
-  if(!has())return t("No pet","Нет питомца");
+  if(!has())return t("No pet");
   String name=s.name;Grave graves[Graves];memcpy(graves,s.graves,sizeof graves);uint8_t count=s.graveCount;uint16_t generation=s.generation+1;bool mortal=s.mortal;
   s=State();s.stage=Empty;memcpy(s.graves,graves,sizeof graves);s.graveCount=count;s.generation=generation;s.mortal=mortal;
-  speech="";effect=NoEffect;save();events++;return name+t(" went free"," ушёл на волю");
+  speech="";effect=NoEffect;save();events++;return name+t(" went free");
 }
 // The owner's choices (start, let go, name, death) are written at once; life changes wait a few seconds.
-String Pet::setMortal(bool on){s.mortal=on;if(!on&&alive()&&!s.health)s.health=1;save();events++;return on?t("Death: on","Смерть: вкл."):t("Death: off","Смерть: выкл.");}
+String Pet::setMortal(bool on){s.mortal=on;if(!on&&alive()&&!s.health)s.health=1;save();events++;return on?t("Death: on"):t("Death: off");}
 bool Pet::rename(const String& name){
   String v=name;v.trim();if(!v.length()||v.length()>15||!meshmesh::validUtf8((const uint8_t*)v.c_str(),v.length()))return false;
   strlcpy(s.name,v.c_str(),sizeof s.name);save();events++;return true;
@@ -173,17 +173,17 @@ void Pet::save(bool soon){
   saveDue=0;lastSave=millis();s.check=fnv((const uint8_t*)&s,offsetof(State,check));writeStored(PetFile,PetTemp,&s,sizeof(State));
 }
 String Pet::stageName(uint8_t stage) const{
-  switch(stage){case Egg:return t("Egg","Яйцо");case Baby:return t("Baby","Малыш");case Child:return t("Kid","Детёныш");case Teen:return t("Teen","Подросток");case Adult:return t("Adult","Взрослый");}
-  return t("Gone","Умер");
+  switch(stage){case Egg:return t("Egg");case Baby:return t("Baby");case Child:return t("Kid");case Teen:return t("Teen");case Adult:return t("Adult");}
+  return t("Gone");
 }
 String Pet::moodName() const{
-  switch(mood()){case Happy:return t("happy","счастлив");case Content:return t("calm","спокоен");case Hungry:return t("hungry","голоден");case Lonely:return t("lonely","скучает");
-  case Sleepy:return t("asleep","спит");case Sick:return t("ill","болеет");case Eating:return t("eating","ест");default:return t("gone","умер");}
+  switch(mood()){case Happy:return t("happy");case Content:return t("calm");case Hungry:return t("hungry");case Lonely:return t("lonely");
+  case Sleepy:return t("asleep");case Sick:return t("ill");case Eating:return t("eating");default:return t("gone");}
 }
-String Pet::causeText(uint8_t cause) const{return cause==Hunger?t("of hunger","от голода"):cause==Loneliness?t("of loneliness","от одиночества"):"";}
+String Pet::causeText(uint8_t cause) const{return cause==Hunger?t("of hunger"):cause==Loneliness?t("of loneliness"):"";}
 String Pet::ageText(uint32_t v) const{
-  if(v<3600)return String(v/60)+t(" min"," мин");if(v<86400)return String(v/3600)+t(" h"," ч");
-  return String(v/86400)+t(" d"," д")+(v%86400>=3600?" "+String(v%86400/3600)+t(" h"," ч"):String());
+  if(v<3600)return String(v/60)+t(" min");if(v<86400)return String(v/3600)+t(" h");
+  return String(v/86400)+t(" d")+(v%86400>=3600?" "+String(v%86400/3600)+t(" h"):String());
 }
 int Pet::bob(uint32_t now) const{if(!alive()||s.stage==Egg)return 0;return (now/(asleep()?1500:500))%2;}
 int Pet::sway(uint32_t now) const{

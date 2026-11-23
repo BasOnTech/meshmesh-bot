@@ -100,5 +100,5 @@ unsigned appsShown(uint8_t* out,int folder){
 int appsFolderOf(uint8_t app){const AppMenu& m=appsMenu();for(uint8_t f=0;f<m.folders;f++)for(uint8_t j=0;j<m.folder[f].count;j++)if(m.folder[f].apps[j]==app)return f;return -1;}
 String appsFolderName(uint8_t folder){
   const AppMenu& m=appsMenu();if(folder>=m.folders)return "";const char* n=m.folder[folder].name;
-  if(!strcmp(n,GamesFolder))return tr("Games","Игры");String s=n;s.replace('_',' ');return s;
+  if(!strcmp(n,GamesFolder))return tr("Games");String s=n;s.replace('_',' ');return s;
 }

@@ -90,7 +90,7 @@ class ChessNet {
 };
 extern ChessNet chessNet;
 // Storage for the saved games; LittleFS on the boards, memory in the host preview.
-// Notation in the interface language: K Q R B N, or Кр Ф Л С К in Russian.
+// Notation in the interface language: K Q R B N.
 String chessLocalSan(const char* san);
 bool chessStoreWrite(const uint8_t* data,size_t size);
 // The archive of finished games on the SD card (M9, T-Deck, boards with a card): /meshmesh/chess/*.pgn.

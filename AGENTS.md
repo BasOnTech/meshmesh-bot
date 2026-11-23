@@ -126,9 +126,10 @@ Update the documentation and these instructions by hand from actual results befo
 
 ## Languages
 
-Firmware screens — English and Russian (`include/I18n.h`; the language number is stored in NVS, do not change the
-order; the 13 other upstream languages were removed, their stored numbers fall back to English). Both are written in the
-code: `t("English","Русский")`, `tr(...)`, `count(n,...)`. A further language (Dutch is planned) goes to the end of `Lang`
+Firmware screens — English (`include/I18n.h`; the language number is stored in NVS, do not change the
+order; upstream Russian and 13 other languages were removed, their stored numbers fall back to English). English is
+written in the code: `t("English")`, `tr("English")`, `count(n,"one","many")`; strings of a table are marked with
+`N_("...")` and read with `trText()`. A further language (Dutch is planned) goes to the end of `Lang`
 with `i18n/firmware/<lang>.json` following `i18n/README.md`: `tools/i18n.py sync`, translate,
 `.venv/bin/python tools/i18n.py generate` (the table; the Latin Extended font subsets need `upstream/fonts`),
 `tools/i18n.py check`, build, and review the screens with `tools/site_shots.py OUTDIR <lang>`.

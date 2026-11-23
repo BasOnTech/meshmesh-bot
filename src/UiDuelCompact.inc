@@ -23,15 +23,15 @@ int duelPageOf(const Duel& g){return g.kind==Duel::Sea?SeaPage:CheckersPage;}
 Duel* shownDuel(){if(duelOpen&&(duelOpen->state==Duel::Free||duelPageOf(*duelOpen)!=page)){duelOpen=nullptr;duelMenu=false;}return duelOpen;}
 unsigned duelGames(Duel::Kind k,Duel** out){unsigned n=0;for(auto& g:duels.games)if(g.state!=Duel::Free&&g.kind==k)out[n++]=&g;
  for(unsigned i=1;i<n;i++)for(unsigned j=i;j>0&&int32_t(out[j]->changedAt-out[j-1]->changedAt)>0;j--)std::swap(out[j],out[j-1]);return n;}
-String duelName(Duel::Kind k){return k==Duel::Sea?t("Sea battle","Морской бой"):t("Checkers","Шашки");}
+String duelName(Duel::Kind k){return k==Duel::Sea?t("Sea battle"):t("Checkers");}
 String duelState(const Duel& g){
  switch(g.state){
- case Duel::Inviting:return t("invited, waiting","вызов отправлен");
- case Duel::Invited:return t("invites you","зовёт играть");
+ case Duel::Inviting:return t("invited, waiting");
+ case Duel::Invited:return t("invites you");
  case Duel::Playing:
-  if(g.kind==Duel::Sea)return g.aim>=0?t("waiting for the answer","ждём ответа"):g.myTurn()?t("your shot","ваш выстрел"):t("their shot","стреляет соперник");
-  if(g.drawOffer==Duel::OfferedToMe)return t("offers a draw","предлагает ничью");return g.myTurn()?t("your move","ваш ход"):t("their move","ход соперника");
- case Duel::Over:return g.result==Duel::Won?t("you won","вы победили"):g.result==Duel::Lost?t("you lost","вы проиграли"):g.result==Duel::Drawn?t("draw","ничья"):g.reason==Duel::Declined?t("declined","отклонена"):t("cancelled","отменена");
+  if(g.kind==Duel::Sea)return g.aim>=0?t("waiting for the answer"):g.myTurn()?t("your shot"):t("their shot");
+  if(g.drawOffer==Duel::OfferedToMe)return t("offers a draw");return g.myTurn()?t("your move"):t("their move");
+ case Duel::Over:return g.result==Duel::Won?t("you won"):g.result==Duel::Lost?t("you lost"):g.result==Duel::Drawn?t("draw"):g.reason==Duel::Declined?t("declined"):t("cancelled");
  default:return "";}
 }
 void openDuel(Duel* g){duelOpen=g;duelHeld=-1;duelMenu=duelPaths=false;duelColumn=duelPly=-1;dirty=true;if(!g)return;duels.viewed(*g);
@@ -50,18 +50,18 @@ unsigned duelActions(const Duel& g,DuelAct* out){unsigned n=0;
  out[n++]=DaList; // the joystick has Back
  out[n++]=DaClose;return n;}
 String duelActName(DuelAct a){switch(a){
- case DaAccept:return t("Accept challenge","Принять вызов");case DaDecline:return t("Decline / cancel","Отклонить / отменить");
- case DaDraw:return t("Offer a draw","Предложить ничью");case DaAcceptDraw:return t("Accept the draw","Согласиться на ничью");
- case DaShuffle:return t("Shuffle fleet","Перемешать флот");case DaFleet:return duelFleet?t("Their field","Поле соперника"):t("My fleet","Мой флот");
- case DaResign:return t("Resign","Сдаться");case DaResend:return t("Send again","Отправить снова");case DaDelete:return t("Delete game","Удалить игру");case DaList:return t("Game list","Список игр");
- default:return t("< Back to the game","< К игре");}}
+ case DaAccept:return t("Accept challenge");case DaDecline:return t("Decline / cancel");
+ case DaDraw:return t("Offer a draw");case DaAcceptDraw:return t("Accept the draw");
+ case DaShuffle:return t("Shuffle fleet");case DaFleet:return duelFleet?t("Their field"):t("My fleet");
+ case DaResign:return t("Resign");case DaResend:return t("Send again");case DaDelete:return t("Delete game");case DaList:return t("Game list");
+ default:return t("< Back to the game");}}
 void duelRun(Duel& g,DuelAct a){bool ok=true;switch(a){
  case DaAccept:ok=duels.accept(g);break;case DaDecline:ok=duels.decline(g);break;case DaDraw:case DaAcceptDraw:ok=duels.draw(g);break;
- case DaShuffle:ok=duels.shuffle(g);if(ok){duelFleet=true;notice(t("Fleet placed again","Флот расставлен заново"));}break;case DaFleet:duelFleet=!duelFleet;break;
+ case DaShuffle:ok=duels.shuffle(g);if(ok){duelFleet=true;notice(t("Fleet placed again"));}break;case DaFleet:duelFleet=!duelFleet;break;
  case DaResign:ok=duels.resign(g);break;case DaResend:ok=duels.resend(g);break;
  case DaDelete:ok=duels.remove(g);if(ok)duelOpen=nullptr;break;case DaList:duelOpen=nullptr;break;default:break;}
- if(!ok)notice(t("Not now: radio busy?","Сейчас нельзя"));}
-void duelSent(Duel& g,bool sent){if(!sent){notice(t("Not sent","Не отправлено"));return;}hardware.ping(1400,15);if(g.link()==ChatMessage::Failed)notice(t("Not sent: will resend","Не отправлено: повторю"));}
+ if(!ok)notice(t("Not now: radio busy?"));}
+void duelSent(Duel& g,bool sent){if(!sent){notice(t("Not sent"));return;}hardware.ping(1400,15);if(g.link()==ChatMessage::Failed)notice(t("Not sent: will resend"));}
 
 #if MM_CHECKERS
 // Board squares on the screen, the player's side at the bottom: the screen column and row of a square, and back
@@ -96,7 +96,7 @@ String ckMoveText(const checkers::Move& m){char b[40];checkers::moveText(m,b,siz
 // The choice in words: the piece ("c3"), the move ("c3:e5:g7"), "Game menu" or "Cancel".
 String ckChoiceText(const Duel& g){
  checkers::Move m;if(ckShown(g,m))return ckMoveText(m);
- if(duelHeld>=0)return t("Cancel","Отмена");if(duelCursor<0)return t("Game menu","Меню партии");char b[3];checkers::squareName(duelCursor,b);return b;}
+ if(duelHeld>=0)return t("Cancel");if(duelCursor<0)return t("Game menu");char b[3];checkers::squareName(duelCursor,b);return b;}
 void ckPlay(Duel& g,const checkers::Move& m){bool sent=duels.move(g,m);if(sent)duelHeld=-1;duelPaths=false;duelSent(g,sent);}
 bool ckButton(Duel& g,bool click,bool hold){
  ckSettle(g);
@@ -130,17 +130,17 @@ void ckBoard(const Duel& g){
  if(duelHeld>=0&&blink){int x,y;ckXY(g,duelHeld,x,y);c.drawRect(x*8,y*8,8,8,1);}
  if(picking&&duelHeld<0&&duelCursor>=0&&(millis()/400)%3){int x,y;ckXY(g,duelCursor,x,y);c.drawRect(x*8,y*8,8,8,1);c.drawRect(x*8+1,y*8+1,6,6,0);}
  c.drawFastVLine(65,0,64,1);bool white=g.mine==checkers::White;
- say(68,8,clipped(g.name,11),small);say(68,17,t("you: ","вы: ")+(white?t("white","белые"):t("black","чёрные")),small);
- String st=duelState(g);if(picking){unsigned k=g.game.pos.legal(l);if(k&&l[0].capture)st=t("must take","надо бить");}
+ say(68,8,clipped(g.name,11),small);say(68,17,t("you: ")+(white?t("white"):t("black")),small);
+ String st=duelState(g);if(picking){unsigned k=g.game.pos.legal(l);if(k&&l[0].capture)st=t("must take");}
  textLinesAt(st,68,27,picking?1:2,11);
  if(picking){
   // The current choice, lit when it is "Game menu" or "Cancel"; a long path takes two rows.
   bool word=duelHeld>=0?!offer:duelCursor<0;if(word)c.fillRect(67,29,61,9,1);
   String ch=ckChoiceText(g);if(word)say(68,36,clipped(ch,11),small,0);else textLinesAt(ch,68,36,2,12);
-  say(68,55,t("click: next","клик: далее"),u8g2_font_4x6_t_cyrillic);
-  say(68,63,duelHeld<0?(duelCursor<0?t("hold: menu","держ: меню"):t("hold: pick","держ: взять")):offer?t("hold: move","держ: сходить"):t("hold: cancel","держ: отмена"),u8g2_font_4x6_t_cyrillic);}
+  say(68,55,t("click: next"),u8g2_font_4x6_t_cyrillic);
+  say(68,63,duelHeld<0?(duelCursor<0?t("hold: menu"):t("hold: pick")):offer?t("hold: move"):t("hold: cancel"),u8g2_font_4x6_t_cyrillic);}
  else{if(g.game.plies)say(68,46,clipped(String((g.game.plies+1)/2)+(g.game.plies%2?". ":"... ")+ckMoveText(g.game.last),11),small);
-  say(68,55,clipped(linkText(g.link(),g.autoStopped),11),small);say(68,63,t("hold: menu","держ: меню"),u8g2_font_4x6_t_cyrillic);}
+  say(68,55,clipped(linkText(g.link(),g.autoStopped),11),small);say(68,63,t("hold: menu"),u8g2_font_4x6_t_cyrillic);}
 }
 #endif
 
@@ -169,10 +169,10 @@ void seaSettle(const Duel& g){
 }
 String seaCell(int c){char b[4];sea::cellName(c,b);return b;}
 String seaChoiceText(const Duel& g){
- if(duelCursor<0)return duelColumn>=0?t("Cancel","Отмена"):t("Game menu","Меню партии");
- if(duelCursor>=100)return t("column ","столбец ")+String(char('a'+duelCursor-100));
- return seaCell(duelCursor)+(seaHunting(g,duelCursor)?t(": finish",": добить"):String());}
-String seaMark(uint8_t m){return m==sea::Miss?t("miss","мимо"):m==sea::Hit?t("hit","попал"):m==sea::Sunk?t("sunk","потоплен"):String("?");}
+ if(duelCursor<0)return duelColumn>=0?t("Cancel"):t("Game menu");
+ if(duelCursor>=100)return t("column ")+String(char('a'+duelCursor-100));
+ return seaCell(duelCursor)+(seaHunting(g,duelCursor)?t(": finish"):String());}
+String seaMark(uint8_t m){return m==sea::Miss?t("miss"):m==sea::Hit?t("hit"):m==sea::Sunk?t("sunk"):String("?");}
 void seaFire(Duel& g,int cell){bool sent=duels.shoot(g,cell);if(sent)duelColumn=-1;duelSent(g,sent);}
 bool seaButton(Duel& g,bool click,bool hold){
  seaSettle(g);int l[112];unsigned k=seaChoices(g,l);
@@ -208,18 +208,18 @@ void seaBoard(const Duel& g){
   if(duelCursor>=0&&duelCursor<100&&blink){int x=duelCursor%10*6,y=duelCursor/10*6;c.drawRect(x,y,7,7,1);c.drawRect(x+1,y+1,5,5,0);}}
  const uint8_t* tiny=u8g2_font_4x6_t_cyrillic;
  say(64,8,clipped(g.name,12),small);
- if(duelFleet){say(64,17,t("my fleet","мой флот"),small);say(64,26,clipped(g.state==Duel::Playing?t("afloat ","целы ")+String(g.home.shipsLeft())+"/10":duelState(g),12),small);
-  if(g.canShuffle())textLinesAt(t("menu: shuffle","меню: перемешать"),64,36,2,12);}
+ if(duelFleet){say(64,17,t("my fleet"),small);say(64,26,clipped(g.state==Duel::Playing?t("afloat ")+String(g.home.shipsLeft())+"/10":duelState(g),12),small);
+  if(g.canShuffle())textLinesAt(t("menu: shuffle"),64,36,2,12);}
  else{bool one=picking||g.state==Duel::Over;textLinesAt(duelState(g),64,17,one?1:2,12);
-  int y=one?25:34;say(64,y,t("sunk ","потоплено ")+String(g.target.sunkShips())+"/10",tiny);say(64,y+7,t("mine ","моих ")+String(g.home.shipsLeft())+"/10",tiny);}
+  int y=one?25:34;say(64,y,t("sunk ")+String(g.target.sunkShips())+"/10",tiny);say(64,y+7,t("mine ")+String(g.home.shipsLeft())+"/10",tiny);}
  if(picking){bool word=duelCursor<0;if(word)c.fillRect(63,35,65,10,1);say(64,43,clipped(seaChoiceText(g),12),small,!word);
-  say(64,55,t("click: next","клик: далее"),tiny);
-  say(64,63,duelCursor<0?(duelColumn>=0?t("hold: cancel","держ: отмена"):t("hold: menu","держ: меню")):duelCursor>=100?t("hold: fix","держ: выбрать"):t("hold: fire","держ: огонь"),tiny);return;}
+  say(64,55,t("click: next"),tiny);
+  say(64,63,duelCursor<0?(duelColumn>=0?t("hold: cancel"):t("hold: menu")):duelCursor>=100?t("hold: fix"):t("hold: fire"),tiny);return;}
  bool unfair=g.state==Duel::Over&&g.revealed&&!g.fair; // their fleet shown at the end: some answer was false
- if(unfair)textLinesAt(t("answers do not match!","ответы не сходятся!"),64,44,2,12);
- else if(!duelFleet&&g.lastOut>=0)say(64,48,t("you ","вы ")+seaCell(g.lastOut)+" "+seaMark(g.target.mark[g.lastOut]),tiny);
- if(!unfair)say(64,55,g.lastIn>=0&&g.state==Duel::Playing?t("they ","они ")+seaCell(g.lastIn)+" "+seaMark(g.lastAnswer==sea::AnswerWin?sea::Sunk:g.lastAnswer):clipped(linkText(g.link(),g.autoStopped),15),tiny);
- say(64,63,duelFleet&&g.state==Duel::Playing?t("click: back","клик: назад"):t("hold: menu","держ: меню"),tiny);
+ if(unfair)textLinesAt(t("answers do not match!"),64,44,2,12);
+ else if(!duelFleet&&g.lastOut>=0)say(64,48,t("you ")+seaCell(g.lastOut)+" "+seaMark(g.target.mark[g.lastOut]),tiny);
+ if(!unfair)say(64,55,g.lastIn>=0&&g.state==Duel::Playing?t("they ")+seaCell(g.lastIn)+" "+seaMark(g.lastAnswer==sea::AnswerWin?sea::Sunk:g.lastAnswer):clipped(linkText(g.link(),g.autoStopped),15),tiny);
+ say(64,63,duelFleet&&g.state==Duel::Playing?t("click: back"):t("hold: menu"),tiny);
 }
 #endif
 
@@ -237,12 +237,12 @@ void drawDuel(const Duel& g){
  if(action.length()&&millis()-actionAt<3000){c.fillRect(0,22,128,20,0);c.drawRect(0,22,128,20,1);say(3,36,clipped(action,20));}
  hardware.flush();
 }
-String duelListSide(const Duel& g){return g.kind==Duel::Sea?String(g.target.sunkShips())+":"+String(10-g.home.shipsLeft()):g.game.plies?String((g.game.plies+1)/2)+t(" mv"," ход"):String();}
+String duelListSide(const Duel& g){return g.kind==Duel::Sea?String(g.target.sunkShips())+":"+String(10-g.home.shipsLeft()):g.game.plies?String((g.game.plies+1)/2)+t(" mv"):String();}
 void drawDuelList(String& title){
  auto& c=*hardware.canvas;Duel::Kind k=duelKind();Duel* games[DuelNet::Max];unsigned n=duelGames(k,games);title=duelName(k)+(n?" "+String(duelSel%n+1)+"/"+String(n):"");
- if(!n){say(0,28,t("No games yet","Игр пока нет"));
-  say(0,40,t("Node menu: invite","Меню узла: вызвать"),small);
-  say(0,49,t("or accept a challenge","или примите вызов"),small);return;}
+ if(!n){say(0,28,t("No games yet"));
+  say(0,40,t("Node menu: invite"),small);
+  say(0,49,t("or accept a challenge"),small);return;}
  duelSel%=n;int first=max(0,min(duelSel-1,int(n)-3));
  for(unsigned i=first;i<n&&i<unsigned(first+3);i++){const Duel& g=*games[i];int y=13+(i-first)*15;bool focus=int(i)==duelSel;
   if(focus)c.fillRect(0,y,128,15,1);say(2,y+7,clipped(String(g.unseen?"* ":"")+g.name,14),small,!focus);sayRight(126,y+7,duelListSide(g),small,!focus);

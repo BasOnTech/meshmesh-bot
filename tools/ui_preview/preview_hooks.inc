@@ -59,7 +59,7 @@ Internet internet;
 static int previewRescans=0; // the T-Deck touch check: DEL in the network list rescans
 void Internet::setEnabled(bool on){enabled=on;}void Internet::rescan(){previewRescans++;}void Internet::connectTo(const String&){}
 bool Internet::save(const String&,const String&){return true;}bool Internet::forget(const String&){return true;}
-String Internet::savedName(unsigned){return "";}String Internet::stateText(){return online()?String("Home-WiFi · 192.168.1.101"):tr("Off","Выключен");}
+String Internet::savedName(unsigned){return "";}String Internet::stateText(){return online()?String("Home-WiFi · 192.168.1.101"):tr("Off");}
 String Internet::address(){return "192.168.1.101";}
 #endif
 bool Maps::inArea() const{return true;}
@@ -78,11 +78,11 @@ String executeCommand(const String& line){previewCommands+=line+";";return "OK";
 // Same as src/MeshRadio.cpp (the preview does not link the radio).
 String MeshRadio::routeText(const ChatMessage& m,bool brief) const{
  if(m.protocol!=2||m.route==ChatMessage::RouteNone||(m.outgoing&&(m.status==ChatMessage::Failed||channels::isChannel(m.destination))))return "";
- String hops=m.hops==255?String():!m.hops?String(brief?tr("direct","напр."):tr("direct","напрямую")):(brief?String(m.hops)+tr(" rpt"," ретр."):String(tr("via ","через "))+m.hops+tr(" rpt"," ретр."));
- String s=m.route==ChatMessage::RouteDirect?(hops.length()?hops:String(tr("routed","по маршруту")))
+ String hops=m.hops==255?String():!m.hops?String(brief?tr("direct"):tr("direct")):(brief?String(m.hops)+tr(" rpt"):String(tr("via "))+m.hops+tr(" rpt"));
+ String s=m.route==ChatMessage::RouteDirect?(hops.length()?hops:String(tr("routed")))
   :!m.outgoing?(hops.length()?hops:String("flood")) // incoming: how far it came
   :m.status==ChatMessage::Delivered&&hops.length()&&!brief?"flood, "+hops:String("flood");
- if(m.outgoing&&m.tries>1)s+=m.status==ChatMessage::Delivered?(brief?" #"+String(m.tries):String(tr(" · try "," · попытка "))+m.tries):" "+String(m.tries)+"/3";
+ if(m.outgoing&&m.tries>1)s+=m.status==ChatMessage::Delivered?(brief?" #"+String(m.tries):String(tr(" · try "))+m.tries):" "+String(m.tries)+"/3";
  return s;
 }
 // Device modes: a repeater or room server with made-up passwords and counts.

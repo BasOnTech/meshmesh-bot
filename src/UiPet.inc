@@ -31,18 +31,18 @@ void petBar(int x,int y,int w,const String& name,uint16_t value){
  g().fillRoundRect(x,y+4,w,7,3,line);if(value)g().fillRoundRect(x,y+4,max(4,int(w*value/pet::Full)),7,3,c);
 }
 String petTileDetail(){
- if(!creature.has())return t("No pet","Нет питомца");if(!creature.alive())return t("Gone","Умер");if(creature.s.stage==pet::Egg)return t("Egg · ","Яйцо · ")+creature.ageText(creature.hatchLeft());
+ if(!creature.has())return t("No pet");if(!creature.alive())return t("Gone");if(creature.s.stage==pet::Egg)return t("Egg · ")+creature.ageText(creature.hatchLeft());
  return String(creature.s.name)+" · "+creature.moodName();
 }
 // No pet: what it is and OK to start one; the memory of earlier pets stays.
 void drawPetEmpty(){
  const auto& s=creature.s;panel(8,26,156,188,card,10);target(8,26,156,188,-Enter);icon(IcPaw,86,104,30,faint,card);
- textCenter(86,176,t("No pet","Нет питомца"),dim,bold);
- int x=172,w=138;text(x,45,t("Pet","Питомец"),ink,big);
- String rows[8];unsigned n=wrap(t("A pixel creature that feeds on the radio: packets, messages and ACKs. It grows, talks and needs care. It is optional.","Пиксельный зверёк, который кормится эфиром: пакеты, сообщения, подтверждения. Растёт, разговаривает и требует ухода. Заводить не обязательно."),rows,8,w,small);
+ textCenter(86,176,t("No pet"),dim,bold);
+ int x=172,w=138;text(x,45,t("Pet"),ink,big);
+ String rows[8];unsigned n=wrap(t("A pixel creature that feeds on the radio: packets, messages and ACKs. It grows, talks and needs care. It is optional."),rows,8,w,small);
  for(unsigned i=0;i<n;i++)text(x,66+i*12,rows[i],dim,small);
- if(s.graveCount){text(x,172,t("In memory","Память"),faint,small);for(unsigned i=0;i<s.graveCount&&i<2;i++){const auto& gr=s.graves[i];int y=186+i*13;g().fillCircle(x+4,y-3,3,rgb(pet::bodies[gr.species%pet::Species]));text(x+12,y,fit(String(gr.name)+" · "+t("Lv ","Ур. ")+String(gr.level),w-12,small),dim,small);}}
- footer({{"OK",t("Start a pet","Завести питомца")},{"BACK",t("Menu","Меню")}});
+ if(s.graveCount){text(x,172,t("In memory"),faint,small);for(unsigned i=0;i<s.graveCount&&i<2;i++){const auto& gr=s.graves[i];int y=186+i*13;g().fillCircle(x+4,y-3,3,rgb(pet::bodies[gr.species%pet::Species]));text(x+12,y,fit(String(gr.name)+" · "+t("Lv ")+String(gr.level),w-12,small),dim,small);}}
+ footer({{"OK",t("Start a pet")},{"BACK",t("Menu")}});
 }
 uint32_t releaseArmed=0;
 void drawPet(){
@@ -56,26 +56,26 @@ void drawPet(){
  int x=172,w=138;text(x,45,fit(s.name,w,big),ink,big);
  String stage=(dead||egg?String():String(creature.kind().name)+" · ")+creature.stageName(s.stage);text(x,61,fit(stage,w,small),dim,small);
  if(egg){
-  uint32_t left=creature.hatchLeft();text(x,80,t("Hatches in ","Вылупится через "),dim,small);text(x,96,creature.ageText(left),ink,bold);
+  uint32_t left=creature.hatchLeft();text(x,80,t("Hatches in "),dim,small);text(x,96,creature.ageText(left),ink,bold);
   d.fillRoundRect(x,102,w,7,3,line);d.fillRoundRect(x,102,max(4,int(w*(900-left)/900)),7,3,accent);
-  String rows[6];unsigned n=wrap(t("It will feed on the radio: packets, messages and ACKs. Pet it, feed it snacks, keep it company.","Будет кормиться эфиром: пакеты, сообщения, подтверждения. Гладьте, кормите вкусняшками, не оставляйте одного."),rows,6,w,small);
+  String rows[6];unsigned n=wrap(t("It will feed on the radio: packets, messages and ACKs. Pet it, feed it snacks, keep it company."),rows,6,w,small);
   for(unsigned i=0;i<n;i++)text(x,126+i*12,rows[i],faint,small);
-  footer({{"OK",t("Knock","Постучать")},{"N",t("Name","Имя")},{"BACK",t("Menu","Меню")}});return;}
+  footer({{"OK",t("Knock")},{"N",t("Name")},{"BACK",t("Menu")}});return;}
  if(dead){
-  text(x,82,fit(t("Lived ","Прожил ")+creature.ageText(s.age),w),ink);text(x,98,fit(creature.causeText(s.cause),w,small),bad,small);
-  text(x,124,t("In memory","Память"),dim,small);
+  text(x,82,fit(t("Lived ")+creature.ageText(s.age),w),ink);text(x,98,fit(creature.causeText(s.cause),w,small),bad,small);
+  text(x,124,t("In memory"),dim,small);
   for(unsigned i=0;i<s.graveCount&&i<3;i++){const auto& gr=s.graves[i];int y=140+i*22;d.fillCircle(x+5,y-4,4,rgb(pet::bodies[gr.species%pet::Species]));
-   text(x+14,y,fit(String(gr.name)+" · "+t("Lv ","Ур. ")+String(gr.level),w-14,small),ink,small);text(x+14,y+10,fit(creature.ageText(gr.age),w-14,small),faint,small);}
-  footer({{"OK",t("New egg","Новое яйцо")},{"D",s.mortal?t("Death: on","Смерть: вкл."):t("Death: off","Смерть: выкл.")},{"BACK",t("Menu","Меню")}});return;}
+   text(x+14,y,fit(String(gr.name)+" · "+t("Lv ")+String(gr.level),w-14,small),ink,small);text(x+14,y+10,fit(creature.ageText(gr.age),w-14,small),faint,small);}
+  footer({{"OK",t("New egg")},{"D",s.mortal?t("Death: on"):t("Death: off")},{"BACK",t("Menu")}});return;}
  pet::Mood m=creature.mood();uint16_t mc=m==pet::Happy?ok:m==pet::Hungry||m==pet::Lonely?warn:m==pet::Sick?bad:dim;
  text(x,76,creature.moodName(),mc,bold);
- uint32_t from=creature.levelXp(creature.level()),to=creature.levelXp(creature.level()+1);textRight(x+w,76,t("Lv ","Ур. ")+String(creature.level())+" · "+String(s.xp-from)+"/"+String(to-from),faint,small);
+ uint32_t from=creature.levelXp(creature.level()),to=creature.levelXp(creature.level()+1);textRight(x+w,76,t("Lv ")+String(creature.level())+" · "+String(s.xp-from)+"/"+String(to-from),faint,small);
  d.fillRoundRect(x,81,w,3,1,line);d.fillRoundRect(x,81,max(2,int(w*(s.xp-from)/max<uint32_t>(1,to-from))),3,1,violet);
- petBar(x,100,w,t("Food","Сытость"),s.food);petBar(x,124,w,t("Joy","Радость"),s.joy);petBar(x,148,w,t("Health","Здоровье"),s.health);
- text(x,175,fit(t("Snacks ","Вкусняшки ")+String(s.snacks)+" · "+count(s.friends,"friend","friends","друг","друга","друзей"),w,small),ink,small);
- text(x,189,fit(t("Age ","Возраст ")+creature.ageText(s.age),w,small),dim,small);
- text(x,203,s.mortal?t("D: death on","D: смерть вкл."):t("D: death off","D: смерть выкл."),faint,small);textRight(x+w,203,t("R: let go","R: отпустить"),faint,small);
- footer({{"OK",t("Pet","Погладить")},{"F",t("Feed","Кормить")},{"H",t("Heal","Лечить")},{"N",t("Name","Имя")}});
+ petBar(x,100,w,t("Food"),s.food);petBar(x,124,w,t("Joy"),s.joy);petBar(x,148,w,t("Health"),s.health);
+ text(x,175,fit(t("Snacks ")+String(s.snacks)+" · "+count(s.friends,"friend","friends"),w,small),ink,small);
+ text(x,189,fit(t("Age ")+creature.ageText(s.age),w,small),dim,small);
+ text(x,203,s.mortal?t("D: death on"):t("D: death off"),faint,small);textRight(x+w,203,t("R: let go"),faint,small);
+ footer({{"OK",t("Pet")},{"F",t("Feed")},{"H",t("Heal")},{"N",t("Name")}});
 }
 // A small pet on the locked screen when no game or message takes the place.
 void drawLockPet(int y){
@@ -87,7 +87,7 @@ void drawLockPet(int y){
 bool petKey(int key){
  if(key==Enter||key==KeyHold){if(creature.alive())creature.cuddle();else creature.newEgg();return true;}
  if(!creature.has())return key!=KeyBack; // nothing else to do without a pet
- if(key=='r'||key=='R'){if(!releaseArmed||millis()-releaseArmed>5000){releaseArmed=millis();notice(t("R again: let it go","Ещё раз R: отпустить"),warn);return true;}
+ if(key=='r'||key=='R'){if(!releaseArmed||millis()-releaseArmed>5000){releaseArmed=millis();notice(t("R again: let it go"),warn);return true;}
   releaseArmed=0;notice(creature.release(),dim);return true;}
  if(key=='f'||key=='F'){creature.feed();return true;}
  if(key=='h'||key=='H'){creature.heal();return true;}

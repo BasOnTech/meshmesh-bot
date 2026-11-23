@@ -30,7 +30,7 @@ bool fsOk(){return hardware.fsOk;}
 // 1..n without the bias of a plain modulo.
 unsigned uniform(unsigned n){uint32_t limit=UINT32_MAX-UINT32_MAX%n,v;do v=entropy();while(v>=limit);return 1+v%n;}
 uint32_t fnv(const uint8_t* p,size_t n,uint32_t h=2166136261u){while(n--)h=(h^*p++)*16777619u;return h;}
-#define t(en,ru) String(tr(en,ru)) // a macro: tr() keys its translation at compile time (I18n.h)
+#define t(en) String(tr(en)) // a macro: tr() keys its translation at compile time (I18n.h)
 bool fits(const String& v,unsigned bytes){return v.length()&&v.length()<=bytes&&meshmesh::validUtf8((const uint8_t*)v.c_str(),v.length());}
 bool oneLine(const String& v){for(unsigned i=0;i<v.length();i++)if(uint8_t(v[i])<32)return false;return true;}
 String sign(int v){return v<0?String(v):"+"+String(v);}
@@ -133,7 +133,7 @@ String readable(const char* f){
 }
 unsigned faces(uint8_t type){static const uint8_t f[TypeCount]={4,6,8,10,12,20,66,100};return type<TypeCount?f[type]:6;}
 String valueText(uint8_t type,unsigned v){if(type!=DPercent)return String(v);if(v>=100)return "00";char b[4];snprintf(b,sizeof b,"%02u",v);return b;}
-String Dicer::heroName(uint8_t i) const{if(i>=s.characters)return String();return s.list[i].name[0]?String(s.list[i].name):t("General","Общий");}
+String Dicer::heroName(uint8_t i) const{if(i>=s.characters)return String();return s.list[i].name[0]?String(s.list[i].name):t("General");}
 String Dicer::poolText() const{String v=String(s.count)+typeNames[s.type<TypeCount?s.type:D6];if(s.mod>0)v+="+"+String(s.mod);else if(s.mod<0)v+=String(s.mod);return v;}
 String Dicer::clean(const String& formula){
   String v;for(unsigned i=0;i<formula.length();i++){uint8_t c=formula[i];
@@ -240,9 +240,9 @@ String Dicer::rollFormula(unsigned i) const{
 }
 String Dicer::actName(unsigned i) const{
   if(i>=sheet.count)return String();const Block& b=sheet.block[i];
-  if(b.kind==Pips)return t("Mark","Отметить");
-  if(rollFormula(i).length())return t("Roll","Бросить");
-  if(b.kind==Ability&&b.use[0]&&b.spend)return t("Use","Применить");
+  if(b.kind==Pips)return t("Mark");
+  if(rollFormula(i).length())return t("Roll");
+  if(b.kind==Ability&&b.use[0]&&b.spend)return t("Use");
   return String();
 }
 String Dicer::noteText(unsigned i) const{if(i>=sheet.count)return String();const Block& b=sheet.block[i];String v;v.reserve(b.noteLen);for(unsigned k=0;k<b.noteLen;k++)v+=sheet.notes[b.note+k];return v;}
@@ -251,9 +251,9 @@ bool Dicer::act(unsigned i){
   if(b.kind==Pips){int m=maxOf(i);return setValue(i,b.value<m?b.value+1:0);}
   String f=rollFormula(i);int j=b.kind==Ability&&b.use[0]&&b.spend?find(b.use):-1;
   if(b.kind==Ability&&b.use[0]&&b.spend){
-    if(j<0){why=t("No block with code ","Нет блока с кодом ")+b.use;return false;}
-    if(value(j)<b.spend){why=t("Not enough: ","Не хватает: ")+sheet.block[j].name;return false;}}
-  if(!f.length()&&j<0){why=b.kind==Ability&&b.formula[0]?t("The formula does not compute","Формула не считается"):String();return false;}
+    if(j<0){why=t("No block with code ")+b.use;return false;}
+    if(value(j)<b.spend){why=t("Not enough: ")+sheet.block[j].name;return false;}}
+  if(!f.length()&&j<0){why=b.kind==Ability&&b.formula[0]?t("The formula does not compute"):String();return false;}
   if(f.length()&&!roll(f,b.name))return false;
   if(j>=0)change(j,-int(b.spend));
   return true;
@@ -277,8 +277,8 @@ bool Dicer::setNote(SheetData& d,unsigned i,const String& v) const{
   memcpy(d.notes,tmp,at);d.notesUsed=at;delete[] tmp;return true;
 }
 String Dicer::defaultName(uint8_t kind){
-  switch(kind){case Stat:return t("Value","Значение");case Track:return t("Health","Здоровье");case Pips:return t("Marks","Отметки");
-  case Ability:return t("Ability","Способность");case Note:return t("Notes","Заметки");default:return t("Section","Раздел");}
+  switch(kind){case Stat:return t("Value");case Track:return t("Health");case Pips:return t("Marks");
+  case Ability:return t("Ability");case Note:return t("Notes");default:return t("Section");}
 }
 void Dicer::defaults(Block& b,uint8_t kind){
   b.kind=kind;b.value=b.max=0;b.rule=b.shape=0;
@@ -338,64 +338,64 @@ bool Dicer::applyTemplate(uint8_t tmpl){
     if(sheet.count>=Blocks)return;Block& b=sheet.block[sheet.count++];memset(&b,0,sizeof b);b.kind=kind;b.width=width;b.shape=shape;b.rule=rule;b.value=value;b.max=max;b.color=color%Colors;b.note=sheet.notesUsed;
     strlcpy(b.code,code,sizeof b.code);copyText(b.name,sizeof b.name,name.c_str());strlcpy(b.formula,formula,sizeof b.formula);};
   auto note=[&](const String& v){setNote(sheet,sheet.count-1,v);};
-  if(tmpl==Blank){add(Track,Third,Circle,Plain,"",t("Counter ","Счётчик ")+"1",CounterStart,0,"",0);}
+  if(tmpl==Blank){add(Track,Third,Circle,Plain,"",t("Counter ")+"1",CounterStart,0,"",0);}
   else if(tmpl==DndTemplate){
     const char* codes[6]={"str","dex","con","int","wis","cha"};
-    String names[6]={t("STR","СИЛ"),t("DEX","ЛОВ"),t("CON","ТЕЛ"),t("INT","ИНТ"),t("WIS","МДР"),t("CHA","ХАР")};
+    String names[6]={t("STR"),t("DEX"),t("CON"),t("INT"),t("WIS"),t("CHA")};
     for(int k=0;k<6;k++)add(Stat,Sixth,Circle,Dnd,codes[k],names[k],10,0,"",k*2);
-    add(Stat,Quarter,Square,Plain,"pb",t("Proficiency","Мастерство"),2,0,"",7);
-    add(Stat,Quarter,Shield,Plain,"ac",t("Armor class","Класс доспеха"),10,0,"10+@dex",4);
-    add(Stat,Quarter,Diamond,Bonus,"init",t("Initiative","Инициатива"),0,0,"@dex",9);
-    add(Stat,Quarter,Hexagon,Plain,"spd",t("Speed","Скорость"),30,0,"",10);
-    add(Track,Whole,Circle,Plain,"hp",t("Hit points","Хиты"),10,10,"",0);
-    add(Pips,Third,Circle,Plain,"hd",t("Hit dice","Кости хитов"),1,1,"",2);
-    add(Pips,Third,Circle,Plain,"dss",t("Death: saves","Смерть: успехи"),0,3,"",12);
-    add(Pips,Third,Circle,Plain,"dsf",t("Death: fails","Смерть: провалы"),0,3,"",0);
-    add(Header,Whole,Circle,Plain,"",t("Attacks","Атаки"),0,0,"",0);
-    add(Ability,Half,Circle,Plain,"",t("Attack","Атака"),0,0,"d20+@str+@pb",0);note(t("Melee: STR + proficiency. Finesse or ranged: change @str to @dex.","Ближний бой: СИЛ + мастерство. Фехтовальное или дальнобойное: замените @str на @dex."));
-    add(Ability,Half,Circle,Plain,"",t("Damage","Урон"),0,0,"1d8+@str",0);
-    add(Header,Whole,Circle,Plain,"",t("Skills","Навыки"),0,0,"",0);
+    add(Stat,Quarter,Square,Plain,"pb",t("Proficiency"),2,0,"",7);
+    add(Stat,Quarter,Shield,Plain,"ac",t("Armor class"),10,0,"10+@dex",4);
+    add(Stat,Quarter,Diamond,Bonus,"init",t("Initiative"),0,0,"@dex",9);
+    add(Stat,Quarter,Hexagon,Plain,"spd",t("Speed"),30,0,"",10);
+    add(Track,Whole,Circle,Plain,"hp",t("Hit points"),10,10,"",0);
+    add(Pips,Third,Circle,Plain,"hd",t("Hit dice"),1,1,"",2);
+    add(Pips,Third,Circle,Plain,"dss",t("Death: saves"),0,3,"",12);
+    add(Pips,Third,Circle,Plain,"dsf",t("Death: fails"),0,3,"",0);
+    add(Header,Whole,Circle,Plain,"",t("Attacks"),0,0,"",0);
+    add(Ability,Half,Circle,Plain,"",t("Attack"),0,0,"d20+@str+@pb",0);note(t("Melee: STR + proficiency. Finesse or ranged: change @str to @dex."));
+    add(Ability,Half,Circle,Plain,"",t("Damage"),0,0,"1d8+@str",0);
+    add(Header,Whole,Circle,Plain,"",t("Skills"),0,0,"",0);
     // The rules' order; a proficient skill gets +@pb in its formula.
     const char* const skillAbility[18]={"dex","wis","int","str","cha","int","wis","cha","int","wis","int","wis","cha","int","dex","dex","cha","wis"};
-    String skillName[18]={t("Acrobatics","Акробатика"),t("Animal Handling","Уход за животными"),t("Arcana","Магия"),t("Athletics","Атлетика"),t("Deception","Обман"),
-      t("History","История"),t("Insight","Проницательность"),t("Intimidation","Запугивание"),t("Investigation","Анализ"),t("Medicine","Медицина"),t("Nature","Природа"),
-      t("Perception","Восприятие"),t("Performance","Выступление"),t("Religion","Религия"),t("Sleight of Hand","Ловкость рук"),t("Stealth","Скрытность"),
-      t("Persuasion","Убеждение"),t("Survival","Выживание")};
+    String skillName[18]={t("Acrobatics"),t("Animal Handling"),t("Arcana"),t("Athletics"),t("Deception"),
+      t("History"),t("Insight"),t("Intimidation"),t("Investigation"),t("Medicine"),t("Nature"),
+      t("Perception"),t("Performance"),t("Religion"),t("Sleight of Hand"),t("Stealth"),
+      t("Persuasion"),t("Survival")};
     uint8_t order[18];for(int k=0;k<18;k++)order[k]=k; // alphabetical in the interface language (UTF-8 byte order)
     for(int k=1;k<18;k++)for(int j=k;j>0&&strcmp(skillName[order[j]].c_str(),skillName[order[j-1]].c_str())<0;j--)std::swap(order[j],order[j-1]);
     for(int q=0;q<18;q++){int k=order[q];char f[24];snprintf(f,sizeof f,"d20+@%s",skillAbility[k]);add(Ability,Half,Circle,Plain,"",skillName[k],0,0,f,3);}
-    add(Header,Whole,Circle,Plain,"",t("Magic","Магия"),0,0,"",0);
-    add(Pips,Half,Circle,Plain,"sl1",t("Slots, level 1","Ячейки 1 круга"),2,2,"",9);
-    add(Pips,Half,Circle,Plain,"insp",t("Inspiration","Вдохновение"),0,1,"",7);
-    add(Note,Whole,Circle,Plain,"",t("Equipment","Снаряжение"),0,0,"",0);
+    add(Header,Whole,Circle,Plain,"",t("Magic"),0,0,"",0);
+    add(Pips,Half,Circle,Plain,"sl1",t("Slots, level 1"),2,2,"",9);
+    add(Pips,Half,Circle,Plain,"insp",t("Inspiration"),0,1,"",7);
+    add(Note,Whole,Circle,Plain,"",t("Equipment"),0,0,"",0);
   }else{
     // R.E.T.: three branches of the tree; each level I and II value is half the sum of the two below (rounded down).
     struct Branch{const char* code;const char* sub[2];const char* leaf[4];};
     const Branch tree[3]={{"mind",{"int","per"},{"edu","wit","att","intu"}},{"emo",{"emp","will"},{"insp","cha","comp","lead"}},{"body",{"str","agi"},{"phys","endu","fine","ctrl"}}};
-    String top[3]={t("Mind","Разум"),t("Emotions","Эмоции"),t("Body","Тело")};
-    String mid[6]={t("Intellect","Интеллект"),t("Perception","Восприятие"),t("Empathy","Эмпатия"),t("Will","Воля"),t("Strength","Сила"),t("Agility","Ловкость")};
-    String low[12]={t("Education","Образование"),t("Wits","Сообразительность"),t("Attention","Внимание"),t("Intuition","Интуиция"),t("Inspiration","Вдохновение"),t("Charisma","Харизма"),
-      t("Composure","Самообладание"),t("Leadership","Лидерство"),t("Physique","Телосложение"),t("Endurance","Выносливость"),t("Fine motor","Мелкая моторика"),t("Body control","Контроль тела")};
+    String top[3]={t("Mind"),t("Emotions"),t("Body")};
+    String mid[6]={t("Intellect"),t("Perception"),t("Empathy"),t("Will"),t("Strength"),t("Agility")};
+    String low[12]={t("Education"),t("Wits"),t("Attention"),t("Intuition"),t("Inspiration"),t("Charisma"),
+      t("Composure"),t("Leadership"),t("Physique"),t("Endurance"),t("Fine motor"),t("Body control")};
     const uint8_t hue[3]={4,5,0};
     for(int k=0;k<3;k++){const Branch& br=tree[k];char f[32];
       snprintf(f,sizeof f,"(@%s+@%s)/2",br.sub[0],br.sub[1]);add(Stat,Third,Hexagon,Ret,br.code,top[k],3,0,f,hue[k]);
       for(int j=0;j<2;j++){snprintf(f,sizeof f,"(@%s+@%s)/2",br.leaf[j*2],br.leaf[j*2+1]);add(Stat,Third,Square,Ret,br.sub[j],mid[k*2+j],3,0,f,hue[k]);}
       for(int j=0;j<4;j++)add(Stat,Quarter,Circle,Ret,br.leaf[j],low[k*4+j],3,0,"",hue[k]);}
-    add(Track,Third,Circle,Plain,"hp",t("Health","Здоровье"),6,0,"@body*2",0);
-    add(Track,Third,Circle,Plain,"san",t("Sanity","Рассудок"),6,0,"@mind+@emo",9);
-    add(Track,Third,Circle,Plain,"luck",t("Luck","Удача"),6,0,"@lvl*2",7);note(t("Declared before a roll and added to it; a failure burns it. A failure gives 1 luck, a critical one 3.","Заявляется до броска и прибавляется к нему, при провале сгорает. Провал даёт 1 удачи, критический — 3."));
-    add(Stat,Quarter,Diamond,Plain,"lvl",t("Level","Уровень"),3,0,"(@mind+@emo+@body)/3",10);
-    add(Stat,Quarter,Shield,Plain,"hit",t("Strike","Сила удара"),1,0,"@str/2",0);
-    add(Stat,Quarter,Hexagon,Plain,"spd",t("Speed","Скорость"),3,0,"",3);
-    add(Stat,Quarter,Square,Plain,"dev",t("Growth points","Очки развития"),0,0,"",12);
-    add(Header,Whole,Circle,Plain,"",t("Skills and talents","Навыки и таланты"),0,0,"",0);
-    add(Ability,Half,Circle,Plain,"",t("Skill: Persuasion","Навык: Убеждение"),0,0,"@cha+3",5);note(t("A skill: the die of its stat plus the skill's level (3 at the start, 7 at most).","Навык: куб параметра плюс уровень навыка (на старте 3, не больше 7)."));
-    add(Ability,Half,Circle,Plain,"",t("Talent: Shooting","Талант: Стрельба"),0,0,"r3+@fine!",0);note(t("A talent: the die of its own level plus the level of its stat.","Талант: куб своего уровня плюс уровень параметра-основы."));
-    add(Ability,Half,Circle,Plain,"",t("Dodge","Уклонение"),0,0,"@agi",0);
-    add(Ability,Half,Circle,Plain,"",t("Initiative","Инициатива"),0,0,"@per",4);
-    add(Note,Whole,Circle,Plain,"",t("Rolls","Броски"),0,0,"",0);
-    note(t("The top value of a die is a success: roll the die of the next level and add it, up to d100. A 1 is a failure: d4 of failure, 1 is critical; bonuses are lost.","Максимум — успех: + куб следующего уровня (до d100). Единица — провал: d4, на 1 — критический, бонусы сгорают."));
-    add(Note,Whole,Circle,Plain,"",t("Equipment","Снаряжение"),0,0,"",0);
+    add(Track,Third,Circle,Plain,"hp",t("Health"),6,0,"@body*2",0);
+    add(Track,Third,Circle,Plain,"san",t("Sanity"),6,0,"@mind+@emo",9);
+    add(Track,Third,Circle,Plain,"luck",t("Luck"),6,0,"@lvl*2",7);note(t("Declared before a roll and added to it; a failure burns it. A failure gives 1 luck, a critical one 3."));
+    add(Stat,Quarter,Diamond,Plain,"lvl",t("Level"),3,0,"(@mind+@emo+@body)/3",10);
+    add(Stat,Quarter,Shield,Plain,"hit",t("Strike"),1,0,"@str/2",0);
+    add(Stat,Quarter,Hexagon,Plain,"spd",t("Speed"),3,0,"",3);
+    add(Stat,Quarter,Square,Plain,"dev",t("Growth points"),0,0,"",12);
+    add(Header,Whole,Circle,Plain,"",t("Skills and talents"),0,0,"",0);
+    add(Ability,Half,Circle,Plain,"",t("Skill: Persuasion"),0,0,"@cha+3",5);note(t("A skill: the die of its stat plus the skill's level (3 at the start, 7 at most)."));
+    add(Ability,Half,Circle,Plain,"",t("Talent: Shooting"),0,0,"r3+@fine!",0);note(t("A talent: the die of its own level plus the level of its stat."));
+    add(Ability,Half,Circle,Plain,"",t("Dodge"),0,0,"@agi",0);
+    add(Ability,Half,Circle,Plain,"",t("Initiative"),0,0,"@per",4);
+    add(Note,Whole,Circle,Plain,"",t("Rolls"),0,0,"",0);
+    note(t("The top value of a die is a success: roll the die of the next level and add it, up to d100. A 1 is a failure: d4 of failure, 1 is critical; bonuses are lost."));
+    add(Note,Whole,Circle,Plain,"",t("Equipment"),0,0,"",0);
   }
   sheetChanged();return true;
 }
@@ -428,7 +428,7 @@ bool Dicer::parseSheet(const String& text,SheetData& d,String& name,String* erro
     strlcpy(b.code,code.c_str(),sizeof b.code);strlcpy(b.use,use.c_str(),sizeof b.use);strlcpy(b.name,bname.c_str(),sizeof b.name);strlcpy(b.formula,formula.c_str(),sizeof b.formula);
     d.count++;if(!setNote(d,d.count-1,note)){ok=bad("notes: 200 bytes each, 2048 on the sheet");break;}
   }
-  delete[] rec;if(ok&&!name.length())name=t("Character","Персонаж");return ok;
+  delete[] rec;if(ok&&!name.length())name=t("Character");return ok;
 }
 bool Dicer::importText(const String& text,String* error){
   SheetData* d=new SheetData;String name;bool ok=parseSheet(text,*d,name,error);
@@ -540,7 +540,7 @@ void Dicer::begin(){
 void Dicer::addExamples(){
   s.flags|=ExamplesAdded;uint8_t keep=s.character;
   if(s.characters<Characters)addCharacter("D&D 5e",DndTemplate);
-  if(s.characters<Characters)addCharacter(t("R.E.T.","Р.Э.Т."),RetTemplate);
+  if(s.characters<Characters)addCharacter(t("R.E.T."),RetTemplate);
   useCharacter(keep);save();
 }
 void Dicer::changed(bool soon){events++;if(soon){saveDue=millis()+2000;return;}save();}
@@ -564,7 +564,7 @@ bool Dicer::send(uint64_t peer,String* error){
   const Peer* p=meshRadio.findContact(peer);if(!p||p->type!=1)return bad("not a chat contact");
   String text=exportText();unsigned n=chunks(text);if(!n||n>MaxParts)return bad("the sheet is too large");
   out=Outgoing();out.peer=peer;strlcpy(out.name,p->name,sizeof out.name);out.id=uniform(0xffff);out.parts=n;out.text=text;
-  note=t("Sending the sheet to ","Отправка листа: ")+out.name;notes++;events++;sendNext();return true;
+  note=t("Sending the sheet to ")+out.name;notes++;events++;sendNext();return true;
 }
 void Dicer::sendNext(){
   if(!out.parts||out.done||out.failed)return;char head[24];snprintf(head,sizeof head,"S %04X %u/%u ",out.id,out.part+1,out.parts);
@@ -573,8 +573,8 @@ void Dicer::sendNext(){
 bool Dicer::delivery(uint32_t id,uint8_t status){
   if(!out.msg||out.msg!=id||out.done||out.failed)return false;
   if(status==ChatMessage::Delivered){out.msg=0;out.tries=0;out.part++;events++;
-    if(out.part>=out.parts){out.done=true;out.text="";note=t("Sheet delivered to ","Лист доставлен: ")+out.name;notes++;}else sendNext();}
-  else if(status==ChatMessage::Failed){out.msg=0;if(++out.tries>=3){out.failed=true;out.text="";note=t("Sheet not delivered to ","Лист не доставлен: ")+out.name;notes++;events++;}else sendNext();}
+    if(out.part>=out.parts){out.done=true;out.text="";note=t("Sheet delivered to ")+out.name;notes++;}else sendNext();}
+  else if(status==ChatMessage::Failed){out.msg=0;if(++out.tries>=3){out.failed=true;out.text="";note=t("Sheet not delivered to ")+out.name;notes++;events++;}else sendNext();}
   return true;
 }
 bool Dicer::receive(uint64_t from,const char* name,const char* text){
@@ -591,12 +591,12 @@ bool Dicer::acceptOffer(){if(!offered)return false;String error;if(!importText(o
 void Dicer::declineOffer(){offered=false;offer.text="";events++;}
 void Dicer::tick(){
   uint32_t now=millis();if(saveDue&&int32_t(now-saveDue)>=0)save();
-  if(out.parts&&!out.done&&!out.failed&&((!out.msg&&now-out.at>3000)||(out.msg&&now-out.at>120000))){if(out.msg&&++out.tries>=3){out.failed=true;out.msg=0;out.text="";note=t("Sheet not delivered to ","Лист не доставлен: ")+out.name;notes++;events++;}else sendNext();}
+  if(out.parts&&!out.done&&!out.failed&&((!out.msg&&now-out.at>3000)||(out.msg&&now-out.at>120000))){if(out.msg&&++out.tries>=3){out.failed=true;out.msg=0;out.text="";note=t("Sheet not delivered to ")+out.name;notes++;events++;}else sendNext();}
   if(in){bool all=true;for(unsigned k=0;k<in->parts;k++)all&=in->len[k]>0;
     if(all){String text;text.reserve(in->parts*Chunk);for(unsigned k=0;k<in->parts;k++)for(unsigned j=0;j<in->len[k];j++)text+=in->buf[k*Chunk+j];
       SheetData* d=new SheetData;String name;bool ok=parseSheet(text,*d,name,nullptr);delete d;
       if(ok){offer=Offer();offer.peer=in->peer;strlcpy(offer.from,in->from[0]?in->from:peerName(in->peer),sizeof offer.from);strlcpy(offer.name,name.c_str(),sizeof offer.name);offer.text=text;offered=true;
-        note=t("Character sheet from ","Лист персонажа от ")+offer.from+": "+offer.name;notes++;events++;}
+        note=t("Character sheet from ")+offer.from+": "+offer.name;notes++;events++;}
       free(in->buf);delete in;in=nullptr;}
     else if(now-in->at>600000){free(in->buf);delete in;in=nullptr;}}
 }

@@ -15,7 +15,7 @@
    must(duels.receive(peerId(0),"Heltec V4",t.c_str()),"a game command");};
   Duel* found=nullptr;auto latest=[&](Duel::Kind k){found=nullptr;for(auto& g:duels.games)if(g.state!=Duel::Free&&g.kind==k&&(!found||int32_t(g.changedAt-found->changedAt)>0))found=&g;return found;};
   config.apps[0]=0;config.dimAfter=0;config.autoLock=0;config.role=RoleNormal;config.doubleBack=false;
-  bool ru=config.lang==LangRu;(void)ru;
+  
   for(int i=0;i<11;i++)tick();home();
 
   // The games folder: a screen of the cycle with its apps; a hold (OK) enters it, clicks go through its apps and

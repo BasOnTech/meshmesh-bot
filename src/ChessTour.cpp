@@ -60,7 +60,7 @@ void Net::viewed(Tour& t){if(t.unseen){t.unseen=false;changed(t,false);}}
 void Net::send(uint64_t peer,const String& text){
   if(!peer||peer==me())return;Out* o=nullptr;
   for(auto& x:outbox)if(!x.used){o=&x;break;}
-  if(!o){o=&outbox[0];for(auto& x:outbox)if(int32_t(x.since-o->since)<0)o=&x;event=tr("Tournament: message queue full","Турнир: очередь сообщений переполнена");events++;} // the oldest gives way
+  if(!o){o=&outbox[0];for(auto& x:outbox)if(int32_t(x.since-o->since)<0)o=&x;event=tr("Tournament: message queue full");events++;} // the oldest gives way
   *o=Out();o->used=true;o->peer=peer;strlcpy(o->text,text.c_str(),sizeof o->text);o->since=millis();transmit(*o);save();
 }
 void Net::transmit(Out& o){
@@ -89,14 +89,14 @@ void Net::tick(){
 
 // The organiser asks the chosen chat contacts; it plays as well.
 Tour* Net::create(const String& name,uint8_t rounds,uint8_t hours,const uint64_t* ids,unsigned n){
-  if(!name.length()||n<1||n>MaxPlayers-1||rounds<1||rounds>MaxRounds){event=tr("Tournament: 2-10 players, 1-9 rounds","Турнир: 2-10 игроков, 1-9 туров");events++;dirty=true;return nullptr;}
-  const uint8_t* self=meshRadio.nodeKey();Tour* t=slot();if(!self||!t){event=tr("Tournament: no free place","Турнир: нет свободного места");events++;dirty=true;return nullptr;}
+  if(!name.length()||n<1||n>MaxPlayers-1||rounds<1||rounds>MaxRounds){event=tr("Tournament: 2-10 players, 1-9 rounds");events++;dirty=true;return nullptr;}
+  const uint8_t* self=meshRadio.nodeKey();Tour* t=slot();if(!self||!t){event=tr("Tournament: no free place");events++;dirty=true;return nullptr;}
   uint16_t id;do id=1+random(0xffff);while(find(id));
   reset(*t);t->id=id;t->state=Inviting;copyText(t->name,name.c_str(),sizeof t->name);t->organizer=me();t->rounds=rounds;t->hours=hours;
   Player& o=t->players[t->playerCount++];o.id=me();memcpy(o.key,self,32);o.hasKey=true;copyText(o.name,config.name,sizeof o.name);o.state=Joined;
   for(unsigned i=0;i<n;i++){Peer* p=peerOf(ids[i]);if(!p||p->type!=1||t->index(p->id)>=0)continue;
     Player& x=t->players[t->playerCount++];x.id=p->id;memcpy(x.key,p->publicKey,32);x.hasKey=true;copyText(x.name,p->name,sizeof x.name);x.state=Asked;}
-  if(t->playerCount<2){reset(*t);event=tr("Tournament: choose chat contacts","Турнир: выберите чат-контакты");events++;dirty=true;return nullptr;}
+  if(t->playerCount<2){reset(*t);event=tr("Tournament: choose chat contacts");events++;dirty=true;return nullptr;}
   String inv=String(Tag)+hex4(id)+" inv "+String(rounds)+" "+String(hours)+" "+String(t->playerCount)+" "+t->name;
   for(unsigned i=1;i<t->playerCount;i++)send(t->players[i].id,inv);
   changed(*t);return t;
@@ -113,7 +113,7 @@ bool Net::remove(Tour& t){if(t.active())return false;reset(t);dirty=true;save();
 bool Net::start(Tour& t){
   if(!t.organising()||t.state!=Inviting)return false;
   unsigned n=0;for(unsigned i=0;i<t.playerCount;i++)if(t.players[i].state==Joined)t.players[n++]=t.players[i];
-  if(n<2){event=tr("Tournament: nobody has agreed yet","Турнир: пока никто не согласился");events++;dirty=true;return false;}
+  if(n<2){event=tr("Tournament: nobody has agreed yet");events++;dirty=true;return false;}
   t.playerCount=n;t.state=Running;t.round=1;pairRound(t);sendPlayers(t);announceRound(t);changed(t);return true;
 }
 // "pl ID6:name,ID6:name": the players, in messages that fit the MeshCore limit.
@@ -166,7 +166,7 @@ void Net::pairRound(Tour& t){
 void Net::announceRound(Tour& t){
   unsigned r=t.round-1;String head=String(Tag)+hex4(t.id)+" r"+String(t.round)+" ";
   for(unsigned k=0;k<t.pairCount[r];k++){const Pair& p=t.pairs[r][k];
-    if(p.black>=MaxPlayers){if(t.players[p.white].id==me())news(t,tr("Round ","Тур ")+String(t.round)+tr(": a bye for you (+1)",": вы свободны от игры (+1)"));else send(t.players[p.white].id,head+"bye");continue;}
+    if(p.black>=MaxPlayers){if(t.players[p.white].id==me())news(t,tr("Round ")+String(t.round)+tr(": a bye for you (+1)"));else send(t.players[p.white].id,head+"bye");continue;}
     bool local=false;
     for(int side=0;side<2;side++){const Player& pl=t.players[side?p.black:p.white];const Player& op=t.players[side?p.white:p.black];
       if(pl.id==me()){local=true;continue;}
@@ -177,8 +177,8 @@ void Net::announceRound(Tour& t){
 void Net::localGame(Tour& t,const Pair& p){
   bool white=t.players[p.white].id==me();const Player& op=t.players[white?p.black:p.white];
   ChessMatch* m=chessNet.tourGame(op.id,op.key,op.name,p.game,white?0:1,t.id,t.round);
-  news(t,String(t.name)+" · "+tr("round ","тур ")+String(t.round)+": "+op.name+(white?tr(", you play White",", вы белыми"):tr(", you play Black",", вы чёрными")));
-  if(!m){event=tr("Tournament: no free chess board","Турнир: нет свободной доски");events++;}
+  news(t,String(t.name)+" · "+tr("round ")+String(t.round)+": "+op.name+(white?tr(", you play White"):tr(", you play Black")));
+  if(!m){event=tr("Tournament: no free chess board");events++;}
 }
 // "st ROUND ID6:POINTS*2:BUCHHOLZ*2,..." after a round; "end" carries the final standings the same way,
 // so the last place is right whichever message comes first.
@@ -194,7 +194,7 @@ void Net::record(Tour& t,uint16_t game,uint64_t from,uint8_t result){
     if(same(t.players[p.white].id,from))p.reportW=result;else if(same(t.players[p.black].id,from))p.reportB=result;else return;
     if(p.reportW&&p.reportB&&!decided(p.result)){
       if(p.reportW==p.reportB)p.result=p.reportW;
-      else if(p.result!=Disputed){p.result=Disputed;news(t,String(t.name)+": "+tr("results differ in game ","результаты расходятся в партии ")+hex4(game));}}
+      else if(p.result!=Disputed){p.result=Disputed;news(t,String(t.name)+": "+tr("results differ in game ")+hex4(game));}}
     t.due|=DueRound;changed(t);return;}
 }
 bool Net::setResult(Tour& t,uint16_t game,uint8_t result){
@@ -208,7 +208,7 @@ void Net::roundDone(Tour& t){
   if(t.round<t.rounds){sendStandings(t);t.round++;pairRound(t);announceRound(t);}
   else{t.state=Over;sendStandings(t,"end");
     Row rows[MaxPlayers];unsigned n=standings(t,rows),place=0;for(unsigned i=0;i<n;i++)if(rows[i].me)place=i+1;
-    news(t,String(t.name)+tr(": finished, your place ",": турнир окончен, ваше место ")+String(place)+tr(" of "," из ")+String(n));}
+    news(t,String(t.name)+tr(": finished, your place ")+String(place)+tr(" of ")+String(n));}
   changed(t);
 }
 // A tournament game ended on this device: the result goes to the organiser (or is recorded here).
@@ -228,16 +228,16 @@ bool Net::receive(uint64_t from,const char* name,const char* text){
   Tour* t=find(id);
   if(!strcmp(verb,"inv")){
     if(t)return true;unsigned rounds=0,hours=0,count=0;int at=0;if(sscanf(args,"%u %u %u %n",&rounds,&hours,&count,&at)<3||!at||!rounds||rounds>MaxRounds)return true;
-    t=slot();if(!t){event=String(name)+tr(": tournament invitation, no free place",": приглашение в турнир, нет места");events++;dirty=true;return true;}
+    t=slot();if(!t){event=String(name)+tr(": tournament invitation, no free place");events++;dirty=true;return true;}
     reset(*t);t->id=id;t->state=Invited;t->organizer=from;t->rounds=rounds;t->hours=hours;copyText(t->name,args+at,sizeof t->name);
-    news(*t,String(name)+tr(" invites you to the tournament \""," приглашает в турнир «")+t->name+tr("\"","»"));changed(*t);return true;
+    news(*t,String(name)+tr(" invites you to the tournament \"")+t->name+tr("\""));changed(*t);return true;
   }
   if(!t)return true;
   if(t->organising()){
     int i=t->index(from);if(i<0)return true;
     if(!strcmp(verb,"yes")||!strcmp(verb,"no")){
       if(t->state!=Inviting||t->players[i].state!=Asked)return true;t->players[i].state=strcmp(verb,"yes")?Refused:Joined;
-      news(*t,String(t->players[i].name)+(t->players[i].state==Joined?tr(" joins \""," участвует в «"):tr(" declines \""," отказался от «"))+t->name+tr("\"","»"));
+      news(*t,String(t->players[i].name)+(t->players[i].state==Joined?tr(" joins \""):tr(" declines \""))+t->name+tr("\""));
       bool all=true;unsigned joined=0;for(unsigned k=0;k<t->playerCount;k++){all&=t->players[k].state!=Asked;joined+=t->players[k].state==Joined;}
       if(all&&joined>=2)t->due|=DueStart; // started from tick(): pairing and sending need more stack than the radio callback has
       changed(*t);return true;
@@ -260,7 +260,7 @@ bool Net::receive(uint64_t from,const char* name,const char* text){
     if(t->index(me())<0&&t->playerCount<MaxPlayers){Player& p=t->players[t->playerCount++];p=Player();p.id=me();copyText(p.name,config.name,sizeof p.name);p.state=Joined;}
     uint8_t mine=t->index(me());
     if(!strncmp(args,"bye",3)){if(!t->pairCount[round-1]){t->pairs[round-1][0]={mine,NoPlayer,0,Bye,Bye,Bye};t->pairCount[round-1]=1;
-      news(*t,String(t->name)+": "+tr("round ","тур ")+String(round)+tr(": a bye for you (+1)",": вы свободны от игры (+1)"));}changed(*t);return true;}
+      news(*t,String(t->name)+": "+tr("round ")+String(round)+tr(": a bye for you (+1)"));}changed(*t);return true;}
     char color=0;unsigned game=0;char key[48]={};int at=0;if(sscanf(args,"%c %x %47s %n",&color,&game,key,&at)<3||(color!='w'&&color!='b')||!game)return true;
     uint8_t k32[32];if(!keyParse(key,k32))return true;const char* oname=at?args+at:"";
     if(t->pairCount[round-1]&&t->pairs[round-1][0].game==game)return true; // repeat
@@ -269,14 +269,14 @@ bool Net::receive(uint64_t from,const char* name,const char* text){
     if(oi<0)return true;Player& op=t->players[oi];op.id=oid;memcpy(op.key,k32,32);op.hasKey=true;if(oname[0])copyText(op.name,oname,sizeof op.name);
     t->pairs[round-1][0]={color=='w'?mine:uint8_t(oi),color=='w'?uint8_t(oi):mine,uint16_t(game),Pending,Pending,Pending};t->pairCount[round-1]=1;
     ChessMatch* m=chessNet.tourGame(oid,k32,op.name,uint16_t(game),color=='w'?0:1,t->id,round);
-    news(*t,String(t->name)+" · "+tr("round ","тур ")+String(round)+": "+op.name+(color=='w'?tr(", you play White",", вы белыми"):tr(", you play Black",", вы чёрными")));
-    if(!m){event=tr("Tournament: no free chess board","Турнир: нет свободной доски");events++;}
+    news(*t,String(t->name)+" · "+tr("round ")+String(round)+": "+op.name+(color=='w'?tr(", you play White"):tr(", you play Black")));
+    if(!m){event=tr("Tournament: no free chess board");events++;}
     changed(*t);return true;
   }
   if(!strcmp(verb,"st")){readStandings(*t,args);changed(*t,false);return true;}
   if(!strcmp(verb,"end")){bool fresh=readStandings(*t,args);if(t->state==Over){if(fresh)changed(*t,false);return true;}t->state=Over;Row rows[MaxPlayers];unsigned n=standings(*t,rows),place=0;for(unsigned i=0;i<n;i++)if(rows[i].me)place=i+1;
-    news(*t,String(t->name)+tr(": finished, your place ",": турнир окончен, ваше место ")+String(place)+tr(" of "," из ")+String(n));changed(*t);return true;}
-  if(!strcmp(verb,"cancel")){if(!t->active())return true;t->state=Cancelled;news(*t,String(t->name)+tr(": cancelled by the organiser",": отменён организатором"));changed(*t);return true;}
+    news(*t,String(t->name)+tr(": finished, your place ")+String(place)+tr(" of ")+String(n));changed(*t);return true;}
+  if(!strcmp(verb,"cancel")){if(!t->active())return true;t->state=Cancelled;news(*t,String(t->name)+tr(": cancelled by the organiser"));changed(*t);return true;}
   return true;
 }
 
@@ -349,7 +349,7 @@ String Net::command(const String& line){
 void Net::save(){
   saveDue=false;size_t size=8+sizeof tours+sizeof outbox+4;uint8_t* buf=(uint8_t*)malloc(size);if(!buf)return;
   memcpy(buf,"MMT1",4);buf[4]=SaveVersion;buf[5]=MaxTours;uint16_t ts=sizeof(Tour);memcpy(buf+6,&ts,2);memcpy(buf+8,tours,sizeof tours);memcpy(buf+8+sizeof tours,outbox,sizeof outbox);
-  uint32_t crc=crc32(buf,size-4);memcpy(buf+size-4,&crc,4);if(!storeWrite(buf,size)){event=tr("Tournament: cannot save","Турнир: не удалось сохранить");events++;}free(buf);
+  uint32_t crc=crc32(buf,size-4);memcpy(buf+size-4,&crc,4);if(!storeWrite(buf,size)){event=tr("Tournament: cannot save");events++;}free(buf);
 }
 void Net::load(){
   size_t size=8+sizeof tours+sizeof outbox+4;uint8_t* buf=(uint8_t*)malloc(size);if(!buf)return;uint16_t ts=0;uint32_t crc=0;

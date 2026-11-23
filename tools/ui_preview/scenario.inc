@@ -78,7 +78,7 @@ static void scenario(){
  // Regional presets: <> on the first row steps through the list (the preview takes every frequency) and fills the radio rows.
  {key(0x90);key(13);for(int i=0;i<16;i++)key(0xb7);shot("radio-preset");
   if(uiStatus().indexOf("\"radio_preset\":\"Netherlands (Limburg)\"")<0){printf("FAIL preset Netherlands (Limburg): %s\n",uiStatus().c_str());exit(1);}
-  for(int i=0;i<4;i++)key(0xb6);key(0xb4);if(uiStatus().indexOf(String("\"radio_preset\":\"")+tr("Custom","Свой")+"\"")<0){printf("FAIL preset after a changed CR: %s\n",uiStatus().c_str());exit(1);}key(0x86);}
+  for(int i=0;i<4;i++)key(0xb6);key(0xb4);if(uiStatus().indexOf(String("\"radio_preset\":\"")+tr("Custom")+"\"")<0){printf("FAIL preset after a changed CR: %s\n",uiStatus().c_str());exit(1);}key(0x86);}
  key(0x90);shot("settings");key(13);key(0xb6);key(0xb7);shot("radio");for(int i=0;i<7;i++)key(0xb6);key(0xb7);shot("radio-hash");key(0xb6);key(0xb6);key(13);shot("radio-regions");key(0xb5);key(0xb7);key(0xb7);key(0xb7);shot("radio-region");key(13);for(int i=0;i<3;i++)key(8);for(char ch:std::string("sao"))key(ch);shot("radio-region-type");key(0x86);key(0x86);key(0xb6);key(13);for(int i=0;i<8;i++)key(0xb6);key(0xb7);shot("display-battery");for(int i=0;i<8;i++)key(0xb5);shot("display");key(13);shot("display-name");key(0x86);key(0x86);
  tile("connect");key(13);key(13);shot("wifi-ap");key(0xb7);shot("wifi-qr");key(0xb7);shot("wifi-qr-page");key(0x86);key(0xb6);key(13);shot("network");key(13);key(0xb6);key(13);key(0x83);shot("diagnostics");key(0x90);for(int i=0;i<5;i++)key(0xb6);key(13);shot("help");key(13);shot("help-layout");key(0x86);key(13);shot("help-layout");key(0x86);
  // Connections with Bluetooth on: the MeshCore- name the phone apps see, then off again.
@@ -232,7 +232,7 @@ static void scenario(){
  for(int i=0;i<2;i++)key(13);expect("Previous row","\"radio_row\":10");shot("heltec-radio-prev");key(13);expect("Network row","\"radio_row\":11");key(0xa3);shot("heltec-radio-net");key(13);expect("Save row","\"radio_row\":12");shot("heltec-radio-save");key(0xa3);expect("saved and closed","\"page\":\"settings\"");
 #else
  config.role=RoleRepeater;key(0x82);shot("repeater");key(0x86);
- config.role=RoleRoom;key(0x82);shot("room");key(13);for(char ch:std::string(config.lang==LangRu?"Vstre1a u vhoda posle obeda":"Meet at the gate after lunch"))key(ch);shot("room-post");key(0x86);
+ config.role=RoleRoom;key(0x82);shot("room");key(13);for(char ch:std::string("Meet at the gate after lunch"))key(ch);shot("room-post");key(0x86);
  key(0x90);key(0xb5);key(13);key(0xb6);shot("role-pick");key(0x86);config.role=RoleNormal;key(0x82);
 #endif
  // The pet: an egg, a happy kid with a new friend, a hungry adult, an ill teen and a grave with its memory.
@@ -257,7 +257,7 @@ static void scenario(){
     look(pet::Adult,850,900,1000,2600,nullptr,pet::NoEffect);snprintf(n,sizeof n,"pet-kind%02u-grown",i);snap(n);}
    creature.s.species=0;}
   look(pet::Egg,700,700,1000,0,nullptr,pet::NoEffect);snap("pet-egg");
-  look(pet::Child,820,900,1000,190,config.lang==LangRu?"Новый друг: Марат":"New friend: Marat",pet::Hearts);snap("pet-happy");
+  look(pet::Child,820,900,1000,190,"New friend: Marat",pet::Hearts);snap("pet-happy");
   creature.speechAt=0;snap("pet-stats");
   creature.s.species=3;look(pet::Adult,120,520,700,2600,nullptr,pet::NoEffect);snap("pet-hungry");
   creature.s.species=5;look(pet::Teen,420,300,260,900,nullptr,pet::NoEffect);snap("pet-ill");
@@ -315,7 +315,7 @@ static void scenario(){
   must(dicer.command("dice char use 1").startsWith("OK")&&dicer.value(0)==17,"the character's sheet comes back");
   must(dicer.command("dice pool 3 d8 -2").startsWith("OK")&&dicer.poolText()=="3d8-2","pool");
   // D&D: modifiers, derived values, skills, spending.
-  bool ru=config.lang==LangRu;
+  
   must(dicer.command("dice char new dnd Arwen").startsWith("OK")&&dicer.sheet.count>=40,"D&D template");
   int dex=dicer.find("dex"),ac=dicer.find("ac"),init=dicer.find("init"),sl1=dicer.find("sl1");must(dex>=0&&ac>=0&&init>=0&&sl1>=0,"D&D codes");
   must(dicer.value(ac)==10&&dicer.badge(dex)=="+0","AC 10 at DEX 10");
@@ -369,13 +369,13 @@ static void scenario(){
   must(dicer.json().indexOf("\"overflowed\"")<0,"the reply fits");
   // The screens: the general set with saved rolls, a D&D and a R.E.T. character.
   dicer.s=dice::State();dicer.clearResults();dicer.gridReset();dicer.applyTemplate(dice::Blank);dicer.deleteBlock(0);
-  dicer.addRoll("8d6",ru?"Огненный шар":"Fireball");dicer.addRoll("d20+5",ru?"Атака мечом":"Sword attack");dicer.addRoll("2d6+3",ru?"Урон":"Damage");dicer.addRoll("d20+7",ru?"Скрытность":"Stealth");
+  dicer.addRoll("8d6","Fireball");dicer.addRoll("d20+5","Sword attack");dicer.addRoll("2d6+3","Damage");dicer.addRoll("d20+7","Stealth");
   dicer.colorRoll(1,1);dicer.colorRoll(2,6);dicer.colorRoll(3,9);
-  {int k=dicer.addBlock(dice::Track,0);dicer.setField(k,"name",ru?"Жизни":"Life");dicer.setValue(k,24);dicer.setField(k,"max","30");}
-  dicer.addCharacter(ru?"Арвен":"Arwen",dice::DndTemplate);
+  {int k=dicer.addBlock(dice::Track,0);dicer.setField(k,"name","Life");dicer.setValue(k,24);dicer.setField(k,"max","30");}
+  dicer.addCharacter("Arwen",dice::DndTemplate);
   {const char* v[6]={"8","16","14","12","13","10"};const char* c[6]={"str","dex","con","int","wis","cha"};for(int k=0;k<6;k++)dicer.setValue(dicer.find(c[k]),atoi(v[k]));
    dicer.setValue(dicer.find("hp"),19);dicer.setField(dicer.find("hp"),"max","27");dicer.setValue(dicer.find("dss"),1);dicer.setValue(dicer.find("sl1"),1);}
-  dicer.addCharacter(ru?"Ян":"Yan",dice::RetTemplate);dicer.setValue(dicer.find("cha"),5);dicer.setValue(dicer.find("insp"),4);dicer.setValue(dicer.find("hp"),4);
+  dicer.addCharacter("Yan",dice::RetTemplate);dicer.setValue(dicer.find("cha"),5);dicer.setValue(dicer.find("insp"),4);dicer.setValue(dicer.find("hp"),4);
   dicer.useCharacter(0);
 #if defined(MM_HELTEC_V4)
   const int next=13,hold=0xa3,run=0xa3;const char* prefix="heltec-";
@@ -384,7 +384,7 @@ static void scenario(){
   if(uiStatus().indexOf("\"page\":\"dice\"")<0){printf("FAIL dice page: %s\n",uiStatus().c_str());exit(1);}
   snap("dice-closed");key(hold);must(uiStatus().indexOf("\"app_open\":true")>=0,"hold opens dice");
   snap("dice-empty");key(hold);snap("dice-menu");key(run);must(dicer.resultCount==1&&uiStatus().indexOf("\"menu\":false")>=0,"hold, hold rolls the pool");snap("dice-rpg");
-  dicer.roll("d20+5",ru?"Атака мечом":"Sword attack");snap("dice-saved");dicer.roll("d4+d6+d8+d10+d12");snap("dice-shapes");
+  dicer.roll("d20+5","Sword attack");snap("dice-saved");dicer.roll("d4+d6+d8+d10+d12");snap("dice-shapes");
   dicer.setMode(dice::Grid);dicer.gridChoose(10);dicer.gridSetThreshold(true,4);dicer.gridRoll();snap("dice-grid");
   dicer.setMode(dice::Sheet);tick();snap("dice-counters");key(hold);
   // Count with button: click +1, hold -1, a 5 s hold leaves and takes that hold's -1 back.
@@ -406,7 +406,7 @@ static void scenario(){
   shot("dice-empty");key(13);shot("dice-rpg");must(dicer.resultCount==1&&dicer.last()->parts==2,"OK rolls the pool");
   dicer.roll("d4+d6+d8+d10+d12+d20");shot("dice-shapes");
   dicer.roll("d66+d%+d66");shot("dice-d66");
-  key('s');shot("dice-saved");key(0xb6);key(13);must(String(dicer.last()->label)==(ru?"Атака мечом":"Sword attack"),"saved roll from the list");shot("dice-saved-roll");
+  key('s');shot("dice-saved");key(0xb6);key(13);must(String(dicer.last()->label)==("Sword attack"),"saved roll from the list");shot("dice-saved-roll");
   key('e');for(int i=0;i<5;i++)key(8);for(char ch:std::string("4d6-2"))key(ch);shot("dice-formula");key(13);must(String(dicer.last()->formula)=="4d6-2","typed formula");
   key('m');for(int i=0;i<10;i++)key(0xb7);key('t');key(13);must(dicer.gridRolled&&dicer.s.gridChosen==10&&dicer.s.thresholdOn,"grid roll");shot("dice-grid");
   key('m');shot("dice-counters");key('+');must(dicer.value(0)==25,"+ on the sheet");key('v');for(int i=0;i<3;i++)key(8);key('-');key('7');key(13);must(dicer.value(0)==18,"V: -7");
@@ -427,7 +427,7 @@ static void scenario(){
    key(8);key(8);must(dicer.sheet.count==blocks&&uiStatus().indexOf("\"dice_sheet\":\"main\"")>=0,"DEL twice deletes");}
   key('p');key(0xb6);key(13);must(dicer.s.character==2,"choose Yan");choose(0);dicer.roll("r5+3",dicer.sheet.block[dicer.find("cha")].name);shot("dice-sheet-ret");
   choose(dicer.find("insp"));for(int k=0;k<3;k++)tick();shot("dice-sheet-ret-low");
-  key('p');key('a');for(char ch:std::string(ru?"Mira":"Mira"))key(ch);key(13);must(uiStatus().indexOf("\"dice_sheet\":\"templates\"")>=0,"name, then the template");shot("dice-templates");
+  key('p');key('a');for(char ch:std::string("Mira"))key(ch);key(13);must(uiStatus().indexOf("\"dice_sheet\":\"templates\"")>=0,"name, then the template");shot("dice-templates");
   key(0xb6);key(0xb6);key(13);must(dicer.s.characters==4&&dicer.find("mind")>=0,"a R.E.T. character from the screen");
   dicer.command("dice char del");
   // A sheet from a contact: the mark by the name, the offer page.
@@ -491,7 +491,7 @@ static void scenario(){
   must(meshRadio.historyCount==sent+2&&String(meshRadio.history[sent+1].text)==quickSend::state.text[quickSend::Count-1]&&meshRadio.history[sent+1].destination==to,"last preset remains reachable and sends its own text");
   key(13);key(hold);must(uiStatus().indexOf("\"page\":\"people\"")>=0,"Quick exit advances to counter");shot("heltec-people-closed");key(hold);must(uiStatus().indexOf("\"app_open\":true")>=0,"hold opens the counter");int32_t manual=people::value();key(13);must(people::value()==manual+1,"manual +1");key(hold);shot("heltec-people-menu");key(hold);must(people::value()==manual,"manual -1 menu");
   key(hold);key(13);key(hold);must(people::tally.count==2&&people::tally.current==1,"menu adds a card and opens it");key(13);key(13);must(people::value()==2,"the new card counts");
-  people::rename(1,config.lang==LangRu?"Кофе":"Coffee");fakeMillis+=4000;tick();shot("heltec-people-two");key(hold);key(13);key(hold);must(people::tally.current==0&&people::value()==manual,"menu turns to the next card");
+  people::rename(1,"Coffee");fakeMillis+=4000;tick();shot("heltec-people-two");key(hold);key(13);key(hold);must(people::tally.current==0&&people::value()==manual,"menu turns to the next card");
   people::select(1);key(hold);for(int i=0;i<4;i++)key(13);key(hold);must(people::tally.count==2,"delete asks again");shot("heltec-people-delete");key(hold);must(people::tally.count==1,"second hold deletes");
   shot("heltec-people");
   key(hold);StaticJsonDocument<768>d;deserializeJson(d,uiStatus());unsigned n=d["menu_count"]|0;must(n>=3,"counter exit menu");for(unsigned i=0;i<n-2;i++)key(13);key(hold);must(uiStatus().indexOf("\"page\":\"dice\"")>=0,"counter exit advances to dice");key(hold);
@@ -505,11 +505,11 @@ static void scenario(){
   key(0xb5);key(0xb5);shot("quick-last");key(13);
   must(meshRadio.historyCount==sent+2&&String(meshRadio.history[sent+1].text)==quickSend::state.text[quickSend::Count-1],"last preset remains reachable and sends its own text");
   key(0x86);key(0xb7);key(13);int32_t manual=people::value();key(13);must(people::value()==manual+1,"counter +1");key(0xb6);must(people::value()==manual,"counter -1");
-  bool ru=config.lang==LangRu;people::rename(0,ru?"Гости":"Guests");people::set(0,27);shot("people");
+  people::rename(0,"Guests");people::set(0,27);shot("people");
   key(0xb7);must(uiStatus().indexOf("\"tally_new\":true")>=0,"right of the last card: a new one");shot("people-new");key(13);must(people::tally.count==2&&people::tally.current==1,"OK adds a card");
-  key('n');for(char ch:std::string(ru?"Kofe":"Coffee"))key(ch);shot("people-name");key(13);key(13);key(13);must(people::value()==2,"the new card counts on its own");
+  key('n');for(char ch:std::string("Coffee"))key(ch);shot("people-name");key(13);key(13);key(13);must(people::value()==2,"the new card counts on its own");
   key(0xb4);must(people::tally.current==0&&people::value()==27,"left turns back to the first card");key(0xb7);key(0x08);key(0x08);must(people::tally.count==1,"DEL twice deletes");
-  people::add(ru?"Круги":"Laps");people::set(1,12);people::recolor(1,7);people::add(ru?"Подходы":"Sets");people::set(2,4);people::recolor(2,5);people::select(0);fakeMillis+=4000;tick();shot("people-cards");
+  people::add("Laps");people::set(1,12);people::recolor(1,7);people::add("Sets");people::set(2,4);people::recolor(2,5);people::select(0);fakeMillis+=4000;tick();shot("people-cards");
   people::remove(2);people::remove(1);key(0x86);
 #endif
   config.apps[0]=0;printf("wishlist UI checks passed\n");}

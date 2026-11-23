@@ -78,7 +78,7 @@ void Ledger::gotPart(uint64_t from,const char* args){
   uint8_t w[WireSize];size_t got=unb64(p->b64,strlen(p->b64),w,sizeof w);p->used=false;if(got!=WireSize)return;
   rating::Record r;unpack(w,r);if(rating::Book::idOfRecord(r)!=id||!verified(r))return;
   if(rating::book.add(r,"")){received++;if(PeerState* s=state(from,true))s->got++;
-    event=tr("Rating ledger: records received ","Журнал рейтинга: получено записей ")+String(received);events++;}
+    event=tr("Rating ledger: records received ")+String(received);events++;}
 }
 void Ledger::handle(uint64_t from,const char* text){
   const char* rest=text+3;char verb[6]={};int used=0;if(sscanf(rest,"%5s%n",verb,&used)<1)return;const char* args=rest+used;while(*args==' ')args++;

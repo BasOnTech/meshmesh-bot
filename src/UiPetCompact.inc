@@ -16,10 +16,10 @@ void petSign(int x,int y,int which){
  else{c.fillRect(x+2,y-2,3,7,1);c.fillRect(x,y,7,3,1);}
 }
 void petBarMono(int x,int y,int w,uint16_t v){auto& c=*hardware.canvas;c.drawRect(x,y,w,5,1);int f=(w-2)*v/pet::Full;if(f)c.fillRect(x+1,y+1,f,3,1);}
-String petTitle(){if(!creature.has())return t("Pet","Питомец");return creature.alive()&&creature.s.stage!=pet::Egg?String(creature.s.name)+" "+t("Lv","Ур.")+String(creature.level()):String(creature.s.name);}
+String petTitle(){if(!creature.has())return t("Pet");return creature.alive()&&creature.s.stage!=pet::Egg?String(creature.s.name)+" "+t("Lv")+String(creature.level()):String(creature.s.name);}
 void drawPetMono(){
  auto& c=*hardware.canvas;uint32_t now=millis();const auto& s=creature.s;
- if(!creature.has()){say(0,26,t("No pet","Нет питомца"),bold);textLines(t("Feeds on the radio, grows, needs care. Optional.","Кормится эфиром, растёт, требует ухода. По желанию."),38,2);return;}
+ if(!creature.has()){say(0,26,t("No pet"),bold);textLines(t("Feeds on the radio, grows, needs care. Optional."),38,2);return;}
  petMono(0,11,3,now);
  if(creature.mood()==pet::Sleepy)say(42,20+((now/700)%2)*3,"z",small);
  if(creature.effect==pet::Hearts&&now-creature.effectAt<2500){int dy=(now-creature.effectAt)/200;c.fillCircle(38,24-dy,1,1);c.fillCircle(42,24-dy,1,1);c.fillTriangle(37,24-dy,43,24-dy,40,27-dy,1);}
@@ -30,12 +30,12 @@ void drawPetMono(){
    if(end<v.length()&&space>at)end=space;rows[n++]=v.substring(at,end);at=end;while(at<v.length()&&v[at]==' ')at++;}
   c.drawRoundRect(x-2,12,78,45,3,1);c.drawLine(x-2,40,x-6,44,1);c.drawLine(x-6,44,x-2,46,1);c.drawFastVLine(x-2,41,5,0);
   for(unsigned i=0;i<n;i++)say(x+1,22+i*9,rows[i],small);return;}
- if(s.stage==pet::Egg){say(x,21,creature.stageName(pet::Egg),small);say(x,31,t("hatches in","до вылупления"),small);say(x,41,creature.ageText(creature.hatchLeft()),bold);
+ if(s.stage==pet::Egg){say(x,21,creature.stageName(pet::Egg),small);say(x,31,t("hatches in"),small);say(x,41,creature.ageText(creature.hatchLeft()),bold);
   petBarMono(x,46,75,(900-creature.hatchLeft())*pet::Full/900);return;}
- if(!creature.alive()){say(x,21,creature.stageName(pet::Dead),bold);say(x,31,clipped(creature.causeText(s.cause),15),small);say(x,41,clipped(t("lived ","прожил ")+creature.ageText(s.age),15),small);
-  say(x,51,clipped(s.mortal?t("death: on","смерть: вкл."):t("death: off","смерть: выкл."),15),small);return;}
+ if(!creature.alive()){say(x,21,creature.stageName(pet::Dead),bold);say(x,31,clipped(creature.causeText(s.cause),15),small);say(x,41,clipped(t("lived ")+creature.ageText(s.age),15),small);
+  say(x,51,clipped(s.mortal?t("death: on"):t("death: off"),15),small);return;}
  say(x,19,clipped(creature.moodName(),15),small);
  const uint16_t values[3]={s.food,s.joy,s.health};
  for(int i=0;i<3;i++){int y=26+i*9;petSign(x,y+1,i);petBarMono(x+10,y,65,values[i]);}
- say(x,55,clipped(t("snacks ","вкусн. ")+String(s.snacks),15),small);
+ say(x,55,clipped(t("snacks ")+String(s.snacks),15),small);
 }

@@ -10,8 +10,8 @@
 #include <esp_spi_flash.h>
 #endif
 
-const char* const langCodes[LangCount]={"en","ru"};
-const char* const langNames[LangCount]={"English","Русский"};
+const char* const langCodes[LangCount]={"en"};
+const char* const langNames[LangCount]={"English"};
 int langFromCode(const String& code){for(int i=0;i<LangCount;i++)if(code==langCodes[i])return i;return -1;}
 bool langAvailable(uint8_t l){return l<LangCount;}
 uint8_t langStep(uint8_t l,int dir){for(int i=0;i<LangCount;i++){l=(l+LangCount+(dir<0?-1:1))%LangCount;if(langAvailable(l))break;}return l;}
@@ -27,35 +27,33 @@ uint32_t hashParts(std::initializer_list<const char*> parts){
 // The translation for the interface language, nullptr when there is none.
 const char* lookup(uint32_t key){
 #if MM_I18N_TABLE
- uint8_t l=lang();if(l<2)return nullptr;
+ uint8_t l=lang();if(l<1)return nullptr;
  unsigned lo=0,hi=i18nTable::count;
  while(lo<hi){unsigned mid=(lo+hi)/2;if(i18nTable::keys[mid]<key)lo=mid+1;else hi=mid;}
  if(lo>=i18nTable::count||i18nTable::keys[lo]!=key)return nullptr;
- if(!i18nTable::texts[l-2])return nullptr;
- const char* s=i18nTable::texts[l-2]+i18nTable::offsets[l-2][lo];return *s?s:nullptr;
+ if(!i18nTable::texts[l-1])return nullptr;
+ const char* s=i18nTable::texts[l-1]+i18nTable::offsets[l-1][lo];return *s?s:nullptr;
 #else
- (void)key;return nullptr; // no language after en and ru in this image (I18nTable.h)
+ (void)key;return nullptr; // no language after en in this image (I18nTable.h)
 #endif
 }
 // CLDR plural categories: 0 zero, 1 one, 2 two, 3 few, 4 many, 5 other.
+// A language with other rules gets its own case here.
 uint8_t category(uint8_t l,unsigned n){
- unsigned d=n%10,h=n%100;
  switch(l){
- case LangRu:return d==1&&h!=11?1:d>=2&&d<=4&&(h<12||h>14)?3:4;
  default:return n==1?1:5;
  }
 }
 }
 
-const char* trKey(const char* en,const char* ru,uint32_t key){
- uint8_t l=lang();if(l==LangEn)return en;if(l==LangRu)return ru?ru:en;
+const char* trKey(const char* en,uint32_t key){
+ uint8_t l=lang();if(l==LangEn)return en;
  const char* s=lookup(key);return s?s:en;
 }
 
-String plural(unsigned n,const char* one,const char* many,const char* ru1,const char* ru2,const char* ru5){
+String plural(unsigned n,const char* one,const char* many){
  uint8_t l=lang();String form;
- if(l==LangRu){uint8_t c=category(l,n);form=c==1?ru1:c==3?ru2:ru5;}
- else if(const char* s=l==LangEn?nullptr:lookup(hashParts({one,many,ru1,ru2,ru5}))){
+ if(const char* s=l==LangEn?nullptr:lookup(hashParts({one,many}))){
   // six forms separated by 0x1f; a missing one is "other"
   String all(s),forms[6];unsigned at=0;for(int i=0;i<6;i++){int end=all.indexOf('\x1f',at);if(end<0)end=all.length();forms[i]=all.substring(at,end);at=end+1;}
   form=forms[category(l,n)];if(!form.length())form=forms[5];

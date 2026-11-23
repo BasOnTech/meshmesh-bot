@@ -47,46 +47,46 @@ void drawPiece(int8_t piece,int x,int y,int scale=1){
 }
 String localSan(const char* san){return chessLocalSan(san);}
 String lastSan(const ChessMatch& m){if(!m.game.plies)return "";char s[12];m.game.at(m.game.plies-1).san(m.game.moves[m.game.plies-1],s,sizeof s);return localSan(s);}
-String moveCount(const ChessMatch& m){return count((m.game.plies+1)/2,"move","moves","ход","хода","ходов");}
-String colorName(uint8_t c,bool of=false){return c==ch::White?(of?t("White","белыми"):t("White","белые")):(of?t("Black","чёрными"):t("Black","чёрные"));}
+String moveCount(const ChessMatch& m){return count((m.game.plies+1)/2,"move","moves");}
+String colorName(uint8_t c,bool of=false){return c==ch::White?(of?t("White"):t("White")):(of?t("Black"):t("Black"));}
 // One line about the state of a game, for the list and for the board.
 String chessState(const ChessMatch& m,bool board=false){
  switch(m.state){
- case ChessMatch::Inviting:return t("Challenge sent","Вызов отправлен");
- case ChessMatch::Invited:return t("Challenges you: you play ","Вызывает вас: вы играете ")+colorName(m.mine,true);
- case ChessMatch::Playing:if(m.drawOffer==ChessMatch::OfferedToMe&&!board)return t("Offers a draw","Предлагает ничью"); // the board shows it on its own strip
-  return m.myTurn()?(m.game.pos.inCheck()?t("Your move: check!","Ваш ход: шах!"):t("Your move","Ваш ход")):t("Their move","Ход соперника");
+ case ChessMatch::Inviting:return t("Challenge sent");
+ case ChessMatch::Invited:return t("Challenges you: you play ")+colorName(m.mine,true);
+ case ChessMatch::Playing:if(m.drawOffer==ChessMatch::OfferedToMe&&!board)return t("Offers a draw"); // the board shows it on its own strip
+  return m.myTurn()?(m.game.pos.inCheck()?t("Your move: check!"):t("Your move")):t("Their move");
  case ChessMatch::Over:{
-  if(m.reason==ChessMatch::Declined)return t("Challenge declined","Вызов отклонён");
-  if(m.reason==ChessMatch::Cancelled)return t("Game cancelled","Партия отменена");
-  String r=m.won()?t("You won","Победа"):m.lost()?t("You lost","Поражение"):t("Draw","Ничья");
-  switch(m.reason){case ChessMatch::Mate:return r+t(": checkmate",": мат");case ChessMatch::Resigned:return r+(m.won()?t(": they resigned",": соперник сдался"):t(": you resigned",": вы сдались"));
-   case ChessMatch::Stalemate:return r+t(": stalemate",": пат");case ChessMatch::Repetition:return r+t(": repetition",": повторение");case ChessMatch::FiftyMoves:return r+t(": 50 moves",": 50 ходов");
-   case ChessMatch::DeadPosition:return r+t(": no mating material",": мало фигур");case ChessMatch::TooLong:return r+t(": move limit",": предел ходов");case ChessMatch::Agreed:return r+t(" by agreement"," по соглашению");default:return r;}
+  if(m.reason==ChessMatch::Declined)return t("Challenge declined");
+  if(m.reason==ChessMatch::Cancelled)return t("Game cancelled");
+  String r=m.won()?t("You won"):m.lost()?t("You lost"):t("Draw");
+  switch(m.reason){case ChessMatch::Mate:return r+t(": checkmate");case ChessMatch::Resigned:return r+(m.won()?t(": they resigned"):t(": you resigned"));
+   case ChessMatch::Stalemate:return r+t(": stalemate");case ChessMatch::Repetition:return r+t(": repetition");case ChessMatch::FiftyMoves:return r+t(": 50 moves");
+   case ChessMatch::DeadPosition:return r+t(": no mating material");case ChessMatch::TooLong:return r+t(": move limit");case ChessMatch::Agreed:return r+t(" by agreement");default:return r;}
  }
  default:return "";
  }
 }
 uint16_t chessStateColor(const ChessMatch& m){if(m.state==ChessMatch::Invited||m.myTurn()||m.drawOffer==ChessMatch::OfferedToMe)return accent;if(m.state==ChessMatch::Over)return m.won()?ok:m.lost()?bad:dim;return dim;}
 String deliveryText(const ChessMatch& m){
- switch(m.link()){case ChatMessage::Queued:return t("sending","отправляется");case ChatMessage::Sent:return t("sent, no ACK yet","отправлено, ждём ACK");case ChatMessage::Delivered:return t("delivered","доставлено");
- case ChatMessage::Failed:{if(m.autoStopped)return t("not delivered (R)","не доставлено (R)");int32_t s=chessNet.retryIn(m);
-  return s<0?t("not delivered, resending","не доставлено, повторяю"):s<60?t("not delivered, retry now","не доставлено, повтор сейчас"):t("not delivered, retry in ","не доставлено, повтор через ")+String((s+59)/60)+t(" min"," мин");}}
+ switch(m.link()){case ChatMessage::Queued:return t("sending");case ChatMessage::Sent:return t("sent, no ACK yet");case ChatMessage::Delivered:return t("delivered");
+ case ChatMessage::Failed:{if(m.autoStopped)return t("not delivered (R)");int32_t s=chessNet.retryIn(m);
+  return s<0?t("not delivered, resending"):s<60?t("not delivered, retry now"):t("not delivered, retry in ")+String((s+59)/60)+t(" min");}}
  return "";
 }
 // The rating line of a rated game: waiting for the signatures, the change, or why it does not count.
 String chessRatingText(const ChessMatch& m){
- if(!m.rated)return t("Friendly game","Товарищеская");
- if(m.state!=ChessMatch::Over)return t("Rated game","На рейтинг");
+ if(!m.rated)return t("Friendly game");
+ if(m.state!=ChessMatch::Over)return t("Rated game");
  switch(m.sign){
- case ChessMatch::SignStored:{const rating::Delta* d=rating::book.delta(m.peer,m.id);if(!d)return t("Rated","В рейтинге");int diff=d->after-d->before;
-  return d->counted?"ELO "+String(d->after)+" ("+(diff>=0?"+":"")+String(diff)+")":t("Over the daily limit","Сверх дневного предела");}
- case ChessMatch::SignBad:return t("Not rated: signatures","Без рейтинга: подписи");
- case ChessMatch::SignNone:return t("Not rated","Без рейтинга");
- default:return m.theirSigned?t("Rating: checking","Рейтинг: проверка"):t("Rating: their signature","Рейтинг: ждём подпись");
+ case ChessMatch::SignStored:{const rating::Delta* d=rating::book.delta(m.peer,m.id);if(!d)return t("Rated");int diff=d->after-d->before;
+  return d->counted?"ELO "+String(d->after)+" ("+(diff>=0?"+":"")+String(diff)+")":t("Over the daily limit");}
+ case ChessMatch::SignBad:return t("Not rated: signatures");
+ case ChessMatch::SignNone:return t("Not rated");
+ default:return m.theirSigned?t("Rating: checking"):t("Rating: their signature");
  }
 }
-String chessTileDetail(){unsigned w=chessNet.waiting(),n=chessNet.count();if(w)return count(w,"game waits","games wait","ждёт хода","ждут хода","ждут хода");if(n)return count(n,"game","games","партия","партии","партий");return t("With contacts","С контактами");}
+String chessTileDetail(){unsigned w=chessNet.waiting(),n=chessNet.count();if(w)return count(w,"game waits","games wait");if(n)return count(n,"game","games");return t("With contacts");}
 bool chessPage(){return page==ChessList||page==ChessPick||page==ChessBoard||page==ChessTour||page==ChessTourNew;}
 
 // The list: games that need the player first, then the newest.
@@ -103,7 +103,7 @@ void chessSortPeers(){
 void colorDisc(int cx,int cy,uint8_t c){g().fillCircle(cx,cy,5,c==ch::White?pieceWhite:pieceBlack);g().drawCircle(cx,cy,5,c==ch::White?faint:dim);}
 // Three tabs: games, tournaments, rating (<> or a tap; 1-3 on the keyboard).
 void drawChessTabs(){
- String names[]={t("Games","Партии"),t("Tournaments","Турниры"),t("Rating","Рейтинг")};unsigned badges[]={chessNet.waiting(),tour::net.waiting(),0};
+ String names[]={t("Games"),t("Tournaments"),t("Rating")};unsigned badges[]={chessNet.waiting(),tour::net.waiting(),0};
  for(int i=0;i<3;i++){int x=8+i*101,w=98;bool on=i==chessTab;if(on)panel(x,23,w,20,cardHi,6);int tw=measure(names[i],on?bold:body);textCenter(x+w/2,37,names[i],on?ink:dim,on?bold:body);
   if(on)g().fillRoundRect(x+w/2-tw/2,40,tw,2,1,accent);target(x,23,w,20,-('1'+i));
   if(badges[i]){g().fillCircle(x+w/2+tw/2+8,31,6,accent);textCenter(x+w/2+tw/2+8,34,String(badges[i]),bg,small);}}
@@ -114,9 +114,9 @@ void drawChessList(){
  chessSortRows();int total=1+chessRowCount;if(selected>=total)selected=total-1;int first=max(0,selected-3);
  for(int i=first;i<total&&i<first+4;i++){
   int y=46+(i-first)*44;bool focus=selected==i;listRow(y,42,focus);target(8,y,304,42,i);
-  if(i==0){g().fillCircle(32,y+21,14,rgb(0x14524b));g().fillRect(31,y+13,3,17,accent);g().fillRect(24,y+20,17,3,accent);text(56,y+17,t("New game","Новая партия"),ink,bold);text(56,y+32,fit(!chessNet.room()?t("Six games in progress: finish one","Идут шесть партий: завершите одну"):t("Challenge a chat contact","Вызвать чат-контакт"),240,small),dim,small);continue;}
+  if(i==0){g().fillCircle(32,y+21,14,rgb(0x14524b));g().fillRect(31,y+13,3,17,accent);g().fillRect(24,y+20,17,3,accent);text(56,y+17,t("New game"),ink,bold);text(56,y+32,fit(!chessNet.room()?t("Six games in progress: finish one"):t("Challenge a chat contact"),240,small),dim,small);continue;}
   const ChessMatch& m=*chessRows[i-1];Peer* p=peerOf(m.peer);avatar(32,y+21,14,m.peer,m.name,p?p->type:-1);colorDisc(44,y+32,m.mine);
-  String right=m.game.plies?moveCount(m):String();if(m.updated)right=timeText(m.updated);if(m.tour)right=t("R","т")+String(m.round)+" · "+right;int rw=measure(right,small);
+  String right=m.game.plies?moveCount(m):String();if(m.updated)right=timeText(m.updated);if(m.tour)right=t("R")+String(m.round)+" · "+right;int rw=measure(right,small);
   text(56,y+17,fit(m.name,232-rw,bold),ink,bold);textRight(304,y+16,right,faint,small);
   String detail=chessState(m);if(m.game.plies&&m.state!=ChessMatch::Invited)detail+=" · "+lastSan(m);if(m.state==ChessMatch::Playing&&m.link()==ChatMessage::Failed)detail=deliveryText(m);
   if(m.state==ChessMatch::Over&&m.rated&&m.sign==ChessMatch::SignStored)if(const rating::Delta* d=rating::book.delta(m.peer,m.id))if(d->counted){int diff=d->after-d->before;detail+=" · "+String(diff>=0?"+":"")+String(diff);}
@@ -124,52 +124,52 @@ void drawChessList(){
   if(m.unseen||m.state==ChessMatch::Invited||m.myTurn())g().fillCircle(300,y+30,4,accent);
  }
  scrollbar(first,4,total,46,172);
- if(!chessRowCount){String rows[3];unsigned n=wrap(t("Moves travel as direct MeshCore messages with delivery confirmation. Both players need a MeshMesh M9 with chess.","Ходы идут личными сообщениями MeshCore с подтверждением доставки. Сопернику нужен MeshMesh M9 с шахматами."),rows,3,300);for(unsigned k=0;k<n;k++)textCenter(160,116+k*16,rows[k],faint);}
+ if(!chessRowCount){String rows[3];unsigned n=wrap(t("Moves travel as direct MeshCore messages with delivery confirmation. Both players need a MeshMesh M9 with chess."),rows,3,300);for(unsigned k=0;k<n;k++)textCenter(160,116+k*16,rows[k],faint);}
  bool over=selected>0&&chessRows[selected-1]->state==ChessMatch::Over;
- if(over)footer({{"OK",t("Open","Открыть")},{"DEL",chessRemoveArmed?t("Sure?","Удалить?"):t("Remove","Удалить")},{"<>",t("Tabs","Разделы")},{"BACK",t("Menu","Меню")}});
- else footer({{"OK",selected?t("Open","Открыть"):t("Choose","Выбрать")},{"<>",t("Tabs","Разделы")},{"BACK",t("Menu","Меню")}});
+ if(over)footer({{"OK",t("Open")},{"DEL",chessRemoveArmed?t("Sure?"):t("Remove")},{"<>",t("Tabs")},{"BACK",t("Menu")}});
+ else footer({{"OK",selected?t("Open"):t("Choose")},{"<>",t("Tabs")},{"BACK",t("Menu")}});
 }
 // Rating tab: my rating and its last changes, then the players with my score against each.
 void drawChessRating(){
  const rating::Player& me=rating::book.players[0];bool ready=rating::book.ready;
- panel(8,46,304,74,card,7);text(18,62,t("Your rating","Ваш рейтинг"),dim,small);text(18,88,String(rating::book.myElo()),ink,big);
+ panel(8,46,304,74,card,7);text(18,62,t("Your rating"),dim,small);text(18,88,String(rating::book.myElo()),ink,big);
  unsigned h=rating::book.historyCount;
- if(h>=2){int diff=rating::book.history[h-1]-rating::book.history[0];text(66,87,(diff>=0?"+":"")+String(diff)+t(" in "," за ")+count(h-1,"game","games","партию","партии","партий"),diff>=0?ok:bad,small);}
+ if(h>=2){int diff=rating::book.history[h-1]-rating::book.history[0];text(66,87,(diff>=0?"+":"")+String(diff)+t(" in ")+count(h-1,"game","games"),diff>=0?ok:bad,small);}
  int x=18,y=106;
- if(ready&&me.wins+me.draws+me.losses){x=text(x,y,count(me.wins+me.draws+me.losses,"game","games","партия","партии","партий")+": ",dim,small);x=text(x,y,"+"+String(me.wins),ok,small);x=text(x,y," ="+String(me.draws),dim,small);text(x,y," -"+String(me.losses),bad,small);}
- else text(x,y,t("No rated games yet","Партий на рейтинг пока нет"),faint,small);
+ if(ready&&me.wins+me.draws+me.losses){x=text(x,y,count(me.wins+me.draws+me.losses,"game","games")+": ",dim,small);x=text(x,y,"+"+String(me.wins),ok,small);x=text(x,y," ="+String(me.draws),dim,small);text(x,y," -"+String(me.losses),bad,small);}
+ else text(x,y,t("No rated games yet"),faint,small);
  int gx=180,gy=56,gw=124,gh=48;g().drawFastHLine(gx,gy+gh,gw,line);
  if(h>=2){int lo=rating::book.history[0],hi=lo;for(unsigned i=0;i<h;i++){lo=min(lo,int(rating::book.history[i]));hi=max(hi,int(rating::book.history[i]));}if(hi-lo<10){lo-=5;hi+=5;}
   for(int k=0;k<3;k++)for(int px=gx;px<gx+gw;px+=4)g().drawPixel(px,gy+k*gh/3,line);
   auto py=[&](int v){return gy+gh-(v-lo)*gh/(hi-lo);};
   for(unsigned i=1;i<h;i++)thickLine(gx+(i-1)*gw/(h-1),py(rating::book.history[i-1]),gx+i*gw/(h-1),py(rating::book.history[i]),accent);
   g().fillCircle(gx+gw,py(rating::book.history[h-1]),3,accent);}
- else textCenter(gx+gw/2,gy+gh/2+4,t("history after 2 games","история после 2 партий"),faint,small);
+ else textCenter(gx+gw/2,gy+gh/2+4,t("history after 2 games"),faint,small);
  // The ledger: records kept here and nodes compared with (S compares now).
- textRight(gx+gw,gy+gh+10,t("ledger ","журнал ")+String(rating::book.records)+" · "+t("synced ","сверен ")+String(ledger::exchange.synced()),faint,small);
+ textRight(gx+gw,gy+gh+10,t("ledger ")+String(rating::book.records)+" · "+t("synced ")+String(ledger::exchange.synced()),faint,small);
  // Players: everyone in the book except me, the highest rating first.
  unsigned order[rating::MaxPlayers],n=0;for(unsigned i=1;i<rating::book.playerCount;i++){const rating::Player& p=rating::book.players[i];if(p.games||p.wins+p.draws+p.losses)order[n++]=i;}
  for(unsigned i=1;i<n;i++)for(unsigned j=i;j>0&&rating::book.players[order[j]].elo>rating::book.players[order[j-1]].elo;j--)std::swap(order[j],order[j-1]);
- text(16,134,t("Players","Игроки"),faint,small);textRight(304,134,t("your score","ваш счёт"),faint,small);
- if(!n)text(16,154,fit(t("Rated games against contacts appear here","Здесь появятся соперники по партиям на рейтинг"),290,small),faint,small);
+ text(16,134,t("Players"),faint,small);textRight(304,134,t("your score"),faint,small);
+ if(!n)text(16,154,fit(t("Rated games against contacts appear here"),290,small),faint,small);
  if(chessRatingSel>=int(n))chessRatingSel=max(0,int(n)-1);int first=max(0,chessRatingSel-2);
  for(int i=first;i<int(n)&&i<first+3;i++){const rating::Player& p=rating::book.players[order[i]];int ry=138+(i-first)*26;listRow(ry,24,i==chessRatingSel);uint64_t id=rating::idOf(p.key);
   Peer* peer=peerOf(id);String name=peer?String(peer->name):String(p.name[0]?p.name:meshRadio.idText(id).c_str());
   text(18,ry+16,String(i+1),faint,small);avatar(40,ry+12,9,id,name,1);text(56,ry+17,fit(name,130,bold),ink,bold);textRight(222,ry+17,String(int(lroundf(p.elo))),ink,bold);
   textRight(304,ry+16,"+"+String(p.wins)+" ="+String(p.draws)+" -"+String(p.losses),dim,small);}
  scrollbar(first,3,n,138,78);
- footer({{"<>",t("Tabs","Разделы")},{"^v",t("Players","Игроки")},{"S",t("Sync","Сверить")},{"BACK",t("Menu","Меню")}});
+ footer({{"<>",t("Tabs")},{"^v",t("Players")},{"S",t("Sync")},{"BACK",t("Menu")}});
 }
 void drawChessPick(){
- chessSortPeers();panel(8,24,304,30,card,7);text(18,43,t("You play","Вы играете"),dim);
- String colors[]={t("White","Белыми"),t("Black","Чёрными"),t("Random","Случайно")};int cx=222;tri(cx-58,39,3,4,accent);tri(cx+58,39,1,4,accent);
+ chessSortPeers();panel(8,24,304,30,card,7);text(18,43,t("You play"),dim);
+ String colors[]={t("White"),t("Black"),t("Random")};int cx=222;tri(cx-58,39,3,4,accent);tri(cx+58,39,1,4,accent);
  if(chessPickColor<2)colorDisc(cx-42,39,chessPickColor);textCenter(cx+(chessPickColor<2?6:0),44,colors[chessPickColor],ink,bold);
  target(8,24,304,30,-KeyRight); // the colour
  // Rated or friendly (F): a rated game changes both players' ELO once both sign the result.
- panel(8,57,304,28,card,7);text(18,75,t("Game","Партия"),dim);
- text(18+measure(t("Game","Партия"))+10,75,chessPickRated?t("ELO changes for both","ELO меняется у обоих"):t("ELO stays","ELO не меняется"),faint,small);
- textRight(300,76,chessPickRated?t("Rated","На рейтинг"):t("Friendly","Товарищеская"),chessPickRated?accent:ink,bold);target(8,57,304,28,-'f');
- if(!chessPeerCount){textCenter(160,120,t("No chat contacts yet","Чат-контактов пока нет"),ink,bold);textCenter(160,142,t("Press ADV to announce this node and wait","Нажмите ADV, чтобы объявить узел, и"),dim);textCenter(160,158,t("for the other player's announcement","дождитесь объявления соперника"),dim);footer({{"ADV",t("Announce","Объявить")},{"BACK",t("Games","Партии")}});return;}
+ panel(8,57,304,28,card,7);text(18,75,t("Game"),dim);
+ text(18+measure(t("Game"))+10,75,chessPickRated?t("ELO changes for both"):t("ELO stays"),faint,small);
+ textRight(300,76,chessPickRated?t("Rated"):t("Friendly"),chessPickRated?accent:ink,bold);target(8,57,304,28,-'f');
+ if(!chessPeerCount){textCenter(160,120,t("No chat contacts yet"),ink,bold);textCenter(160,142,t("Press ADV to announce this node and wait"),dim);textCenter(160,158,t("for the other player's announcement"),dim);footer({{"ADV",t("Announce")},{"BACK",t("Games")}});return;}
  if(selected>=int(chessPeerCount))selected=chessPeerCount-1;int first=max(0,selected-2);
  for(int i=first;i<int(chessPeerCount)&&i<first+3;i++){
   const Peer& p=meshRadio.peers[chessPeers[i]];int y=88+(i-first)*44;bool focus=selected==i;listRow(y,42,focus);target(8,y,304,42,i);avatar(32,y+21,14,p.id,p.name,p.type);
@@ -177,11 +177,11 @@ void drawChessPick(){
   if(chessPickRated){int win,draw,loss;rating::book.expected(p.id,win,draw,loss);String w="+"+String(win),l=String(loss);rw=max(measure(w,bold),measure(l,bold))+6;
    textRight(304,y+17,w,ok,bold);textRight(304,y+32,l,bad,bold);}
   text(56,y+17,fit(p.name,240-rw,bold),ink,bold);
-  String info=(p.heard?(millis()-p.seen<60000?ago(0):ago(millis()-p.seen)+t(" ago"," назад"))+" · ":String())+pathText(p);if(chessPickRated)info="ELO "+String(rating::book.elo(p.id))+" · "+info;
+  String info=(p.heard?(millis()-p.seen<60000?ago(0):ago(millis()-p.seen)+t(" ago"))+" · ":String())+pathText(p);if(chessPickRated)info="ELO "+String(rating::book.elo(p.id))+" · "+info;
   text(56,y+32,fit(info,240-rw,small),p.heard&&millis()-p.seen<1800000?ok:dim,small);
  }
  scrollbar(first,3,chessPeerCount,88,130);
- footer({{"OK",t("Challenge","Вызвать")},{"<>",t("Colour","Цвет")},{"F",chessPickRated?t("Friendly","Товарищ."):t("Rated","Рейтинг")},{"BACK",t("Back","Назад")}});
+ footer({{"OK",t("Challenge")},{"<>",t("Colour")},{"F",chessPickRated?t("Friendly"):t("Rated")},{"BACK",t("Back")}});
 }
 
 // Board: from the player's side; a1 is bottom left for White and top right for Black.
@@ -226,46 +226,46 @@ void drawChessSide(){
   int ply=sanRows.first+r*2,y=64+r*14;String no=String(ply/2+1)+".";text(x+2,y,no,faint,small);
   for(int k=0;k<2&&ply+k<m.game.plies;k++){bool latest=ply+k==m.game.plies-1;String s=localSan(sanRows.san[ply+k-sanRows.first]);text(x+22+k*44,y,fit(s,44),latest?accent:ink);}
  }
- if(!m.game.plies)text(x+2,64,fit(m.state==ChessMatch::Inviting?t("Waiting for reply","Ждём ответа"):m.state==ChessMatch::Invited?t("OK accepts","OK — принять"):t("No moves yet","Ходов ещё нет"),w,small),faint,small);
+ if(!m.game.plies)text(x+2,64,fit(m.state==ChessMatch::Inviting?t("Waiting for reply"):m.state==ChessMatch::Invited?t("OK accepts"):t("No moves yet"),w,small),faint,small);
  int diff=m.game.material(m.mine)-m.game.material(m.mine^1);
- panel(x,176,w,42,card,6);colorDisc(x+10,188,m.mine);text(x+20,192,t("You","Вы"),ink,bold);if(diff)textRight(x+w-6,191,(diff>0?"+":"")+String(diff),diff>0?ok:bad,small);
+ panel(x,176,w,42,card,6);colorDisc(x+10,188,m.mine);text(x+20,192,t("You"),ink,bold);if(diff)textRight(x+w-6,191,(diff>0?"+":"")+String(diff),diff>0?ok:bad,small);
  String state=chessState(m,true),rowsText[2];unsigned n=wrap(state,rowsText,2,w-10,small);
  // Delivery of the last command matters while waiting or when it failed; otherwise the rating line.
  String deliver=(m.myTurn()||m.state==ChessMatch::Over)&&m.link()!=ChatMessage::Failed?chessRatingText(m):deliveryText(m);
- if(m.drawOffer==ChessMatch::OfferedByMe&&m.state==ChessMatch::Playing)deliver=t("You offered a draw","Вы предложили ничью");
+ if(m.drawOffer==ChessMatch::OfferedByMe&&m.state==ChessMatch::Playing)deliver=t("You offered a draw");
  if(n==1&&deliver.length()){text(x+6,204,rowsText[0],chessStateColor(m),small);text(x+6,214,fit(deliver,w-10,small),m.link()==ChatMessage::Failed?bad:faint,small);}
  else for(unsigned i=0;i<n;i++)text(x+6,204+i*10,rowsText[i],chessStateColor(m),small);
- if(m.drawOffer==ChessMatch::OfferedToMe&&m.state==ChessMatch::Playing){panel(x,150,w,22,rgb(0x14524b),6);textCenter(x+w/2,164,t("Draw? D accepts","Ничья? D — да"),ink,small);}
- else if(m.tour){const tour::Tour* T=tour::net.find(m.tour);panel(x,150,w,22,rgb(0x2e2450),6);text(x+6,165,fit((T?String(T->name):String(t("Tournament","Турнир")))+" · "+t("R","т")+String(m.round),w-10,small),violet,small);}
+ if(m.drawOffer==ChessMatch::OfferedToMe&&m.state==ChessMatch::Playing){panel(x,150,w,22,rgb(0x14524b),6);textCenter(x+w/2,164,t("Draw? D accepts"),ink,small);}
+ else if(m.tour){const tour::Tour* T=tour::net.find(m.tour);panel(x,150,w,22,rgb(0x2e2450),6);text(x+6,165,fit((T?String(T->name):String(t("Tournament")))+" · "+t("R")+String(m.round),w-10,small),violet,small);}
 }
 void drawPromotion(){
  auto& d=g();int x=BoardX+Cell*2-10,y=BoardY+Cell*3-16;panel(x,y,Cell*4+20,72,cardHi,8);d.drawRoundRect(x,y,Cell*4+20,72,8,line);
- textCenter(x+(Cell*4+20)/2,y+14,t("Promote to","Превратить в"),ink,small);
+ textCenter(x+(Cell*4+20)/2,y+14,t("Promote to"),ink,small);
  const int8_t kinds[]={ch::Queen,ch::Rook,ch::Bishop,ch::Knight};int8_t sign=chessOpen->mine==ch::White?1:-1;
  for(int i=0;i<4;i++){int bx=x+6+i*(Cell+2),by=y+22;d.fillRect(bx,by,Cell,Cell+4,i==chessPromo?heldLight:boardLight);if(i==chessPromo){d.drawRect(bx,by,Cell,Cell+4,accent);d.drawRect(bx+1,by+1,Cell-2,Cell+2,accent);}drawPiece(kinds[i]*sign,bx+2,by+6);}
- textCenter(x+(Cell*4+20)/2,y+66,t("<> choose  OK put","<> выбор  OK поставить"),dim,small);
+ textCenter(x+(Cell*4+20)/2,y+66,t("<> choose  OK put"),dim,small);
 }
 void drawChessHelp(){
  uint16_t* px=g().getBuffer();for(int i=0;i<320*240;i++)px[i]=(px[i]>>1)&0x7bef;
- panel(6,24,308,194,cardHi,10);g().drawRoundRect(6,24,308,194,10,line);text(16,42,t("Chess keys","Клавиши шахмат"),ink,bold);
- Hint keys[]={{"<>",t("Move the cursor (also ^v)","Курсор по доске (и ^v)")},{"OK",t("Take a piece / put it","Взять фигуру / поставить")},{"BACK",t("Put back / to the games","Вернуть фигуру / к партиям")},
-  {"D",t("Offer a draw / accept one","Предложить / принять ничью")},{"X",t("Resign (press twice)","Сдаться (дважды)")},{"R",t("Resend what was not delivered","Повторить недоставленное")},
-  {"N",t("Rematch after the game","Реванш после партии")},{"DEL",t("Decline, cancel, remove","Отказ, отмена, удаление")}};
+ panel(6,24,308,194,cardHi,10);g().drawRoundRect(6,24,308,194,10,line);text(16,42,t("Chess keys"),ink,bold);
+ Hint keys[]={{"<>",t("Move the cursor (also ^v)")},{"OK",t("Take a piece / put it")},{"BACK",t("Put back / to the games")},
+  {"D",t("Offer a draw / accept one")},{"X",t("Resign (press twice)")},{"R",t("Resend what was not delivered")},
+  {"N",t("Rematch after the game")},{"DEL",t("Decline, cancel, remove")}};
  for(int i=0;i<8;i++){int y=52+i*17;g().fillRoundRect(16,y,30,13,3,line);if(!strcmp(keys[i].key,"<>")){tri(26,y+6,3,3,ink);tri(35,y+6,1,3,ink);}else textCenter(31,y+10,keys[i].key,ink,small);text(54,y+11,keys[i].action,i%2?dim:ink);}
- text(16,202,fit(t("Moves are sent as direct messages with ACK.","Ходы идут личными сообщениями с ACK."),290,small),faint,small);
+ text(16,202,fit(t("Moves are sent as direct messages with ACK."),290,small),faint,small);
 }
 void drawChessBoard(){
- if(!chessOpen||chessOpen->state==ChessMatch::Free){textCenter(160,110,t("The game was removed","Партия удалена"),dim);footer({{"BACK",t("Games","Партии")}});return;}
+ if(!chessOpen||chessOpen->state==ChessMatch::Free){textCenter(160,110,t("The game was removed"),dim);footer({{"BACK",t("Games")}});return;}
  const ChessMatch& m=*chessOpen;drawBoard();drawChessSide();if(chessPromo>=0)drawPromotion();
  bool failed=m.link()==ChatMessage::Failed;
- if(chessPromo>=0)footer({{"<>",t("Piece","Фигура")},{"OK",t("Put","Поставить")},{"BACK",t("Cancel","Отмена")}});
- else if(m.state==ChessMatch::Invited)footer({{"OK",t("Accept","Принять")},{"DEL",t("Decline","Отказать")},{"BACK",t("Games","Партии")}});
- else if(m.state==ChessMatch::Inviting)footer({failed?Hint{"R",t("Resend","Повторить")}:Hint{"DEL",t("Cancel","Отменить")},{"H",t("Keys","Клавиши")},{"BACK",t("Games","Партии")}});
- else if(m.state==ChessMatch::Over)footer({failed?Hint{"R",t("Resend","Повторить")}:Hint{"N",t("Rematch","Реванш")},{"DEL",chessRemoveArmed?t("Sure?","Удалить?"):t("Remove","Удалить")},{"BACK",t("Games","Партии")}});
- else if(failed)footer({{"R",t("Resend","Повторить")},{"X",chessResignArmed?t("Sure?","Сдаться?"):t("Resign","Сдаться")},{"BACK",t("Games","Партии")}});
- else if(chessHeld>=0)footer({{"OK",t("Put","Поставить")},{"BACK",t("Put back","Вернуть")},{"H",t("Keys","Клавиши")}});
- else if(m.myTurn())footer({{"OK",t("Take","Взять")},{"D",m.drawOffer==ChessMatch::OfferedToMe?t("Draw: yes","Ничья: да"):t("Draw","Ничья")},{"H",t("Keys","Клавиши")}});
- else footer({{"D",t("Draw","Ничья")},{"X",chessResignArmed?t("Sure?","Сдаться?"):t("Resign","Сдаться")},{"H",t("Keys","Клавиши")}});
+ if(chessPromo>=0)footer({{"<>",t("Piece")},{"OK",t("Put")},{"BACK",t("Cancel")}});
+ else if(m.state==ChessMatch::Invited)footer({{"OK",t("Accept")},{"DEL",t("Decline")},{"BACK",t("Games")}});
+ else if(m.state==ChessMatch::Inviting)footer({failed?Hint{"R",t("Resend")}:Hint{"DEL",t("Cancel")},{"H",t("Keys")},{"BACK",t("Games")}});
+ else if(m.state==ChessMatch::Over)footer({failed?Hint{"R",t("Resend")}:Hint{"N",t("Rematch")},{"DEL",chessRemoveArmed?t("Sure?"):t("Remove")},{"BACK",t("Games")}});
+ else if(failed)footer({{"R",t("Resend")},{"X",chessResignArmed?t("Sure?"):t("Resign")},{"BACK",t("Games")}});
+ else if(chessHeld>=0)footer({{"OK",t("Put")},{"BACK",t("Put back")},{"H",t("Keys")}});
+ else if(m.myTurn())footer({{"OK",t("Take")},{"D",m.drawOffer==ChessMatch::OfferedToMe?t("Draw: yes"):t("Draw")},{"H",t("Keys")}});
+ else footer({{"D",t("Draw")},{"X",chessResignArmed?t("Sure?"):t("Resign")},{"H",t("Keys")}});
  if(chessHelp)drawChessHelp();
 }
 
@@ -283,16 +283,16 @@ void chessCursorMove(int key){
 }
 void chessPlay(ch::Move mv){
  ChessMatch& m=*chessOpen;
- if(chessNet.move(m,mv)){chessHeld=-1;chessPromo=-1;hardware.ping(1400,12);if(m.state==ChessMatch::Over)hardware.ping(m.won()?1760:600,200);if(m.link()==ChatMessage::Failed)notice(t("Not sent now: will resend automatically","Сейчас не отправлено: повторю автоматически"),warn);}
- else{hardware.ping(260,60);notice(t("Move refused","Ход не принят"),bad);}
+ if(chessNet.move(m,mv)){chessHeld=-1;chessPromo=-1;hardware.ping(1400,12);if(m.state==ChessMatch::Over)hardware.ping(m.won()?1760:600,200);if(m.link()==ChatMessage::Failed)notice(t("Not sent now: will resend automatically"),warn);}
+ else{hardware.ping(260,60);notice(t("Move refused"),bad);}
 }
 void chessAct(){
  ChessMatch& m=*chessOpen;
- if(m.state==ChessMatch::Invited){if(chessNet.accept(m))notice(t("Accepted: ","Принято: ")+t("you play ","вы играете ")+colorName(m.mine,true),ok);return;}
- if(!m.myTurn()){notice(m.state==ChessMatch::Playing?t("Wait for their move","Дождитесь хода соперника"):m.state==ChessMatch::Inviting?t("Waiting for the reply","Ждём ответа на вызов"):t("The game is over","Партия окончена"),dim);return;}
- if(chessHeld<0||chessCursor==chessHeld){if(chessCursor==chessHeld){chessHeld=-1;return;}if(canTake(chessCursor))chessHeld=chessCursor;else notice(m.game.pos.board[chessCursor]?t("This piece cannot move","Эта фигура не может ходить"):t("Choose one of your pieces","Выберите свою фигуру"),dim);return;}
+ if(m.state==ChessMatch::Invited){if(chessNet.accept(m))notice(t("Accepted: ")+t("you play ")+colorName(m.mine,true),ok);return;}
+ if(!m.myTurn()){notice(m.state==ChessMatch::Playing?t("Wait for their move"):m.state==ChessMatch::Inviting?t("Waiting for the reply"):t("The game is over"),dim);return;}
+ if(chessHeld<0||chessCursor==chessHeld){if(chessCursor==chessHeld){chessHeld=-1;return;}if(canTake(chessCursor))chessHeld=chessCursor;else notice(m.game.pos.board[chessCursor]?t("This piece cannot move"):t("Choose one of your pieces"),dim);return;}
  ch::Move mv;
- if(!heldTarget(chessCursor,&mv)){if(canTake(chessCursor)){chessHeld=chessCursor;return;}hardware.ping(260,60);notice(m.game.pos.inCheck()?t("Not allowed: the king is in check","Нельзя: королю шах"):t("Cannot go there","Сюда нельзя"),warn);return;}
+ if(!heldTarget(chessCursor,&mv)){if(canTake(chessCursor)){chessHeld=chessCursor;return;}hardware.ping(260,60);notice(m.game.pos.inCheck()?t("Not allowed: the king is in check"):t("Cannot go there"),warn);return;}
  if(ch::movePromotion(mv)){chessPromo=0;return;}
  chessPlay(mv);
 }
@@ -307,14 +307,14 @@ bool chessKey(int key){
   if(chessTab==1)return tourListKey(key);
   if(chessTab==2){ // rating: up/down go through the players
    if(key==KeyUp||key==KeyDown){chessRatingSel=max(0,chessRatingSel+(key==KeyUp?-1:1));return true;}
-   if(key=='s'){unsigned n=ledger::exchange.startAll();notice(n?t("Comparing ledgers with ","Сверка журнала с узлами: ")+String(n):String(t("No rated players heard in a day","За сутки не слышно игроков с рейтингом")),n?ok:dim);return true;}
+   if(key=='s'){unsigned n=ledger::exchange.startAll();notice(n?t("Comparing ledgers with ")+String(n):String(t("No rated players heard in a day")),n?ok:dim);return true;}
    if(key==KeyBack){change(Home,true);return true;}
    return key==Enter||key==KeyHold||key==Erase;
   }
   if(key==KeyUp||key==KeyDown){chessSortRows();int total=1+chessRowCount;selected=(selected+(key==KeyUp?-1:1)+total)%total;return true;}
-  if(key==Enter||key==KeyHold){chessSortRows();if(!selected){if(!chessNet.room()){notice(t("Six games in progress: finish one","Идут шесть партий: завершите одну"),warn);return true;}pickReturn=ChessList;change(ChessPick);}else chessEnter(chessRows[selected-1]);return true;}
-  if(key==Erase&&selected){chessSortRows();ChessMatch& m=*chessRows[selected-1];if(m.state!=ChessMatch::Over){notice(t("Only finished games can be removed","Удалить можно только оконченную партию"),dim);return true;}
-   if(!chessRemoveArmed){chessRemoveArmed=true;notice(t("DEL again removes the game","DEL ещё раз удалит партию"),warn);return true;}chessRemoveArmed=false;chessNet.remove(m);notice(t("Game removed","Партия удалена"),ok);return true;}
+  if(key==Enter||key==KeyHold){chessSortRows();if(!selected){if(!chessNet.room()){notice(t("Six games in progress: finish one"),warn);return true;}pickReturn=ChessList;change(ChessPick);}else chessEnter(chessRows[selected-1]);return true;}
+  if(key==Erase&&selected){chessSortRows();ChessMatch& m=*chessRows[selected-1];if(m.state!=ChessMatch::Over){notice(t("Only finished games can be removed"),dim);return true;}
+   if(!chessRemoveArmed){chessRemoveArmed=true;notice(t("DEL again removes the game"),warn);return true;}chessRemoveArmed=false;chessNet.remove(m);notice(t("Game removed"),ok);return true;}
   if(key==KeyBack){change(Home,true);return true;}
   return false;
  }
@@ -323,7 +323,7 @@ bool chessKey(int key){
   if(key=='f'){chessPickRated=!chessPickRated;return true;}
   if(key==KeyUp||key==KeyDown){chessSortPeers();if(chessPeerCount)selected=(selected+(key==KeyUp?-1:1)+chessPeerCount)%chessPeerCount;return true;}
   if(key==Enter||key==KeyHold){chessSortPeers();if(!chessPeerCount)return true;ChessMatch* m=chessNet.invite(meshRadio.peers[chessPeers[selected]].id,chessPickColor,chessPickRated);if(!m){notice(chessNet.event,bad);return true;}
-   chessNet.events=chessEventsSeen;chessEnter(m);notice(m->link()==ChatMessage::Failed?t("Not sent now: will resend","Сейчас не отправлено: повторю"):t("Challenge sent: you play ","Вызов отправлен: вы играете ")+colorName(m->mine,true),m->link()==ChatMessage::Failed?bad:ok);return true;}
+   chessNet.events=chessEventsSeen;chessEnter(m);notice(m->link()==ChatMessage::Failed?t("Not sent now: will resend"):t("Challenge sent: you play ")+colorName(m->mine,true),m->link()==ChatMessage::Failed?bad:ok);return true;}
   if(key==KeyBack){change(pickReturn,true);return true;} // the list, or the node card it was opened from
   return false;
  }
@@ -342,24 +342,24 @@ bool chessKey(int key){
  if(key==Enter||key==KeyHold||key==' '){chessAct();return true;}
  if(key==KeyBack){if(chessHeld>=0)chessHeld=-1;else chessBackToList();return true;}
  if(key=='h'){chessHelp=true;return true;}
- if(key=='r'){if(chessNet.resend(m))notice(t("Sent again","Отправлено повторно"),ok);else notice(m.sending()?t("Already sending","Уже отправляется"):m.link()==ChatMessage::Failed?t("Radio busy, will resend","Радио занято, повторю автоматически"):t("Nothing to resend","Повторять нечего"),dim);return true;}
+ if(key=='r'){if(chessNet.resend(m))notice(t("Sent again"),ok);else notice(m.sending()?t("Already sending"):m.link()==ChatMessage::Failed?t("Radio busy, will resend"):t("Nothing to resend"),dim);return true;}
  if(key=='d'){
-  if(m.drawOffer==ChessMatch::OfferedToMe){if(chessNet.acceptDraw(m))notice(t("Draw accepted","Ничья принята"),ok);return true;}
-  if(chessNet.offerDraw(m))notice(t("Draw offered","Ничья предложена"),info);else notice(m.drawOffer==ChessMatch::OfferedByMe?t("Draw already offered","Ничья уже предложена"):t("No game in progress","Партия не идёт"),dim);return true;
+  if(m.drawOffer==ChessMatch::OfferedToMe){if(chessNet.acceptDraw(m))notice(t("Draw accepted"),ok);return true;}
+  if(chessNet.offerDraw(m))notice(t("Draw offered"),info);else notice(m.drawOffer==ChessMatch::OfferedByMe?t("Draw already offered"):t("No game in progress"),dim);return true;
  }
  if(key=='x'){
-  if(m.state!=ChessMatch::Playing){notice(t("No game in progress","Партия не идёт"),dim);return true;}
-  if(!chessResignArmed){chessResignArmed=true;notice(t("X again resigns the game","X ещё раз — сдаться"),warn);return true;}
-  chessResignArmed=false;chessHeld=-1;chessNet.resign(m);hardware.ping(600,200);notice(t("You resigned","Вы сдались"),dim);return true;
+  if(m.state!=ChessMatch::Playing){notice(t("No game in progress"),dim);return true;}
+  if(!chessResignArmed){chessResignArmed=true;notice(t("X again resigns the game"),warn);return true;}
+  chessResignArmed=false;chessHeld=-1;chessNet.resign(m);hardware.ping(600,200);notice(t("You resigned"),dim);return true;
  }
  if(key=='n'){
-  if(m.state!=ChessMatch::Over){notice(t("Finish this game first","Сначала завершите партию"),dim);return true;}
-  ChessMatch* next=chessNet.invite(m.peer,m.mine^1,m.rated);if(!next){notice(chessNet.event,bad);return true;}chessNet.events=chessEventsSeen;chessEnter(next);notice(t("Rematch sent: you play ","Реванш: вы играете ")+colorName(next->mine,true),ok);return true;
+  if(m.state!=ChessMatch::Over){notice(t("Finish this game first"),dim);return true;}
+  ChessMatch* next=chessNet.invite(m.peer,m.mine^1,m.rated);if(!next){notice(chessNet.event,bad);return true;}chessNet.events=chessEventsSeen;chessEnter(next);notice(t("Rematch sent: you play ")+colorName(next->mine,true),ok);return true;
  }
  if(key==Erase){
-  if(m.state==ChessMatch::Invited||m.state==ChessMatch::Inviting||(m.state==ChessMatch::Playing&&!m.game.plies)){bool mineInvite=m.state!=ChessMatch::Invited;if(chessNet.decline(m))notice(mineInvite?t("Challenge cancelled","Вызов отменён"):t("Challenge declined","Вызов отклонён"),dim);return true;}
-  if(m.state==ChessMatch::Over){if(!chessRemoveArmed){chessRemoveArmed=true;notice(t("DEL again removes the game","DEL ещё раз удалит партию"),warn);return true;}chessRemoveArmed=false;chessNet.remove(m);chessOpen=nullptr;change(ChessList);notice(t("Game removed","Партия удалена"),ok);return true;}
-  notice(t("Resign with X","Сдаться — клавиша X"),dim);return true;
+  if(m.state==ChessMatch::Invited||m.state==ChessMatch::Inviting||(m.state==ChessMatch::Playing&&!m.game.plies)){bool mineInvite=m.state!=ChessMatch::Invited;if(chessNet.decline(m))notice(mineInvite?t("Challenge cancelled"):t("Challenge declined"),dim);return true;}
+  if(m.state==ChessMatch::Over){if(!chessRemoveArmed){chessRemoveArmed=true;notice(t("DEL again removes the game"),warn);return true;}chessRemoveArmed=false;chessNet.remove(m);chessOpen=nullptr;change(ChessList);notice(t("Game removed"),ok);return true;}
+  notice(t("Resign with X"),dim);return true;
  }
  return false;
 }
@@ -376,9 +376,9 @@ void drawLockChess(int y){
  panel(40,y,240,40,card,8);ring(40,y,240,40,8,rgb(0x14524b));icon(IcChess,62,y+20,9,accent,card);
  if(config.lockDetails){bool theirs=m.game.plies&&(m.myTurn()||m.state==ChessMatch::Over);head=String(m.name)+(theirs?": "+lastSan(m):String());
   sub=chessState(m);}
- else{head=t("Chess","Шахматы");sub=waiting?chessTileDetail():t("News in a game","Новости в партии");}
+ else{head=t("Chess");sub=waiting?chessTileDetail():t("News in a game");}
  // Other games waiting, on the right of the first line.
- String more=config.lockDetails&&waiting>(lockNeeds(m)?1u:0u)?t("more: ","ещё ")+String(waiting-(lockNeeds(m)?1:0)):String();int mw=more.length()?measure(more,small)+8:0;
+ String more=config.lockDetails&&waiting>(lockNeeds(m)?1u:0u)?t("more: ")+String(waiting-(lockNeeds(m)?1:0)):String();int mw=more.length()?measure(more,small)+8:0;
  if(mw)textRight(272,y+15,more,faint,small);text(80,y+16,fit(head,192-mw,bold),ink,bold);text(80,y+32,fit(sub,192,small),chessStateColor(m),small);
 }
 void chessTick(){

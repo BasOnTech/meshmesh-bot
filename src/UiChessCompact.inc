@@ -26,11 +26,11 @@ unsigned chessGames(ChessMatch** out){unsigned n=0;for(auto& m:chessNet.matches)
  for(unsigned i=1;i<n;i++)for(unsigned j=i;j>0&&out[j]->changedAt>out[j-1]->changedAt;j--)std::swap(out[j],out[j-1]);return n;}
 String chessStateText(const ChessMatch& m){
  switch(m.state){
- case ChessMatch::Inviting:return t("invited, waiting","вызов отправлен");
- case ChessMatch::Invited:return t("challenges you","вызывает вас");
- case ChessMatch::Playing:if(m.drawOffer==ChessMatch::OfferedToMe)return t("offers a draw","предлагает ничью");
-  return m.myTurn()?(m.game.pos.inCheck()?t("your move, check!","ваш ход, шах!"):t("your move","ваш ход")):t("their move","ход соперника");
- case ChessMatch::Over:return m.won()?t("you won","вы победили"):m.lost()?t("you lost","вы проиграли"):m.result==ChessMatch::Drawn?t("draw","ничья"):t("ended","завершена");
+ case ChessMatch::Inviting:return t("invited, waiting");
+ case ChessMatch::Invited:return t("challenges you");
+ case ChessMatch::Playing:if(m.drawOffer==ChessMatch::OfferedToMe)return t("offers a draw");
+  return m.myTurn()?(m.game.pos.inCheck()?t("your move, check!"):t("your move")):t("their move");
+ case ChessMatch::Over:return m.won()?t("you won"):m.lost()?t("you lost"):m.result==ChessMatch::Drawn?t("draw"):t("ended");
  default:return "";
  }
 }
@@ -54,15 +54,15 @@ unsigned chessActions(const ChessMatch& m,ChessAct* out){unsigned n=0;
  out[n++]=CaList; // the joystick has Back
  out[n++]=CaClose;return n;}
 String chessActName(ChessAct a){switch(a){
- case CaAccept:return t("Accept challenge","Принять вызов");case CaDecline:return t("Decline / cancel","Отклонить / отменить");
- case CaDraw:return t("Offer a draw","Предложить ничью");case CaAcceptDraw:return t("Accept the draw","Согласиться на ничью");
- case CaResign:return t("Resign","Сдаться");case CaResend:return t("Send again","Отправить снова");case CaDelete:return t("Delete game","Удалить партию");case CaList:return t("Game list","Список партий");
- default:return t("< Back to board","< К доске");}}
+ case CaAccept:return t("Accept challenge");case CaDecline:return t("Decline / cancel");
+ case CaDraw:return t("Offer a draw");case CaAcceptDraw:return t("Accept the draw");
+ case CaResign:return t("Resign");case CaResend:return t("Send again");case CaDelete:return t("Delete game");case CaList:return t("Game list");
+ default:return t("< Back to board");}}
 void chessRun(ChessMatch& m,ChessAct a){bool ok=true;switch(a){
  case CaAccept:ok=chessNet.accept(m);break;case CaDecline:ok=chessNet.decline(m);break;case CaDraw:ok=chessNet.offerDraw(m);break;
  case CaAcceptDraw:ok=chessNet.acceptDraw(m);break;case CaResign:ok=chessNet.resign(m);break;case CaResend:ok=chessNet.resend(m);break;
  case CaDelete:ok=chessNet.remove(m);if(ok)chessOpen=nullptr;break;case CaList:chessOpen=nullptr;break;default:break;}
- if(!ok)notice(t("Not now: radio busy?","Сейчас нельзя"));}
+ if(!ok)notice(t("Not now: radio busy?"));}
 // One button: the choices in the order the player sees them, bottom row first, left to right: the own
 // pieces that can move, or the squares the picked piece reaches.
 unsigned chessChoices(const ChessMatch& m,int* out){
@@ -80,7 +80,7 @@ void chessSettle(const ChessMatch& m){
 }
 // The choice in words: the piece ("Ng1") or the move ("Ng1-f3", "e7-e8=Q"), in the screen language.
 String chessChoiceText(const ChessMatch& m){
- if(chessCursor<0)return chessHeld<0?t("Game menu","Меню партии"):t("Cancel","Отмена");
+ if(chessCursor<0)return chessHeld<0?t("Game menu"):t("Cancel");
  auto name=[](int sq){char b[3]={char('a'+chess::fileOf(sq)),char('1'+chess::rankOf(sq)),0};return String(b);};
  int from=chessHeld<0?chessCursor:chessHeld;int8_t p=m.game.pos.board[from];int type=p>0?p:-p;
  String san=(type==chess::Pawn?String():String(" PNBRQK"[type]))+name(from);
@@ -106,16 +106,16 @@ void drawChessBoard(const ChessMatch& m){
  if(chessHeld>=0&&(millis()/300)%2){int x,y;squareXY(m,chessHeld,x,y);c.drawRect(x,y,8,8,1);c.drawRect(x+1,y+1,6,6,0);}
  if(cursor){int x,y;squareXY(m,chessCursor,x,y);c.drawRect(x,y,8,8,1);c.drawRect(x+1,y+1,6,6,1);}
  c.drawFastVLine(65,0,64,1);
- say(68,8,clipped(m.name,11),small);say(68,17,t("you: ","вы: ")+(m.mine==chess::White?t("white","белые"):t("black","чёрные")),small);
+ say(68,8,clipped(m.name,11),small);say(68,17,t("you: ")+(m.mine==chess::White?t("white"):t("black")),small);
  textLinesAt(chessStateText(m),68,27,picking?1:2,11);
  if(m.game.plies){chess::Position before=m.game.at(m.game.plies-1);char san[16];before.san(m.game.moves[m.game.plies-1],san,sizeof san);
   say(68,46,String((m.game.plies+1)/2)+(m.game.plies%2?". ":"... ")+chessLocalSan(san),small);}
  if(picking){
   // The current choice, lit when it is "Game menu" or "Cancel"; the move sent last is acknowledged by the reply.
   if(chessCursor<0)c.fillRect(67,29,61,9,1);say(68,36,clipped(chessChoiceText(m),11),small,chessCursor>=0);
-  say(68,55,t("click: next","клик: далее"),u8g2_font_4x6_t_cyrillic);
-  say(68,63,chessCursor<0?(chessHeld<0?t("hold: menu","держ: меню"):t("hold: cancel","держ: отмена")):chessHeld<0?t("hold: pick","держ: взять"):t("hold: move","держ: сходить"),u8g2_font_4x6_t_cyrillic);}
- else{say(68,55,clipped(chessLink(m),11),small);say(68,63,t("hold: menu","держ: меню"),u8g2_font_4x6_t_cyrillic);}
+  say(68,55,t("click: next"),u8g2_font_4x6_t_cyrillic);
+  say(68,63,chessCursor<0?(chessHeld<0?t("hold: menu"):t("hold: cancel")):chessHeld<0?t("hold: pick"):t("hold: move"),u8g2_font_4x6_t_cyrillic);}
+ else{say(68,55,clipped(chessLink(m),11),small);say(68,63,t("hold: menu"),u8g2_font_4x6_t_cyrillic);}
  if(chessMenu){ChessAct acts[8];unsigned k=chessActions(m,acts);chessMenuIndex%=k;int first=max(0,min(chessMenuIndex-1,int(k)-3));
   c.fillRect(0,12,128,45,0);c.drawRect(0,12,128,45,1);
   for(unsigned i=first;i<k&&i<unsigned(first+3);i++){int y=14+(i-first)*14;bool focus=int(i)==chessMenuIndex;if(focus)c.fillRect(2,y,124,13,1);say(5,y+10,clipped(chessActName(acts[i]),20),body,focus?0:1);}}
@@ -123,13 +123,13 @@ void drawChessBoard(const ChessMatch& m){
  hardware.flush();
 }
 void drawChessList(String& title){
- auto& c=*hardware.canvas;ChessMatch* games[ChessNet::MaxMatches];unsigned n=chessGames(games);title=t("Chess","Шахматы")+(n?" "+String(chessSel%n+1)+"/"+String(n):"");
- if(!n){say(0,28,t("No games yet","Партий пока нет"));
-  say(0,40,t("Node menu: Chess invite","Меню узла: вызвать"),small);
-  say(0,49,t("or accept a challenge","или примите вызов"),small);return;}
+ auto& c=*hardware.canvas;ChessMatch* games[ChessNet::MaxMatches];unsigned n=chessGames(games);title=t("Chess")+(n?" "+String(chessSel%n+1)+"/"+String(n):"");
+ if(!n){say(0,28,t("No games yet"));
+  say(0,40,t("Node menu: Chess invite"),small);
+  say(0,49,t("or accept a challenge"),small);return;}
  chessSel%=n;int first=max(0,min(chessSel-1,int(n)-3));
  for(unsigned i=first;i<n&&i<unsigned(first+3);i++){const ChessMatch& m=*games[i];int y=13+(i-first)*15;bool focus=int(i)==chessSel;
-  if(focus)c.fillRect(0,y,128,15,1);say(2,y+7,clipped(String(m.unseen?"* ":"")+m.name,14),small,!focus);sayRight(126,y+7,m.game.plies?String((m.game.plies+1)/2)+t(" mv"," ход"):String(""),small,!focus);
+  if(focus)c.fillRect(0,y,128,15,1);say(2,y+7,clipped(String(m.unseen?"* ":"")+m.name,14),small,!focus);sayRight(126,y+7,m.game.plies?String((m.game.plies+1)/2)+t(" mv"):String(""),small,!focus);
   say(2,y+14,clipped(chessStateText(m),24),small,!focus);}
 }
 // The button while the Chess page is shown; false lets the page switch handle it (the next screen).
@@ -148,8 +148,8 @@ bool chessButton(int key){
  if(chessCursor<0){if(chessHeld>=0){chessCursor=chessHeld;chessHeld=-1;}else{chessMenu=true;chessMenuIndex=0;}return true;}
  if(chessHeld<0){chessHeld=chessCursor;chessCursor=chessChoices(m,c)?c[0]:-1;return true;}
  chess::Move mv;if(!targetOf(m,chessHeld,chessCursor,&mv))return true;
- if(chessNet.move(m,mv)){chessHeld=-1;hardware.ping(1400,15);if(m.link()==ChatMessage::Failed)notice(t("Not sent: will resend","Не отправлено: повторю"));}
- else notice(t("Move not sent","Ход не отправлен"));
+ if(chessNet.move(m,mv)){chessHeld=-1;hardware.ping(1400,15);if(m.link()==ChatMessage::Failed)notice(t("Not sent: will resend"));}
+ else notice(t("Move not sent"));
  return true;
 }
 }

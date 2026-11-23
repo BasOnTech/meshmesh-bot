@@ -5,7 +5,7 @@ A new language (Dutch is planned) is added to the end of the language lists with
 
 | What | Source | Translations |
 |---|---|---|
-| Device screens (firmware) | `t("English","Русский")`, `tr(...)`, `count(n,"one","many","ру1","ру2","ру5")` in `src/` | `i18n/firmware/<lang>.json` |
+| Device screens (firmware) | `t("English")`, `tr("English")`, `count(n,"one","many")`, `N_("...")` in tables, in `src/` | `i18n/firmware/<lang>.json` |
 | Website | `site/i18n/en.json` (and `ru.json`) | `site/i18n/<lang>.json` |
 | Device web page and Android app | the Russian text of `web/index.html` (`L(...)`, `plural(...)`, markup), `android/.../assets/host.js` and the app's Kotlin `I18n.t(...)` | `i18n/web/<lang>.json` |
 | Chess page of the website (`chess/`) | the Russian text of `web/index.html` and `web/chess-companion.js`, listed in `i18n/chess/en.json` | `i18n/chess/<lang>.json` |
@@ -36,37 +36,33 @@ Run it after every translation change, then build the boards and look at the scr
 
 ## Firmware strings
 
-Each entry of `i18n/firmware/<lang>.json` carries the English and Russian source and the translation:
+Each entry of `i18n/firmware/<lang>.json` carries the English source and the translation:
 
 ```json
-"5b0c2a7e": {"en": "Settings", "ru": "Настройки", "text": "Einstellungen"}
+"5b0c2a7e": {"en": "Settings", "text": "Instellingen"}
 ```
 
-The key is a hash of the source, so editing the English or Russian text in the code makes a new entry
+The key is a hash of the English text, so editing it in the code makes a new entry
 (and drops the old translation). `i18n/firmware/source.json` tells where each string is used and its
-width: `cells` is the longer of the English and Russian text in 6-pixel columns (a CJK character takes two).
+width: `cells` is the English text in 6-pixel columns.
 
-- **Fit the screen.** The M9 screen is 320×240, the Heltec and GAT562 OLED 128×64 (21 columns).
-  Keep a translation within `cells`; abbreviate as the Russian does («Отпр.», «удерж.») when needed.
+- **Fit the screen.** The M9 screen is 320×240, the Heltec OLED 128×64 (21 columns).
+  Keep a translation within `cells`; abbreviate when needed.
   `check` reports translations more than 30% longer.
 - **Keep the edges.** Leading and trailing spaces, line breaks and placeholders (`%d`, `%s`,
   `{weekday}`, `{month}`, `{day}`) stay exactly as in English: the code glues these strings together.
 - **Keep the names.** MeshMesh, MeshCore, LoRa, Wi-Fi, Bluetooth, BLE, GPS, USB, SD, SNR, RSSI, dBm, ACK, UTC,
   PIN, NTP, CSI, ESP-NOW, OSM, board names, and the device keys written on them (OK, BACK, DEL, HOME, MSG,
   MAP, CTRL, ADV, MIC, Enter, Sym, `@`) are not translated. `RU/EN` names the keyboard layouts and stays.
-- **Plurals.** `forms` has the categories of the language (CLDR): `one`/`other`; `one`/`few`/`many`
-  (Ukrainian, Polish); `other` only (Chinese, Japanese, Korean, Indonesian); `zero`/`one`/`two`/`few`/`many`/`other`
-  (Arabic). Write `{n}` where the number goes: `"{n} Partien"`, `"{n}局"`. An Arabic form may leave the
-  number out: `"رسالتان"`.
+- **Plurals.** `forms` has the categories of the language (CLDR), e.g. `one`/`other` for Dutch (add them to
+  `PLURALS` in `tools/i18n.py` and a case in `category()` in `src/I18n.cpp` for other rules). Write `{n}`
+  where the number goes: `"{n} partijen"`.
 - **Dates.** `{weekday}, {month} {day}` is the order of the date line; month names are in the form that
-  order needs (Russian uses the genitive «января»).
-- **Scripts.** Chinese is Simplified; Japanese mixes kana and kanji as usual UIs do; Arabic is Modern
-  Standard Arabic without harakat or tatweel, with Western digits; the screens draw Arabic right to left
-  inside the usual left-to-right layout. The firmware keeps only the glyphs the translations use, so
-  `generate` must run after every change.
+  order needs.
+- **Glyphs.** The firmware keeps only the Latin Extended glyphs the translations use, so `generate`
+  must run after every change.
 - **Tone.** Short, neutral interface language: infinitives or imperatives for actions, no exclamation marks.
-  Portuguese is Brazilian (você); Spanish and Italian use tú/tu where a person is addressed; German and
-  French address the user formally only when a sentence needs it.
+  Address the user informally (Dutch: je/jij) unless a sentence needs otherwise.
 
 ## Device page and app
 

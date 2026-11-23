@@ -20,7 +20,7 @@ constexpr uint32_t Magic=0x31444d4d; // "MMD1"
 struct Saved{Duel games[DuelNet::Max];};
 uint32_t seed(){return uint32_t(random(0x7fffffff))^(millis()*2654435761u)^uint32_t(meshRadio.nodeId);}
 String cellText(int c){char b[4];sea::cellName(c,b);return b;}
-String gameName(Duel::Kind k){return k==Duel::Sea?tr("Sea battle","Морской бой"):tr("Checkers","Шашки");}
+String gameName(Duel::Kind k){return k==Duel::Sea?tr("Sea battle"):tr("Checkers");}
 }
 bool Duel::myTurn() const{if(state!=Playing)return false;return kind==Checkers?game.pos.side==mine:seaTurn&&aim<0;}
 bool Duel::pending() const{return moveOpen||(out[0]&&outStatus!=Delivered);}
@@ -37,7 +37,7 @@ void DuelNet::tick(){
   for(auto& g:games){
     if(g.state==Duel::Free||!g.pending()||g.sending()||g.autoStopped)continue;
     if(!g.openSince)g.openSince=now;
-    if(now-g.openSince>RetryWindow){g.autoStopped=true;g.retryAt=0;event=String(g.name)+tr(": no confirmation for 24 h",": нет подтверждения 24 ч");events++;eventGame=&g;dirty=true;continue;}
+    if(now-g.openSince>RetryWindow){g.autoStopped=true;g.retryAt=0;event=String(g.name)+tr(": no confirmation for 24 h");events++;eventGame=&g;dirty=true;continue;}
     const Peer* p=meshRadio.findContact(g.peer);
     bool heard=p&&p->heard&&int32_t(p->seen-g.triedAt)>0&&now-g.triedAt>=HeardGap;
     if(!g.retryAt&&!heard){g.retryAt=now+RetryDelays[g.retries<3?g.retries:3];dirty=true;continue;}
@@ -79,7 +79,7 @@ bool DuelNet::delivery(uint32_t id,uint8_t status){
     if(g.outId==id&&g.outStatus!=Delivered){g.outStatus=status;hit=true;}
     if(!hit)continue;
     if(status==Delivered){confirmed(g);if(g.pending())g.retryAt=millis();}
-    if(status==Failed&&!g.retries){event=String(g.name)+tr(": not confirmed, will resend",": не подтвердил, повторю автоматически");events++;eventGame=&g;}
+    if(status==Failed&&!g.retries){event=String(g.name)+tr(": not confirmed, will resend");events++;eventGame=&g;}
     changed(g,status==Delivered||status==Failed);return true;
   }
   return false;
@@ -106,8 +106,8 @@ void DuelNet::seaAnswer(Duel& g,int cell){
   uint8_t a=g.home.answer(cell);g.shots++;g.lastIn=int8_t(cell);g.lastAnswer=a;received(g,true);g.seaTurn=a==sea::AnswerMiss;
   snprintf(g.move,sizeof g.move,"%s%04X %u = %s",TagSea,g.id,g.shots,sea::answerWord(a));g.moveOpen=true;g.retries=0;g.retryAt=0;g.openSince=0;g.autoStopped=false;sendMove(g);
   String what=String(g.name)+": "+cellText(cell)+" - ";
-  if(a==sea::AnswerWin){finish(g,Duel::Lost,Duel::Rules);what+=tr("the fleet is sunk, you lost","флот потоплен, вы проиграли");}
-  else what+=a==sea::AnswerMiss?tr("miss, your shot","мимо, ваш выстрел"):a==sea::AnswerHit?tr("hit","попадание"):tr("ship sunk","корабль потоплен");
+  if(a==sea::AnswerWin){finish(g,Duel::Lost,Duel::Rules);what+=tr("the fleet is sunk, you lost");}
+  else what+=a==sea::AnswerMiss?tr("miss, your shot"):a==sea::AnswerHit?tr("hit"):tr("ship sunk");
   news(g,what);hardware.ping(a==sea::AnswerMiss?1100:700,a==sea::AnswerMiss?60:150);changed(g);
 }
 
@@ -124,12 +124,12 @@ bool DuelNet::receive(uint64_t from,const char* name,const char* text){
   if(!strcmp(a,"new")){
     if(kind==Duel::Checkers&&b[0]!='w'&&b[0]!='b')return false;if(g)return true;
     g=slot();
-    if(!g){char t[16];snprintf(t,sizeof t,"%s%04X no",kind==Duel::Sea?TagSea:TagCheckers,id);meshRadio.sendGame(t,from);event=String(name)+tr(": game refused, six games in progress",": игра отклонена, идут шесть игр");events++;dirty=true;return true;}
+    if(!g){char t[16];snprintf(t,sizeof t,"%s%04X no",kind==Duel::Sea?TagSea:TagCheckers,id);meshRadio.sendGame(t,from);event=String(name)+tr(": game refused, six games in progress");events++;dirty=true;return true;}
     *g=Duel();g->kind=kind;g->peer=from;g->id=id;strlcpy(g->name,name,sizeof g->name);g->state=Duel::Invited;g->started=unixNow();
     if(kind==Duel::Checkers){g->mine=b[0]=='w'?checkers::Black:checkers::White;g->game.reset();}else{g->mine=1;g->home.fleet.random(seed());}
-    news(*g,String(name)+tr(" invites you: "," зовёт играть: ")+gameName(kind));hardware.ping(1320,120);changed(*g);return true;
+    news(*g,String(name)+tr(" invites you: ")+gameName(kind));hardware.ping(1320,120);changed(*g);return true;
   }
-  if(!g){event=gameName(kind)+tr(": a move of an unknown game",": ход в неизвестной игре");events++;dirty=true;return true;}
+  if(!g){event=gameName(kind)+tr(": a move of an unknown game");events++;dirty=true;return true;}
   strlcpy(g->name,name,sizeof g->name);
   if(a[0]>='1'&&a[0]<='9'){
     unsigned n=strtoul(a,nullptr,10);
@@ -139,11 +139,11 @@ bool DuelNet::receive(uint64_t from,const char* name,const char* text){
       if(g->state!=Duel::Playing)return true;
       if(n&&n==m.plies&&((n-1)&1)==theirs){char was[40];checkers::moveText(m.last,was,sizeof was);if(!strcmp(was,b))return true;} // a repeat
       checkers::Move mv;
-      if(n!=m.plies+1u||m.pos.side!=theirs||!m.pos.parse(b,mv)){event=String(g->name)+tr(": move not accepted (",": ход не принят (")+b+")";events++;dirty=true;return true;}
+      if(n!=m.plies+1u||m.pos.side!=theirs||!m.pos.parse(b,mv)){event=String(g->name)+tr(": move not accepted (")+b+")";events++;dirty=true;return true;}
       m.play(mv);received(*g,true);if(g->drawOffer==Duel::OfferedByMe)g->drawOffer=Duel::NoOffer;judge(*g);
       char t[40];checkers::moveText(mv,t,sizeof t);String what=String(g->name)+": "+t;
-      if(g->state==Duel::Over)what+=g->result==Duel::Won?tr(", you won",", вы победили"):g->result==Duel::Lost?tr(", you lost",", вы проиграли"):tr(", draw",", ничья");
-      else what+=tr(", your move",", ваш ход");
+      if(g->state==Duel::Over)what+=g->result==Duel::Won?tr(", you won"):g->result==Duel::Lost?tr(", you lost"):tr(", draw");
+      else what+=tr(", your move");
       news(*g,what);hardware.ping(1100,60);changed(*g);return true;
     }
     if(g->state!=Duel::Playing)return true;
@@ -151,8 +151,8 @@ bool DuelNet::receive(uint64_t from,const char* name,const char* text){
       int ans=sea::answerOf(f);if(!ans||g->aim<0||n!=g->shots+1u)return true; // a repeat
       int cell=g->aim;g->target.record(cell,uint8_t(ans));g->lastOut=g->aim;g->aim=-1;g->shots++;received(*g,true);g->seaTurn=ans!=sea::AnswerMiss;
       String what=String(g->name)+": "+cellText(cell)+" - ";
-      if(ans==sea::AnswerWin){finish(*g,Duel::Won,Duel::Rules);what+=tr("the whole fleet sunk, you won","весь флот потоплен, вы победили");}
-      else what+=ans==sea::AnswerMiss?tr("miss, their shot","мимо, стреляет соперник"):ans==sea::AnswerHit?tr("hit! shoot again","попадание! стреляйте ещё"):tr("ship sunk! shoot again","корабль потоплен! стреляйте ещё");
+      if(ans==sea::AnswerWin){finish(*g,Duel::Won,Duel::Rules);what+=tr("the whole fleet sunk, you won");}
+      else what+=ans==sea::AnswerMiss?tr("miss, their shot"):ans==sea::AnswerHit?tr("hit! shoot again"):tr("ship sunk! shoot again");
       news(*g,what);hardware.ping(ans==sea::AnswerMiss?900:1500,120);changed(*g);return true;
     }
     int cell=sea::parseCell(b);if(cell<0)return true;
@@ -161,42 +161,42 @@ bool DuelNet::receive(uint64_t from,const char* name,const char* text){
       if(strcmp(g->move,t))meshRadio.sendGame(t,from);else{g->moveOpen=true;if(!inFlight(g->moveStatus))sendMove(*g);}
       return true;}
     if(g->aim>=0&&n==g->shots+2u){g->target.record(g->aim,sea::AnswerMiss);g->lastOut=g->aim;g->aim=-1;g->shots++;g->seaTurn=false;} // they shoot: mine missed (its answer was lost)
-    if(g->seaTurn||n!=g->shots+1u){event=String(g->name)+tr(": shot not accepted (",": выстрел не принят (")+b+")";events++;dirty=true;return true;}
+    if(g->seaTurn||n!=g->shots+1u){event=String(g->name)+tr(": shot not accepted (")+b+")";events++;dirty=true;return true;}
     seaAnswer(*g,cell);return true;
   }
   if(!strcmp(a,"fleet")){
     if(kind!=Duel::Sea||g->state!=Duel::Over||g->revealed)return true;const char* t=strstr(c+5,"fleet ");
     if(!t||!g->theirs.parse(t+6))return true;g->revealed=true;g->fair=sea::honest(g->theirs,g->target);
-    if(!g->fair)news(*g,String(g->name)+tr(": the fleet does not match the answers",": расстановка не сходится с ответами"));changed(*g);return true;
+    if(!g->fair)news(*g,String(g->name)+tr(": the fleet does not match the answers"));changed(*g);return true;
   }
   if(!strcmp(a,"yes")){if(g->state!=Duel::Inviting)return true;g->state=Duel::Playing;received(*g,false);g->seaTurn=kind==Duel::Sea;
-    news(*g,String(g->name)+(kind==Duel::Sea?tr(" accepted: your shot"," принял вызов: ваш выстрел"):tr(" accepted: game on"," принял вызов: играем")));hardware.ping(1320,120);changed(*g);return true;}
+    news(*g,String(g->name)+(kind==Duel::Sea?tr(" accepted: your shot"):tr(" accepted: game on")));hardware.ping(1320,120);changed(*g);return true;}
   if(!strcmp(a,"no")){
     bool fresh=g->state==Duel::Playing&&(kind==Duel::Checkers?!g->game.plies:!g->shots);
-    if(g->state==Duel::Inviting){finish(*g,Duel::Undecided,Duel::Declined);news(*g,String(g->name)+tr(" declined the game"," отказался от игры"));}
-    else if(g->state==Duel::Invited||fresh){finish(*g,Duel::Undecided,Duel::Cancelled);news(*g,String(g->name)+tr(" cancelled the game"," отменил игру"));}
+    if(g->state==Duel::Inviting){finish(*g,Duel::Undecided,Duel::Declined);news(*g,String(g->name)+tr(" declined the game"));}
+    else if(g->state==Duel::Invited||fresh){finish(*g,Duel::Undecided,Duel::Cancelled);news(*g,String(g->name)+tr(" cancelled the game"));}
     else return true;
     changed(*g);return true;
   }
   if(kind==Duel::Checkers&&!strcmp(a,"draw?")){if(g->state!=Duel::Playing||g->drawOffer==Duel::OfferedToMe)return true;
-    if(g->drawOffer==Duel::OfferedByMe){finish(*g,Duel::Drawn,Duel::Agreed);news(*g,tr("Draw agreed","Ничья по соглашению"));}else{g->drawOffer=Duel::OfferedToMe;news(*g,String(g->name)+tr(" offers a draw"," предлагает ничью"));}changed(*g);return true;}
-  if(kind==Duel::Checkers&&!strcmp(a,"draw")){if(g->state!=Duel::Playing||g->drawOffer!=Duel::OfferedByMe)return true;received(*g,false);finish(*g,Duel::Drawn,Duel::Agreed);news(*g,String(g->name)+tr(" accepted the draw"," согласился на ничью"));changed(*g);return true;}
-  if(!strcmp(a,"resign")){if(g->state!=Duel::Playing)return true;finish(*g,Duel::Won,Duel::Resigned);news(*g,String(g->name)+tr(" resigned: you won"," сдался: вы победили"));hardware.ping(1760,200);changed(*g);return true;}
+    if(g->drawOffer==Duel::OfferedByMe){finish(*g,Duel::Drawn,Duel::Agreed);news(*g,tr("Draw agreed"));}else{g->drawOffer=Duel::OfferedToMe;news(*g,String(g->name)+tr(" offers a draw"));}changed(*g);return true;}
+  if(kind==Duel::Checkers&&!strcmp(a,"draw")){if(g->state!=Duel::Playing||g->drawOffer!=Duel::OfferedByMe)return true;received(*g,false);finish(*g,Duel::Drawn,Duel::Agreed);news(*g,String(g->name)+tr(" accepted the draw"));changed(*g);return true;}
+  if(!strcmp(a,"resign")){if(g->state!=Duel::Playing)return true;finish(*g,Duel::Won,Duel::Resigned);news(*g,String(g->name)+tr(" resigned: you won"));hardware.ping(1760,200);changed(*g);return true;}
   return true; // a newer command this version does not know
 }
 
 // The player's actions: the game changes here first, then one command goes out.
 Duel* DuelNet::invite(uint64_t peer,Duel::Kind kind,int color){
   const Peer* p=meshRadio.findContact(peer);
-  if(!built(kind)){event=tr("This game is not in this build","Этой игры нет в прошивке");events++;dirty=true;return nullptr;}
-  if(!p||p->type!=1){event=gameName(kind)+tr(": choose a chat contact",": выберите чат-контакт");events++;dirty=true;return nullptr;}
-  Duel* g=slot();if(!g){event=tr("Six games in progress, finish one","Идут шесть игр, завершите одну");events++;dirty=true;return nullptr;}
+  if(!built(kind)){event=tr("This game is not in this build");events++;dirty=true;return nullptr;}
+  if(!p||p->type!=1){event=gameName(kind)+tr(": choose a chat contact");events++;dirty=true;return nullptr;}
+  Duel* g=slot();if(!g){event=tr("Six games in progress, finish one");events++;dirty=true;return nullptr;}
   uint16_t id;do id=uint16_t(1+random(0xffff));while(find(id));
   *g=Duel();g->kind=kind;g->peer=peer;g->id=id;strlcpy(g->name,p->name,sizeof g->name);g->state=Duel::Inviting;g->started=unixNow();
   char head[24];
   if(kind==Duel::Checkers){g->mine=uint8_t(color==2?random(2):color&1);g->game.reset();snprintf(head,sizeof head,"%s%04X new %c",TagCheckers,id,g->mine==checkers::White?'w':'b');
-    send(*g,String(head)+(g->mine==checkers::White?tr(" · MeshMesh checkers: you play Black"," · шашки MeshMesh: вы играете чёрными"):tr(" · MeshMesh checkers: you play White"," · шашки MeshMesh: вы играете белыми")));}
-  else{g->mine=0;g->home.fleet.random(seed());snprintf(head,sizeof head,"%s%04X new",TagSea,id);send(*g,String(head)+tr(" · MeshMesh sea battle"," · морской бой MeshMesh"));}
+    send(*g,String(head)+(g->mine==checkers::White?tr(" · MeshMesh checkers: you play Black"):tr(" · MeshMesh checkers: you play White")));}
+  else{g->mine=0;g->home.fleet.random(seed());snprintf(head,sizeof head,"%s%04X new",TagSea,id);send(*g,String(head)+tr(" · MeshMesh sea battle"));}
   changed(*g);return g;
 }
 bool DuelNet::accept(Duel& g){
@@ -235,7 +235,7 @@ bool DuelNet::remove(Duel& g){if(g.active())return false;if(eventGame==&g)eventG
 
 void DuelNet::save(){
   saveDue=false;Saved* s=new(std::nothrow) Saved();if(!s)return;memcpy(s->games,games,sizeof games);
-  if(!blob::save("/meshmesh/duels",Magic,*s)){event=tr("Games: cannot save","Игры: не удалось сохранить");events++;}
+  if(!blob::save("/meshmesh/duels",Magic,*s)){event=tr("Games: cannot save");events++;}
   delete s;
 }
 void DuelNet::load(){

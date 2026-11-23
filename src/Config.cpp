@@ -44,7 +44,7 @@ void Config::load() {
   strlcpy(preset,p.getString("preset","").c_str(),sizeof preset);
   if(!region[0])memset(regionKey,0,16);else if(p.getBytesLength("region_key")!=16||p.getBytes("region_key",regionKey,16)!=16)regions::keyOf(region,regionKey);
   // Language: "lang" since 0.3.7; older versions kept only "russian".
-  lang=p.isKey("lang")?p.getUChar("lang",LangEn):p.getBool("russian",false)?LangRu:LangEn;
+  lang=p.getUChar("lang",LangEn);
   if(!langAvailable(lang))lang=LangEn; // not in this image (nRF52): English until an image with it is installed
   // The site installer's choice applies once per installation; afterwards Settings decide.
   String chosen=installLanguage();if(chosen.length()&&langAvailable(langFromCode(chosen))&&p.getString("inst_lang","")!=chosen){lang=langFromCode(chosen);p.putUChar("lang",lang);p.putString("inst_lang",chosen);}
@@ -73,7 +73,7 @@ bool Config::save() {
   if(previous.set())p.putBytes("radio_prev",&previous,sizeof previous);else if(p.isKey("radio_prev"))p.remove("radio_prev");
   p.putBool("net_auto",netAuto);p.putBool("dbl_back",doubleBack);
   p.putChar("power",power); p.putUChar("hops",hops); p.putUChar("path_hash",pathHash);
-  p.putBool("relay",relay);p.putBool("gps",gps);p.putBool("sound",sound);p.putBool("bat_v",batteryVolts);p.putUChar("lang",lang);p.putBool("russian",lang==LangRu);
+  p.putBool("relay",relay);p.putBool("gps",gps);p.putBool("sound",sound);p.putBool("bat_v",batteryVolts);p.putUChar("lang",lang);
   p.putUChar("light",brightness);p.putUShort("lock",autoLock);p.putUShort("dim",dimAfter);p.putBool("lock_txt",lockDetails);p.putShort("utc_offset",utcOffset);p.putString("apps",apps);p.putBytes("key",key,32);
   if(preset[0])p.putString("preset",preset);else if(p.isKey("preset"))p.remove("preset");
   if(region[0]){p.putString("region",region);p.putBytes("region_key",regionKey,16);}else{p.remove("region");p.remove("region_key");}
