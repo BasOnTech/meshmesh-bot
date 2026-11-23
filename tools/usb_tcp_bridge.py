@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-"""Pass a board's USB command line to one TCP client: the Android app's "USB через компьютер".
+"""Pass a board's USB command line to one TCP client (e.g. tools/chess_companion_check.py).
 
-For checking the app in the Android emulator (it reaches this computer as 10.0.2.2) with a real
-board: the app speaks exactly the USB protocol, so its command layer is the one a phone uses over
-USB. Control lines as tools/device.py (no reset). Baud switching is refused: the bridge stays at
+The client speaks exactly the USB protocol. Control lines as tools/device.py (no reset). Baud switching is refused: the bridge stays at
 115200. --raw passes bytes as they are, for binary protocols (the MeshCore companion frames of
 tools/chess_companion_check.py). Usage: usb_tcp_bridge.py [--port PORT] [--listen 8771] [--raw]
 
-Firmware over USB (android flash/SerialIo.kt): a client that starts with the line "MMRAW1" gets
+Firmware over USB: a client that starts with the line "MMRAW1" gets
 "MMRAW1 native" or "MMRAW1 uart", then raw bytes from the board, and sends frames
 [type, length u16 LE, payload]: 0 data, 1 DTR and RTS (one byte each), 2 baud rate u32 LE,
 3 nRF52 bootloader: the 1200-baud touch, then the bridge moves to the bootloader's port and answers

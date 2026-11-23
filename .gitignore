@@ -10,5 +10,4 @@ __pycache__/
 .env.*
 
 # Kotlin compiler session cache
-android/.kotlin/
 node_modules/

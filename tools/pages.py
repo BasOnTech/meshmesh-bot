@@ -26,7 +26,7 @@ sys.path.insert(0, str(ROOT / 'tools'))
 from package import TARGETS  # noqa: E402
 from chess_site import build as build_chess  # noqa: E402
 from i18n import CODES  # noqa: E402
-from version import VERSION, ANDROID_VERSION, check  # noqa: E402
+from version import VERSION, check  # noqa: E402
 
 LANG_AT = 0xc00  # in the partition table sector; the table itself ends before it
 
@@ -124,7 +124,7 @@ def main():
                        'verified': env in VERIFIED, 'community': False, 'langs': True,
                        'bytes': meta['firmware.bin']['bytes'], 'zip': f'firmware/{archive.name}'})
     (out/'firmware/boards.json').write_text(json.dumps({'version': version, 'boards': boards}, ensure_ascii=False, indent=2) + '\n')
-    (out/'release.json').write_text(json.dumps({'firmware': version, 'android': ANDROID_VERSION,
+    (out/'release.json').write_text(json.dumps({'firmware': version,
         'revision': next(iter(releases.values()))['revision'], 'boards': releases}, indent=2) + '\n')
     print(out, len(boards), 'boards')
 

@@ -25,7 +25,7 @@ Do not present old reports or an identical version string as verification of a n
 
 GitHub: this fork, `BasOnTech/meshmesh-bot`, of the public `IKrasnodymov/meshmesh` (MIT; `README.md` — English overview, `README.<lang>.md` — its translations, `README.ru.md` — the full Russian one; `docs/en/` — English translations of the detailed documents), main branch `main`. The site is
 GitHub Pages from `site/` (https://ikrasnodymov.github.io/meshmesh/): `.github/workflows/pages.yml`
-builds all boards, the APK and `tools/pages.py` (ESP Web Tools browser-install manifests,
+builds all boards and `tools/pages.py` (ESP Web Tools browser-install manifests,
 writing at offsets without erasing NVS). Screen screenshots — `tools/ui_preview`; the interactive simulator in an SDL2 window —
 `tools/ui_preview/sim.sh [m9] [LANG]` (`SIM=1` in `build.sh`, code in `tools/ui_preview/live.inc`; rebuilds via fswatch).
 Keep sources, vendored MeshCore with its licences, tools and
@@ -33,7 +33,7 @@ documentation in Git. `backups/`, `artifacts/`, `logs/`, `upstream/`, the Python
 build outputs and `.env` stay local and are excluded via `.gitignore`.
 The repository is public: do not add flash/NVS dumps, chat history, private keys,
 Wi-Fi passwords, BLE PINs, real node addresses or coordinates. Check the
-staged files before committing. The APK signing key lives only in GitHub secrets and locally (0600).
+staged files before committing.
 
 ## Commits
 
@@ -98,12 +98,6 @@ device has one LoRa transceiver, different radio profiles require switching.
   `tools/pio_web.py` generates `PortalWeb.h` in the build folder at build time; it is not in Git. Since 0.29.0 the Russian dictionary keys are stored once (`/i18n/keys.js`), and `/i18n/<lang>.js` carries the translations in order and assembles `MeshMeshWebDict` (about 300 KB less flash; the page and the app did not change). Page text —
   `L('…')`/`` L`…${x}` `` and `plural(n,…)` (section "Languages"). Demo without a board — `tools/web_demo.py`.
 - `boards/`, `platformio.ini`, `partitions.csv` — hardware targets and build.
-- `android/` — the app: a WebView with `web/index.html` (copied at build time) and
-  Wi-Fi (HTTP), BLE and USB channels (`executeCommand` commands). The page's `/api/*` requests over USB/BLE
-  are translated into the same commands the HTTP handler runs (`api/CommandApi.kt`);
-  add new page features there too. Build: `cd android && ./gradlew
-  testDebugUnitTest assembleRelease` (JDK from Android Studio). Checking with a board in the emulator:
-  `tools/usb_tcp_bridge.py` (USB protocol), `tools/web_usb_bridge.py` (HTTP).
 - `tools/` — packaging, installation, USB control, maps and hardware checks.
 - Dependencies are pinned in `platformio.ini`; change them only when necessary.
 
@@ -119,18 +113,15 @@ found; do not add tests that merely duplicate the implementation.
 
 ## Versions and publishing
 
-Public firmware and Android versions are independent, SemVer; the single source is
+The public firmware version is SemVer; the single source is
 `versions.properties`. After a change: `python tools/version.py --generate`, then `--check`;
 `include/Version.h` is generated and committed. Details — `docs/releases.md` and `docs/en/releases.md`.
 The firmware reports `version`, `revision` (Git SHA + `-dirty` locally), `build_sha256`; packages and the site
 include the revision and hashes. Do not treat an identical SemVer as proof of an identical image.
-Android: `versionName=<android>+<code>`, CI `code=1000000+run_number*100+run_attempt`, locally
-code 1000000 and the suffix `+local`. The code must never decrease; `tools/app_release.py` takes the values from
-Gradle's `output-metadata.json` and does not derive them from the firmware version.
 A push to `main` runs `.github/workflows/pages.yml`: version and translation checks (screens, page, chess),
-18 boards and all language packages, screenshots, tests and a signed APK, the site, then Pages. Any
-required failure blocks publishing. After pushing, check that Actions finished and check the public `release.json`,
-`app/version.json`. The build/deploy does not flash boards or install the APK on a phone.
+all boards and language packages, screenshots, tests, the site, then Pages. Any
+required failure blocks publishing. After pushing, check that Actions finished and check the public `release.json`.
+The build/deploy does not flash boards.
 Update the documentation and these instructions by hand from actual results before committing.
 
 ## Languages

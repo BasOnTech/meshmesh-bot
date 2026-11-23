@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// Languages of the device page and the Android app (i18n/README.md). The Russian text of web/index.html,
-// android/.../assets/host.js and the app's Kotlin code is the key of i18n/web/<lang>.json:
+// Languages of the device page (i18n/README.md). The Russian text of web/index.html is the key of
+// i18n/web/<lang>.json:
 //   L('текст'), L`текст ${x}` (the key has {0}, {1}… for the values) and the markup of web/index.html;
 //   plural(n,'одна','две','пять') — the key "одна|две|пять", its value the forms of the language with {n};
-//   I18n.t("текст {0}", x) in Kotlin; "_pieces" — the letters K Q R B N of the chess notation.
+//   "_pieces" — the letters K Q R B N of the chess notation.
 // Needs acorn: npm ci --prefix tools.
 //   node tools/web_i18n.cjs sync          keys of the code into every dictionary (new ones empty, old ones go)
 //   node tools/web_i18n.cjs todo LANG     what LANG still lacks
@@ -42,14 +42,6 @@ function keys(){
  const decode=s=>s.replace(/&nbsp;/g,'\u00a0').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&#(\d+);/g,(m,n)=>String.fromCodePoint(+n)).replace(/&amp;/g,'&');
  for(const part of markup.split(/<[^>]*>/)){const t=decode(part).trim();if(CYR.test(t))add(t,'markup','web/index.html')}
  for(const m of markup.matchAll(/\s(?:title|placeholder|aria-label|value)="([^"]*)"/g)){const t=decode(m[1]).trim();if(CYR.test(t))add(t,'markup','web/index.html')}
- scan(fs.readFileSync(path.join(ROOT,'android/app/src/main/assets/host.js'),'utf8'),'host.js');
- // Kotlin: I18n.t("…") with the Russian text as it is written.
- const kt=d=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?kt(path.join(d,e.name)):e.name.endsWith('.kt')?[path.join(d,e.name)]:[]);
- for(const f of kt(path.join(ROOT,'android/app/src/main/java'))){
-  const src=fs.readFileSync(f,'utf8');
-  for(const m of src.matchAll(/I18n\.t\("((?:\\.|[^"\\])*)"/g))add(m[1].replace(/\\(.)/g,(x,c)=>({n:'\n',t:'\t'}[c]??c)),'text',path.relative(ROOT,f));
-  const left=src.split('\n').map((l,i)=>[l,i+1]).filter(([l])=>CYR.test(l.replace(/\/\/.*$/,'').replace(/^\s*\*.*$/,'').replace(/I18n\.t\("(?:\\.|[^"\\])*"/g,'')));
-  if(!f.endsWith('/I18n.kt'))for(const [l,i] of left)if(/"[^"]*[А-Яа-яЁё]/.test(l))throw Error(`${path.relative(ROOT,f)}:${i}: Russian text outside I18n.t: ${l.trim()}`)}
  return out}
 
 const file=l=>path.join(DIR,l+'.json');

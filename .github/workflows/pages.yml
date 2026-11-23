@@ -1,4 +1,4 @@
-# Builds every board, the Android app and the site, then publishes them to GitHub Pages.
+# Builds every board and the site, then publishes them to GitHub Pages.
 name: Site and firmware
 
 on:
@@ -25,7 +25,6 @@ jobs:
           python-version: '3.12'
       - run: |
           python tools/version.py --check
-          python tools/version_check.py
           python tools/i18n.py check
           python tools/networks.py check
           node tools/chess/i18n_check.cjs
@@ -69,39 +68,8 @@ jobs:
           name: package-${{ matrix.env }}
           path: artifacts/
 
-  android:
-    needs: validate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Build
-        working-directory: android
-        env:
-          MM_KEYSTORE_BASE64: ${{ secrets.MM_KEYSTORE_BASE64 }}
-          MM_KEYSTORE_PASSWORD: ${{ secrets.MM_KEYSTORE_PASSWORD }}
-        run: |
-          test -n "$MM_KEYSTORE_BASE64" && test -n "$MM_KEYSTORE_PASSWORD"
-          umask 077
-          echo "$MM_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
-          export MM_KEYSTORE="$RUNNER_TEMP/release.jks"
-          export MM_VERSION_CODE=$(python ../tools/version.py --android-code)
-          ./gradlew --no-daemon testDebugUnitTest assembleRelease
-      - uses: actions/upload-artifact@v4
-        with:
-          name: apk
-          path: |
-            android/app/build/outputs/apk/release/app-release.apk
-            android/app/build/outputs/apk/release/output-metadata.json
-
   site:
-    needs: [firmware, android]
+    needs: firmware
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -113,16 +81,9 @@ jobs:
           pattern: package-*
           path: artifacts
           merge-multiple: true
-      - uses: actions/download-artifact@v4
-        with:
-          name: apk
-          path: apk
       - run: python tools/i18n.py check
       - run: |
           python tools/pages.py _site m9 heltec_v4 heltec_v4_r8
-          mkdir -p _site/app && cp apk/app-release.apk _site/app/meshmesh.apk
-          # The app checks app/version.json and downloads the numbered copy (a fresh name, no stale CDN cache).
-          python tools/app_release.py _site/app apk/output-metadata.json
           python tools/publish_check.py _site
       - uses: actions/upload-pages-artifact@v3
         with:

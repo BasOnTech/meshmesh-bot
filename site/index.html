@@ -222,7 +222,6 @@ footer a{color:var(--dim)}
  .hero{padding:40px 0 56px}
  .grid,.steps,.docs{grid-template-columns:1fr}
  .heltec{width:140px;left:-6px;bottom:-10px}
- .cta-apk{order:-1;background:var(--accent);border-color:var(--accent);color:#04201c}
  .btn.primary.cta-install{background:var(--card);border-color:var(--line);color:var(--ink)}
  .lb .nav{display:none}
  .diagram .horiz{display:none}
@@ -260,7 +259,6 @@ footer a{color:var(--dim)}
    <p class="lead" data-i18n="hero.lead"></p>
    <div class="cta">
     <a class="btn primary cta-install" href="#install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16"/></svg><span data-i18n="cta.install"></span></a>
-    <a class="btn cta-apk" href="app/meshmesh.apk" download><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.48l1.84-3.18a.38.38 0 0 0-.66-.38l-1.86 3.22a11.4 11.4 0 0 0-9.84 0L5.22 5.92a.38.38 0 0 0-.66.38L6.4 9.48A10.8 10.8 0 0 0 1 18h22a10.8 10.8 0 0 0-5.4-8.52ZM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Z"/></svg><span data-i18n="cta.apk"></span></a>
     <a class="btn cta-more" href="#features"><span data-i18n="cta.more"></span></a>
    </div>
    <a class="news" href="#features"><b class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg></b><span data-i18n="news.emoji"></span><i>→</i></a>
@@ -402,9 +400,6 @@ footer a{color:var(--dim)}
      <li><span data-i18n="good.radio"></span></li>
      <li><span data-i18n="good.law"></span></li>
     </ol>
-    <div class="note"><span data-i18n="app.note"></span>
-     <div class="row" style="margin-top:12px"><a class="btn" href="app/meshmesh.apk" download><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.48l1.84-3.18a.38.38 0 0 0-.66-.38l-1.86 3.22a11.4 11.4 0 0 0-9.84 0L5.22 5.92a.38.38 0 0 0-.66.38L6.4 9.48A10.8 10.8 0 0 0 1 18h22a10.8 10.8 0 0 0-5.4-8.52ZM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Z"/></svg><span data-i18n="app.download"></span></a><small style="color:var(--faint)">Android 10+</small></div>
-    </div>
     <div class="note"><span data-i18n="chess.note"></span>
      <div class="row" style="margin-top:12px"><a class="btn" href="chess/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M9 18h6l1-6H8zM10 12V9l-2-2 2-1V3h4v3l2 1-2 2v3"/></svg><span data-i18n="chess.open"></span></a></div>
     </div>
@@ -520,7 +515,7 @@ const FEATURES=[
 const HERO=['m9-home','m9-chat','m9-map','m9-radar','m9-chess-italian','m9-motion'];
 const OLED=['heltec-home','heltec-messages','heltec-nodes','heltec-radar','heltec-gps','heltec-popup'];
 // Documents: the overview in every language; the details in Russian, translated to English (docs/en).
-const DOCS=[['README.md','doc.readme'],['docs/channels.md','doc.channels'],['docs/regions.md','doc.regions'],['docs/networks.md','doc.networks'],['docs/wardrive.md','doc.wardrive'],['docs/meshcore-migration.md','doc.migration'],['docs/android.md','doc.android'],['docs/companion.md','doc.companion'],['docs/repeater.md','doc.repeater'],['docs/pet.md','doc.pet'],['docs/dice.md','doc.dice'],['docs/chess.md','doc.chess'],['docs/games.md','doc.games'],['docs/maps-format.md','doc.maps'],['docs/feature-parity.md','doc.parity'],['docs/verification.md','doc.verification']];
+const DOCS=[['README.md','doc.readme'],['docs/channels.md','doc.channels'],['docs/regions.md','doc.regions'],['docs/networks.md','doc.networks'],['docs/wardrive.md','doc.wardrive'],['docs/meshcore-migration.md','doc.migration'],['docs/companion.md','doc.companion'],['docs/repeater.md','doc.repeater'],['docs/pet.md','doc.pet'],['docs/dice.md','doc.dice'],['docs/chess.md','doc.chess'],['docs/games.md','doc.games'],['docs/maps-format.md','doc.maps'],['docs/feature-parity.md','doc.parity'],['docs/verification.md','doc.verification']];
 function docPath(path){
  if(path==='README.md')return lang==='en'?path:`README.${lang}.md`;
  return lang==='ru'?path:path.replace('docs/','docs/en/');

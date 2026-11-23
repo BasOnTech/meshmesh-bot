@@ -44,10 +44,9 @@ MeshCore nodes.
   [docs/en/repeater.md](docs/en/repeater.md)
 - **MeshCore apps** — the stock MeshCore apps connect over Bluetooth or USB and work with the board's chats, contacts and channels (chess stays in the MeshMesh app). [docs/en/companion.md](docs/en/companion.md)
 - **GPS and compass**, position sharing, lock screen, phonetic Cyrillic keyboard input.
-- **Web interface** over the device's own Wi-Fi access point or the home Wi-Fi it joins (M9), and an **Android app**
-  (Wi-Fi, Bluetooth LE or USB) with message notifications.
+- **Web interface** over the device's own Wi-Fi access point or the home Wi-Fi it joins (M9).
 - **Device UI in English and Russian** (Dutch is planned). The website installs the firmware with the language
-  you pick; Settings change it later. The web interface and the Android app speak the same languages.
+  you pick; Settings change it later. The web interface speaks the same languages.
 
 ## Boards
 
@@ -84,13 +83,12 @@ python3 -m venv .venv
 .venv/bin/python tools/package.py m9
 ```
 
-Android app: `cd android && ./gradlew testDebugUnitTest assembleRelease` ([docs/en/android.md](docs/en/android.md)).
 The screen UI can be rendered on a computer without a board: `tools/ui_preview/build.sh m9 OUTDIR en`.
 
 ## Documentation
 
 Detailed documentation in English: [channels](docs/en/channels.md), [regions](docs/en/regions.md), [network of your city](docs/en/networks.md), [backup](docs/en/backup.md), [MeshCore compatibility](docs/en/meshcore-migration.md),
-[Android](docs/en/android.md), [repeater and room modes](docs/en/repeater.md),
+[repeater and room modes](docs/en/repeater.md),
 [chess protocol](docs/en/chess.md), [mesh pet](docs/en/pet.md), [dice](docs/en/dice.md), [map format](docs/en/maps-format.md), [comparison with MeshCore](docs/en/feature-parity.md),
 [hardware verification](docs/en/verification.md). The Russian originals are in [docs/](docs/), with the full
 guide to controls and features in [README.ru.md](README.ru.md).

@@ -41,7 +41,7 @@ def command(s,text,timeout=8):
                 if json_response:raise RuntimeError(line)
                 return line
             if line.startswith('OK') and not json_response:return line
-            # Any whole JSON line answers (internet info, remote …), as in the app (android/…/link/Lines.kt).
+            # Any whole JSON line answers (internet info, remote …),.
             if line.startswith(('{','[')):
                 try:json.loads(line);return line
                 except json.JSONDecodeError:continue
