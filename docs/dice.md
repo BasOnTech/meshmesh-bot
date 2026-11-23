@@ -7,12 +7,11 @@ show the same: a roll from the phone appears on the board's screen at once and t
 hardware random number generator rolls the dice, without modulo bias. Rolls are not sent over the radio; a
 sheet can be sent to a contact (below).
 
-On every board: a "Dice" tile on the M9 and T-Deck, a screen after "Pet" on the one-button boards, the GAT562
-and the T114. It works in every role, the repeater and room server included.
+On both boards: a "Dice" tile on the M9, a screen after "Pet" on the Heltec V4. It works in every role, the repeater and room server included.
 
 Code: `src/games/dice/Dice.cpp`, `src/games/dice/Dice.h` (rolls, formulas, the sheet, templates, storage, sending, the `dice`
 command), `src/games/dice/UiDice.inc` (the 320×240 screen), `src/games/dice/UiDiceCompact.inc` (the 128×64 OLED and the menus of the
-one-button boards), the page in `src/UiHires.inc` (T114), the shapes of dice and stats — `drawDieShape`,
+Heltec V4), the shapes of dice and stats — `drawDieShape`,
 `drawStatShape` in `src/ui/UiIcons.cpp`. The state is `/meshmesh/dice.bin` in LittleFS (mode, pool, grid, the
 characters' names); each character's sheet is its own file `/meshmesh/sheetN.bin` (only the blocks in use and
 their descriptions, with a checksum); the current character's sheet is in memory. The last eight rolls and the
@@ -27,7 +26,7 @@ grid values live in memory only.
 triangle, d6 pips, d8 a diamond, d10 a kite, d12 a pentagon, d20 a hexagon), the maximum in green, a one in
 red, and the sum. d66 and d% show each die on its own, without a sum. The last eight rolls are kept. Saved
 rolls are the sheet's abilities with a formula (below): the "S" list on the M9, the buttons of the page and
-the menu item of the one-button boards roll them.
+the menu item of the Heltec V4 roll them.
 
 **Warhammer.** A grid of 20 dice (up to 50 with "+5"): choose how many of the first dice to roll; the roll lays
 them out from high to low. With the threshold on (`4+`) the dice at or over it are green, the others red, and
@@ -102,7 +101,7 @@ direct messages; the offer lasts until a restart.
 
 ## Controls
 
-**M9 and T-Deck.** Tabs on top: `M` (or `1`–`3`, a tap on a tab) changes the mode, `P` opens the characters.
+**M9.** Tabs on top: `M` (or `1`–`3`) changes the mode, `P` opens the characters.
 RPG: `OK` rolls the pool, `<` `>` the die, `^` `v` the number of dice, `+`/`−` the modifier, `R` reset, `E` any
 formula, `S` the saved rolls (`OK` roll, `A` add, `F` formula, `N` name, `C` colour, `DEL` twice — delete), `X`
 clears the history. Warhammer: the arrows choose the number of dice, `OK` rolls, `A` five more dice, `R` reset,
@@ -110,26 +109,24 @@ clears the history. Warhammer: the arrows choose the number of dice, `OK` rolls,
 row), `OK` rolls a stat's check or an ability (with its cost), marks the marks, opens a note's text; `+`/`−`
 ±1, `V` types a value (`23`, `+5`, `-7`), `I` the whole description. The last roll stays over the sheet for a
 few seconds. Characters: `OK` choose, `A` new (a name, then a template), `N` name, `S` send the sheet to a
-contact, `O` the sheet a contact sent, `DEL` twice — delete. On the T-Deck all of it works by touch: a tap on a
-block chooses it, a second one rolls.
+contact, `O` the sheet a contact sent, `DEL` twice — delete.
 
-**The builder on the M9 and T-Deck** (since 0.26.0). On the sheet `E` opens the chosen block, `A` adds a block
+**The builder on the M9** (since 0.26.0). On the sheet `E` opens the chosen block, `A` adds a block
 after it. The block's fields are rows: `^` `v` choose a field, `<` `>` change the kind, width, colour, shape,
 rule and the block's place in the sheet at once, `OK` types the name, code, value, maximum, formula, cost and
 description (formulas and codes in Latin as they are, names and descriptions as typed), `DEL` twice
 deletes the block, `BACK` returns to the sheet. A new block not touched yet takes the defaults of the new kind
 when its kind changes. The device checks the fields as for the web page; a formula referring to a missing code
-shows "The formula does not compute". On the T-Deck a tap chooses a row, a second tap is `OK`.
+shows "The formula does not compute".
 
-**One-button boards, GAT562, T114.** A click on the closed dice page moves to the next page, a hold opens the
+**Heltec V4 (one button).** A click on the closed dice page moves to the next page, a hold opens the
 dice. In RPG and Warhammer a short press repeats the roll, a hold opens the menu. On the sheet a click goes
-through the blocks (the OLED shows the chosen block large, the T114 the grid of blocks as the M9 does); the
-menu has the block's action ("Roll: Dexterity", "Mark", "Use"), "Count with button" or ±1 on the joystick, ±5,
+through the blocks (the OLED shows the chosen block large); the
+menu has the block's action ("Roll: Dexterity", "Mark", "Use"), "Count with button", ±5,
 the previous and next block, "Add counter", the character, the mode; a sheet sent by a contact adds "Accept
-sheet" and "Decline the sheet". The joystick's up/down change the number of dice, the chosen grid dice or the
-block's value. Blocks and templates are easier to make on the web page or in the app.
+sheet" and "Decline the sheet". Blocks and templates are easier to make on the web page or in the app.
 
-**Count with button** (one-button boards and T114). The item counts the chosen block's value (a track, a stat
+**Count with button** (Heltec V4). The item counts the chosen block's value (a track, a stat
 without a formula, marks): click +1, hold (0.8 s) −1, holding on to 5 s leaves (that hold's −1 is taken back).
 While counting, a press with the screen off counts at once.
 
@@ -169,9 +166,7 @@ Actions answer `OK … {JSON}`, errors `ERR …`. In the JSON each part of a rol
 ## Memory and size
 
 A sheet is up to 64 blocks of 102 bytes and 2048 bytes of descriptions; only the current one is in memory
-(about 8.6 KB on the heap). On the nRF52 the dice are an optional module (`--without dice`). For the sheet to
-fit the Chinese T114 image (1 MB flash), the nRF52 libraries and core are built with `-Os` (our code with
-`-O2`, except the files with an `-Os` pragma), see `platformio.ini`.
+(about 8.6 KB on the heap).
 
 ## Checked and not checked
 

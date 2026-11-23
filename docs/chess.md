@@ -12,15 +12,14 @@ Code: `src/games/chess/Chess.cpp` (rules), `src/games/chess/ChessNet.cpp` (games
 (`web/index.html`). You play on the screen of any board that has one, or on the web page and in the app;
 the USB commands `chess ...` exist on every board.
 
-## The 128×64 screen: one button and the joystick
+## The 128×64 screen: one button
 
-The Heltec, the GAT562 and the community boards with an OLED show a “Chess” screen after “Nodes”: the list
+The Heltec V4 shows a “Chess” screen after “Nodes”: the list
 of games, a 64×64 board on the left (your side at the bottom) and, on the right, the opponent, your colour,
 the state, the last move and the delivery. A challenge comes from a node card (“Chess: invite” in its menu),
 acceptance from the game menu.
 
-One button (Heltec V4/V3, Wireless Tracker, T-Beam and the other one-button boards): a click shows the
-next choice, hold takes it.
+A click shows the next choice, hold takes it.
 - In the list, hold opens the game; with several games, a menu: “Open game”, “Next game”.
 - On your move a click steps through your pieces that can move — row by row from the bottom, left to
   right; the right side names the piece (“Ng1”), and after the last piece comes “Game menu”. Hold picks
@@ -34,9 +33,6 @@ next choice, hold takes it.
 Stepping through legal moves only is quicker on one button than moving a cursor: at the start White
 has 10 pieces that can move, and a piece reaches up to 27 squares. The Heltec has no compass or gyroscope,
 and the M9 (accelerometer and magnetometer) has a keyboard, so pieces are not chosen by tilting.
-
-Joystick (GAT562): the cursor moves over the board, OK picks a piece and plays the move, Back drops the
-piece or returns to the list, holding OK opens the game menu.
 
 ## Commands
 
@@ -122,24 +118,23 @@ but do not change the rating (“over the daily limit”). The score against eac
 (+wins =draws −losses) covers all kept games.
 
 **Storage.** `/meshmesh/rating.bin` in LittleFS (`MMR1`, players, records, CRC-32; written through
-`rating.new`/`rating.old` like the games). Up to 128 records on ESP32 and 40 on GAT562; when full, the
+`rating.new`/`rating.old` like the games). Up to 128 records; when full, the
 oldest record moves into the players' base and the ratings do not change. Up to 32 players.
 
-**Where it shows.** M9 and T-Deck: the title “Chess · ELO 1520”, the “Rating” tab (◂▸): the rating, the
+**Where it shows.** M9: the title “Chess · ELO 1520”, the “Rating” tab (◂▸): the rating, the
 change over the latest games and a chart, players with their rating and your score; on the challenge
 screen — the opponent's ELO and what a win gives and a loss takes; on the board of a finished game —
 “ELO 1516 (+16)” or the signature state (“their signature”, “signatures”). Web page and app: the
 “Games / Rating” tabs, the “Rated / Friendly” switch, the forecast next to contacts, the rating line on the board
 (`GET /api/chess?rating=1`, USB `chess rating`; the `rated`, `sign`, `elo_before`, `elo_after` fields in the
-game list). The Heltec and GAT562 show the rating change in a pop-up.
+game list). The Heltec V4 shows the rating change in a pop-up.
 
 Signing does not rule out boosting a rating with a second device of your own: it proves that both keys
 accepted the result, not that different people hold them. The daily limit restricts it.
 
 ## Tournament (Swiss system)
 
-The organiser is any board with MeshMesh: M9, T-Deck, Heltec, GAT562 and the community boards (on the GAT562
-the tournament fitted once the images were split by language).
+The organiser is any board with MeshMesh: the M9 or the Heltec V4.
 A tournament is created on the M9 (“Chess” → the “Tournaments” tab → “Create a tournament”: name,
 players from the chat contacts, the number of rounds and the time a move), on the web page or over USB
 `tour create ROUNDS HOURS ID,ID,... NAME`. Up to 10 players with the organiser, up to 9 rounds; up to
@@ -177,9 +172,9 @@ Tournament commands go as direct messages with ACK; unconfirmed ones are resent 
 after a restart resending starts in a minute). The time a move is a guide for now: there is no loss on
 time. If the organiser disappears, the tournament stops — organising is not handed over.
 
-**Where it shows.** M9 and T-Deck: the “Tournaments” tab (the list, an invitation, gathering players, the
+**Where it shows.** M9: the “Tournaments” tab (the list, an invitation, gathering players, the
 tournament page with your game of the round, the standings and the games — ◂▸, OK — to the game), the
-tournament strip on the board, pop-ups and a lit screen for a round's pairing and the result. Heltec and GAT562 — a
+tournament strip on the board, pop-ups and a lit screen for a round's pairing and the result. Heltec V4 — a
 pop-up with the news; answering an invitation and the standings are on the web page or in the app, and the
 game can be played on the screen too. Web page and app: the “Tournaments” tab
 with the same actions and a creation form (`GET /api/tour`, USB `tour`).
@@ -204,14 +199,13 @@ free; incoming ones are handled in the main loop. A sync starts by itself when a
 games or has synced before — at most every 6 hours per node; by hand — S on the M9 “Rating” tab, the “Sync the
 ledger now” button on the web page, USB `chess sync` (every such node heard in a day) or `chess sync NODE_ID`.
 When the ledger is full, a record older than the oldest kept one is not accepted: it may already be in the
-players' base and would count twice. Nodes with ledgers of different size (128 records on ESP32, 40 on GAT562)
-may differ slightly in ratings after old records move into the base. `chess rating clear` over USB empties the
+players' base and would count twice. `chess rating clear` over USB empties the
 ledger (for example before restoring it by syncing with the neighbours).
 
 ## Game archive (PGN)
 
 Every finished game with moves is written to the SD card — `/meshmesh/chess/YYYYMMDD-NUMBER.pgn` (the UTC start
-date, the game number) — on the M9, T-Deck and other boards with a card; when the opponent's rating signature
+date, the game number) — on the M9 (the board with a card); when the opponent's rating signature
 arrives the file is written again with the `WhiteElo`/`BlackElo` tags. So a game survives after a new one takes its
 board. The PGN is standard: the seven required tags, moves in English notation (`Qxf7#`), the end of the game as a
 comment (`{checkmate}`), the event — the tournament name or “MeshMesh rated/friendly game”. Web page and app: the
@@ -253,7 +247,7 @@ The page polls the device every 3 s.
 https://ikrasnodymov.github.io/meshmesh/chess/ — the same chess page, but without MeshMesh on your own
 device: it connects to a board running the stock MeshCore Companion firmware over USB (Web Serial)
 or Bluetooth (Web Bluetooth) and plays through it with ordinary direct messages. The opponent plays
-on MeshMesh (M9, Heltec, GAT562) or on the same page.
+on MeshMesh (M9, Heltec V4) or on the same page.
 
 - The rules and games run in the browser: `web/chess-companion.js` is a port of `src/games/chess/Chess.cpp` and
   `src/games/chess/ChessNet.cpp` (the same commands, reception, retries, automatic resending of undelivered commands).
@@ -281,7 +275,7 @@ on MeshMesh (M9, Heltec, GAT562) or on the same page.
 
 ## Notifications
 
-- M9 and T-Deck: a pop-up message “Heltec V4: Nf3, your move” (on any page except
+- M9: a pop-up message “Heltec V4: Nf3, your move” (on any page except
   the lock screen), a sound, a “waiting for move” badge on the tile. News that needs a move
   or an answer (the opponent's move, a challenge, a draw offer) and the end of a game light a dark screen.
 - Lock screen: a game card above the messages card — the opponent, their move and the state
@@ -290,8 +284,8 @@ on MeshMesh (M9, Heltec, GAT562) or on the same page.
   Holding OK unlocks and opens that game at once. The “Lock screen” setting (`lock_details`,
   “Screen & device”, web page): “Hidden” leaves “Chess · N games wait” and “Unlock to read”
   without names, moves and senders.
-- Heltec and the other OLED boards: a “Chess” window with the same text, three LED flashes, the screen
-  wakes up; a click closes the window, hold (OK on the GAT562) opens the game. When that game is already
+- Heltec V4: a “Chess” window with the same text, three LED flashes, the screen
+  wakes up; a click closes the window, hold opens the game. When that game is already
   open on the screen there is no window: the board is updated.
 - Web page: a pop-up message about the opponent's move, an invitation, a draw offer,
   the result and an undelivered command; the number of games waiting for a move in the

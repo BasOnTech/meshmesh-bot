@@ -4,10 +4,9 @@ A Tamagotchi-like pixel creature that lives on the device and feeds on the radio
 firmware has no pet until the owner presses "Start a pet" (on the screen, the web page or in the app, USB
 `pet adopt`), and the owner can let it go ("Let it go...", `pet release`): it leaves without a grave, the
 memory of earlier pets stays. A pet started before is kept. It lives in the device's firmware; the web
-page and the app show it and control it. It is on every board:
-the "Pet" tile on the M9 and T-Deck, its own screen after "Chess" on the one-button boards and the GAT562.
-The Heltec V4/V3, Wireless Tracker, T-Beam and other boards with a 128×64 OLED draw it in outline, like
-the LCD of a keychain pet; the T114 draws it in colour at its native 240×135. The pet also lives in the
+page and the app show it and control it. It is on both boards:
+the "Pet" tile on the M9, its own screen after "Chess" on the Heltec V4, whose 128×64 OLED draws it in
+outline, like the LCD of a keychain pet. The pet also lives in the
 repeater and room server modes, where the relayed traffic feeds it.
 
 ## Species
@@ -19,13 +18,13 @@ Pengu, Shroom (a mushroom), Jelly (a slime), Buzz (a bee), Axolotl. A new egg ge
 (hardware generator); the spots on the egg have the colour of the species inside. The accent in the top rows
 (the antenna ball, the bunny's ears) lights up when a packet arrives. On the OLED the outline tells the species.
 
-![Every species on the M9 and the T114](pet-species.png)
+![Every species](pet-species.png)
 
 The drawings are in `tools/gen/pet_sprites.py` (16×16, two bits a pixel, about 2 KB for all species); it writes
-`src/games/pet/PetSprites.h`, and with `--sheet OUT.png` draws every species. The T114 palette takes the colours from there.
+`src/games/pet/PetSprites.h`, and with `--sheet OUT.png` draws every species.
 
 Code: `src/games/pet/Pet.cpp`, `src/games/pet/Pet.h` (life, food, saving), `src/games/pet/UiPet.inc` (320×240
-screen), `src/games/pet/UiPetCompact.inc` (128×64 OLED), its page in `src/UiHires.inc` (T114). The state is the
+screen), `src/games/pet/UiPetCompact.inc` (128×64 OLED). The state is the
 file `/meshmesh/pet.bin` in LittleFS (about 450 bytes with a checksum), not NVS.
 
 ## What it eats
@@ -80,25 +79,22 @@ In the repeater and room modes there is no owner nearby, so a hungry pet eats a 
 
 ## Screens
 
-**M9 and T-Deck.** The "Pet" tile on the home screen (yellow when it needs care); in the repeater and
+**M9.** The "Pet" tile on the home screen (yellow when it needs care); in the repeater and
 room modes the P key opens it. On the left the creature on its card with a speech bubble, on the right
-its name, stage, level, experience and the Food, Joy and Health bars. Keys: OK pets it (a tap on the
-card on the T-Deck; without a pet it starts one), F feeds it, H heals it, N renames it, D switches death on
+its name, stage, level, experience and the Food, Joy and Health bars. Keys: OK pets it (without a pet it
+starts one), F feeds it, H heals it, N renames it, D switches death on
 or off, R twice lets it go. The locked
 screen shows a small pet under the clock when no game or unread message takes the place.
 
-**128×64 OLED (Heltec and other one-button boards).** The screen after "Chess": the creature on the
+**128×64 OLED (Heltec V4).** The screen after "Chess": the creature on the
 left, its mood and three bars with signs (bowl, heart, cross) on the right. Holding the button opens
-the menu: "Pet", "Feed", "Heal", "Death: on/off"; at a grave, "New egg". On the GAT562 the joystick
-centre does the same.
+the menu: "Pet", "Feed", "Heal", "Death: on/off"; at a grave, "New egg".
 
 **Web page and Android app.** A "Pet" tile on the home page and a section with the same creature in the
 colours of its species (the page draws the picture the firmware sends: `/api/pet`, in the app the `pet`
 command over USB or BLE), its words, bars, experience, snacks, friends and age; buttons "Pet", "Feed",
 "Heal", "Name", "Death on/off", "Let it go..." (confirmed by a second press), "New egg" at a grave and
 "Start a pet" without one; the memory below. The page refreshes it every 1.2 s (2 s in the app).
-
-**T114.** The same screen and menu in colour: a card with the creature, a speech bubble, bars with icons.
 
 It says things like "New friend: …", "A message, how tasty", "Hungry: the air is empty", "Write to
 someone?", and moves its mouth while talking. Moods: happy, calm, hungry, lonely, asleep, ill, eating.
@@ -121,7 +117,6 @@ pet skip SECONDS          run its clock forward (up to 14 days) to check growing
   album of meetings) and a repeater answering `!pet` from the mesh are the next step.
 - The boards have no NFC; BLE and LoRa are meant to take the place of tapping a tag.
 - In the repeater and room modes "friends" are not counted: the MeshCore server keeps the contacts there.
-- Boards without a screen (XIAO, a T-Beam without OLED) show the pet only on the web page, in the app and over USB.
 
 ## Checks
 

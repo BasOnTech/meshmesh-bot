@@ -31,7 +31,7 @@ to normal mode the node advertises itself as a chat node on its own: the last ad
 
 ## Choosing the mode
 
-- **M9 and T-Deck (screen).**
+- **M9 (screen).**
   - For the first 5 seconds after boot, “Device mode” is shown with three cards and a countdown.
     If nothing is pressed, the previous mode is loaded.
   - Choosing a different mode is saved, and the device restarts.
@@ -102,11 +102,11 @@ Code:
 In the normal mode MeshMesh itself logs in to the network's repeaters and rooms, stock and MeshMesh ones, as the
 MeshCore app does (`src/mesh/Remote.h`, `src/mesh/Remote.inc`):
 
-- **M9 and T-Deck:** the node card → "Server". The "Server and route" page: "Login" (a password; empty takes the
+- **M9:** the node card → "Server". The "Server and route" page: "Login" (a password; empty takes the
   saved one or a guest login), "Status" (battery, uptime, received and sent, noise, RSSI and SNR, room posts),
   "Command" (after an admin login; CLI commands as in the app: `ver`, `get name`, `neighbors`…; the last three
   replies on the page), "Trace". A room's "Room" button opens its chat.
-- **Heltec, GAT562, T114:** the node menu has "Log in" (with the saved password, else as a guest), "Server status"
+- **Heltec V4:** the node menu has "Log in" (with the saved password, else as a guest), "Server status"
   and "Trace route"; the answer shows on the node page. CLI commands are not sent from these boards.
 - **Web page and the MeshMesh app:** the node card has a password field, "Login", "Status", a command field for the
   admin, the replies and the trace; answers arrive without reloading the page.
@@ -132,8 +132,8 @@ In repeater and room modes the board also enters light sleep between packets (as
 60 s after boot, with the screen dark, BLE, Wi-Fi and the radar off, an empty transmit queue and 30 s
 after the last command or key. The transceiver IRQ line (a received packet), the button, bytes over
 the USB-UART and a 0.5 s timer wake it (the M9 keyboard is polled after each wake). The bytes that
-wake a board over a USB-UART bridge (M9, Heltec V3 and others) are lost, so `tools/hw/device.py` and the
-app first send a few CR (the board skips them) and wait 50 ms. With native USB (Heltec V4 and others)
+wake a board over a USB-UART bridge (the M9) are lost, so `tools/hw/device.py` and the
+app first send a few CR (the board skips them) and wait 50 ms. With native USB (Heltec V4)
 the board does not sleep while USB is connected to a computer. Bluetooth turned on prevents sleep.
 `status` shows `cpu_mhz`, `slow_ms` (time at 80 MHz), `sleeps` and `sleep_ms`.
 
@@ -200,7 +200,6 @@ messages with the computer's time.
   Python);
 - relaying of direct packets through the repeater (needs a third node);
 - long-term operation next to the repeaters of a city network;
-- the modes on community boards;
 - a full run of `finish_on_hardware.py` on these builds.
 
 Test posts remain in the room on both boards; `erase` in the CLI deletes them together with the server

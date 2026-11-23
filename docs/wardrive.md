@@ -41,8 +41,7 @@ first and pause the sweep. The power saving that waits for the LoRa IRQ does not
 
 The log lives in MeshMesh storage (LittleFS): `wd-mesh.bin` and `wd-mesh.old` hold the mesh points, `wd-nets.bin`
 and `wd-nets.old` the Wi-Fi and BLE records. A full file becomes the previous one and the old previous one is
-deleted, so the last 4096–8192 mesh points and 2048–4096 Wi-Fi/BLE records are kept on ESP32, 256–512 points on
-nRF52. Records wait in RAM for up to 16 or 30 s; power off (`poweroff`) and stopping wardriving write them at once.
+deleted, so the last 4096–8192 mesh points and 2048–4096 Wi-Fi/BLE records are kept. Records wait in RAM for up to 16 or 30 s; power off (`poweroff`) and stopping wardriving write them at once.
 A file cut in the middle of a write becomes the previous one: its whole records stay readable.
 
 The log never goes on air and is not uploaded anywhere. Export it from the web page or the app. Files with Wi-Fi
@@ -50,12 +49,12 @@ addresses, network names and your track are personal data: do not publish them n
 
 ## Screens
 
-- **M9 and T-Deck.** The "Wardrive" tile: mode, position, point count, last ping, repeaters (echoes and packets
+- **M9.** The "Wardrive" tile: mode, position, point count, last ping, repeaters (echoes and packets
   received, best SNR). OK starts (listening + pings) or stops, P pings now, N switches Wi-Fi/BLE. On the map points
   are coloured by SNR: green 5 dB and over, yellow from −5 dB, orange weaker, red a ping without echoes; pings are
   larger.
-- **One-button boards and GAT562.** The "Wardrive" screen in the app list; a hold opens the menu: start/stop, ping
-  now, repeaters heard, Wi-Fi/BLE (ESP32). The T114 draws the same screen in colour.
+- **Heltec V4 (one button).** The "Wardrive" screen in the app list; a hold opens the menu: start/stop, ping
+  now, repeaters heard, Wi-Fi/BLE.
 
 ## Web page and app
 
@@ -87,9 +86,6 @@ echo (one repeater, at the ping's position). `lat`/`lon` are in millionths of a 
 before the clock is set). `flags`: 1 the phone's position, 2 `hash` from the sender's key, 4 direct route. A part
 holds 32 points or 16 Wi-Fi/BLE records; `next` is the number of the next one, `total` the count. If `total` went
 down, the log was cleared or shifted: read again from zero.
-
-On nRF52 wardriving is an optional module (`tools/nrf52.py package ENV --without wardrive`, `MM_NO_WARDRIVE`); the
-site and the app install the full set.
 
 ## Limits
 

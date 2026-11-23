@@ -18,9 +18,9 @@ Web and Android notification settings separately control incoming banners (all, 
 
 Ten shared presets, a recipient and optional GPS attachment are stored on the board. Public is the initial recipient. A selected joined channel, chat contact or room is saved by ID; a removed recipient fails instead of silently falling back to Public. Edit and save presets in the app and use them on the device. The ↗ chat button opens quick reply to that conversation.
 
-Since 0.19.1, all supported boards keep recipient selection in a separate card above the presets, visible while scrolling. It shows the current channel or contact: colour on M9, T-Deck and T114, an outline and selected inversion on compact screens. Normal entry selects the card; confirming a recipient saves its ID and selects the first preset without sending. Cancelling the recipient list returns to the card.
+Since 0.19.1, all supported boards keep recipient selection in a separate card above the presets, visible while scrolling. It shows the current channel or contact: colour on the M9, an outline and selected inversion on the Heltec V4's OLED. Normal entry selects the card; confirming a recipient saves its ID and selects the first preset without sending. Cancelling the recipient list returns to the card.
 
-M9/T-Deck: arrows select, OK on the card opens recipients, OK on a preset sends, back exits. T-Deck also supports taps on the card, recipient and preset. Right with an empty chat composer opens quick reply. One-button devices: while paging, the Quick Send, manual counter and dice pages stay closed: a click moves on, a hold opens the page (since 0.20.1; a reply from messages opens Quick Send directly). Inside Quick Send, click selects; hold opens recipients, confirms the chosen recipient or sends a preset. The "< Exit" row remains at the end and advances to the next page. GAT562: up/down select, OK runs the selected action, left/right change page, back cancels recipient selection or goes home.
+M9: arrows select, OK on the card opens recipients, OK on a preset sends, back exits. Right with an empty chat composer opens quick reply. Heltec V4 (one button): while paging, the Quick Send, manual counter and dice pages stay closed: a click moves on, a hold opens the page (since 0.20.1; a reply from messages opens Quick Send directly). Inside Quick Send, click selects; hold opens recipients, confirms the chosen recipient or sends a preset. The "< Exit" row remains at the end and advances to the next page.
 
 Presets allow at most 160 UTF-8 bytes; sending also checks the recipient's smaller limit. BLE commands have a shared 255-byte encoded limit including JSON and escaping; longer quoted/multiline templates can be saved through USB or Wi-Fi. GPS attachment defaults off and requires a fresh trusted fix, trusted clock and no GPS conflict. Stale or conflicting coordinates produce an error.
 
@@ -38,9 +38,9 @@ Android archives foreground and background reads across all transports, separate
 
 ## Periodic Wi-Fi time
 
-ESP32 boards, including compact ones, can save a network and enable periodic NTP without the persistent Wi-Fi client. With that client off and the clock not refreshed for an hour, a temporary connection lasts at most 45 seconds. Success switches Wi-Fi off until the next hour. Failures retry after 10, 20, 40 and 60 minutes. Access point, radar, CSI and Wi-Fi probes take priority. Fresh phone time postpones NTP regardless of the phone transport; web and Android refresh time every 30 minutes.
+Both boards can save a network and enable periodic NTP without the persistent Wi-Fi client. With that client off and the clock not refreshed for an hour, a temporary connection lasts at most 45 seconds. Success switches Wi-Fi off until the next hour. Failures retry after 10, 20, 40 and 60 minutes. Access point, radar, CSI and Wi-Fi probes take priority. Fresh phone time postpones NTP regardless of the phone transport; web and Android refresh time every 30 minutes.
 
-Configure this in Connection / Internet. Commands: `internet save {"ssid":"...","password":"..."}`, `internet ntp on|off`, `internet` for status. `internet add` still enables the persistent client. Periodic NTP defaults off. nRF52 has no Wi-Fi. NTP success requires an available network and hardware verification.
+Configure this in Connection / Internet. Commands: `internet save {"ssid":"...","password":"..."}`, `internet ntp on|off`, `internet` for status. `internet add` still enables the persistent client. Periodic NTP defaults off. NTP success requires an available network and hardware verification.
 
 ## Quick counter
 
@@ -50,18 +50,16 @@ the page and the app; the manual count of earlier versions becomes the first car
 last press (`/meshmesh/tally`); adding, renaming and deleting are saved at once. The last card cannot be deleted.
 The module works in images without Dice too.
 
-- M9 and T-Deck: the page opens straight on a card — OK/up +1, down −1, left/right turn the cards (a swipe on the
-  T-Deck), and past the last one is "New counter". N or a hold names it, C colours it, R twice resets it to 0,
+- M9: the page opens straight on a card — OK/up +1, down −1, left/right turn the cards, and past the last one is "New counter". N or a hold names it, C colours it, R twice resets it to 0,
   DEL twice deletes it, B and W show the BLE and Wi-Fi estimate under the card.
-- One-button boards: a hold opens the page, then click +1, hold opens the menu: −1, "Next: <name>", "New counter",
-  "Reset to 0", "Delete this counter" (hold again within 5 s), BLE, Wi-Fi, window and exit. GAT562: up +1, down −1,
-  OK the same menu.
+- Heltec V4 (one button): a hold opens the page, then click +1, hold opens the menu: −1, "Next: <name>", "New counter",
+  "Reset to 0", "Delete this counter" (hold again within 5 s), BLE, Wi-Fi, window and exit.
 - Page and app: cards swipe left and right, a tap on the number is +1, with −1, "Edit" (name and value), colour,
   reset and delete with confirmation, dots and a "New counter" card.
 
 Automatic results are BLE devices and Wi-Fi devices, kept separate from manual counting and from each other. RSSI threshold −100…−30 dBm, window 30/60/300 seconds, optional BLE phone/watch filter. Each table has 128 temporary identifiers and indicates saturation and dropped observations. No names, addresses or payloads are saved by the counter; identifiers are salted per boot and tables stay in RAM.
 
-Background BLE scanning is passive and shares the existing controller with advertising and connections. Passive Wi-Fi listens to probe requests and client frames, hopping permitted channels; it yields to access point, radar, CSI, probes and Internet. nRF52 supports BLE only. Both automatic modes default off.
+Background BLE scanning is passive and shares the existing controller with advertising and connections. Passive Wi-Fi listens to probe requests and client frames, hopping permitted channels; it yields to access point, radar, CSI, probes and Internet. Both automatic modes default off.
 
 People may carry multiple devices, devices may not advertise, and addresses may change. Automatic device counts are estimates rather than headcounts and are not added to the manual result. The page explains this beside the indicators.
 

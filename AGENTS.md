@@ -225,7 +225,7 @@ when checking a direct message, do not poll the receiver's USB until the ACK. Af
 turn off again on its timer — a late read of `screen_off` does not prove there was no wake-up.
 `docs/power.md`; RXPS and cyclic GPS power are not implemented yet.
 Battery voltage (0.30.3): Heltec V4 — 2.5 dB attenuation and a 4.9 × 1.045 divider. Check new multipliers against the owner's voltmeter, not
-against another firmware. Feedback on the V3 (reading 3–6 % low) — `docs/verification.md`; not yet checked on hardware.
+against another firmware; not yet checked on hardware.
 
 `src/core/Power.cpp`: 80 MHz with the screen off and no Wi-Fi/radar, light sleep in repeater and room modes
 (`docs/repeater.md`). The transceiver's IRQ line has a RadioLib edge interrupt: set the level type for
@@ -234,10 +234,8 @@ otherwise an interrupt storm (interrupt watchdog on the M9) or lost reception. B
 USB-UART are lost: send a CR before a command (`tools/hw/device.py`, `UsbLink.kt`). Do not change the frequency while
 the Wi-Fi driver or the Bluetooth controller is running: after CSI this caused an M9 panic while loading a map.
 
-Local release 0.4.0: six messages/ACKs from the wait state between the T114 and the V4 went through with BLE enabled
-(`artifacts/power-040-pair.json`). Two preliminary failures (an empty history reply before a restart and
-one ACK timeout) are not counted; their causes are not established, details — `docs/verification.md`.
-Do not carry these results over to other images by version number alone.
+Power results in `docs/verification.md` are tied to particular images: do not carry them over to other images by
+version number alone.
 Since 0.4.1 history is serialised one entry at a time instead of an extra 32 KB JSON pool;
 running out of memory returns an explicit error, and `status.history_count` lets you check completeness.
 After switching from repeater to normal mode, the hardware test waits for an advert of type CHAT, not just the key.

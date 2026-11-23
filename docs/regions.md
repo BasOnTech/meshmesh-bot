@@ -32,8 +32,8 @@ channel "no region" (`*`) or clear the default region.
 
 | Where | Default region | Channel region | Search |
 |---|---|---|---|
-| M9, T-Deck screen | "Settings → Radio → Region": OK types a name, ← → the regions found | the channel card, "Region" row: ← → default, no region, the regions found; OK saves or types a name | "Radio → Find regions" |
-| Heltec, GAT562, T114 and other one-button boards | "Radio → Region": "none" and the regions found | — (web page or app) | "Radio → Find regions" (hold) |
+| M9 screen | "Settings → Radio → Region": OK types a name, ← → the regions found | the channel card, "Region" row: ← → default, no region, the regions found; OK saves or types a name | "Radio → Find regions" |
+| Heltec V4 (one button) | "Radio → Region": "none" and the regions found | — (web page or app) | "Radio → Find regions" (hold) |
 | MeshMesh web page and app | "Settings → Radio → Region" with the regions found suggested | the channel card, "Region" section | "Radio → Regions → Find regions" |
 | MeshCore app | "Default scope" (`CMD_SET_DEFAULT_FLOOD_SCOPE` / `GET`) | a chat's region scope (the session region before sending) | "Discover regions" (control data and anonymous requests) |
 | USB / BLE | `set {"region":"msk"}`, `""` none | `channel do {"action":"region","channel":ID,"region":"msk"}`, `""` default, `"*"` no region | `regions find`, `regions` |

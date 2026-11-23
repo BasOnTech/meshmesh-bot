@@ -20,7 +20,7 @@ State of MeshMesh 0.3.2 from the sources as of 30 September 2026. Sources:
 | Hashtag and private channels (`#name`, own key) | No: `MAX_GROUP_CHANNELS=1` | — |
 | Server modes: repeater and room server, like the stock `simple_repeater` / `simple_room_server` (login, status, telemetry, neighbours, ACL, CLI, posts, regions) | Yes since 0.3.3: separate modes, chosen at boot ([repeater.md](repeater.md)) | `src/mesh/MeshServer.cpp` |
 | Login to another node's room server/repeater from normal mode (ANON_REQ), room posts (SIGNED_PLAIN) | Yes since 0.13.0: screen, web page, USB `remote` ([repeater.md](repeater.md)) | `src/mesh/Remote.inc`, `src/ui/UiRemote.inc` |
-| Commands to another node's repeater from normal mode (CLI, TXT_TYPE_CLI_DATA) | Yes since 0.13.0 (M9, T-Deck, web; not the one-button boards) | `src/mesh/Remote.inc` |
+| Commands to another node's repeater from normal mode (CLI, TXT_TYPE_CLI_DATA) | Yes since 0.13.0 (M9, web; not the Heltec V4) | `src/mesh/Remote.inc` |
 | Status, telemetry (CayenneLPP) and neighbour requests; replies to other nodes' requests | No; `onContactRequest` returns 0 | — |
 | Trace path, path discovery, discover neighbours (CONTROL) | Trace from the screen and web page since 0.13.0; path discovery in the MeshCore app; neighbour discovery: no | `src/mesh/Remote.inc` |
 | Share contact (zero-hop), export/import, `meshcore://` | No | — |

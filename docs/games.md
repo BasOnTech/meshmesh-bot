@@ -6,8 +6,8 @@ any repeaters and read as plain text in a stock MeshCore app. No rating, points 
 someone. All games sit in a Games folder of the main menu; folders can be created, renamed, hidden and filled with apps.
 
 Code: `src/games/duel/Checkers.cpp` (draughts rules), `src/games/duel/Sea.cpp` (field, fleet, answers), `src/games/duel/Duel.cpp` (games of both kinds,
-commands, resending, storage in `/meshmesh/duels.0|1`), screens — `src/games/duel/UiDuel.inc` (M9, T-Deck),
-`src/games/duel/UiDuelCompact.inc` (128×64 and T114), the web page and the app — the Checkers and Sea battle sections of
+commands, resending, storage in `/meshmesh/duels.0|1`), screens — `src/games/duel/UiDuel.inc` (M9),
+`src/games/duel/UiDuelCompact.inc` (Heltec V4, 128×64), the web page and the app — the Checkers and Sea battle sections of
 `web/index.html`; folders — `src/core/Apps.cpp`. Up to six games of both kinds run at once (chess has its own six).
 
 ## Checkers
@@ -60,7 +60,7 @@ Only direct messages from the contact of that game are taken; channel messages n
 is accepted when its number is the next one and it is the other player's turn; a repeat of the last move (a lost ACK)
 is skipped silently, a repeated shot gets the same answer again. The other player's next command confirms my previous
 one: their move confirms my move, their answer my shot, their next shot my answer; if the answer to my shot was lost
-and they are already firing themselves, my shot missed. Firmware without these games (an nRF52 image without them)
+and they are already firing themselves, my shot missed. Firmware without these games (an older MeshMesh, stock MeshCore)
 shows such messages as an ordinary chat — the person reads the explanation in the challenge text.
 
 Delivery is as in chess: MeshCore makes up to three attempts; without a confirmation the command is resent after 2, 5
@@ -70,32 +70,25 @@ restart resending begins in a minute.
 
 ## Where to play
 
-Challenge from a chat node's card (M9 and T-Deck: "Play" → chess, checkers or sea battle; OLED and T114: "Checkers:
+Challenge from a chat node's card (M9: "Play" → chess, checkers or sea battle; Heltec V4: "Checkers:
 invite", "Sea battle: invite" in the node menu), from a game's list ("New game"), on the web page and in the app. A
 challenge, an answer, the other player's move and the result arrive as notifications, like chess news; the screen wakes.
 
-**M9 and T-Deck.** The Checkers and Sea battle tiles are in the Games folder. The list: a new game (contact, and the
+**M9.** The Checkers and Sea battle tiles are in the Games folder. The list: a new game (contact, and the
 colour with ←/→: White, Black, random), then the games — those waiting for you first. Checkers: your side at the
 bottom, kings wear a crown, the last move is tinted; OK takes a man that can move (a compulsory capture shows a "You
 must capture" strip), its moves are marked with dots, captures with corners, their path and stops; OK on a square plays,
 BACK puts the man back or returns to the list. D offers or accepts a draw, X twice resigns, R sends again, N plays again
 (colours swapped), DEL declines, cancels or deletes a finished game, H shows the keys. Sea battle: their field large
 (arrows aim, OK fires), your fleet small; a shot in flight is a yellow crosshair; S shuffles your fleet while nobody has
-fired at it; at the end the winner's fleet, with the cells whose "miss" does not match it outlined in red. T-Deck: a tap
-on the board is the cursor plus OK; in sea battle the first tap aims and a second tap on the same cell fires.
+fired at it; at the end the winner's fleet, with the cells whose "miss" does not match it outlined in red.
 
-**One button (Heltec V4/V3, Wireless Tracker, T-Beam, E213 and others).** As in chess: on your move a click steps
+**Heltec V4 (one button).** As in chess: on your move a click steps
 through your men that can move, then "Game menu"; hold takes one; a click then steps through its whole moves ("f2:d4:f6",
 captured men crossed out), then "Cancel"; hold plays. Off your move a click goes to the next screen and hold opens the
 menu (accept, decline, draw, resign, send again, delete, list). Sea battle without 100 clicks: first the cells next to
 a hit ship not yet sunk ("e5: finish"), then the columns where a shot still makes sense; hold on a column fixes it, a
 click steps through its cells, hold fires. The menu has "My fleet" and "Shuffle fleet".
-
-**Joystick (GAT562).** Checkers: a cursor, OK takes and plays; if different capture paths lead to the square, ↑/↓ pick
-the path. Sea battle: a cursor on their field, OK fires. Holding OK opens the game menu.
-
-**T114.** The same one-button logic drawn in colour: a 128 px board, their field at 120 px and your fleet small on the
-right (the T114 image leaves the games out by default — see "nRF52 boards").
 
 **Web page and app.** The Games tile on the home page opens all the board's games. Checkers: the list, a new game
 (contact and colour), the board — tap your man, then the square it goes to (its moves are highlighted); draw, resign,
@@ -129,39 +122,14 @@ is one, the rest to the end. On the first start of 0.33.0 an order saved before 
 once, where the first of them stood (their order and hidden marks stay).
 
 What a folder looks like on the device:
-- **M9 and T-Deck** — a tile with a folder icon, its name, its first apps and the sum of their badges (moves waiting).
-  OK or a tap opens the folder's page with the same tiles; BACK returns home to the folder tile. An app opened from a
+- **M9** — a tile with a folder icon, its name, its first apps and the sum of their badges (moves waiting).
+  OK opens the folder's page with the same tiles; BACK returns home to the folder tile. An app opened from a
   folder returns to it on BACK.
-- **One button and T114** — the folder is a screen of its own in the page cycle with a list of its apps. A click goes
+- **Heltec V4 (one button)** — the folder is a screen of its own in the page cycle with a list of its apps. A click goes
   to the next screen of the main menu, hold enters (the folder's first app opens); inside, a click steps through the
   folder's apps and after the last one returns to the folder screen; a double click (when enabled) goes to the folder
   screen.
-- **Joystick (GAT562)** — ↑/↓ choose an app of the folder, OK opens it, ←/→ step through the folder's apps and its
-  screen, BACK returns to the folder screen.
 
 The web page and the app arrange their own sections differently: the Games tile of the home page opens every game of the
 board. A limit: over BLE a command is at most 255 bytes, so the page does not save an order longer than 240 bytes
 (a Cyrillic letter takes 2 bytes).
-
-## nRF52 boards
-
-In the 1 MB flash of the GAT562, T114, T096 and fakeTec checkers and sea battle do not fit yet together with every
-language, so their images (from the site, the app and `tools/nrf52.py package ENV`) are built **without these two
-games** (`src/core/Modules.h`: `MM_NO_CHECKERS` and `MM_NO_SEA` on nRF52 unless `MM_WITH_GAMES` is set). Folders, and
-the Games folder with chess, the pet and the dice, are there; a checkers or sea battle challenge reaches such a board as
-an ordinary message whose text explains it, and the page and the app hide these games (`status.modules`). The games'
-strings stay out of such an image's translation table (`tools/gen/i18n.py`, the `GAMES` group).
-
-To build an image with the games for your board: `tools/nrf52.py package ENV --with-games` — English and Russian only
-(a `…-with-games` package, no `lang/`). Sizes in 0.33.0 (the limit is 712704 bytes):
-
-| Board | plain image, Chinese (the largest) | `--with-games`, en+ru |
-|---|---|---|
-| GAT562 | 691124 | 697656 |
-| T096 | 689312 | 695188 |
-| fakeTec | 688732 | 694608 |
-| T114 | 710072 (2.6 KB free) | does not fit (15.8 KB over); `--with-games --without chess` — 676492 |
-
-For the Chinese T114 to fit together with the folders, 0.33.0 freed about 2.5 KB: the initial values of
-`quickSend::state` and of the radio draft are no longer kept in the image (zeroed memory, the values are set at
-start), and the T114's large font in images without Russian is the Latin `inr24_mr` with the 10×20 one for the rest.

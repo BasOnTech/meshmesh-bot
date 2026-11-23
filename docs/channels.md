@@ -8,7 +8,7 @@ so channels and QR codes are interchangeable with them.
 
 ## Adding a channel
 
-| Way | M9 and T-Deck | Web page | Android app | Heltec, GAT562 etc. (OLED) |
+| Way | M9 | Web page | Android app | Heltec V4 (OLED) |
 |---|---|---|---|---|
 | Hashtag (`#name`) | Chats → “Add a channel” | yes | yes | via the page or the app |
 | Link `meshcore://channel/add?...` | — (no need to type a long link: see invitations) | paste | paste, open from another app | via the page or the app |
@@ -52,11 +52,11 @@ a message (151 bytes) URL-encoded; then its letters go as they are, without `%D0
 
 ## Controls
 
-- **M9, T-Deck.** Chats: Public, the channels, “Add a channel”, then direct conversations. On a channel row
+- **M9.** Chats: Public, the channels, “Add a channel”, then direct conversations. On a channel row
   ←/→ open the channel card, in a channel chat the ← key. Card: QR code, hash, key of a private channel,
   “Invite” (←/→ choose the contact), “Leave channel” (OK twice).
-- **Heltec, GAT562 and other OLED boards.** Messages name their channel (`Marat #kazan`); the “OK”/“Got it”
-  replies and the GAT562 on-screen keyboard write to the same channel.
+- **Heltec V4 (OLED).** Messages name their channel (`Marat #kazan`); the “OK”/“Got it”
+  replies write to the same channel.
 - **Web page and app.** Chat list with the channels, “+ Channel”, channel card with the QR code,
   invitations, removal.
 - **USB and BLE.** `channels` lists them (with keys); `channel do {JSON}`:
