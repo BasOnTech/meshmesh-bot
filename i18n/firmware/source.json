@@ -5,7 +5,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1133: else if(page==Diagnostics){hardware.beep();bool passed=meshRadio.selfTest();notice(passed?t(\"Encryption test passed\"):t(\"Encryption test failed\"),passed?ok:bad);}}"
+   "src/Ui.cpp:1104: else if(page==Diagnostics){hardware.beep();bool passed=meshRadio.selfTest();notice(passed?t(\"Encryption test passed\"):t(\"Encryption test failed\"),passed?ok:bad);}}"
   ]
  },
  "005ef20f": {
@@ -239,6 +239,15 @@
    "src/UiDice.inc:224: case FieldFormula:return kind==dice::Ability?t(\"Roll\"):kind==dice::Track?t(\"Or the maximum by a formula\"):t(\"Or compute\");"
   ]
  },
+ "04356b10": {
+  "cells": 38,
+  "families": [
+   "full"
+  ],
+  "where": [
+   "src/Ui.cpp:913: {\"ADV\",t(\"Announce this node; hold: GPS on/off\")},{\"@\",t(\"function key, not Sym+@: chat settings\")},hardware.micKey?Hint{\"MIC\",t(\"Lock screen (there is no microphone)\")}:Hint{tr(\"hold OK\"),t(\"Lock\")},"
+  ]
+ },
  "0438ccd1": {
   "cells": 22,
   "families": [
@@ -275,15 +284,6 @@
    "src/Ui.cpp:756: text(150,y,t(\"rx \")+String(e.rx)+t(\" · echo \")+String(e.echoes),dim,small);textRight(306,y,ago(millis()-e.at),faint,small);}"
   ]
  },
- "04c9b425": {
-  "cells": 37,
-  "families": [
-   "full"
-  ],
-  "where": [
-   "src/Ui.cpp:914: {\"OK\",t(\"Open / send; twice or hold: unlock\")},{tr(\"2x space\"),t(\"in text: switch RU/EN; Right: capital\")}};"
-  ]
- },
  "04dfc93c": {
   "cells": 13,
   "families": [
@@ -308,7 +308,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:954: String chessTitle(){return chessOpen&&chessOpen->state!=ChessMatch::Free?t(\"Chess · \")+chessOpen->name:t(\"Chess\");}"
+   "src/Ui.cpp:953: String chessTitle(){return chessOpen&&chessOpen->state!=ChessMatch::Free?t(\"Chess · \")+chessOpen->name:t(\"Chess\");}"
   ]
  },
  "0584ec69": {
@@ -419,7 +419,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1042: deleteArmed=false;if(meshRadio.removeContact(p->id)){notice(t(\"Contact removed; its next advert adds it again\"),ok);change(Nodes);}else notice(t(\"Cannot remove while sending\"),bad);break;"
+   "src/Ui.cpp:1016: deleteArmed=false;if(meshRadio.removeContact(p->id)){notice(t(\"Contact removed; its next advert adds it again\"),ok);change(Nodes);}else notice(t(\"Cannot remove while sending\"),bad);break;"
   ]
  },
  "077a795e": {
@@ -457,7 +457,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1128: else if(page==Motion){if(radar.csi==Radar::CsiSensor&&radar.beaconHeard()){radar.calibrate();notice(t(\"Calibrating: keep the area still for 10 s\"),info);}else notice(t(\"Needs a heard beacon\"),warn);}"
+   "src/Ui.cpp:1099: else if(page==Motion){if(radar.csi==Radar::CsiSensor&&radar.beaconHeard()){radar.calibrate();notice(t(\"Calibrating: keep the area still for 10 s\"),info);}else notice(t(\"Needs a heard beacon\"),warn);}"
   ]
  },
  "08687ded": {
@@ -477,7 +477,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:91: String channelEditOk(){return addStep==AddName?t(\"OK: next   BACK: cancel\"):addStep==AddCreate?t(\"OK: create   BACK: cancel\"):t(\"OK: join   BACK: cancel\");}"
+   "src/UiChannels.inc:90: String channelEditOk(){return addStep==AddName?t(\"OK: next   BACK: cancel\"):addStep==AddCreate?t(\"OK: create   BACK: cancel\"):t(\"OK: join   BACK: cancel\");}"
   ]
  },
  "08958e0e": {
@@ -505,7 +505,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:197: case MenuQr:name=t(\"Show channel QR\");break;"
+   "src/UiChannels.inc:195: case MenuQr:name=t(\"Show channel QR\");break;"
   ]
  },
  "08bab228": {
@@ -753,7 +753,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language; typing layout is the @ key\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s"
+   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s\");case 5:return t(\"0 = off,"
   ]
  },
  "0c45be08": {
@@ -817,7 +817,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1026: void saveDraft(){DynamicJsonDocument d(4096);auto error=deserializeJson(d,configJson());if(error){notice(error.c_str(),bad);return;}if(page==Radio){d[\"frequency\"]=draft.frequency;d[\"bandwidth\"]=draft.bandwidth;d[\"sf\"]=in",
+   "src/Ui.cpp:1000: void saveDraft(){DynamicJsonDocument d(4096);auto error=deserializeJson(d,configJson());if(error){notice(error.c_str(),bad);return;}if(page==Radio){d[\"frequency\"]=draft.frequency;d[\"bandwidth\"]=draft.bandwidth;d[\"sf\"]=in",
    "src/UiHeltec.cpp:314: notice(saved?t(\"Settings saved\"):r.startsWith(\"ERR radio busy\")?t(\"Radio busy, retry\"):r.substring(4));"
   ]
  },
@@ -886,7 +886,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:214: else if(row==MenuErase||row==MenuLeave)footer({{\"OK\",deleteArmed?(row==MenuErase?t(\"Erase\"):t(\"Leave\")):t(\"Confirm...\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
+   "src/UiChannels.inc:211: else if(row==MenuErase||row==MenuLeave)footer({{\"OK\",deleteArmed?(row==MenuErase?t(\"Erase\"):t(\"Leave\")):t(\"Confirm...\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
   ]
  },
  "0e68b936": {
@@ -1252,7 +1252,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:88: if(addStep==AddCreate)return t(\"The key is made on this device\");"
+   "src/UiChannels.inc:87: if(addStep==AddCreate)return t(\"The key is made on this device\");"
   ]
  },
  "12da92e6": {
@@ -1273,7 +1273,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1093: if((page==Nodes||page==Node)&&(key=='p'||key=='P')){if(Peer* p=focusedPeer()){if(p->position){maps.follow=false;maps.center(p->latitude,p->longitude);change(Map);}else notice(t(\"This node has not shared GPS\"),warn);}retu"
+   "src/Ui.cpp:1065: if((page==Nodes||page==Node)&&(key=='p'||key=='P')){if(Peer* p=focusedPeer()){if(p->position){maps.follow=false;maps.center(p->latitude,p->longitude);change(Map);}else notice(t(\"This node has not shared GPS\"),warn);}retu"
   ]
  },
  "13254bc4": {
@@ -1484,7 +1484,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:940: text(26,82,key?t(\"Network key · 64 hex\"):page==ChannelAdd?channelEditTitle():page==ChessTourNew?String(t(\"Tournament name\")):page==PetView?String(t(\"Pet name\")):page==PeopleView?String(t(\"Counter name\")):page==DiceView?d"
+   "src/Ui.cpp:939: text(26,82,key?t(\"Network key · 64 hex\"):page==ChannelAdd?channelEditTitle():page==ChessTourNew?String(t(\"Tournament name\")):page==PetView?String(t(\"Pet name\")):page==PeopleView?String(t(\"Counter name\")):page==DiceView?d"
   ]
  },
  "15c94e99": {
@@ -1495,15 +1495,6 @@
   "where": [
    "src/UiChess.inc:352: if(!chessResignArmed){chessResignArmed=true;notice(t(\"X again resigns the game\"),warn);return true;}",
    "src/UiDuel.inc:315: if(!duelResignArmed){duelResignArmed=true;notice(t(\"X again resigns the game\"),warn);return true;}"
-  ]
- },
- "16086ef5": {
-  "cells": 8,
-  "families": [
-   "full"
-  ],
-  "where": [
-   "src/Ui.cpp:914: {\"OK\",t(\"Open / send; twice or hold: unlock\")},{tr(\"2x space\"),t(\"in text: switch RU/EN; Right: capital\")}};"
   ]
  },
  "168512be": {
@@ -1551,7 +1542,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:123: if(priv){String key=channels::keyHex(c->secret);text(x,y,t(\"Key:\"),dim,small);y+=10;for(int k=0;k<32;k+=16){text(x,y,key.substring(k,k+16),ink,small);y+=10;}y+=4;}"
+   "src/UiChannels.inc:122: if(priv){String key=channels::keyHex(c->secret);text(x,y,t(\"Key:\"),dim,small);y+=10;for(int k=0;k<32;k+=16){text(x,y,key.substring(k,k+16),ink,small);y+=10;}y+=4;}"
   ]
  },
  "172eebcb": {
@@ -1764,7 +1755,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:122: char hash[3];snprintf(hash,3,\"%02X\",channels::hashOf(c->secret));text(x,y,t(\"Hash \")+hash,faint,small);y+=16;"
+   "src/UiChannels.inc:121: char hash[3];snprintf(hash,3,\"%02X\",channels::hashOf(c->secret));text(x,y,t(\"Hash \")+hash,faint,small);y+=16;"
   ]
  },
  "1a30bf3b": {
@@ -1830,7 +1821,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:239: if(!deleteArmed){deleteArmed=true;notice(row==MenuErase?t(\"OK again: erase this chat's messages\"):t(\"OK again: leave the channel\"),warn);return;}"
+   "src/UiChannels.inc:235: if(!deleteArmed){deleteArmed=true;notice(row==MenuErase?t(\"OK again: erase this chat's messages\"):t(\"OK again: leave the channel\"),warn);return;}"
   ]
  },
  "1ae0e2df": {
@@ -1894,7 +1885,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1131: static uint32_t armed=0;if(!armed||millis()-armed>5000){armed=millis();notice(t(\"OK again: erase old data\"),warn);return;}"
+   "src/Ui.cpp:1102: static uint32_t armed=0;if(!armed||millis()-armed>5000){armed=millis();notice(t(\"OK again: erase old data\"),warn);return;}"
   ]
  },
  "1b68d598": {
@@ -1913,15 +1904,6 @@
   ],
   "where": [
    "src/Ui.cpp:262: String pathText(const Peer& p){if(p.pathLength==255)return t(\"path unknown\");if(!(p.pathLength&63))return t(\"direct\");return count(p.pathLength&63,\"hop\",\"hops\");}"
-  ]
- },
- "1b9ae0bb": {
-  "cells": 7,
-  "families": [
-   "full"
-  ],
-  "where": [
-   "src/UiChannels.inc:199: case MenuKeyboard:name=t(\"Input language\");value=keyboardRussian?t(\"Russian\"):t(\"English\");pick=true;break;"
   ]
  },
  "1bc8e3ca": {
@@ -2046,7 +2028,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1172: notice(t(\"Network nearby: \")+(r.place!=255?netfind::placeName(r.place)+\" \":String())+\"SF\"+String(r.radio.sf)+t(\" · Settings > Radio\"),info);"
+   "src/Ui.cpp:1142: notice(t(\"Network nearby: \")+(r.place!=255?netfind::placeName(r.place)+\" \":String())+\"SF\"+String(r.radio.sf)+t(\" · Settings > Radio\"),info);"
   ]
  },
  "1d4b181c": {
@@ -2131,7 +2113,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1124: else if(page==Sensors){if(selected==0)gpsToggle();else if(selected==1){bool sent=meshRadio.sendPosition();notice(sent?t(\"Position shared\"):t(\"Waiting for GPS fix\"),sent?ok:warn);}else if(navigation.calibrating){bool save"
+   "src/Ui.cpp:1096: else if(page==Sensors){if(selected==0)gpsToggle();else if(selected==1){bool sent=meshRadio.sendPosition();notice(sent?t(\"Position shared\"):t(\"Waiting for GPS fix\"),sent?ok:warn);}else if(navigation.calibrating){bool save"
   ]
  },
  "1e22f57c": {
@@ -2186,7 +2168,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:897: switch(k){case 0:return \"-\";case KeyMsg:return \"MSG\";case KeyHome:return \"HOME\";case KeyAt:return t(\"@ (chat settings, input language)\");case KeyAdv:return \"ADV\";case 0x87:return t(\"hold ADV (GPS)\");case KeyMap:return \"M"
+   "src/Ui.cpp:897: switch(k){case 0:return \"-\";case KeyMsg:return \"MSG\";case KeyHome:return \"HOME\";case KeyAt:return t(\"@ (chat settings)\");case KeyAdv:return \"ADV\";case 0x87:return t(\"hold ADV (GPS)\");case KeyMap:return \"MAP\";case KeyBack"
   ]
  },
  "1ea76214": {
@@ -2280,8 +2262,8 @@
   ],
   "where": [
    "src/Ui.cpp:369: footer({{\"OK\",t(\"Open\")},{\"MSG\",t(\"Chats\")},{\"MAP\",t(\"Map\")},{hardware.micKey?\"MIC\":tr(\"hold OK\"),t(\"Lock\")}});",
-   "src/Ui.cpp:445: if(left.length())footer({{\"OK\",t(\"Send\")},{\"<\",left},{t(\"hold OK\").c_str(),t(\"Layout\")},{\"BACK\",t(\"Back\")}});",
-   "src/Ui.cpp:446: else footer({{\"OK\",t(\"Send\")},{\"@\",t(\"Settings\")},{t(\"hold OK\").c_str(),t(\"Layout\")},{\"BACK\",t(\"Back\")}});"
+   "src/Ui.cpp:897: switch(k){case 0:return \"-\";case KeyMsg:return \"MSG\";case KeyHome:return \"HOME\";case KeyAt:return t(\"@ (chat settings)\");case KeyAdv:return \"ADV\";case 0x87:return t(\"hold ADV (GPS)\");case KeyMap:return \"MAP\";case KeyBack",
+   "src/Ui.cpp:913: {\"ADV\",t(\"Announce this node; hold: GPS on/off\")},{\"@\",t(\"function key, not Sym+@: chat settings\")},hardware.micKey?Hint{\"MIC\",t(\"Lock screen (there is no microphone)\")}:Hint{tr(\"hold OK\"),t(\"Lock\")},"
   ]
  },
  "1faa40fd": {
@@ -2326,8 +2308,8 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:158: if(!deleteArmed){deleteArmed=true;notice(t(\"History stays; joining again shows it\"),warn);return;}",
-   "src/UiChannels.inc:211: row==MenuKeyboard?t(\"Also: two spaces in the message\"):row==MenuLeave?t(\"History stays; joining again shows it\"):t(\"This chat only, on this device\");"
+   "src/UiChannels.inc:157: if(!deleteArmed){deleteArmed=true;notice(t(\"History stays; joining again shows it\"),warn);return;}",
+   "src/UiChannels.inc:208: row==MenuLeave?t(\"History stays; joining again shows it\"):t(\"This chat only, on this device\");"
   ]
  },
  "203cb030": {
@@ -2355,15 +2337,6 @@
   ],
   "where": [
    "src/UiDice.inc:214: switch(k){case dice::Stat:return t(\"Stat\");case dice::Track:return t(\"Track\");case dice::Pips:return t(\"Marks\");case dice::Ability:return t(\"Ability\");case dice::Note:return t(\"Note\");}"
-  ]
- },
- "2186684c": {
-  "cells": 14,
-  "families": [
-   "full"
-  ],
-  "where": [
-   "src/Ui.cpp:916: footer({{\"OK\",t(\"Russian layout\")},{\"BACK\",t(\"Settings\")}});"
   ]
  },
  "219101e3": {
@@ -2401,7 +2374,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1041: if(!deleteArmed){deleteArmed=true;notice(t(\"OK again removes the contact\"),warn);break;}"
+   "src/Ui.cpp:1015: if(!deleteArmed){deleteArmed=true;notice(t(\"OK again removes the contact\"),warn);break;}"
   ]
  },
  "21ed1a8a": {
@@ -2511,7 +2484,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:110: return config.region[0]?t(\"Default: \")+String(config.region):String(t(\"Default: none\"));"
+   "src/UiChannels.inc:109: return config.region[0]?t(\"Default: \")+String(config.region):String(t(\"Default: none\"));"
   ]
  },
  "231886db": {
@@ -2520,7 +2493,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:914: {\"OK\",t(\"Open / send; twice or hold: unlock\")},{tr(\"2x space\"),t(\"in text: switch RU/EN; Right: capital\")}};"
+   "src/Ui.cpp:914: {\"OK\",t(\"Open / send; twice or hold: unlock\")},{\"→\",t(\"in text, after a letter: capital\")}};"
   ]
  },
  "231a6135": {
@@ -2529,7 +2502,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:913: {\"ADV\",t(\"Announce this node; hold: GPS on/off\")},{\"@\",t(\"function key, not Sym+@: RU/EN in chat\")},hardware.micKey?Hint{\"MIC\",t(\"Lock screen (there is no microphone)\")}:Hint{tr(\"hold OK\"),t(\"Lock\")},"
+   "src/Ui.cpp:913: {\"ADV\",t(\"Announce this node; hold: GPS on/off\")},{\"@\",t(\"function key, not Sym+@: chat settings\")},hardware.micKey?Hint{\"MIC\",t(\"Lock screen (there is no microphone)\")}:Hint{tr(\"hold OK\"),t(\"Lock\")},"
   ]
  },
  "231e43fb": {
@@ -2966,7 +2939,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:215: else if(row==MenuQr)footer({{\"OK\",t(\"Show\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
+   "src/UiChannels.inc:212: else if(row==MenuQr)footer({{\"OK\",t(\"Show\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
   ]
  },
  "2986cc46": {
@@ -3117,7 +3090,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:913: {\"ADV\",t(\"Announce this node; hold: GPS on/off\")},{\"@\",t(\"function key, not Sym+@: RU/EN in chat\")},hardware.micKey?Hint{\"MIC\",t(\"Lock screen (there is no microphone)\")}:Hint{tr(\"hold OK\"),t(\"Lock\")},"
+   "src/Ui.cpp:913: {\"ADV\",t(\"Announce this node; hold: GPS on/off\")},{\"@\",t(\"function key, not Sym+@: chat settings\")},hardware.micKey?Hint{\"MIC\",t(\"Lock screen (there is no microphone)\")}:Hint{tr(\"hold OK\"),t(\"Lock\")},"
   ]
  },
  "2b8b882d": {
@@ -3126,7 +3099,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:196: case MenuSound:name=t(\"Sound on new messages\");value=flag(c->policy.sound);pick=true;break;"
+   "src/UiChannels.inc:194: case MenuSound:name=t(\"Sound on new messages\");value=flag(c->policy.sound);pick=true;break;"
   ]
  },
  "2b90772b": {
@@ -3135,7 +3108,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1060: if(editing){if(key==KeyBack){editing=false;return;}if(key==Erase){edit.remove(meshmesh::previousCharacter(edit.c_str(),edit.length()));return;}if(key==KeyRight&&page!=Network){toggleLastCase(edit);return;}if(key==Enter){"
+   "src/Ui.cpp:1032: if(editing){if(key==KeyBack){editing=false;return;}if(key==Erase){edit.remove(meshmesh::previousCharacter(edit.c_str(),edit.length()));return;}if(key==KeyRight&&page!=Network){toggleLastCase(edit);return;}if(key==Enter){"
   ]
  },
  "2bf31fdb": {
@@ -3272,7 +3245,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1129: else if(page==Homing){radarSound=!radarSound;notice(radarSound?(config.sound?t(\"Ping on\"):t(\"Device sound is off in settings\")):t(\"Ping off\"),radarSound&&!config.sound?warn:dim);}"
+   "src/Ui.cpp:1100: else if(page==Homing){radarSound=!radarSound;notice(radarSound?(config.sound?t(\"Ping on\"):t(\"Device sound is off in settings\")):t(\"Ping off\"),radarSound&&!config.sound?warn:dim);}"
   ]
  },
  "2dda28f5": {
@@ -3281,7 +3254,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:243: notice(n?t(\"Messages erased: \")+String(n):t(\"Messages being sent stay\"),n?ok:warn);"
+   "src/UiChannels.inc:239: notice(n?t(\"Messages erased: \")+String(n):t(\"Messages being sent stay\"),n?ok:warn);"
   ]
  },
  "2df7d460": {
@@ -3399,7 +3372,7 @@
   "where": [
    "src/Ui.cpp:726: if(page==Radio){switch(i){case RowPreset:{int p=radiopresets::match(c);return p<0?String(t(\"Custom\")):String(radiopresets::list[p].name);}case 1:return String(c.frequency,3)+t(\" MHz\");case 2:return String(c.bandwidth,1)+",
    "src/Ui.cpp:726: if(page==Radio){switch(i){case RowPreset:{int p=radiopresets::match(c);return p<0?String(t(\"Custom\")):String(radiopresets::list[p].name);}case 1:return String(c.frequency,3)+t(\" MHz\");case 2:return String(c.bandwidth,1)+",
-   "src/UiChannels.inc:108: if(r==regions::Unscoped)return t(\"None\");"
+   "src/UiChannels.inc:107: if(r==regions::Unscoped)return t(\"None\");"
   ]
  },
  "305c0a34": {
@@ -3437,7 +3410,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1067: if(key==KeyHome){change(homePage());return;}if(config.role!=RoleNormal&&(key==KeyMsg||key==KeyMap)){notice(t(\"Not in this mode: Settings > Device mode\"),warn);return;}if(key==KeyMsg){change(Threads);return;}if(key==KeyMa",
+   "src/Ui.cpp:1039: if(key==KeyHome){change(homePage());return;}if(config.role!=RoleNormal&&(key==KeyMsg||key==KeyMap)){notice(t(\"Not in this mode: Settings > Device mode\"),warn);return;}if(key==KeyMsg){change(Threads);return;}if(key==KeyMa",
    "src/UiHeltec.cpp:523: case ActAdvert:notice(meshRadio.sendHello()?t(\"Node announced\"):t(\"Announcement failed\"));break;"
   ]
  },
@@ -3493,7 +3466,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:210: row==MenuQr?t(\"Others join by scanning it\"):row==MenuInvite?t(\"Sends the channel link in a direct message\"):"
+   "src/UiChannels.inc:207: row==MenuQr?t(\"Others join by scanning it\"):row==MenuInvite?t(\"Sends the channel link in a direct message\"):"
   ]
  },
  "328ab45a": {
@@ -3718,7 +3691,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language; typing layout is the @ key\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s"
+   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s\");case 5:return t(\"0 = off,"
   ]
  },
  "3553e285": {
@@ -3727,7 +3700,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:897: switch(k){case 0:return \"-\";case KeyMsg:return \"MSG\";case KeyHome:return \"HOME\";case KeyAt:return t(\"@ (chat settings, input language)\");case KeyAdv:return \"ADV\";case 0x87:return t(\"hold ADV (GPS)\");case KeyMap:return \"M"
+   "src/Ui.cpp:897: switch(k){case 0:return \"-\";case KeyMsg:return \"MSG\";case KeyHome:return \"HOME\";case KeyAt:return t(\"@ (chat settings)\");case KeyAdv:return \"ADV\";case 0x87:return t(\"hold ADV (GPS)\");case KeyMap:return \"MAP\";case KeyBack"
   ]
  },
  "3557c571": {
@@ -3777,7 +3750,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1115: else if(page==Radio||page==Display){if(selected==settingRows()-1){if(draftChanged())saveDraft();else notice(t(\"Nothing to save\"),dim);}else if(page==Display&&selected==0){editing=true;edit=draft.name;}",
+   "src/Ui.cpp:1087: else if(page==Radio||page==Display){if(selected==settingRows()-1){if(draftChanged())saveDraft();else notice(t(\"Nothing to save\"),dim);}else if(page==Display&&selected==0){editing=true;edit=draft.name;}",
    "src/UiHeltec.cpp:311: if(!radioChanged()){radioEdit=false;notice(t(\"Nothing to save\"));return;}"
   ]
  },
@@ -4063,7 +4036,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1119: notice(done?t(\"Radio settings changed\"):r.startsWith(\"ERR radio busy\")?t(\"Radio busy, retry\"):r.substring(4),done?ok:bad);}",
+   "src/Ui.cpp:1091: notice(done?t(\"Radio settings changed\"):r.startsWith(\"ERR radio busy\")?t(\"Radio busy, retry\"):r.substring(4),done?ok:bad);}",
    "src/UiHeltec.cpp:307: notice(done?t(\"Radio settings changed\"):r.startsWith(\"ERR radio busy\")?t(\"Radio busy, retry\"):r.substring(4));break;}"
   ]
  },
@@ -4164,7 +4137,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1108: else if(page==Library&&library.size()){if(maps.selectArea(library[selected][\"id\"].as<String>()))change(Map);else notice(t(\"Map unavailable\"),bad);}"
+   "src/Ui.cpp:1080: else if(page==Library&&library.size()){if(maps.selectArea(library[selected][\"id\"].as<String>()))change(Map);else notice(t(\"Map unavailable\"),bad);}"
   ]
  },
  "3c2364a7": {
@@ -4508,8 +4481,8 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:160: if(meshRadio.removeChannel(id)){notice(t(\"Left \")+name,ok);change(Threads);}else notice(t(\"Cannot leave while sending\"),bad);",
-   "src/UiChannels.inc:241: if(row==MenuLeave){String name=c->name;if(meshRadio.removeChannel(c->id)){notice(t(\"Left \")+name,ok);change(Threads);}else notice(t(\"Cannot leave while sending\"),bad);return;}"
+   "src/UiChannels.inc:159: if(meshRadio.removeChannel(id)){notice(t(\"Left \")+name,ok);change(Threads);}else notice(t(\"Cannot leave while sending\"),bad);",
+   "src/UiChannels.inc:237: if(row==MenuLeave){String name=c->name;if(meshRadio.removeChannel(c->id)){notice(t(\"Left \")+name,ok);change(Threads);}else notice(t(\"Cannot leave while sending\"),bad);return;}"
   ]
  },
  "41b18bf8": {
@@ -4636,7 +4609,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:897: switch(k){case 0:return \"-\";case KeyMsg:return \"MSG\";case KeyHome:return \"HOME\";case KeyAt:return t(\"@ (chat settings, input language)\");case KeyAdv:return \"ADV\";case 0x87:return t(\"hold ADV (GPS)\");case KeyMap:return \"M"
+   "src/Ui.cpp:897: switch(k){case 0:return \"-\";case KeyMsg:return \"MSG\";case KeyHome:return \"HOME\";case KeyAt:return t(\"@ (chat settings)\");case KeyAdv:return \"ADV\";case 0x87:return t(\"hold ADV (GPS)\");case KeyMap:return \"MAP\";case KeyBack"
   ]
  },
  "42fc3fcd": {
@@ -4922,25 +4895,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1024: void alter(int dir){if(page==Radio){switch(selected){case RowPreset:{int p=radiopresets::step(draft,dir);if(p<0){notice(t(\"No preset for this radio\"),warn);return;}radiopresets::apply(draft,p);break;}case 1:draft.frequen"
-  ]
- },
- "4744de05": {
-  "cells": 25,
-  "families": [
-   "full"
-  ],
-  "where": [
-   "src/Ui.cpp:1001: void toggleLanguage(){keyboardRussian=!keyboardRussian;Preferences p;if(p.begin(\"meshmesh-ui\",false)){p.putBool(\"kb_ru\",keyboardRussian);p.end();}notice(keyboardRussian?t(\"Input: Russian (phonetic)\"):t(\"Input: English\"))"
-  ]
- },
- "47592386": {
-  "cells": 7,
-  "families": [
-   "full"
-  ],
-  "where": [
-   "src/UiChannels.inc:199: case MenuKeyboard:name=t(\"Input language\");value=keyboardRussian?t(\"Russian\"):t(\"English\");pick=true;break;"
+   "src/Ui.cpp:998: void alter(int dir){if(page==Radio){switch(selected){case RowPreset:{int p=radiopresets::step(draft,dir);if(p<0){notice(t(\"No preset for this radio\"),warn);return;}radiopresets::apply(draft,p);break;}case 1:draft.frequen"
   ]
  },
  "47a1fe4a": {
@@ -4958,7 +4913,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:210: row==MenuQr?t(\"Others join by scanning it\"):row==MenuInvite?t(\"Sends the channel link in a direct message\"):"
+   "src/UiChannels.inc:207: row==MenuQr?t(\"Others join by scanning it\"):row==MenuInvite?t(\"Sends the channel link in a direct message\"):"
   ]
  },
  "485327f5": {
@@ -4985,7 +4940,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language; typing layout is the @ key\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s"
+   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s\");case 5:return t(\"0 = off,"
   ]
  },
  "487df815": {
@@ -5022,7 +4977,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1124: else if(page==Sensors){if(selected==0)gpsToggle();else if(selected==1){bool sent=meshRadio.sendPosition();notice(sent?t(\"Position shared\"):t(\"Waiting for GPS fix\"),sent?ok:warn);}else if(navigation.calibrating){bool save",
+   "src/Ui.cpp:1096: else if(page==Sensors){if(selected==0)gpsToggle();else if(selected==1){bool sent=meshRadio.sendPosition();notice(sent?t(\"Position shared\"):t(\"Waiting for GPS fix\"),sent?ok:warn);}else if(navigation.calibrating){bool save",
    "src/UiHeltec.cpp:530: case ActPosition:notice(meshRadio.sendPosition()?t(\"Position shared\"):t(\"Needs a GPS fix\"));break;"
   ]
  },
@@ -5054,8 +5009,8 @@
   ],
   "where": [
    "src/Ui.cpp:722: if(page==Radio){const char* names[]={tr(\"Preset\"),tr(\"Frequency\"),tr(\"Bandwidth\"),tr(\"Spreading factor\"),tr(\"Coding rate\"),tr(\"TX power\"),tr(\"Relay hop limit\"),tr(\"Relay packets\"),tr(\"Path hash size\"),tr(\"Region\"),tr(\"Fi",
-   "src/Ui.cpp:940: text(26,82,key?t(\"Network key · 64 hex\"):page==ChannelAdd?channelEditTitle():page==ChessTourNew?String(t(\"Tournament name\")):page==PetView?String(t(\"Pet name\")):page==PeopleView?String(t(\"Counter name\")):page==DiceView?d",
-   "src/UiChannels.inc:136: textCenter(cx,ry+9,region?(regionChoice==c->region?t(\"Region\"):t(\"Region · OK: save\")):t(\"Invite\"),region&&regionChoice!=c->region?accent:dim,small);"
+   "src/Ui.cpp:939: text(26,82,key?t(\"Network key · 64 hex\"):page==ChannelAdd?channelEditTitle():page==ChessTourNew?String(t(\"Tournament name\")):page==PetView?String(t(\"Pet name\")):page==PeopleView?String(t(\"Counter name\")):page==DiceView?d",
+   "src/UiChannels.inc:135: textCenter(cx,ry+9,region?(regionChoice==c->region?t(\"Region\"):t(\"Region · OK: save\")):t(\"Invite\"),region&&regionChoice!=c->region?accent:dim,small);"
   ]
  },
  "4930944f": {
@@ -5065,15 +5020,6 @@
   ],
   "where": [
    "src/Ui.cpp:581: String deviceText(const RadarTarget& r){switch(r.device){case RadarTarget::Phone:return t(\"Phone\");case RadarTarget::Watch:return t(\"Watch\");case RadarTarget::Audio:return t(\"Headphones\");case RadarTarget::Personal:retur"
-  ]
- },
- "49348e10": {
-  "cells": 31,
-  "families": [
-   "full"
-  ],
-  "where": [
-   "src/UiChannels.inc:211: row==MenuKeyboard?t(\"Also: two spaces in the message\"):row==MenuLeave?t(\"History stays; joining again shows it\"):t(\"This chat only, on this device\");"
   ]
  },
  "4935f7cd": {
@@ -5193,7 +5139,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:239: if(!deleteArmed){deleteArmed=true;notice(row==MenuErase?t(\"OK again: erase this chat's messages\"):t(\"OK again: leave the channel\"),warn);return;}"
+   "src/UiChannels.inc:235: if(!deleteArmed){deleteArmed=true;notice(row==MenuErase?t(\"OK again: erase this chat's messages\"):t(\"OK again: leave the channel\"),warn);return;}"
   ]
  },
  "4af2b0f9": {
@@ -5214,7 +5160,7 @@
   "where": [
    "src/Ui.cpp:276: case Sensors:return t(\"Navigation\");case Settings:return t(\"Settings\");case Radio:return t(\"Radio\");case Display:return t(\"Screen & device\");case Network:return t(\"Connections\");case Diagnostics:return t(\"Module health\")",
    "src/Ui.cpp:330: {IcGear,dim,t(\"Settings\"),t(\"Radio, screen\"),0}};",
-   "src/Ui.cpp:446: else footer({{\"OK\",t(\"Send\")},{\"@\",t(\"Settings\")},{t(\"hold OK\").c_str(),t(\"Layout\")},{\"BACK\",t(\"Back\")}});"
+   "src/Ui.cpp:446: else footer({{\"OK\",t(\"Send\")},{\"@\",t(\"Settings\")},{\"BACK\",t(\"Back\")}});"
   ]
  },
  "4b2d12ac": {
@@ -5327,8 +5273,8 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:157: Peer* p=list[(inviteTo%people+people)%people];bool sent=meshRadio.sendInvite(p->id,focusChannel);notice(sent?t(\"Invitation queued to \")+p->name:t(\"Invitation not sent\"),sent?ok:bad);return;}",
-   "src/UiChannels.inc:234: Peer* p=list[(inviteTo%people+people)%people];bool sent=meshRadio.sendInvite(p->id,c->id);notice(sent?t(\"Invitation queued to \")+p->name:t(\"Invitation not sent\"),sent?ok:bad);return;}"
+   "src/UiChannels.inc:156: Peer* p=list[(inviteTo%people+people)%people];bool sent=meshRadio.sendInvite(p->id,focusChannel);notice(sent?t(\"Invitation queued to \")+p->name:t(\"Invitation not sent\"),sent?ok:bad);return;}",
+   "src/UiChannels.inc:230: Peer* p=list[(inviteTo%people+people)%people];bool sent=meshRadio.sendInvite(p->id,c->id);notice(sent?t(\"Invitation queued to \")+p->name:t(\"Invitation not sent\"),sent?ok:bad);return;}"
   ]
  },
  "4c891c6a": {
@@ -5376,8 +5322,8 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1157: String eventLabel(const String& value){if(value.startsWith(\"New message from \"))return tr(\"New message from \")+value.substring(17);if(value.startsWith(\"Delivered to \"))return tr(\"Delivered to \")+value.substring(13);if(va",
-   "src/Ui.cpp:1161: if(notifications::enabled(notifications::mode(notification.message,config.notifyPopup,2),notification.mention)&&page!=DiceView&&page!=PeopleView)notice(t(\"New message from \")+notification.message.name,accent);dirty=true;",
+   "src/Ui.cpp:1127: String eventLabel(const String& value){if(value.startsWith(\"New message from \"))return tr(\"New message from \")+value.substring(17);if(value.startsWith(\"Delivered to \"))return tr(\"Delivered to \")+value.substring(13);if(va",
+   "src/Ui.cpp:1131: if(notifications::enabled(notifications::mode(notification.message,config.notifyPopup,2),notification.mention)&&page!=DiceView&&page!=PeopleView)notice(t(\"New message from \")+notification.message.name,accent);dirty=true;",
    "src/UiHeltec.cpp:925: }else if(config.notifyFailed&&(e.kind==notifications::TxError||e.kind==notifications::Unconfirmed)){ledAt=now;ledPattern=3;notice(e.kind==notifications::TxError?t(\"Radio TX error\"):channels::isChannel(e.message.destinati"
   ]
  },
@@ -5425,8 +5371,8 @@
   ],
   "where": [
    "src/Ui.cpp:800: else footer({{\"<>\",t(\"Change\")},{\"OK\",selected==rows-1?t(\"Save\"):t(\"Next value\")},{\"BACK\",t(\"Cancel\")}});",
-   "src/UiChannels.inc:141: if(selected==InfoRegion)footer({{\"<>\",t(\"Region\")},{\"OK\",regionChoice==c->region?t(\"Type\"):t(\"Save\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});",
-   "src/UiChannels.inc:213: if(row==MenuScope)footer({{\"<>\",t(\"Region\")},{\"OK\",regionChoice==c->region?t(\"Type\"):t(\"Save\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
+   "src/UiChannels.inc:140: if(selected==InfoRegion)footer({{\"<>\",t(\"Region\")},{\"OK\",regionChoice==c->region?t(\"Type\"):t(\"Save\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});",
+   "src/UiChannels.inc:210: if(row==MenuScope)footer({{\"<>\",t(\"Region\")},{\"OK\",regionChoice==c->region?t(\"Type\"):t(\"Save\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
   ]
  },
  "4d580639": {
@@ -5444,7 +5390,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1157: String eventLabel(const String& value){if(value.startsWith(\"New message from \"))return tr(\"New message from \")+value.substring(17);if(value.startsWith(\"Delivered to \"))return tr(\"Delivered to \")+value.substring(13);if(va"
+   "src/Ui.cpp:1127: String eventLabel(const String& value){if(value.startsWith(\"New message from \"))return tr(\"New message from \")+value.substring(17);if(value.startsWith(\"Delivered to \"))return tr(\"Delivered to \")+value.substring(13);if(va"
   ]
  },
  "4d7ef753": {
@@ -5908,7 +5854,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:940: text(26,82,key?t(\"Network key · 64 hex\"):page==ChannelAdd?channelEditTitle():page==ChessTourNew?String(t(\"Tournament name\")):page==PetView?String(t(\"Pet name\")):page==PeopleView?String(t(\"Counter name\")):page==DiceView?d",
+   "src/Ui.cpp:939: text(26,82,key?t(\"Network key · 64 hex\"):page==ChannelAdd?channelEditTitle():page==ChessTourNew?String(t(\"Tournament name\")):page==PetView?String(t(\"Pet name\")):page==PeopleView?String(t(\"Counter name\")):page==DiceView?d",
    "src/UiTour.inc:161: if(tourStep==0){panel(8,50,304,44,cardHi,7);text(18,66,t(\"Tournament name\"),dim,small);text(18,84,fit(tourName,280,bold),ink,bold);"
   ]
  },
@@ -5937,7 +5883,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1161: if(notifications::enabled(notifications::mode(notification.message,config.notifyPopup,2),notification.mention)&&page!=DiceView&&page!=PeopleView)notice(t(\"New message from \")+notification.message.name,accent);dirty=true;",
+   "src/Ui.cpp:1131: if(notifications::enabled(notifications::mode(notification.message,config.notifyPopup,2),notification.mention)&&page!=DiceView&&page!=PeopleView)notice(t(\"New message from \")+notification.message.name,accent);dirty=true;",
    "src/UiHeltec.cpp:925: }else if(config.notifyFailed&&(e.kind==notifications::TxError||e.kind==notifications::Unconfirmed)){ledAt=now;ledPattern=3;notice(e.kind==notifications::TxError?t(\"Radio TX error\"):channels::isChannel(e.message.destinati"
   ]
  },
@@ -5994,8 +5940,8 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:931: icon(IcLock,160,chess&&n?210:200,chess&&n?6:7,dim);if(hardware.micKey)footer({{\"OK\",chess?t(\"Twice or hold: the game\"):t(\"Twice or hold: unlock\")},{\"MIC\",t(\"Lock\")}});else footer({{\"OK\",chess?t(\"Twice or hold: the game\")",
-   "src/Ui.cpp:931: icon(IcLock,160,chess&&n?210:200,chess&&n?6:7,dim);if(hardware.micKey)footer({{\"OK\",chess?t(\"Twice or hold: the game\"):t(\"Twice or hold: unlock\")},{\"MIC\",t(\"Lock\")}});else footer({{\"OK\",chess?t(\"Twice or hold: the game\")"
+   "src/Ui.cpp:930: icon(IcLock,160,chess&&n?210:200,chess&&n?6:7,dim);if(hardware.micKey)footer({{\"OK\",chess?t(\"Twice or hold: the game\"):t(\"Twice or hold: unlock\")},{\"MIC\",t(\"Lock\")}});else footer({{\"OK\",chess?t(\"Twice or hold: the game\")",
+   "src/Ui.cpp:930: icon(IcLock,160,chess&&n?210:200,chess&&n?6:7,dim);if(hardware.micKey)footer({{\"OK\",chess?t(\"Twice or hold: the game\"):t(\"Twice or hold: unlock\")},{\"MIC\",t(\"Lock\")}});else footer({{\"OK\",chess?t(\"Twice or hold: the game\")"
   ]
  },
  "54eed4d0": {
@@ -6060,7 +6006,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:940: text(26,82,key?t(\"Network key · 64 hex\"):page==ChannelAdd?channelEditTitle():page==ChessTourNew?String(t(\"Tournament name\")):page==PetView?String(t(\"Pet name\")):page==PeopleView?String(t(\"Counter name\")):page==DiceView?d"
+   "src/Ui.cpp:939: text(26,82,key?t(\"Network key · 64 hex\"):page==ChannelAdd?channelEditTitle():page==ChessTourNew?String(t(\"Tournament name\")):page==PetView?String(t(\"Pet name\")):page==PeopleView?String(t(\"Counter name\")):page==DiceView?d"
   ]
  },
  "55edebd2": {
@@ -6219,7 +6165,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:940: text(26,82,key?t(\"Network key · 64 hex\"):page==ChannelAdd?channelEditTitle():page==ChessTourNew?String(t(\"Tournament name\")):page==PetView?String(t(\"Pet name\")):page==PeopleView?String(t(\"Counter name\")):page==DiceView?d"
+   "src/Ui.cpp:939: text(26,82,key?t(\"Network key · 64 hex\"):page==ChannelAdd?channelEditTitle():page==ChessTourNew?String(t(\"Tournament name\")):page==PetView?String(t(\"Pet name\")):page==PeopleView?String(t(\"Counter name\")):page==DiceView?d"
   ]
  },
  "587de994": {
@@ -6321,8 +6267,8 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:136: textCenter(cx,ry+9,region?(regionChoice==c->region?t(\"Region\"):t(\"Region · OK: save\")):t(\"Invite\"),region&&regionChoice!=c->region?accent:dim,small);",
-   "src/UiChannels.inc:198: case MenuInvite:name=t(\"Invite\");value=people?String(list[inviteTo]->name):String(t(\"No chat contacts\"));pick=people>1;break;",
+   "src/UiChannels.inc:135: textCenter(cx,ry+9,region?(regionChoice==c->region?t(\"Region\"):t(\"Region · OK: save\")):t(\"Invite\"),region&&regionChoice!=c->region?accent:dim,small);",
+   "src/UiChannels.inc:196: case MenuInvite:name=t(\"Invite\");value=people?String(list[inviteTo]->name):String(t(\"No chat contacts\"));pick=people>1;break;",
    "src/UiDuel.inc:105: if(sea)footer({{\"OK\",t(\"Invite\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
   ]
  },
@@ -6350,7 +6296,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:940: text(26,82,key?t(\"Network key · 64 hex\"):page==ChannelAdd?channelEditTitle():page==ChessTourNew?String(t(\"Tournament name\")):page==PetView?String(t(\"Pet name\")):page==PeopleView?String(t(\"Counter name\")):page==DiceView?d"
+   "src/Ui.cpp:939: text(26,82,key?t(\"Network key · 64 hex\"):page==ChannelAdd?channelEditTitle():page==ChessTourNew?String(t(\"Tournament name\")):page==PetView?String(t(\"Pet name\")):page==PeopleView?String(t(\"Counter name\")):page==DiceView?d"
   ]
  },
  "5a1b6d0e": {
@@ -6433,7 +6379,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:940: text(26,82,key?t(\"Network key · 64 hex\"):page==ChannelAdd?channelEditTitle():page==ChessTourNew?String(t(\"Tournament name\")):page==PetView?String(t(\"Pet name\")):page==PeopleView?String(t(\"Counter name\")):page==DiceView?d"
+   "src/Ui.cpp:939: text(26,82,key?t(\"Network key · 64 hex\"):page==ChannelAdd?channelEditTitle():page==ChessTourNew?String(t(\"Tournament name\")):page==PetView?String(t(\"Pet name\")):page==PeopleView?String(t(\"Counter name\")):page==DiceView?d"
   ]
  },
  "5b2dd45f": {
@@ -6574,7 +6520,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1129: else if(page==Homing){radarSound=!radarSound;notice(radarSound?(config.sound?t(\"Ping on\"):t(\"Device sound is off in settings\")):t(\"Ping off\"),radarSound&&!config.sound?warn:dim);}"
+   "src/Ui.cpp:1100: else if(page==Homing){radarSound=!radarSound;notice(radarSound?(config.sound?t(\"Ping on\"):t(\"Device sound is off in settings\")):t(\"Ping off\"),radarSound&&!config.sound?warn:dim);}"
   ]
  },
  "5d6af097": {
@@ -6583,7 +6529,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language; typing layout is the @ key\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s"
+   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s\");case 5:return t(\"0 = off,"
   ]
  },
  "5ddb609c": {
@@ -6781,15 +6727,6 @@
    "src/UiHeltec.cpp:419: String flag(bool value){return value?t(\"On\"):t(\"Off\");}"
   ]
  },
- "60ec5f99": {
-  "cells": 38,
-  "families": [
-   "full"
-  ],
-  "where": [
-   "src/Ui.cpp:913: {\"ADV\",t(\"Announce this node; hold: GPS on/off\")},{\"@\",t(\"function key, not Sym+@: RU/EN in chat\")},hardware.micKey?Hint{\"MIC\",t(\"Lock screen (there is no microphone)\")}:Hint{tr(\"hold OK\"),t(\"Lock\")},"
-  ]
- },
  "6126720f": {
   "cells": 10,
   "families": [
@@ -6841,15 +6778,6 @@
    "src/Ui.cpp:788: if(i==rows-1){panel(8,y,304,21,changed?(focus?accent:rgb(0x14524b)):card,6);if(focus&&!changed)ring(8,y,304,21,6,line);textCenter(160,y+15,changed?t(\"Save changes\"):t(\"No changes\"),changed?(focus?bg:ink):dim,bold);contin"
   ]
  },
- "61f3ae44": {
-  "cells": 15,
-  "families": [
-   "full"
-  ],
-  "where": [
-   "src/Ui.cpp:441: else{d.fillRect(14,boxY+5,2,12,accent);text(20,boxY+15,t(\"Message...\"),faint);textRight(306,boxY+15,t(\"2x space: RU/EN\"),faint,small);}"
-  ]
- },
  "620f3cc6": {
   "cells": 8,
   "families": [
@@ -6895,8 +6823,8 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1018: auto& s=netfind::state;if(config.role!=RoleNormal){notice(t(\"Not in this mode\"),warn);return;}",
-   "src/Ui.cpp:1121: else if(page==Radio&&selected==RowFind){if(config.role!=RoleNormal)notice(t(\"Not in this mode\"),warn);else if(!regions::find())notice(t(\"Radio offline\"),bad);}",
+   "src/Ui.cpp:992: auto& s=netfind::state;if(config.role!=RoleNormal){notice(t(\"Not in this mode\"),warn);return;}",
+   "src/Ui.cpp:1093: else if(page==Radio&&selected==RowFind){if(config.role!=RoleNormal)notice(t(\"Not in this mode\"),warn);else if(!regions::find())notice(t(\"Radio offline\"),bad);}",
    "src/UiChannels.inc:17: case MeshRadio::ChannelUnavailable:return t(\"Not in this mode\");"
   ]
  },
@@ -6978,7 +6906,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:195: case MenuScope:name=t(\"Scope\");value=channelRegionText(regionChoice);pick=true;if(regionChoice!=c->region)g().fillCircle(17,y+11,2,accent);break;"
+   "src/UiChannels.inc:193: case MenuScope:name=t(\"Scope\");value=channelRegionText(regionChoice);pick=true;if(regionChoice!=c->region)g().fillCircle(17,y+11,2,accent);break;"
   ]
  },
  "63f218f1": {
@@ -7127,7 +7055,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1060: if(editing){if(key==KeyBack){editing=false;return;}if(key==Erase){edit.remove(meshmesh::previousCharacter(edit.c_str(),edit.length()));return;}if(key==KeyRight&&page!=Network){toggleLastCase(edit);return;}if(key==Enter){"
+   "src/Ui.cpp:1032: if(editing){if(key==KeyBack){editing=false;return;}if(key==Erase){edit.remove(meshmesh::previousCharacter(edit.c_str(),edit.length()));return;}if(key==KeyRight&&page!=Network){toggleLastCase(edit);return;}if(key==Enter){"
   ]
  },
  "65aa377f": {
@@ -7227,7 +7155,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1157: String eventLabel(const String& value){if(value.startsWith(\"New message from \"))return tr(\"New message from \")+value.substring(17);if(value.startsWith(\"Delivered to \"))return tr(\"Delivered to \")+value.substring(13);if(va"
+   "src/Ui.cpp:1127: String eventLabel(const String& value){if(value.startsWith(\"New message from \"))return tr(\"New message from \")+value.substring(17);if(value.startsWith(\"Delivered to \"))return tr(\"Delivered to \")+value.substring(13);if(va"
   ]
  },
  "67a31c2c": {
@@ -7301,7 +7229,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:930: else if(!chess)textCenter(160,166,meshRadio.ready?(config.role==RoleRepeater?t(\"The repeater keeps relaying\"):config.role==RoleRoom?t(\"The room keeps serving members\"):t(\"Radio and GPS keep working\")):t(\"Radio error\"),me"
+   "src/Ui.cpp:929: else if(!chess)textCenter(160,166,meshRadio.ready?(config.role==RoleRepeater?t(\"The repeater keeps relaying\"):config.role==RoleRoom?t(\"The room keeps serving members\"):t(\"Radio and GPS keep working\")):t(\"Radio error\"),me"
   ]
  },
  "68f7fd73": {
@@ -7387,7 +7315,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1039: case ActResetPath:{if(meshRadio.busy()){notice(t(\"Radio busy, try again\"),warn);break;}bool reset=meshRadio.resetPath(p->id);notice(reset?t(\"Path reset: next message floods\"):t(\"Path reset failed\"),reset?ok:bad);break;}"
+   "src/Ui.cpp:1013: case ActResetPath:{if(meshRadio.busy()){notice(t(\"Radio busy, try again\"),warn);break;}bool reset=meshRadio.resetPath(p->id);notice(reset?t(\"Path reset: next message floods\"):t(\"Path reset failed\"),reset?ok:bad);break;}"
   ]
  },
  "69f2c208": {
@@ -7396,7 +7324,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:91: String channelEditOk(){return addStep==AddName?t(\"OK: next   BACK: cancel\"):addStep==AddCreate?t(\"OK: create   BACK: cancel\"):t(\"OK: join   BACK: cancel\");}"
+   "src/UiChannels.inc:90: String channelEditOk(){return addStep==AddName?t(\"OK: next   BACK: cancel\"):addStep==AddCreate?t(\"OK: create   BACK: cancel\"):t(\"OK: join   BACK: cancel\");}"
   ]
  },
  "6a02a12f": {
@@ -7480,7 +7408,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1102: if(page==Homing&&(key==KeyLeft||key==KeyRight)){radar.resetPeak();notice(t(\"Peak reset\"),dim);return;}",
+   "src/Ui.cpp:1074: if(page==Homing&&(key==KeyLeft||key==KeyRight)){radar.resetPeak();notice(t(\"Peak reset\"),dim);return;}",
    "src/UiHeltec.cpp:539: case ActStopHoming:radar.untrack();break;case ActResetPeak:radar.resetPeak();notice(t(\"Peak reset\"));break;"
   ]
  },
@@ -7499,8 +7427,8 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:156: if(selected==InfoInvite){deleteArmed=false;Peer* list[24];int people=chatContacts(list);if(!people){notice(t(\"Discover a chat contact first: ADV\"),warn);return;}",
-   "src/UiChannels.inc:233: case MenuInvite:{if(side){inviteTo+=left?-1:1;return;}Peer* list[24];int people=chatContacts(list);if(!people){notice(t(\"Discover a chat contact first: ADV\"),warn);return;}"
+   "src/UiChannels.inc:155: if(selected==InfoInvite){deleteArmed=false;Peer* list[24];int people=chatContacts(list);if(!people){notice(t(\"Discover a chat contact first: ADV\"),warn);return;}",
+   "src/UiChannels.inc:229: case MenuInvite:{if(side){inviteTo+=left?-1:1;return;}Peer* list[24];int people=chatContacts(list);if(!people){notice(t(\"Discover a chat contact first: ADV\"),warn);return;}"
   ]
  },
  "6c3bf15d": {
@@ -7509,7 +7437,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1090: if(page==Chat){if(key==Enter){if(meshRadio.sendMessage(composer,recipient)){composer=\"\";chatOffset=0;notice(t(\"Message queued\"));}else notice(t(\"Cannot send: empty, full queue or radio\"),bad);return;}if(key==Erase){compo"
+   "src/Ui.cpp:1062: if(page==Chat){if(key==Enter){if(meshRadio.sendMessage(composer,recipient)){composer=\"\";chatOffset=0;notice(t(\"Message queued\"));}else notice(t(\"Cannot send: empty, full queue or radio\"),bad);return;}if(key==Erase){compo"
   ]
  },
  "6c7eae65": {
@@ -7539,7 +7467,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language; typing layout is the @ key\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s"
+   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s\");case 5:return t(\"0 = off,"
   ]
  },
  "6cf1ba25": {
@@ -7698,7 +7626,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:940: text(26,82,key?t(\"Network key · 64 hex\"):page==ChannelAdd?channelEditTitle():page==ChessTourNew?String(t(\"Tournament name\")):page==PetView?String(t(\"Pet name\")):page==PeopleView?String(t(\"Counter name\")):page==DiceView?d"
+   "src/Ui.cpp:939: text(26,82,key?t(\"Network key · 64 hex\"):page==ChannelAdd?channelEditTitle():page==ChessTourNew?String(t(\"Tournament name\")):page==PetView?String(t(\"Pet name\")):page==PeopleView?String(t(\"Counter name\")):page==DiceView?d"
   ]
  },
  "6f2b7a61": {
@@ -7848,8 +7776,8 @@
   ],
   "where": [
    "src/Ui.cpp:369: footer({{\"OK\",t(\"Open\")},{\"MSG\",t(\"Chats\")},{\"MAP\",t(\"Map\")},{hardware.micKey?\"MIC\":tr(\"hold OK\"),t(\"Lock\")}});",
-   "src/Ui.cpp:913: {\"ADV\",t(\"Announce this node; hold: GPS on/off\")},{\"@\",t(\"function key, not Sym+@: RU/EN in chat\")},hardware.micKey?Hint{\"MIC\",t(\"Lock screen (there is no microphone)\")}:Hint{tr(\"hold OK\"),t(\"Lock\")},",
-   "src/Ui.cpp:931: icon(IcLock,160,chess&&n?210:200,chess&&n?6:7,dim);if(hardware.micKey)footer({{\"OK\",chess?t(\"Twice or hold: the game\"):t(\"Twice or hold: unlock\")},{\"MIC\",t(\"Lock\")}});else footer({{\"OK\",chess?t(\"Twice or hold: the game\")"
+   "src/Ui.cpp:913: {\"ADV\",t(\"Announce this node; hold: GPS on/off\")},{\"@\",t(\"function key, not Sym+@: chat settings\")},hardware.micKey?Hint{\"MIC\",t(\"Lock screen (there is no microphone)\")}:Hint{tr(\"hold OK\"),t(\"Lock\")},",
+   "src/Ui.cpp:930: icon(IcLock,160,chess&&n?210:200,chess&&n?6:7,dim);if(hardware.micKey)footer({{\"OK\",chess?t(\"Twice or hold: the game\"):t(\"Twice or hold: unlock\")},{\"MIC\",t(\"Lock\")}});else footer({{\"OK\",chess?t(\"Twice or hold: the game\")"
   ]
  },
  "71be5af6": {
@@ -7858,7 +7786,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:928: if(!config.lockDetails)text(80,y+32,t(\"Unlock to read\"),dim,small);else if(last)text(80,y+32,fit(t(\"Last from \")+String(last->name),190,small),dim,small);}"
+   "src/Ui.cpp:927: if(!config.lockDetails)text(80,y+32,t(\"Unlock to read\"),dim,small);else if(last)text(80,y+32,fit(t(\"Last from \")+String(last->name),190,small),dim,small);}"
   ]
  },
  "71da9d85": {
@@ -7921,7 +7849,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1090: if(page==Chat){if(key==Enter){if(meshRadio.sendMessage(composer,recipient)){composer=\"\";chatOffset=0;notice(t(\"Message queued\"));}else notice(t(\"Cannot send: empty, full queue or radio\"),bad);return;}if(key==Erase){compo"
+   "src/Ui.cpp:1062: if(page==Chat){if(key==Enter){if(meshRadio.sendMessage(composer,recipient)){composer=\"\";chatOffset=0;notice(t(\"Message queued\"));}else notice(t(\"Cannot send: empty, full queue or radio\"),bad);return;}if(key==Erase){compo"
   ]
  },
  "72d06ea7": {
@@ -7984,8 +7912,8 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:142: else footer({{\"^v\",t(\"Select\")},{\"<>\",t(\"Contact\")},{\"OK\",t(\"Run\")},{\"BACK\",t(\"Back\")}});",
-   "src/UiChannels.inc:216: else if(row==MenuInvite)footer({{\"<>\",t(\"Contact\")},{\"OK\",t(\"Send\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
+   "src/UiChannels.inc:141: else footer({{\"^v\",t(\"Select\")},{\"<>\",t(\"Contact\")},{\"OK\",t(\"Run\")},{\"BACK\",t(\"Back\")}});",
+   "src/UiChannels.inc:213: else if(row==MenuInvite)footer({{\"<>\",t(\"Contact\")},{\"OK\",t(\"Send\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
   ]
  },
  "73c66160": {
@@ -8068,7 +7996,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:87: if(addStep==AddTag){int n=meshRadio.heardSamples?meshRadio.probeHashtag(edit):0;if(n>0)return t(\"Heard on air: \")+count(n,\"message\",\"messages\");return t(\"Same #name, same channel as in MeshCore apps\");}"
+   "src/UiChannels.inc:86: if(addStep==AddTag){int n=meshRadio.heardSamples?meshRadio.probeHashtag(edit):0;if(n>0)return t(\"Heard on air: \")+count(n,\"message\",\"messages\");return t(\"Same #name, same channel as in MeshCore apps\");}"
   ]
  },
  "75041930": {
@@ -8078,6 +8006,15 @@
   ],
   "where": [
    "src/UiServer.inc:27: else textCenter(160,212,t(\"A change restarts; data and settings stay\"),faint,small);"
+  ]
+ },
+ "750c5cf5": {
+  "cells": 17,
+  "families": [
+   "full"
+  ],
+  "where": [
+   "src/Ui.cpp:897: switch(k){case 0:return \"-\";case KeyMsg:return \"MSG\";case KeyHome:return \"HOME\";case KeyAt:return t(\"@ (chat settings)\");case KeyAdv:return \"ADV\";case 0x87:return t(\"hold ADV (GPS)\");case KeyMap:return \"MAP\";case KeyBack"
   ]
  },
  "75193707": {
@@ -8227,7 +8164,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:953: String tourTitle(){return tourOpen&&tourOpen->state!=tour::Free?String(tourOpen->name):t(\"Tournament\");}",
+   "src/Ui.cpp:952: String tourTitle(){return tourOpen&&tourOpen->state!=tour::Free?String(tourOpen->name):t(\"Tournament\");}",
    "src/UiChess.inc:239: else if(m.tour){const tour::Tour* T=tour::net.find(m.tour);panel(x,150,w,22,rgb(0x2e2450),6);text(x+6,165,fit((T?String(T->name):String(t(\"Tournament\")))+\" · \"+t(\"R\")+String(m.round),w-10,small),violet,small);}",
    "src/UiTour.inc:56: void tourStartWizard(){tourStep=0;tourRounds=0;tourHoursAt=2;memset(tourPicked,0,sizeof tourPicked);tm v;tourName=t(\"Tournament\");if(localTime(time(nullptr),v)){char b[24];snprintf(b,sizeof b,\" %02d.%02d\",v.tm_mday,v.tm_"
   ]
@@ -8390,7 +8327,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:110: return config.region[0]?t(\"Default: \")+String(config.region):String(t(\"Default: none\"));"
+   "src/UiChannels.inc:109: return config.region[0]?t(\"Default: \")+String(config.region):String(t(\"Default: none\"));"
   ]
  },
  "7bb69d7b": {
@@ -8513,6 +8450,15 @@
    "src/Ui.cpp:705: auto& s=regions::search;if(regions::searching())return t(\"Searching: \")+count(s.repeaters,\"repeater\",\"repeaters\");"
   ]
  },
+ "7ecd2a4c": {
+  "cells": 13,
+  "families": [
+   "full"
+  ],
+  "where": [
+   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s\");case 5:return t(\"0 = off,"
+  ]
+ },
  "7f264f8d": {
   "cells": 16,
   "families": [
@@ -8537,7 +8483,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:930: else if(!chess)textCenter(160,166,meshRadio.ready?(config.role==RoleRepeater?t(\"The repeater keeps relaying\"):config.role==RoleRoom?t(\"The room keeps serving members\"):t(\"Radio and GPS keep working\")):t(\"Radio error\"),me"
+   "src/Ui.cpp:929: else if(!chess)textCenter(160,166,meshRadio.ready?(config.role==RoleRepeater?t(\"The repeater keeps relaying\"):config.role==RoleRoom?t(\"The room keeps serving members\"):t(\"Radio and GPS keep working\")):t(\"Radio error\"),me"
   ]
  },
  "7f8e9f6b": {
@@ -8622,7 +8568,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:944: text(26,175,page==DiceView?diceEditOk():page==ChannelAdd?channelEditOk():page==Remote?(remoteEdit==EditPassword?t(\"OK: log in   BACK: cancel\"):t(\"OK: send   BACK: cancel\")):serverPostEdit()?t(\"OK: post   BACK: cancel\"):t"
+   "src/Ui.cpp:943: text(26,175,page==DiceView?diceEditOk():page==ChannelAdd?channelEditOk():page==Remote?(remoteEdit==EditPassword?t(\"OK: log in   BACK: cancel\"):t(\"OK: send   BACK: cancel\")):serverPostEdit()?t(\"OK: post   BACK: cancel\"):t"
   ]
  },
  "8178cc38": {
@@ -8677,7 +8623,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:942: textRight(294,160,String(edit.length())+\"/\"+String(key?64:page==Radio||regionEditPage()?int(regions::NameBytes):page==ChannelAdd?channelEditLimit():page==ServerHome?serverEditLimit():page==Remote?remoteEditLimit():pass?6"
+   "src/Ui.cpp:941: textRight(294,160,String(edit.length())+\"/\"+String(key?64:page==Radio||regionEditPage()?int(regions::NameBytes):page==ChannelAdd?channelEditLimit():page==ServerHome?serverEditLimit():page==Remote?remoteEditLimit():pass?6"
   ]
  },
  "827c2efb": {
@@ -8687,8 +8633,8 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1022: if(!netfind::start(all))notice(meshRadio.busy()||regions::searching()?t(\"Radio busy, retry\"):t(\"Radio offline\"),bad);",
-   "src/Ui.cpp:1121: else if(page==Radio&&selected==RowFind){if(config.role!=RoleNormal)notice(t(\"Not in this mode\"),warn);else if(!regions::find())notice(t(\"Radio offline\"),bad);}",
+   "src/Ui.cpp:996: if(!netfind::start(all))notice(meshRadio.busy()||regions::searching()?t(\"Radio busy, retry\"):t(\"Radio offline\"),bad);",
+   "src/Ui.cpp:1093: else if(page==Radio&&selected==RowFind){if(config.role!=RoleNormal)notice(t(\"Not in this mode\"),warn);else if(!regions::find())notice(t(\"Radio offline\"),bad);}",
    "src/UiHeltec.cpp:300: case RowFind:if(!regions::find())notice(t(\"Radio offline\"));break;"
   ]
  },
@@ -8781,7 +8727,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1039: case ActResetPath:{if(meshRadio.busy()){notice(t(\"Radio busy, try again\"),warn);break;}bool reset=meshRadio.resetPath(p->id);notice(reset?t(\"Path reset: next message floods\"):t(\"Path reset failed\"),reset?ok:bad);break;}",
+   "src/Ui.cpp:1013: case ActResetPath:{if(meshRadio.busy()){notice(t(\"Radio busy, try again\"),warn);break;}bool reset=meshRadio.resetPath(p->id);notice(reset?t(\"Path reset: next message floods\"):t(\"Path reset failed\"),reset?ok:bad);break;}",
    "src/UiHeltec.cpp:527: case ActResetPath:{Peer* p=shownNode();notice(p&&!meshRadio.busy()&&meshRadio.resetPath(p->id)?t(\"Path reset\"):t(\"Path reset failed\"));break;}"
   ]
  },
@@ -8818,8 +8764,8 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1092: if(page==Map){if(key=='l'||key=='L'){change(Library);return;}if(key==KeyLeft)maps.pan(-70,0);if(key==KeyRight)maps.pan(70,0);if(key==KeyUp)maps.pan(0,-70);if(key==KeyDown)maps.pan(0,70);if(key=='+'||key=='=')maps.changeZ",
-   "src/Ui.cpp:1124: else if(page==Sensors){if(selected==0)gpsToggle();else if(selected==1){bool sent=meshRadio.sendPosition();notice(sent?t(\"Position shared\"):t(\"Waiting for GPS fix\"),sent?ok:warn);}else if(navigation.calibrating){bool save"
+   "src/Ui.cpp:1064: if(page==Map){if(key=='l'||key=='L'){change(Library);return;}if(key==KeyLeft)maps.pan(-70,0);if(key==KeyRight)maps.pan(70,0);if(key==KeyUp)maps.pan(0,-70);if(key==KeyDown)maps.pan(0,70);if(key=='+'||key=='=')maps.changeZ",
+   "src/Ui.cpp:1096: else if(page==Sensors){if(selected==0)gpsToggle();else if(selected==1){bool sent=meshRadio.sendPosition();notice(sent?t(\"Position shared\"):t(\"Waiting for GPS fix\"),sent?ok:warn);}else if(navigation.calibrating){bool save"
   ]
  },
  "845df81c": {
@@ -8903,7 +8849,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:89: return t(\"Then the key\");"
+   "src/UiChannels.inc:88: return t(\"Then the key\");"
   ]
  },
  "851e5ac2": {
@@ -8966,8 +8912,8 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:139: String label=i==InfoInvite?t(\"No chat contacts\"):deleteArmed?t(\"Sure? OK again\"):t(\"Leave channel\");",
-   "src/UiChannels.inc:201: case MenuLeave:name=deleteArmed?t(\"Sure? OK again\"):t(\"Leave channel\");color=focus?(deleteArmed?bad:ink):bad;break;"
+   "src/UiChannels.inc:138: String label=i==InfoInvite?t(\"No chat contacts\"):deleteArmed?t(\"Sure? OK again\"):t(\"Leave channel\");",
+   "src/UiChannels.inc:198: case MenuLeave:name=deleteArmed?t(\"Sure? OK again\"):t(\"Leave channel\");color=focus?(deleteArmed?bad:ink):bad;break;"
   ]
  },
  "86d255b7": {
@@ -9057,8 +9003,8 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:192: textCenter(160,y+16,!n?t(\"No messages\"):deleteArmed?t(\"Sure? OK again\"):t(\"Erase messages\")+\" (\"+String(n)+\")\",n?(focus?bg:ink):dim,bold);continue;}",
-   "src/UiChannels.inc:238: if(row==MenuErase&&!chatMessages()){notice(t(\"No messages\"),dim);return;}"
+   "src/UiChannels.inc:190: textCenter(160,y+16,!n?t(\"No messages\"):deleteArmed?t(\"Sure? OK again\"):t(\"Erase messages\")+\" (\"+String(n)+\")\",n?(focus?bg:ink):dim,bold);continue;}",
+   "src/UiChannels.inc:234: if(row==MenuErase&&!chatMessages()){notice(t(\"No messages\"),dim);return;}"
   ]
  },
  "89a71bba": {
@@ -9133,7 +9079,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1021: notice(done?t(\"Radio test: a restart returns the saved one\"):r.startsWith(\"ERR radio busy\")?t(\"Radio busy, retry\"):r.substring(4),done?ok:bad);return;}"
+   "src/Ui.cpp:995: notice(done?t(\"Radio test: a restart returns the saved one\"):r.startsWith(\"ERR radio busy\")?t(\"Radio busy, retry\"):r.substring(4),done?ok:bad);return;}"
   ]
  },
  "8ab4f081": {
@@ -9255,7 +9201,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:145: if(meshRadio.setChannelRegion(focusChannel,r)){regionChoice=meshRadio.channel(focusChannel)->region;notice(t(\"Region saved\"),ok);}"
+   "src/UiChannels.inc:144: if(meshRadio.setChannelRegion(focusChannel,r)){regionChoice=meshRadio.channel(focusChannel)->region;notice(t(\"Region saved\"),ok);}"
   ]
  },
  "8c060706": {
@@ -9264,7 +9210,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1039: case ActResetPath:{if(meshRadio.busy()){notice(t(\"Radio busy, try again\"),warn);break;}bool reset=meshRadio.resetPath(p->id);notice(reset?t(\"Path reset: next message floods\"):t(\"Path reset failed\"),reset?ok:bad);break;}"
+   "src/Ui.cpp:1013: case ActResetPath:{if(meshRadio.busy()){notice(t(\"Radio busy, try again\"),warn);break;}bool reset=meshRadio.resetPath(p->id);notice(reset?t(\"Path reset: next message floods\"):t(\"Path reset failed\"),reset?ok:bad);break;}"
   ]
  },
  "8c0be2f7": {
@@ -9353,7 +9299,7 @@
   "where": [
    "src/Ui.cpp:541: footer({{\"<>\",t(\"Action\")},{\"OK\",t(\"Run\")},{\"BACK\",t(\"Nodes\")}});",
    "src/Ui.cpp:569: footer({{\"<>\",t(\"Select\")},{\"OK\",selected?t(\"Run\"):config.gps?t(\"GPS off\"):t(\"GPS on\")},{\"BACK\",t(\"Back\")}});",
-   "src/UiChannels.inc:142: else footer({{\"^v\",t(\"Select\")},{\"<>\",t(\"Contact\")},{\"OK\",t(\"Run\")},{\"BACK\",t(\"Back\")}});"
+   "src/UiChannels.inc:141: else footer({{\"^v\",t(\"Select\")},{\"<>\",t(\"Contact\")},{\"OK\",t(\"Run\")},{\"BACK\",t(\"Back\")}});"
   ]
  },
  "8d5a249d": {
@@ -9445,7 +9391,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:942: textRight(294,160,String(edit.length())+\"/\"+String(key?64:page==Radio||regionEditPage()?int(regions::NameBytes):page==ChannelAdd?channelEditLimit():page==ServerHome?serverEditLimit():page==Remote?remoteEditLimit():pass?6"
+   "src/Ui.cpp:941: textRight(294,160,String(edit.length())+\"/\"+String(key?64:page==Radio||regionEditPage()?int(regions::NameBytes):page==ChannelAdd?channelEditLimit():page==ServerHome?serverEditLimit():page==Remote?remoteEditLimit():pass?6"
   ]
  },
  "8ec4824d": {
@@ -9512,7 +9458,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1101: if(page==Motion&&(key=='b'||key=='B')){csiBeaconRole=!csiBeaconRole;radar.setCsi(csiBeaconRole?Radar::CsiBeacon:Radar::CsiSensor);notice(csiBeaconRole?t(\"This board is now the beacon\"):t(\"This board is now the sensor\"));"
+   "src/Ui.cpp:1073: if(page==Motion&&(key=='b'||key=='B')){csiBeaconRole=!csiBeaconRole;radar.setCsi(csiBeaconRole?Radar::CsiBeacon:Radar::CsiSensor);notice(csiBeaconRole?t(\"This board is now the beacon\"):t(\"This board is now the sensor\"));"
   ]
  },
  "8f7412e6": {
@@ -9670,7 +9616,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:897: switch(k){case 0:return \"-\";case KeyMsg:return \"MSG\";case KeyHome:return \"HOME\";case KeyAt:return t(\"@ (chat settings, input language)\");case KeyAdv:return \"ADV\";case 0x87:return t(\"hold ADV (GPS)\");case KeyMap:return \"M"
+   "src/Ui.cpp:897: switch(k){case 0:return \"-\";case KeyMsg:return \"MSG\";case KeyHome:return \"HOME\";case KeyAt:return t(\"@ (chat settings)\");case KeyAdv:return \"ADV\";case 0x87:return t(\"hold ADV (GPS)\");case KeyMap:return \"MAP\";case KeyBack"
   ]
  },
  "927c7456": {
@@ -9841,15 +9787,6 @@
    "src/UiDuelCompact.inc:133: say(68,8,clipped(g.name,11),small);say(68,17,t(\"you: \")+(white?t(\"white\"):t(\"black\")),small);"
   ]
  },
- "948dbfd2": {
-  "cells": 41,
-  "families": [
-   "full"
-  ],
-  "where": [
-   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language; typing layout is the @ key\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s"
-  ]
- },
  "94a0707a": {
   "cells": 5,
   "families": [
@@ -9874,7 +9811,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:944: text(26,175,page==DiceView?diceEditOk():page==ChannelAdd?channelEditOk():page==Remote?(remoteEdit==EditPassword?t(\"OK: log in   BACK: cancel\"):t(\"OK: send   BACK: cancel\")):serverPostEdit()?t(\"OK: post   BACK: cancel\"):t"
+   "src/Ui.cpp:943: text(26,175,page==DiceView?diceEditOk():page==ChannelAdd?channelEditOk():page==Remote?(remoteEdit==EditPassword?t(\"OK: log in   BACK: cancel\"):t(\"OK: send   BACK: cancel\")):serverPostEdit()?t(\"OK: post   BACK: cancel\"):t"
   ]
  },
  "957bfc5d": {
@@ -9919,7 +9856,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language; typing layout is the @ key\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s"
+   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s\");case 5:return t(\"0 = off,"
   ]
  },
  "96b60c1c": {
@@ -10278,7 +10215,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:897: switch(k){case 0:return \"-\";case KeyMsg:return \"MSG\";case KeyHome:return \"HOME\";case KeyAt:return t(\"@ (chat settings, input language)\");case KeyAdv:return \"ADV\";case 0x87:return t(\"hold ADV (GPS)\");case KeyMap:return \"M"
+   "src/Ui.cpp:897: switch(k){case 0:return \"-\";case KeyMsg:return \"MSG\";case KeyHome:return \"HOME\";case KeyAt:return t(\"@ (chat settings)\");case KeyAdv:return \"ADV\";case 0x87:return t(\"hold ADV (GPS)\");case KeyMap:return \"MAP\";case KeyBack"
   ]
  },
  "9dbda18a": {
@@ -10431,7 +10368,7 @@
   "where": [
    "src/Ui.cpp:800: else footer({{\"<>\",t(\"Change\")},{\"OK\",selected==rows-1?t(\"Save\"):t(\"Next value\")},{\"BACK\",t(\"Cancel\")}});",
    "src/UiServer.inc:83: if(r==RowAdvert||r==RowFlood)footer({{\"<>\",t(\"Change\")},{\"^v\",t(\"Select\")},{\"ADV\",t(\"Advertise\")},{\"P\",t(\"Pet\")}});",
-   "src/UiChannels.inc:217: else footer({{\"<>\",t(\"Change\")},{\"OK\",t(\"Change\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
+   "src/UiChannels.inc:214: else footer({{\"<>\",t(\"Change\")},{\"OK\",t(\"Change\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
   ]
  },
  "a2009955": {
@@ -10523,7 +10460,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1172: notice(t(\"Network nearby: \")+(r.place!=255?netfind::placeName(r.place)+\" \":String())+\"SF\"+String(r.radio.sf)+t(\" · Settings > Radio\"),info);",
+   "src/Ui.cpp:1142: notice(t(\"Network nearby: \")+(r.place!=255?netfind::placeName(r.place)+\" \":String())+\"SF\"+String(r.radio.sf)+t(\" · Settings > Radio\"),info);",
    "src/UiHeltec.cpp:930: notice(t(\"Network nearby: \")+(r.place!=255?netfind::placeName(r.place)+\" \":String())+\"SF\"+String(r.radio.sf));ledAt=now;ledPattern=1;"
   ]
  },
@@ -10561,7 +10498,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:220: bool saved=r.startsWith(\"OK\");notice(saved?(c->policy.sound?t(\"Sound on\"):t(\"Sound off\")):r,saved?ok:bad);}"
+   "src/UiChannels.inc:217: bool saved=r.startsWith(\"OK\");notice(saved?(c->policy.sound?t(\"Sound on\"):t(\"Sound off\")):r,saved?ok:bad);}"
   ]
  },
  "a341d1d0": {
@@ -10616,8 +10553,8 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:157: Peer* p=list[(inviteTo%people+people)%people];bool sent=meshRadio.sendInvite(p->id,focusChannel);notice(sent?t(\"Invitation queued to \")+p->name:t(\"Invitation not sent\"),sent?ok:bad);return;}",
-   "src/UiChannels.inc:234: Peer* p=list[(inviteTo%people+people)%people];bool sent=meshRadio.sendInvite(p->id,c->id);notice(sent?t(\"Invitation queued to \")+p->name:t(\"Invitation not sent\"),sent?ok:bad);return;}"
+   "src/UiChannels.inc:156: Peer* p=list[(inviteTo%people+people)%people];bool sent=meshRadio.sendInvite(p->id,focusChannel);notice(sent?t(\"Invitation queued to \")+p->name:t(\"Invitation not sent\"),sent?ok:bad);return;}",
+   "src/UiChannels.inc:230: Peer* p=list[(inviteTo%people+people)%people];bool sent=meshRadio.sendInvite(p->id,c->id);notice(sent?t(\"Invitation queued to \")+p->name:t(\"Invitation not sent\"),sent?ok:bad);return;}"
   ]
  },
  "a40799e0": {
@@ -10644,7 +10581,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1067: if(key==KeyHome){change(homePage());return;}if(config.role!=RoleNormal&&(key==KeyMsg||key==KeyMap)){notice(t(\"Not in this mode: Settings > Device mode\"),warn);return;}if(key==KeyMsg){change(Threads);return;}if(key==KeyMa"
+   "src/Ui.cpp:1039: if(key==KeyHome){change(homePage());return;}if(config.role!=RoleNormal&&(key==KeyMsg||key==KeyMap)){notice(t(\"Not in this mode: Settings > Device mode\"),warn);return;}if(key==KeyMsg){change(Threads);return;}if(key==KeyMa"
   ]
  },
  "a4995035": {
@@ -10653,7 +10590,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:897: switch(k){case 0:return \"-\";case KeyMsg:return \"MSG\";case KeyHome:return \"HOME\";case KeyAt:return t(\"@ (chat settings, input language)\");case KeyAdv:return \"ADV\";case 0x87:return t(\"hold ADV (GPS)\");case KeyMap:return \"M"
+   "src/Ui.cpp:897: switch(k){case 0:return \"-\";case KeyMsg:return \"MSG\";case KeyHome:return \"HOME\";case KeyAt:return t(\"@ (chat settings)\");case KeyAdv:return \"ADV\";case 0x87:return t(\"hold ADV (GPS)\");case KeyMap:return \"MAP\";case KeyBack"
   ]
  },
  "a4bb08e5": {
@@ -10708,8 +10645,8 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:931: icon(IcLock,160,chess&&n?210:200,chess&&n?6:7,dim);if(hardware.micKey)footer({{\"OK\",chess?t(\"Twice or hold: the game\"):t(\"Twice or hold: unlock\")},{\"MIC\",t(\"Lock\")}});else footer({{\"OK\",chess?t(\"Twice or hold: the game\")",
-   "src/Ui.cpp:931: icon(IcLock,160,chess&&n?210:200,chess&&n?6:7,dim);if(hardware.micKey)footer({{\"OK\",chess?t(\"Twice or hold: the game\"):t(\"Twice or hold: unlock\")},{\"MIC\",t(\"Lock\")}});else footer({{\"OK\",chess?t(\"Twice or hold: the game\")"
+   "src/Ui.cpp:930: icon(IcLock,160,chess&&n?210:200,chess&&n?6:7,dim);if(hardware.micKey)footer({{\"OK\",chess?t(\"Twice or hold: the game\"):t(\"Twice or hold: unlock\")},{\"MIC\",t(\"Lock\")}});else footer({{\"OK\",chess?t(\"Twice or hold: the game\")",
+   "src/Ui.cpp:930: icon(IcLock,160,chess&&n?210:200,chess&&n?6:7,dim);if(hardware.micKey)footer({{\"OK\",chess?t(\"Twice or hold: the game\"):t(\"Twice or hold: unlock\")},{\"MIC\",t(\"Lock\")}});else footer({{\"OK\",chess?t(\"Twice or hold: the game\")"
   ]
  },
  "a5f4644c": {
@@ -10728,7 +10665,7 @@
   ],
   "where": [
    "src/Ui.cpp:567: String hints[]={fix?t(\"Advert with GPS\"):t(\"Needs a fresh GPS fix\"),navigation.calibrating?t(\"Rotate in all directions\"):t(\"Rotate for 20+ seconds\")};",
-   "src/Ui.cpp:1124: else if(page==Sensors){if(selected==0)gpsToggle();else if(selected==1){bool sent=meshRadio.sendPosition();notice(sent?t(\"Position shared\"):t(\"Waiting for GPS fix\"),sent?ok:warn);}else if(navigation.calibrating){bool save"
+   "src/Ui.cpp:1096: else if(page==Sensors){if(selected==0)gpsToggle();else if(selected==1){bool sent=meshRadio.sendPosition();notice(sent?t(\"Position shared\"):t(\"Waiting for GPS fix\"),sent?ok:warn);}else if(navigation.calibrating){bool save"
   ]
  },
  "a607f8df": {
@@ -10784,7 +10721,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:91: String channelEditOk(){return addStep==AddName?t(\"OK: next   BACK: cancel\"):addStep==AddCreate?t(\"OK: create   BACK: cancel\"):t(\"OK: join   BACK: cancel\");}",
+   "src/UiChannels.inc:90: String channelEditOk(){return addStep==AddName?t(\"OK: next   BACK: cancel\"):addStep==AddCreate?t(\"OK: create   BACK: cancel\"):t(\"OK: join   BACK: cancel\");}",
    "src/UiDice.inc:377: String diceEditOk(){return diceEditing==EditQuick?t(\"OK: roll   BACK: cancel\"):diceEditing==EditNewFormula||diceEditing==EditHeroNew?t(\"OK: next   BACK: cancel\"):t(\"OK: save   BACK: cancel\");}"
   ]
  },
@@ -10915,7 +10852,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1127: else if(page==Scope){int i=scopeSelected();if(i>=0&&radar.track(i)){scopeManual=true;pingedSamples=radar.samples;change(Homing);}else notice(t(\"No signal selected\"),warn);}"
+   "src/Ui.cpp:1098: else if(page==Scope){int i=scopeSelected();if(i>=0&&radar.track(i)){scopeManual=true;pingedSamples=radar.samples;change(Homing);}else notice(t(\"No signal selected\"),warn);}"
   ]
  },
  "aad07647": {
@@ -10933,7 +10870,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1124: else if(page==Sensors){if(selected==0)gpsToggle();else if(selected==1){bool sent=meshRadio.sendPosition();notice(sent?t(\"Position shared\"):t(\"Waiting for GPS fix\"),sent?ok:warn);}else if(navigation.calibrating){bool save"
+   "src/Ui.cpp:1096: else if(page==Sensors){if(selected==0)gpsToggle();else if(selected==1){bool sent=meshRadio.sendPosition();notice(sent?t(\"Position shared\"):t(\"Waiting for GPS fix\"),sent?ok:warn);}else if(navigation.calibrating){bool save"
   ]
  },
  "ab1fafa1": {
@@ -10972,7 +10909,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language; typing layout is the @ key\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s"
+   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s\");case 5:return t(\"0 = off,"
   ]
  },
  "ab6447d9": {
@@ -11010,7 +10947,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1123: else if(page==Network){if(selected==0)portalToggle();if(selected==1){if(config.role!=RoleNormal)notice(t(\"Internet over Wi-Fi is off in this mode\"),warn);else change(NetList);}if(selected==2)bleToggle();if(selected==3)no"
+   "src/Ui.cpp:1095: else if(page==Network){if(selected==0)portalToggle();if(selected==1){if(config.role!=RoleNormal)notice(t(\"Internet over Wi-Fi is off in this mode\"),warn);else change(NetList);}if(selected==2)bleToggle();if(selected==3)no"
   ]
  },
  "aba0f5ef": {
@@ -11068,7 +11005,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1113: else if(page==Settings&&selected==settingsCount-1){if(!powerArmed||millis()-powerArmed>5000){powerArmed=millis();notice(t(\"OK again: turn off\"),warn);return;}powerArmed=0;powerOff();}"
+   "src/Ui.cpp:1085: else if(page==Settings&&selected==settingsCount-1){if(!powerArmed||millis()-powerArmed>5000){powerArmed=millis();notice(t(\"OK again: turn off\"),warn);return;}powerArmed=0;powerOff();}"
   ]
  },
  "ac0db40a": {
@@ -11143,15 +11080,6 @@
   ],
   "where": [
    "src/UiTour.inc:71: String v[]={T.nameOf(T.organizer),t(\"Swiss, \")+count(T.rounds,\"round\",\"rounds\"),String(T.hours)+t(\" h\"),t(\"ELO counts\")};"
-  ]
- },
- "ad490dac": {
-  "cells": 23,
-  "families": [
-   "full"
-  ],
-  "where": [
-   "src/Ui.cpp:1010: panel(6,24,308,192,cardHi,10);g().drawRoundRect(6,24,308,192,10,line);text(16,42,t(\"Russian input: phonetic\"),ink,bold);"
   ]
  },
  "ad755325": {
@@ -11276,17 +11204,8 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:139: String label=i==InfoInvite?t(\"No chat contacts\"):deleteArmed?t(\"Sure? OK again\"):t(\"Leave channel\");",
-   "src/UiChannels.inc:198: case MenuInvite:name=t(\"Invite\");value=people?String(list[inviteTo]->name):String(t(\"No chat contacts\"));pick=people>1;break;"
-  ]
- },
- "b02ed1b7": {
-  "cells": 14,
-  "families": [
-   "full"
-  ],
-  "where": [
-   "src/Ui.cpp:1001: void toggleLanguage(){keyboardRussian=!keyboardRussian;Preferences p;if(p.begin(\"meshmesh-ui\",false)){p.putBool(\"kb_ru\",keyboardRussian);p.end();}notice(keyboardRussian?t(\"Input: Russian (phonetic)\"):t(\"Input: English\"))"
+   "src/UiChannels.inc:138: String label=i==InfoInvite?t(\"No chat contacts\"):deleteArmed?t(\"Sure? OK again\"):t(\"Leave channel\");",
+   "src/UiChannels.inc:196: case MenuInvite:name=t(\"Invite\");value=people?String(list[inviteTo]->name):String(t(\"No chat contacts\"));pick=people>1;break;"
   ]
  },
  "b034b9e4": {
@@ -11296,7 +11215,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1117: else if(page==Radio&&selected==RowPrev){if(!config.trial.set()&&!config.previous.set()){notice(t(\"No previous settings\"),dim);return;}",
+   "src/Ui.cpp:1089: else if(page==Radio&&selected==RowPrev){if(!config.trial.set()&&!config.previous.set()){notice(t(\"No previous settings\"),dim);return;}",
    "src/UiHeltec.cpp:305: case RowPrev:{if(!config.trial.set()&&!config.previous.set()){notice(t(\"No previous settings\"));break;}"
   ]
  },
@@ -11335,7 +11254,7 @@
   ],
   "where": [
    "src/Ui.cpp:867: if(r.saved||r.open){if(!r.saved&&!internet.save(r.ssid,\"\")){notice(netError(),bad);return;}internet.connectTo(r.ssid);notice(t(\"Connecting to \")+r.ssid);return;}",
-   "src/Ui.cpp:1060: if(editing){if(key==KeyBack){editing=false;return;}if(key==Erase){edit.remove(meshmesh::previousCharacter(edit.c_str(),edit.length()));return;}if(key==KeyRight&&page!=Network){toggleLastCase(edit);return;}if(key==Enter){"
+   "src/Ui.cpp:1032: if(editing){if(key==KeyBack){editing=false;return;}if(key==Erase){edit.remove(meshmesh::previousCharacter(edit.c_str(),edit.length()));return;}if(key==KeyRight&&page!=Network){toggleLastCase(edit);return;}if(key==Enter){"
   ]
  },
  "b13772cd": {
@@ -11345,7 +11264,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1132: armed=0;String r=executeCommand(\"fsformat\");bool done=r.startsWith(\"OK\");if(done)executeCommand(\"restart\");notice(done?t(\"Storage created, restart\"):r,done?ok:bad);}",
+   "src/Ui.cpp:1103: armed=0;String r=executeCommand(\"fsformat\");bool done=r.startsWith(\"OK\");if(done)executeCommand(\"restart\");notice(done?t(\"Storage created, restart\"):r,done?ok:bad);}",
    "src/UiHeltec.cpp:499: armed=0;String r=executeCommand(\"fsformat\");if(r.startsWith(\"OK\"))executeCommand(\"restart\");notice(r.startsWith(\"OK\")?t(\"Storage created, restart\"):r);break;}"
   ]
  },
@@ -11368,22 +11287,13 @@
    "src/Ui.cpp:678: String powerOnHint(){return powerOnWay()>=0?t(\"To turn on, hold the trackball pressed\"):t(\"To turn on: RESET or the power switch\");}"
   ]
  },
- "b22029b7": {
-  "cells": 14,
-  "families": [
-   "full"
-  ],
-  "where": [
-   "src/UiChannels.inc:199: case MenuKeyboard:name=t(\"Input language\");value=keyboardRussian?t(\"Russian\"):t(\"English\");pick=true;break;"
-  ]
- },
  "b265628f": {
   "cells": 26,
   "families": [
    "full"
   ],
   "where": [
-   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language; typing layout is the @ key\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s"
+   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s\");case 5:return t(\"0 = off,"
   ]
  },
  "b27e31e1": {
@@ -11401,7 +11311,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1042: deleteArmed=false;if(meshRadio.removeContact(p->id)){notice(t(\"Contact removed; its next advert adds it again\"),ok);change(Nodes);}else notice(t(\"Cannot remove while sending\"),bad);break;"
+   "src/Ui.cpp:1016: deleteArmed=false;if(meshRadio.removeContact(p->id)){notice(t(\"Contact removed; its next advert adds it again\"),ok);change(Nodes);}else notice(t(\"Cannot remove while sending\"),bad);break;"
   ]
  },
  "b2afe8d6": {
@@ -11437,7 +11347,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:942: textRight(294,160,String(edit.length())+\"/\"+String(key?64:page==Radio||regionEditPage()?int(regions::NameBytes):page==ChannelAdd?channelEditLimit():page==ServerHome?serverEditLimit():page==Remote?remoteEditLimit():pass?6"
+   "src/Ui.cpp:941: textRight(294,160,String(edit.length())+\"/\"+String(key?64:page==Radio||regionEditPage()?int(regions::NameBytes):page==ChannelAdd?channelEditLimit():page==ServerHome?serverEditLimit():page==Remote?remoteEditLimit():pass?6"
   ]
  },
  "b35384c1": {
@@ -11564,7 +11474,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:928: if(!config.lockDetails)text(80,y+32,t(\"Unlock to read\"),dim,small);else if(last)text(80,y+32,fit(t(\"Last from \")+String(last->name),190,small),dim,small);}"
+   "src/Ui.cpp:927: if(!config.lockDetails)text(80,y+32,t(\"Unlock to read\"),dim,small);else if(last)text(80,y+32,fit(t(\"Last from \")+String(last->name),190,small),dim,small);}"
   ]
  },
  "b571cd87": {
@@ -11684,7 +11594,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:129: if(!c){textCenter(160,110,t(\"Channel removed\"),dim);footer({{\"BACK\",t(\"Back\")}});return;}"
+   "src/UiChannels.inc:128: if(!c){textCenter(160,110,t(\"Channel removed\"),dim);footer({{\"BACK\",t(\"Back\")}});return;}"
   ]
  },
  "b8297e9a": {
@@ -11761,6 +11671,15 @@
    "src/UiHeltec.cpp:542: case ActCalibrate:if(radar.beaconHeard()){radar.calibrate();notice(t(\"Calibrating 10 s\"));}else notice(t(\"No beacon heard\"));break;"
   ]
  },
+ "b90c5184": {
+  "cells": 32,
+  "families": [
+   "full"
+  ],
+  "where": [
+   "src/Ui.cpp:914: {\"OK\",t(\"Open / send; twice or hold: unlock\")},{\"→\",t(\"in text, after a letter: capital\")}};"
+  ]
+ },
  "b91121f9": {
   "cells": 12,
   "families": [
@@ -11785,7 +11704,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1101: if(page==Motion&&(key=='b'||key=='B')){csiBeaconRole=!csiBeaconRole;radar.setCsi(csiBeaconRole?Radar::CsiBeacon:Radar::CsiSensor);notice(csiBeaconRole?t(\"This board is now the beacon\"):t(\"This board is now the sensor\"));"
+   "src/Ui.cpp:1073: if(page==Motion&&(key=='b'||key=='B')){csiBeaconRole=!csiBeaconRole;radar.setCsi(csiBeaconRole?Radar::CsiBeacon:Radar::CsiSensor);notice(csiBeaconRole?t(\"This board is now the beacon\"):t(\"This board is now the sensor\"));"
   ]
  },
  "b97b4b16": {
@@ -11812,7 +11731,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1060: if(editing){if(key==KeyBack){editing=false;return;}if(key==Erase){edit.remove(meshmesh::previousCharacter(edit.c_str(),edit.length()));return;}if(key==KeyRight&&page!=Network){toggleLastCase(edit);return;}if(key==Enter){"
+   "src/Ui.cpp:1032: if(editing){if(key==KeyBack){editing=false;return;}if(key==Erase){edit.remove(meshmesh::previousCharacter(edit.c_str(),edit.length()));return;}if(key==KeyRight&&page!=Network){toggleLastCase(edit);return;}if(key==Enter){"
   ]
  },
  "b99537d1": {
@@ -11896,7 +11815,7 @@
   ],
   "where": [
    "src/UiChannels.inc:62: if(h.name[0]){name=h.name;detail=t(\"Heard on air: \")+heard+t(\" · OK: join\");}",
-   "src/UiChannels.inc:87: if(addStep==AddTag){int n=meshRadio.heardSamples?meshRadio.probeHashtag(edit):0;if(n>0)return t(\"Heard on air: \")+count(n,\"message\",\"messages\");return t(\"Same #name, same channel as in MeshCore apps\");}"
+   "src/UiChannels.inc:86: if(addStep==AddTag){int n=meshRadio.heardSamples?meshRadio.probeHashtag(edit):0;if(n>0)return t(\"Heard on air: \")+count(n,\"message\",\"messages\");return t(\"Same #name, same channel as in MeshCore apps\");}"
   ]
  },
  "baebeb12": {
@@ -11969,7 +11888,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:220: bool saved=r.startsWith(\"OK\");notice(saved?(c->policy.sound?t(\"Sound on\"):t(\"Sound off\")):r,saved?ok:bad);}"
+   "src/UiChannels.inc:217: bool saved=r.startsWith(\"OK\");notice(saved?(c->policy.sound?t(\"Sound on\"):t(\"Sound off\")):r,saved?ok:bad);}"
   ]
  },
  "bc54749c": {
@@ -11996,7 +11915,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:192: textCenter(160,y+16,!n?t(\"No messages\"):deleteArmed?t(\"Sure? OK again\"):t(\"Erase messages\")+\" (\"+String(n)+\")\",n?(focus?bg:ink):dim,bold);continue;}"
+   "src/UiChannels.inc:190: textCenter(160,y+16,!n?t(\"No messages\"):deleteArmed?t(\"Sure? OK again\"):t(\"Erase messages\")+\" (\"+String(n)+\")\",n?(focus?bg:ink):dim,bold);continue;}"
   ]
  },
  "bd1a4b8e": {
@@ -12015,7 +11934,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:930: else if(!chess)textCenter(160,166,meshRadio.ready?(config.role==RoleRepeater?t(\"The repeater keeps relaying\"):config.role==RoleRoom?t(\"The room keeps serving members\"):t(\"Radio and GPS keep working\")):t(\"Radio error\"),me",
+   "src/Ui.cpp:929: else if(!chess)textCenter(160,166,meshRadio.ready?(config.role==RoleRepeater?t(\"The repeater keeps relaying\"):config.role==RoleRoom?t(\"The room keeps serving members\"):t(\"Radio and GPS keep working\")):t(\"Radio error\"),me",
    "src/UiHeltec.cpp:685: say(0,21,roleShort(config.role),bold);if(meshRadio.ready)sayRight(128,20,String(config.frequency,3)+t(\" MHz\"));else sayRight(128,20,hardware.fsOk?t(\"Radio error\"):t(\"No storage\"));"
   ]
  },
@@ -12046,15 +11965,6 @@
    "src/UiHeltec.cpp:450: case ActRole:return t(\"Device mode...\");case ActForward:return meshServer.view().forwarding?t(\"Forwarding: off\"):t(\"Forwarding: on\");"
   ]
  },
- "bdc27b6b": {
-  "cells": 33,
-  "families": [
-   "full"
-  ],
-  "where": [
-   "src/Ui.cpp:897: switch(k){case 0:return \"-\";case KeyMsg:return \"MSG\";case KeyHome:return \"HOME\";case KeyAt:return t(\"@ (chat settings, input language)\");case KeyAdv:return \"ADV\";case 0x87:return t(\"hold ADV (GPS)\");case KeyMap:return \"M"
-  ]
- },
  "bdce7edc": {
   "cells": 10,
   "families": [
@@ -12079,9 +11989,9 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:139: String label=i==InfoInvite?t(\"No chat contacts\"):deleteArmed?t(\"Sure? OK again\"):t(\"Leave channel\");",
-   "src/UiChannels.inc:192: textCenter(160,y+16,!n?t(\"No messages\"):deleteArmed?t(\"Sure? OK again\"):t(\"Erase messages\")+\" (\"+String(n)+\")\",n?(focus?bg:ink):dim,bold);continue;}",
-   "src/UiChannels.inc:201: case MenuLeave:name=deleteArmed?t(\"Sure? OK again\"):t(\"Leave channel\");color=focus?(deleteArmed?bad:ink):bad;break;"
+   "src/UiChannels.inc:138: String label=i==InfoInvite?t(\"No chat contacts\"):deleteArmed?t(\"Sure? OK again\"):t(\"Leave channel\");",
+   "src/UiChannels.inc:190: textCenter(160,y+16,!n?t(\"No messages\"):deleteArmed?t(\"Sure? OK again\"):t(\"Erase messages\")+\" (\"+String(n)+\")\",n?(focus?bg:ink):dim,bold);continue;}",
+   "src/UiChannels.inc:198: case MenuLeave:name=deleteArmed?t(\"Sure? OK again\"):t(\"Leave channel\");color=focus?(deleteArmed?bad:ink):bad;break;"
   ]
  },
  "be5190d8": {
@@ -12099,7 +12009,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:942: textRight(294,160,String(edit.length())+\"/\"+String(key?64:page==Radio||regionEditPage()?int(regions::NameBytes):page==ChannelAdd?channelEditLimit():page==ServerHome?serverEditLimit():page==Remote?remoteEditLimit():pass?6"
+   "src/Ui.cpp:941: textRight(294,160,String(edit.length())+\"/\"+String(key?64:page==Radio||regionEditPage()?int(regions::NameBytes):page==ChannelAdd?channelEditLimit():page==ServerHome?serverEditLimit():page==Remote?remoteEditLimit():pass?6"
   ]
  },
  "be821266": {
@@ -12173,7 +12083,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1123: else if(page==Network){if(selected==0)portalToggle();if(selected==1){if(config.role!=RoleNormal)notice(t(\"Internet over Wi-Fi is off in this mode\"),warn);else change(NetList);}if(selected==2)bleToggle();if(selected==3)no"
+   "src/Ui.cpp:1095: else if(page==Network){if(selected==0)portalToggle();if(selected==1){if(config.role!=RoleNormal)notice(t(\"Internet over Wi-Fi is off in this mode\"),warn);else change(NetList);}if(selected==2)bleToggle();if(selected==3)no"
   ]
  },
  "c00bf080": {
@@ -12239,7 +12149,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:927: panel(40,y,240,40,card,8);icon(IcMail,62,y+20,9,warn,card);text(80,y+16,count(n,\"new message\",\"new messages\"),ink,bold);"
+   "src/Ui.cpp:926: panel(40,y,240,40,card,8);icon(IcMail,62,y+20,9,warn,card);text(80,y+16,count(n,\"new message\",\"new messages\"),ink,bold);"
   ]
  },
  "c0de6b7d": {
@@ -12373,8 +12283,8 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:445: if(left.length())footer({{\"OK\",t(\"Send\")},{\"<\",left},{t(\"hold OK\").c_str(),t(\"Layout\")},{\"BACK\",t(\"Back\")}});",
-   "src/Ui.cpp:446: else footer({{\"OK\",t(\"Send\")},{\"@\",t(\"Settings\")},{t(\"hold OK\").c_str(),t(\"Layout\")},{\"BACK\",t(\"Back\")}});",
+   "src/Ui.cpp:445: if(left.length())footer({{\"OK\",t(\"Send\")},{\"<\",left},{\"BACK\",t(\"Back\")}});",
+   "src/Ui.cpp:446: else footer({{\"OK\",t(\"Send\")},{\"@\",t(\"Settings\")},{\"BACK\",t(\"Back\")}});",
    "src/Ui.cpp:507: footer({{\"OK\",t(\"Details\")},{\"P\",t(\"On map\")},{\"ADV\",t(\"Announce\")},{\"BACK\",t(\"Back\")}});"
   ]
  },
@@ -12451,8 +12361,8 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:160: if(meshRadio.removeChannel(id)){notice(t(\"Left \")+name,ok);change(Threads);}else notice(t(\"Cannot leave while sending\"),bad);",
-   "src/UiChannels.inc:241: if(row==MenuLeave){String name=c->name;if(meshRadio.removeChannel(c->id)){notice(t(\"Left \")+name,ok);change(Threads);}else notice(t(\"Cannot leave while sending\"),bad);return;}"
+   "src/UiChannels.inc:159: if(meshRadio.removeChannel(id)){notice(t(\"Left \")+name,ok);change(Threads);}else notice(t(\"Cannot leave while sending\"),bad);",
+   "src/UiChannels.inc:237: if(row==MenuLeave){String name=c->name;if(meshRadio.removeChannel(c->id)){notice(t(\"Left \")+name,ok);change(Threads);}else notice(t(\"Cannot leave while sending\"),bad);return;}"
   ]
  },
  "c46acb0f": {
@@ -13146,7 +13056,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1083: discardArmed=millis();selected=settingRows()-1;notice(t(\"Unsaved: OK saves, BACK discards\"),warn);return;}"
+   "src/Ui.cpp:1055: discardArmed=millis();selected=settingRows()-1;notice(t(\"Unsaved: OK saves, BACK discards\"),warn);return;}"
   ]
  },
  "cf9116f2": {
@@ -13164,7 +13074,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1128: else if(page==Motion){if(radar.csi==Radar::CsiSensor&&radar.beaconHeard()){radar.calibrate();notice(t(\"Calibrating: keep the area still for 10 s\"),info);}else notice(t(\"Needs a heard beacon\"),warn);}"
+   "src/Ui.cpp:1099: else if(page==Motion){if(radar.csi==Radar::CsiSensor&&radar.beaconHeard()){radar.calibrate();notice(t(\"Calibrating: keep the area still for 10 s\"),info);}else notice(t(\"Needs a heard beacon\"),warn);}"
   ]
  },
  "d08919c3": {
@@ -13260,8 +13170,8 @@
   ],
   "where": [
    "src/Ui.cpp:799: else if(page==Radio&&selected==RowRegion)footer({{\"<>\",t(\"Found\")},{\"OK\",t(\"Type\")},{\"BACK\",t(\"Cancel\")}});",
-   "src/UiChannels.inc:141: if(selected==InfoRegion)footer({{\"<>\",t(\"Region\")},{\"OK\",regionChoice==c->region?t(\"Type\"):t(\"Save\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});",
-   "src/UiChannels.inc:213: if(row==MenuScope)footer({{\"<>\",t(\"Region\")},{\"OK\",regionChoice==c->region?t(\"Type\"):t(\"Save\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
+   "src/UiChannels.inc:140: if(selected==InfoRegion)footer({{\"<>\",t(\"Region\")},{\"OK\",regionChoice==c->region?t(\"Type\"):t(\"Save\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});",
+   "src/UiChannels.inc:210: if(row==MenuScope)footer({{\"<>\",t(\"Region\")},{\"OK\",regionChoice==c->region?t(\"Type\"):t(\"Save\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
   ]
  },
  "d174bc31": {
@@ -13316,7 +13226,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1060: if(editing){if(key==KeyBack){editing=false;return;}if(key==Erase){edit.remove(meshmesh::previousCharacter(edit.c_str(),edit.length()));return;}if(key==KeyRight&&page!=Network){toggleLastCase(edit);return;}if(key==Enter){",
+   "src/Ui.cpp:1032: if(editing){if(key==KeyBack){editing=false;return;}if(key==Erase){edit.remove(meshmesh::previousCharacter(edit.c_str(),edit.length()));return;}if(key==KeyRight&&page!=Network){toggleLastCase(edit);return;}if(key==Enter){",
    "src/UiDice.inc:392: case EditName:if(diceSel<int(count)&&dicer.editRoll(diceSel,dicer.sheet.block[block].formula,edit)){editing=false;notice(t(\"Name saved\"),ok);}else bad1(nameError);return;",
    "src/UiDice.inc:397: default:if(dicer.renameCharacter(edit)){editing=false;notice(t(\"Name saved\"),ok);}else bad1(nameError);return;"
   ]
@@ -13358,7 +13268,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:943: else if(pass)text(26,160,t(\"8-63 characters; -> after a letter: capital\"),faint,small);else if(!key)text(26,160,keyboardRussian?\"RU\":\"EN\",accent,small);"
+   "src/Ui.cpp:942: else if(pass)text(26,160,t(\"8-63 characters; -> after a letter: capital\"),faint,small);"
   ]
  },
  "d24c9257": {
@@ -13434,7 +13344,7 @@
   ],
   "where": [
    "src/Ui.cpp:314: {IcChat,accent,t(\"Chats\"),unreadCount?String():count(meshRadio.historyCount,\"message\",\"messages\"),unreadCount},",
-   "src/UiChannels.inc:87: if(addStep==AddTag){int n=meshRadio.heardSamples?meshRadio.probeHashtag(edit):0;if(n>0)return t(\"Heard on air: \")+count(n,\"message\",\"messages\");return t(\"Same #name, same channel as in MeshCore apps\");}"
+   "src/UiChannels.inc:86: if(addStep==AddTag){int n=meshRadio.heardSamples?meshRadio.probeHashtag(edit):0;if(n>0)return t(\"Heard on air: \")+count(n,\"message\",\"messages\");return t(\"Same #name, same channel as in MeshCore apps\");}"
   ]
  },
  "d3d3b3f9": {
@@ -13452,7 +13362,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1090: if(page==Chat){if(key==Enter){if(meshRadio.sendMessage(composer,recipient)){composer=\"\";chatOffset=0;notice(t(\"Message queued\"));}else notice(t(\"Cannot send: empty, full queue or radio\"),bad);return;}if(key==Erase){compo"
+   "src/Ui.cpp:1062: if(page==Chat){if(key==Enter){if(meshRadio.sendMessage(composer,recipient)){composer=\"\";chatOffset=0;notice(t(\"Message queued\"));}else notice(t(\"Cannot send: empty, full queue or radio\"),bad);return;}if(key==Erase){compo"
   ]
  },
  "d4372516": {
@@ -13615,7 +13525,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:214: else if(row==MenuErase||row==MenuLeave)footer({{\"OK\",deleteArmed?(row==MenuErase?t(\"Erase\"):t(\"Leave\")):t(\"Confirm...\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
+   "src/UiChannels.inc:211: else if(row==MenuErase||row==MenuLeave)footer({{\"OK\",deleteArmed?(row==MenuErase?t(\"Erase\"):t(\"Leave\")):t(\"Confirm...\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
   ]
  },
  "d7972182": {
@@ -13692,7 +13602,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:209: String hint=row==MenuScope?t(\"Repeaters relay this channel within this region\"):row==MenuSound?t(\"Beep when a message arrives in this channel\"):"
+   "src/UiChannels.inc:206: String hint=row==MenuScope?t(\"Repeaters relay this channel within this region\"):row==MenuSound?t(\"Beep when a message arrives in this channel\"):"
   ]
  },
  "d8a74f8c": {
@@ -13701,7 +13611,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:86: if(addStep==AddKey)return t(\"32 hex digits or base64 (16 bytes)\");"
+   "src/UiChannels.inc:85: if(addStep==AddKey)return t(\"32 hex digits or base64 (16 bytes)\");"
   ]
  },
  "d8b69508": {
@@ -13766,7 +13676,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:124: String rows[3];unsigned n=wrap(channels::isPublic(c->secret)?t(\"Every MeshCore node has it\"):t(\"Scan with MeshMesh or the MeshCore app\"),rows,lines,w,small);"
+   "src/UiChannels.inc:123: String rows[3];unsigned n=wrap(channels::isPublic(c->secret)?t(\"Every MeshCore node has it\"):t(\"Scan with MeshMesh or the MeshCore app\"),rows,lines,w,small);"
   ]
  },
  "d94acbf3": {
@@ -13859,8 +13769,8 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1157: String eventLabel(const String& value){if(value.startsWith(\"New message from \"))return tr(\"New message from \")+value.substring(17);if(value.startsWith(\"Delivered to \"))return tr(\"Delivered to \")+value.substring(13);if(va",
-   "src/Ui.cpp:1161: if(notifications::enabled(notifications::mode(notification.message,config.notifyPopup,2),notification.mention)&&page!=DiceView&&page!=PeopleView)notice(t(\"New message from \")+notification.message.name,accent);dirty=true;"
+   "src/Ui.cpp:1127: String eventLabel(const String& value){if(value.startsWith(\"New message from \"))return tr(\"New message from \")+value.substring(17);if(value.startsWith(\"Delivered to \"))return tr(\"Delivered to \")+value.substring(13);if(va",
+   "src/Ui.cpp:1131: if(notifications::enabled(notifications::mode(notification.message,config.notifyPopup,2),notification.mention)&&page!=DiceView&&page!=PeopleView)notice(t(\"New message from \")+notification.message.name,accent);dirty=true;"
   ]
  },
  "da4d03d0": {
@@ -13878,7 +13788,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1129: else if(page==Homing){radarSound=!radarSound;notice(radarSound?(config.sound?t(\"Ping on\"):t(\"Device sound is off in settings\")):t(\"Ping off\"),radarSound&&!config.sound?warn:dim);}"
+   "src/Ui.cpp:1100: else if(page==Homing){radarSound=!radarSound;notice(radarSound?(config.sound?t(\"Ping on\"):t(\"Device sound is off in settings\")):t(\"Ping off\"),radarSound&&!config.sound?warn:dim);}"
   ]
  },
  "da95505d": {
@@ -13946,9 +13856,9 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1021: notice(done?t(\"Radio test: a restart returns the saved one\"):r.startsWith(\"ERR radio busy\")?t(\"Radio busy, retry\"):r.substring(4),done?ok:bad);return;}",
-   "src/Ui.cpp:1022: if(!netfind::start(all))notice(meshRadio.busy()||regions::searching()?t(\"Radio busy, retry\"):t(\"Radio offline\"),bad);",
-   "src/Ui.cpp:1119: notice(done?t(\"Radio settings changed\"):r.startsWith(\"ERR radio busy\")?t(\"Radio busy, retry\"):r.substring(4),done?ok:bad);}"
+   "src/Ui.cpp:995: notice(done?t(\"Radio test: a restart returns the saved one\"):r.startsWith(\"ERR radio busy\")?t(\"Radio busy, retry\"):r.substring(4),done?ok:bad);return;}",
+   "src/Ui.cpp:996: if(!netfind::start(all))notice(meshRadio.busy()||regions::searching()?t(\"Radio busy, retry\"):t(\"Radio offline\"),bad);",
+   "src/Ui.cpp:1091: notice(done?t(\"Radio settings changed\"):r.startsWith(\"ERR radio busy\")?t(\"Radio busy, retry\"):r.substring(4),done?ok:bad);}"
   ]
  },
  "dbed3588": {
@@ -14087,7 +13997,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:944: text(26,175,page==DiceView?diceEditOk():page==ChannelAdd?channelEditOk():page==Remote?(remoteEdit==EditPassword?t(\"OK: log in   BACK: cancel\"):t(\"OK: send   BACK: cancel\")):serverPostEdit()?t(\"OK: post   BACK: cancel\"):t",
+   "src/Ui.cpp:943: text(26,175,page==DiceView?diceEditOk():page==ChannelAdd?channelEditOk():page==Remote?(remoteEdit==EditPassword?t(\"OK: log in   BACK: cancel\"):t(\"OK: send   BACK: cancel\")):serverPostEdit()?t(\"OK: post   BACK: cancel\"):t",
    "src/UiDice.inc:377: String diceEditOk(){return diceEditing==EditQuick?t(\"OK: roll   BACK: cancel\"):diceEditing==EditNewFormula||diceEditing==EditHeroNew?t(\"OK: next   BACK: cancel\"):t(\"OK: save   BACK: cancel\");}"
   ]
  },
@@ -14201,7 +14111,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:942: textRight(294,160,String(edit.length())+\"/\"+String(key?64:page==Radio||regionEditPage()?int(regions::NameBytes):page==ChannelAdd?channelEditLimit():page==ServerHome?serverEditLimit():page==Remote?remoteEditLimit():pass?6"
+   "src/Ui.cpp:941: textRight(294,160,String(edit.length())+\"/\"+String(key?64:page==Radio||regionEditPage()?int(regions::NameBytes):page==ChannelAdd?channelEditLimit():page==ServerHome?serverEditLimit():page==Remote?remoteEditLimit():pass?6"
   ]
  },
  "e064f184": {
@@ -14259,7 +14169,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:930: else if(!chess)textCenter(160,166,meshRadio.ready?(config.role==RoleRepeater?t(\"The repeater keeps relaying\"):config.role==RoleRoom?t(\"The room keeps serving members\"):t(\"Radio and GPS keep working\")):t(\"Radio error\"),me"
+   "src/Ui.cpp:929: else if(!chess)textCenter(160,166,meshRadio.ready?(config.role==RoleRepeater?t(\"The repeater keeps relaying\"):config.role==RoleRoom?t(\"The room keeps serving members\"):t(\"Radio and GPS keep working\")):t(\"Radio error\"),me"
   ]
  },
  "e0e43e2f": {
@@ -14415,7 +14325,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1133: else if(page==Diagnostics){hardware.beep();bool passed=meshRadio.selfTest();notice(passed?t(\"Encryption test passed\"):t(\"Encryption test failed\"),passed?ok:bad);}}"
+   "src/Ui.cpp:1104: else if(page==Diagnostics){hardware.beep();bool passed=meshRadio.selfTest();notice(passed?t(\"Encryption test passed\"):t(\"Encryption test failed\"),passed?ok:bad);}}"
   ]
  },
  "e293666b": {
@@ -14561,7 +14471,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1157: String eventLabel(const String& value){if(value.startsWith(\"New message from \"))return tr(\"New message from \")+value.substring(17);if(value.startsWith(\"Delivered to \"))return tr(\"Delivered to \")+value.substring(13);if(va",
+   "src/Ui.cpp:1127: String eventLabel(const String& value){if(value.startsWith(\"New message from \"))return tr(\"New message from \")+value.substring(17);if(value.startsWith(\"Delivered to \"))return tr(\"Delivered to \")+value.substring(13);if(va",
    "src/UiDice.inc:335: const auto& o=dicer.out;if(o.parts){String st=o.done?t(\"Delivered to \")+o.name:o.failed?t(\"Not delivered to \")+o.name:t(\"Sending: part \")+String(o.part+1)+\"/\"+String(o.parts);text(18,208,fit(st,284,small),o.failed?bad:o."
   ]
  },
@@ -14580,7 +14490,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:211: row==MenuKeyboard?t(\"Also: two spaces in the message\"):row==MenuLeave?t(\"History stays; joining again shows it\"):t(\"This chat only, on this device\");"
+   "src/UiChannels.inc:208: row==MenuLeave?t(\"History stays; joining again shows it\"):t(\"This chat only, on this device\");"
   ]
  },
  "e53fd3e9": {
@@ -14590,15 +14500,6 @@
   ],
   "where": [
    "src/UiTour.inc:125: if(dispute)footer({{\"W\",t(\"1-0\")},{\"B\",\"0-1\"},{\"D\",\"1/2\"},{\"BACK\",t(\"Back\")}});"
-  ]
- },
- "e55ac8a8": {
-  "cells": 56,
-  "families": [
-   "full"
-  ],
-  "where": [
-   "src/Ui.cpp:1013: text(16,208,t(\"2x space: RU/EN   Shift or Right after a letter: capital\"),dim,small);"
   ]
  },
  "e55ee2b1": {
@@ -14795,7 +14696,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1067: if(key==KeyHome){change(homePage());return;}if(config.role!=RoleNormal&&(key==KeyMsg||key==KeyMap)){notice(t(\"Not in this mode: Settings > Device mode\"),warn);return;}if(key==KeyMsg){change(Threads);return;}if(key==KeyMa",
+   "src/Ui.cpp:1039: if(key==KeyHome){change(homePage());return;}if(config.role!=RoleNormal&&(key==KeyMsg||key==KeyMap)){notice(t(\"Not in this mode: Settings > Device mode\"),warn);return;}if(key==KeyMsg){change(Threads);return;}if(key==KeyMa",
    "src/UiServer.inc:107: case RowAnnounce:{bool sent=meshServer.advertise(true);notice(sent?t(\"Announced to the network\"):t(\"Announcement failed\"),sent?ok:bad);break;}",
    "src/UiHeltec.cpp:523: case ActAdvert:notice(meshRadio.sendHello()?t(\"Node announced\"):t(\"Announcement failed\"));break;"
   ]
@@ -14995,7 +14896,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:209: String hint=row==MenuScope?t(\"Repeaters relay this channel within this region\"):row==MenuSound?t(\"Beep when a message arrives in this channel\"):"
+   "src/UiChannels.inc:206: String hint=row==MenuScope?t(\"Repeaters relay this channel within this region\"):row==MenuSound?t(\"Beep when a message arrives in this channel\"):"
   ]
  },
  "eb38bf4c": {
@@ -15120,7 +15021,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:243: notice(n?t(\"Messages erased: \")+String(n):t(\"Messages being sent stay\"),n?ok:warn);"
+   "src/UiChannels.inc:239: notice(n?t(\"Messages erased: \")+String(n):t(\"Messages being sent stay\"),n?ok:warn);"
   ]
  },
  "ecf0c048": {
@@ -15174,7 +15075,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language; typing layout is the @ key\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s"
+   "src/Ui.cpp:735: switch(i){case 0:return t(\"OK: edit, 1-24 UTF-8 bytes\");case 1:return t(\"Menu language\");case 2:return \"10-255\";case 3:return t(\"Tone for messages and ACKs\");case 4:return t(\"0 = off, 30-600 s\");case 5:return t(\"0 = off,"
   ]
  },
  "edaf9d4d": {
@@ -15183,7 +15084,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:136: textCenter(cx,ry+9,region?(regionChoice==c->region?t(\"Region\"):t(\"Region · OK: save\")):t(\"Invite\"),region&&regionChoice!=c->region?accent:dim,small);"
+   "src/UiChannels.inc:135: textCenter(cx,ry+9,region?(regionChoice==c->region?t(\"Region\"):t(\"Region · OK: save\")):t(\"Invite\"),region&&regionChoice!=c->region?accent:dim,small);"
   ]
  },
  "edb4989b": {
@@ -15238,9 +15139,9 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1060: if(editing){if(key==KeyBack){editing=false;return;}if(key==Erase){edit.remove(meshmesh::previousCharacter(edit.c_str(),edit.length()));return;}if(key==KeyRight&&page!=Network){toggleLastCase(edit);return;}if(key==Enter){",
-   "src/UiChannels.inc:146: else notice(t(\"Region: letters, digits, '-'\"),bad);",
-   "src/UiChannels.inc:164: String r=regions::normalize(edit);if(edit.length()&&!r.length()){notice(t(\"Region: letters, digits, '-'\"),bad);return;}"
+   "src/Ui.cpp:1032: if(editing){if(key==KeyBack){editing=false;return;}if(key==Erase){edit.remove(meshmesh::previousCharacter(edit.c_str(),edit.length()));return;}if(key==KeyRight&&page!=Network){toggleLastCase(edit);return;}if(key==Enter){",
+   "src/UiChannels.inc:145: else notice(t(\"Region: letters, digits, '-'\"),bad);",
+   "src/UiChannels.inc:163: String r=regions::normalize(edit);if(edit.length()&&!r.length()){notice(t(\"Region: letters, digits, '-'\"),bad);return;}"
   ]
  },
  "f04456b0": {
@@ -15385,9 +15286,9 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:445: if(left.length())footer({{\"OK\",t(\"Send\")},{\"<\",left},{t(\"hold OK\").c_str(),t(\"Layout\")},{\"BACK\",t(\"Back\")}});",
-   "src/Ui.cpp:446: else footer({{\"OK\",t(\"Send\")},{\"@\",t(\"Settings\")},{t(\"hold OK\").c_str(),t(\"Layout\")},{\"BACK\",t(\"Back\")}});",
-   "src/UiChannels.inc:216: else if(row==MenuInvite)footer({{\"<>\",t(\"Contact\")},{\"OK\",t(\"Send\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
+   "src/Ui.cpp:445: if(left.length())footer({{\"OK\",t(\"Send\")},{\"<\",left},{\"BACK\",t(\"Back\")}});",
+   "src/Ui.cpp:446: else footer({{\"OK\",t(\"Send\")},{\"@\",t(\"Settings\")},{\"BACK\",t(\"Back\")}});",
+   "src/UiChannels.inc:213: else if(row==MenuInvite)footer({{\"<>\",t(\"Contact\")},{\"OK\",t(\"Send\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
   ]
  },
  "f2d8afbf": {
@@ -15437,8 +15338,8 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1157: String eventLabel(const String& value){if(value.startsWith(\"New message from \"))return tr(\"New message from \")+value.substring(17);if(value.startsWith(\"Delivered to \"))return tr(\"Delivered to \")+value.substring(13);if(va",
-   "src/Ui.cpp:1161: if(notifications::enabled(notifications::mode(notification.message,config.notifyPopup,2),notification.mention)&&page!=DiceView&&page!=PeopleView)notice(t(\"New message from \")+notification.message.name,accent);dirty=true;"
+   "src/Ui.cpp:1127: String eventLabel(const String& value){if(value.startsWith(\"New message from \"))return tr(\"New message from \")+value.substring(17);if(value.startsWith(\"Delivered to \"))return tr(\"Delivered to \")+value.substring(13);if(va",
+   "src/Ui.cpp:1131: if(notifications::enabled(notifications::mode(notification.message,config.notifyPopup,2),notification.mention)&&page!=DiceView&&page!=PeopleView)notice(t(\"New message from \")+notification.message.name,accent);dirty=true;"
   ]
  },
  "f3c339a3": {
@@ -15519,7 +15420,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:944: text(26,175,page==DiceView?diceEditOk():page==ChannelAdd?channelEditOk():page==Remote?(remoteEdit==EditPassword?t(\"OK: log in   BACK: cancel\"):t(\"OK: send   BACK: cancel\")):serverPostEdit()?t(\"OK: post   BACK: cancel\"):t"
+   "src/Ui.cpp:943: text(26,175,page==DiceView?diceEditOk():page==ChannelAdd?channelEditOk():page==Remote?(remoteEdit==EditPassword?t(\"OK: log in   BACK: cancel\"):t(\"OK: send   BACK: cancel\")):serverPostEdit()?t(\"OK: post   BACK: cancel\"):t"
   ]
  },
  "f4c7c7b2": {
@@ -15574,7 +15475,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:441: else{d.fillRect(14,boxY+5,2,12,accent);text(20,boxY+15,t(\"Message...\"),faint);textRight(306,boxY+15,t(\"2x space: RU/EN\"),faint,small);}"
+   "src/Ui.cpp:441: else{d.fillRect(14,boxY+5,2,12,accent);text(20,boxY+15,t(\"Message...\"),faint);}"
   ]
  },
  "f5910557": {
@@ -15700,16 +15601,6 @@
    "src/UiRemote.inc:54: case RemTrace:{bool sent=remote::traceTo(p->id);notice(sent?t(\"Trace sent\"):t(\"Not sent: radio or route\"),sent?dim:bad);break;}"
   ]
  },
- "f788421f": {
-  "cells": 6,
-  "families": [
-   "full"
-  ],
-  "where": [
-   "src/Ui.cpp:445: if(left.length())footer({{\"OK\",t(\"Send\")},{\"<\",left},{t(\"hold OK\").c_str(),t(\"Layout\")},{\"BACK\",t(\"Back\")}});",
-   "src/Ui.cpp:446: else footer({{\"OK\",t(\"Send\")},{\"@\",t(\"Settings\")},{t(\"hold OK\").c_str(),t(\"Layout\")},{\"BACK\",t(\"Back\")}});"
-  ]
- },
  "f7f62b49": {
   "cells": 5,
   "families": [
@@ -15817,7 +15708,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:214: else if(row==MenuErase||row==MenuLeave)footer({{\"OK\",deleteArmed?(row==MenuErase?t(\"Erase\"):t(\"Leave\")):t(\"Confirm...\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
+   "src/UiChannels.inc:211: else if(row==MenuErase||row==MenuLeave)footer({{\"OK\",deleteArmed?(row==MenuErase?t(\"Erase\"):t(\"Leave\")):t(\"Confirm...\")},{\"^v\",t(\"Select\")},{\"BACK\",t(\"Back\")}});"
   ]
  },
  "fa81bada": {
@@ -15853,7 +15744,7 @@
    "full"
   ],
   "where": [
-   "src/UiChannels.inc:124: String rows[3];unsigned n=wrap(channels::isPublic(c->secret)?t(\"Every MeshCore node has it\"):t(\"Scan with MeshMesh or the MeshCore app\"),rows,lines,w,small);"
+   "src/UiChannels.inc:123: String rows[3];unsigned n=wrap(channels::isPublic(c->secret)?t(\"Every MeshCore node has it\"):t(\"Scan with MeshMesh or the MeshCore app\"),rows,lines,w,small);"
   ]
  },
  "fae1ce6b": {
@@ -15881,7 +15772,7 @@
    "full"
   ],
   "where": [
-   "src/Ui.cpp:1037: case ActTrace:remoteAction=0;change(Remote);if(!remote::traceTo(p->id))notice(t(\"Not sent: radio or route\"),bad);break;",
+   "src/Ui.cpp:1011: case ActTrace:remoteAction=0;change(Remote);if(!remote::traceTo(p->id))notice(t(\"Not sent: radio or route\"),bad);break;",
    "src/UiRemote.inc:54: case RemTrace:{bool sent=remote::traceTo(p->id);notice(sent?t(\"Trace sent\"):t(\"Not sent: radio or route\"),sent?dim:bad);break;}"
   ]
  },

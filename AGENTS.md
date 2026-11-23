@@ -142,8 +142,7 @@ the site — `tools/web_shots.py` (demo data `tools/web_demo.py`, in CI); `site/
 The site's chess page (`chess/`) is the same page in English and gets the same dictionaries.
 The site installs the firmware with the chosen language: `partitions-<lang>.bin` with a tag at 0x8C00; the tag is applied once.
 `include/Modules.h` (`MM_CHESS`, `MM_PET`, `MM_DICE`, `MM_WARDRIVE`, `MM_CHECKERS`, `MM_SEA`) comes from the upstream
-nRF52 images: both boards build everything. Cyrillic fonts stay in all images: Cyrillic messages arrive over the radio, and the
-phonetic keyboard types them.
+nRF52 images: both boards build everything. Cyrillic fonts stay in all images: Cyrillic messages arrive over the radio.
 
 ## Installation and data safety
 

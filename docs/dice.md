@@ -116,7 +116,7 @@ block chooses it, a second one rolls.
 **The builder on the M9 and T-Deck** (since 0.26.0). On the sheet `E` opens the chosen block, `A` adds a block
 after it. The block's fields are rows: `^` `v` choose a field, `<` `>` change the kind, width, colour, shape,
 rule and the block's place in the sheet at once, `OK` types the name, code, value, maximum, formula, cost and
-description (formulas and codes in Latin as they are, names and descriptions in the RU/EN layout), `DEL` twice
+description (formulas and codes in Latin as they are, names and descriptions as typed), `DEL` twice
 deletes the block, `BACK` returns to the sheet. A new block not touched yet takes the defaults of the new kind
 when its kind changes. The device checks the fields as for the web page; a formula referring to a missing code
 shows "The formula does not compute". On the T-Deck a tap chooses a row, a second tap is `OK`.

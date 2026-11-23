@@ -55,7 +55,7 @@ bool scopeManual=false,csiBeaconRole=false; // radar: selection moved by the use
 uint32_t lastDraw=0,lastInput=0,toastAt=0;String toast,eventSeen;uint16_t toastColor=0;
 int selected=0,chatOffset=0,action=0;
 uint64_t recipient=meshmesh::Broadcast,focusNode=0,focusChannel=0;
-String composer,edit;bool editing=false,dirty=true,keyed=false,locked=false,wakeOnly=false,keyboardRussian=true,deleteArmed=false,layoutHelp=false;uint32_t lastSpace=0;
+String composer,edit;bool editing=false,dirty=true,keyed=false,locked=false,wakeOnly=false,deleteArmed=false;
 Config draft;
 struct ComposerDraft{uint64_t recipient=0;String text;uint32_t touched=0;} drafts[16];
 struct ReadMark{uint64_t id;uint32_t at;} marks[65];unsigned markCount=0;
@@ -418,7 +418,7 @@ void drawChat(){
  auto& d=g();Peer* p=peerOf(recipient);
  const channels::Channel* ch=meshRadio.channel(recipient);
  String sub=channels::isChannel(recipient)?(ch&&!channels::isPublic(ch->secret)&&!channels::isHashtag(*ch)?t("Private channel · senders unverified · no ACK"):t("Open channel · senders unverified · no ACK")):p&&p->type==3?typeText(p->type)+" · "+(remote::find(p->id)&&remote::find(p->id)->login==remote::Done?t("logged in"):t("log in: node card > Server")):p?typeText(p->type)+" · "+pathText(*p)+(p->heard?" · "+ago(millis()-p->seen):String()):t("Not in contacts");
- text(8,33,fit(sub,270,small),dim,small);String lang=keyboardRussian?"RU":"EN";d.fillRoundRect(292,24,22,13,3,keyboardRussian?rgb(0x14524b):line);textCenter(303,34,lang,ink,small);
+ text(8,33,fit(sub,270,small),dim,small);
  String rows[6];unsigned inputRows=max(1u,wrap(composer,rows,6,276));unsigned shown=min(inputRows,3u);int boxH=shown*13+11,boxY=216-boxH;
  int indices[64],total=0;for(unsigned i=0;i<meshRadio.historyCount;i++)if(belongs(meshRadio.history[i],recipient))indices[total++]=i;
  int end=max(0,total-chatOffset),bottom=boxY-5;const int top=41;
@@ -438,12 +438,12 @@ void drawChat(){
  if(chatOffset){String c=String(chatOffset);int w=measure(c,small)+18;d.fillRoundRect(304-w,boxY-19,w,14,7,accent);tri(304-w+7,boxY-12,2,3,bg);text(304-w+12,boxY-8,c,bg,small);}
  panel(8,boxY,304,boxH,card,7);d.drawRoundRect(8,boxY,304,boxH,7,composer.length()?accent:line);
  if(composer.length()){unsigned firstRow=inputRows>3?inputRows-3:0;int cx=14;for(unsigned i=firstRow;i<inputRows;i++)cx=text(14,boxY+14+(i-firstRow)*13,rows[i],ink);d.fillRect(cx+1,boxY+4+(shown-1)*13,2,12,accent);}
- else{d.fillRect(14,boxY+5,2,12,accent);text(20,boxY+15,t("Message..."),faint);textRight(306,boxY+15,t("2x space: RU/EN"),faint,small);}
+ else{d.fillRect(14,boxY+5,2,12,accent);text(20,boxY+15,t("Message..."),faint);}
  unsigned used=composer.length(),limit=meshRadio.messageLimit(recipient);String counter=String(used)+"/"+String(limit);
  textRight(306,boxY+boxH-3,counter,used*10>=limit*9?(used>=limit?bad:warn):faint,small);
  String left=chatLeftAction();
- if(left.length())footer({{"OK",t("Send")},{"<",left},{t("hold OK").c_str(),t("Layout")},{"BACK",t("Back")}});
- else footer({{"OK",t("Send")},{"@",t("Settings")},{t("hold OK").c_str(),t("Layout")},{"BACK",t("Back")}});
+ if(left.length())footer({{"OK",t("Send")},{"<",left},{"BACK",t("Back")}});
+ else footer({{"OK",t("Send")},{"@",t("Settings")},{"BACK",t("Back")}});
 }
 // Map: north-up tiles with HUD chips, own position, node markers and a scale bar.
 void drawMap(){
@@ -732,7 +732,7 @@ String settingHint(int i){
   case RowNet:return netHint();
   case RowFind:return regions::search.count?t("Found: ")+regionsFound():t("Asks repeaters that hear this device");
   case RowPrev:return config.trial.set()?t("A restart returns ")+profileText(config.trial):config.previous.set()?t("OK: return to it"):t("Kept on a change of frequency, BW, SF or CR");}return t("Applied to the radio when saved");}
- switch(i){case 0:return t("OK: edit, 1-24 UTF-8 bytes");case 1:return t("Menu language; typing layout is the @ key");case 2:return "10-255";case 3:return t("Tone for messages and ACKs");case 4:return t("0 = off, 30-600 s");case 5:return t("0 = off, 10-600 s");case 6:return t("Receiver power");case 7:return t("Local time, 15 minute steps");case 8:return t("Status bar: charge estimate or measured voltage");case 9:return t("Chess moves and message senders while locked");}return t("Stored in device memory");
+ switch(i){case 0:return t("OK: edit, 1-24 UTF-8 bytes");case 1:return t("Menu language");case 2:return "10-255";case 3:return t("Tone for messages and ACKs");case 4:return t("0 = off, 30-600 s");case 5:return t("0 = off, 10-600 s");case 6:return t("Receiver power");case 7:return t("Local time, 15 minute steps");case 8:return t("Status bar: charge estimate or measured voltage");case 9:return t("Chess moves and message senders while locked");}return t("Stored in device memory");
 }
 bool draftChanged(){for(int i=0;i<settingRows()-1;i++)if(settingValue(draft,i)!=settingValue(config,i))return true;return false;}
 // Wardrive (Wardrive.h): what it logs, the position it uses, the last ping and the repeaters heard.
@@ -894,7 +894,7 @@ void drawNetList(){
  footer({{"OK",selected==0?t("On/off"):t("Connect")},{"DEL",saved?t("Forget"):t("Rescan")},{"BACK",t("Back")}});
 }
 String keyName(uint32_t k){
- switch(k){case 0:return "-";case KeyMsg:return "MSG";case KeyHome:return "HOME";case KeyAt:return t("@ (chat settings, input language)");case KeyAdv:return "ADV";case 0x87:return t("hold ADV (GPS)");case KeyMap:return "MAP";case KeyBack:return "BACK";case KeyMic:return "MIC";case KeySet:return "CTRL";case KeyHold:return t("hold OK");case KeyLeft:return t("Left");case KeyUp:return t("Up");case KeyDown:return t("Down");case KeyRight:return t("Right");case Enter:return "OK";case Erase:return "DEL";case ' ':return t("space");}
+ switch(k){case 0:return "-";case KeyMsg:return "MSG";case KeyHome:return "HOME";case KeyAt:return t("@ (chat settings)");case KeyAdv:return "ADV";case 0x87:return t("hold ADV (GPS)");case KeyMap:return "MAP";case KeyBack:return "BACK";case KeyMic:return "MIC";case KeySet:return "CTRL";case KeyHold:return t("hold OK");case KeyLeft:return t("Left");case KeyUp:return t("Up");case KeyDown:return t("Down");case KeyRight:return t("Right");case Enter:return "OK";case Erase:return "DEL";case ' ':return t("space");}
  char b[16];if(k>32&&k<127)snprintf(b,sizeof b,"'%c'",char(k));else snprintf(b,sizeof b,"0x%02X",unsigned(k));return b;
 }
 void drawDiagnostics(){
@@ -910,12 +910,11 @@ void drawDiagnostics(){
 }
 void drawHelp(){
  Hint keys[]={{"MSG",t("Chats")},{"MAP",t("Map; L - saved maps")},{"HOME",t("Menu")},{"BACK",t("Previous screen")},{"CTRL",t("Settings")},
-  {"ADV",t("Announce this node; hold: GPS on/off")},{"@",t("function key, not Sym+@: RU/EN in chat")},hardware.micKey?Hint{"MIC",t("Lock screen (there is no microphone)")}:Hint{tr("hold OK"),t("Lock")},
-  {"OK",t("Open / send; twice or hold: unlock")},{tr("2x space"),t("in text: switch RU/EN; Right: capital")}};
+  {"ADV",t("Announce this node; hold: GPS on/off")},{"@",t("function key, not Sym+@: chat settings")},hardware.micKey?Hint{"MIC",t("Lock screen (there is no microphone)")}:Hint{tr("hold OK"),t("Lock")},
+  {"OK",t("Open / send; twice or hold: unlock")},{"→",t("in text, after a letter: capital")}};
  for(int i=0;i<10;i++){int y=24+i*19;int kw=max(30,measure(keys[i].key,small)+10);g().fillRoundRect(10,y,kw,15,3,line);textCenter(10+kw/2,y+11,keys[i].key,ink,small);text(max(50,kw+16),y+12,fit(keys[i].action,258),i%2?dim:ink);}
- footer({{"OK",t("Russian layout")},{"BACK",t("Settings")}});
+ footer({{"BACK",t("Settings")}});
 }
-void drawLayoutHelp();
 const ChessMatch* lockChess();void drawLockChess(int y);void drawLockPet(int y);const Duel* lockDuel();void drawLockDuel(int y);void duelEnter(Duel* m);
 // The game card of the locked screen: 1 chess, 2 checkers or sea battle (the latest change of the two), 0 none.
 int lockGame(){const ChessMatch* c=lockChess();const Duel* d=lockDuel();if(c&&d)return int32_t(d->changedAt-c->changedAt)>0?2:1;return c?1:d?2:0;}
@@ -939,8 +938,8 @@ void drawEditing(){
  bool key=page==Network,pass=page==NetList||page==ServerHome;panel(12,60,296,122,cardHi,10);g().drawRoundRect(12,60,296,122,10,line);
  text(26,82,key?t("Network key · 64 hex"):page==ChannelAdd?channelEditTitle():page==ChessTourNew?String(t("Tournament name")):page==PetView?String(t("Pet name")):page==PeopleView?String(t("Counter name")):page==DiceView?diceEditTitle():page==ServerHome?serverEditTitle():page==Remote?remoteEditTitle():page==Radio?String(t("Region")):regionEditPage()?String(t("Region of the channel")):pass?fit(t("Wi-Fi password: ")+pendingSsid,268,bold):t("Device name"),ink,bold);
  panel(24,92,272,52,bg,6);g().drawRoundRect(24,92,272,52,6,accent);String rows[10];unsigned n=wrap(edit,rows,10,258),first=n>3?n-3:0;int cx=32;for(unsigned i=first;i<n;i++)cx=text(32,108+(i-first)*15,rows[i],ink);g().fillRect(cx+1,98+max(0,int(n-first)-1)*15,2,12,accent); // a long text shows its end, where the cursor is
- textRight(294,160,String(edit.length())+"/"+String(key?64:page==Radio||regionEditPage()?int(regions::NameBytes):page==ChannelAdd?channelEditLimit():page==ServerHome?serverEditLimit():page==Remote?remoteEditLimit():pass?63:page==ChessTourNew?32:page==PetView?15:page==DiceView?diceEditLimit():page==PeopleView?int(people::NameBytes):24)+t(" bytes"),faint,small);if(page==DiceView){text(26,160,diceEditHint(),faint,small);if(!diceEditRaw())textRight(294,175,keyboardRussian?"RU":"EN",accent,small);}else if(page==ChannelAdd){text(26,160,fit(channelEditHint(),230,small),faint,small);if(!channelEditRaw())textRight(294,175,keyboardRussian?"RU":"EN",accent,small);}else if(page==Remote){text(26,160,remoteEdit==EditPassword?t("Saved after a successful login"):t("As in the MeshCore app: ver, get name, neighbors..."),faint,small);}else if(page==ServerHome){text(26,160,serverEditHint(),faint,small);if(serverPostEdit())textRight(294,175,keyboardRussian?"RU":"EN",accent,small);}else if(page==Radio||regionEditPage()){text(26,160,page==Radio?t("As on repeaters: msk, sao...; empty: none"):t("As on repeaters: msk, sao...; empty: default"),faint,small);}
- else if(pass)text(26,160,t("8-63 characters; -> after a letter: capital"),faint,small);else if(!key)text(26,160,keyboardRussian?"RU":"EN",accent,small);
+ textRight(294,160,String(edit.length())+"/"+String(key?64:page==Radio||regionEditPage()?int(regions::NameBytes):page==ChannelAdd?channelEditLimit():page==ServerHome?serverEditLimit():page==Remote?remoteEditLimit():pass?63:page==ChessTourNew?32:page==PetView?15:page==DiceView?diceEditLimit():page==PeopleView?int(people::NameBytes):24)+t(" bytes"),faint,small);if(page==DiceView){text(26,160,diceEditHint(),faint,small);}else if(page==ChannelAdd){text(26,160,fit(channelEditHint(),230,small),faint,small);}else if(page==Remote){text(26,160,remoteEdit==EditPassword?t("Saved after a successful login"):t("As in the MeshCore app: ver, get name, neighbors..."),faint,small);}else if(page==ServerHome){text(26,160,serverEditHint(),faint,small);}else if(page==Radio||regionEditPage()){text(26,160,page==Radio?t("As on repeaters: msk, sao...; empty: none"):t("As on repeaters: msk, sao...; empty: default"),faint,small);}
+ else if(pass)text(26,160,t("8-63 characters; -> after a letter: capital"),faint,small);
  text(26,175,page==DiceView?diceEditOk():page==ChannelAdd?channelEditOk():page==Remote?(remoteEdit==EditPassword?t("OK: log in   BACK: cancel"):t("OK: send   BACK: cancel")):serverPostEdit()?t("OK: post   BACK: cancel"):t("OK: save   BACK: cancel"),dim,small);
 }
 #include "UiSolitaire.inc"
@@ -977,40 +976,15 @@ void draw(){
  case ChannelAdd:drawChannelAdd();break;case ChannelInfo:drawChannelInfo();break;case ChatMenu:drawChatMenu();break;case Remote:drawRemote();break;
  case Folder:drawFolder();break;case CheckersList:case SeaList:drawDuelList();break;case DuelPick:drawDuelPick();break;case CheckersBoard:case SeaBoard:drawDuelGame();break;
  }
- statusBar();if(editing&&!locked)drawEditing();if(layoutHelp&&!locked)drawLayoutHelp();drawToast();
+ statusBar();if(editing&&!locked)drawEditing();drawToast();
  uint32_t drawn=micros();hardware.flush();uint32_t sent=micros();
  auto& p=frameStats[locked?PerfSlots-1:page];p.frames++;p.drawUs+=drawn-started;p.drawMax=max(p.drawMax,drawn-started);p.flushUs+=sent-drawn;p.flushMax=max(p.flushMax,sent-drawn);p.rows+=hardware.flushRows;
-}
-// Russian input for Latin keycaps: phonetic, as in WadaMesh (privet -> привет). The seven letters
-// without a Latin sound-alike are on 1-7 (ч щ ъ ь э ю ё). M9 Sym symbols such as @ # $ are separate
-// keys, not shifted digits, so they always stay symbols; Right after a letter changes its case.
-const char* const ruLower[]={"а","б","ц","д","е","ф","г","х","и","й","к","л","м","н","о","п","я","р","с","т","у","в","ш","ж","ы","з"};
-const char* const ruUpper[]={"А","Б","Ц","Д","Е","Ф","Г","Х","И","Й","К","Л","М","Н","О","П","Я","Р","С","Т","У","В","Ш","Ж","Ы","З"};
-const char* const ruExtra[]={"ч","щ","ъ","ь","э","ю","ё"};
-String keyboard(int key){
- if(!keyboardRussian||key<=0)return String(char(key));
- if(key>='a'&&key<='z')return ruLower[key-'a'];if(key>='A'&&key<='Z')return ruUpper[key-'A'];if(key>='1'&&key<='7')return ruExtra[key-'1'];
- return String(char(key));
 }
 // Right after a letter toggles its case: capitals for letters typed on digit keys.
 bool toggleLastCase(String& text){
  if(!text.length())return false;unsigned at=meshmesh::previousCharacter(text.c_str(),text.length()),i=at;uint32_t cp=nextCp(text,i),to=cp;
- if(cp>='a'&&cp<='z')to=cp-32;else if(cp>='A'&&cp<='Z')to=cp+32;else if(cp>=0x430&&cp<=0x44f)to=cp-0x20;else if(cp>=0x410&&cp<=0x42f)to=cp+0x20;else if(cp==0x451)to=0x401;else if(cp==0x401)to=0x451;
- if(to==cp)return false;char b[3]={};if(to<0x80)b[0]=to;else{b[0]=0xc0|to>>6;b[1]=0x80|(to&0x3f);}text.remove(at);text+=b;return true;
-}
-void toggleLanguage(){keyboardRussian=!keyboardRussian;Preferences p;if(p.begin("meshmesh-ui",false)){p.putBool("kb_ru",keyboardRussian);p.end();}notice(keyboardRussian?t("Input: Russian (phonetic)"):t("Input: English"));}
-// Two spaces within 300 ms switch the input language, as on WadaMesh; the first space is removed.
-bool spaceSwitch(String& text,int key){
- if(key!=' '){lastSpace=0;return false;}
- if(lastSpace&&millis()-lastSpace<300&&text.endsWith(" ")){text.remove(text.length()-1);lastSpace=0;toggleLanguage();return true;}
- lastSpace=millis();return false;
-}
-void drawLayoutHelp(){
- uint16_t* px=g().getBuffer();for(int i=0;i<320*240;i++)px[i]=(px[i]>>1)&0x7bef;
- panel(6,24,308,192,cardHi,10);g().drawRoundRect(6,24,308,192,10,line);text(16,42,t("Russian input: phonetic"),ink,bold);
- const char* rows[]={"qwertyuiop","asdfghjkl","zxcvbnm","1234567"};
- for(int r=0;r<4;r++){int n=strlen(rows[r]),x0=160-n*29/2,y=50+r*36;for(int i=0;i<n;i++){char k=rows[r][i];int x=x0+i*29;panel(x,y,27,33,r==3?rgb(0x14524b):card,4);textCenter(x+13,y+11,String(k),dim,small);textCenter(x+13,y+28,k>='a'?ruLower[k-'a']:ruExtra[k-'1'],ink,bold);}}
- text(16,208,t("2x space: RU/EN   Shift or Right after a letter: capital"),dim,small);
+ if(cp>='a'&&cp<='z')to=cp-32;else if(cp>='A'&&cp<='Z')to=cp+32;
+ if(to==cp)return false;text.remove(at);text+=char(to);return true;
 }
 
 // The network search row: stop a search, test the network found, or search (all: every profile).
@@ -1048,16 +1022,14 @@ bool uiRadarPage(){return page==Scope||page==Homing||page==Motion;}
 bool uiScreenOff(){return wakeOnly;}
 String uiPerf(){return perfReport();}
 void uiFarewell(){farewell=true;wakeOnly=locked=false;hardware.brightness(config.brightness);draw();}
-void uiBegin(){Preferences p;keyboardRussian=false;if(p.begin("meshmesh-ui",true)){keyboardRussian=p.getBool("kb_ru",keyboardRussian);p.end();}lastInput=millis();page=homePage();openRolePick(true);draw();} // the role choice after every boot
-String uiStatus(){StaticJsonDocument<1024>d;d["page"]=pageNames[page];d["role"]=roleName(config.role);if(page==RolePick)d["boot_pick"]=bootPick;if(page==Radio)d["radio_preset"]=settingValue(draft,RowPreset);d["locked"]=locked;d["selected"]=selected;if(page==PeopleView){d["tally_current"]=people::tally.current;d["tally_new"]=tallyAdding();d["tally_value"]=people::value();}if(page==QuickView){d["quick_targets"]=quickTargets;d["quick_to"]=meshRadio.idText(quickReplyTo?quickReplyTo:quickSend::state.to);if(!quickTargets&&selected>0)d["quick_index"]=selected-1;}d["recipient"]=recipient==meshmesh::Broadcast?"ALL":meshRadio.idText(recipient);d["composer"]=composer;d["composer_bytes"]=composer.length();d["keyboard_language"]=keyboardRussian?"RU":"EN";d["editing"]=editing;d["chat_offset"]=chatOffset;d["idle_seconds"]=(millis()-lastInput)/1000;d["layout_help"]=layoutHelp;if(page==Game)gameStatus(d);chessStatus(d);duelStatus(d);tourStatus(d);if(page==Folder){d["folder"]=folderOpen;d["folder_name"]=appsFolderName(folderOpen);}if(appFolder>=0)d["from_folder"]=appFolder;if(page==Node)d["play_menu"]=playMenu;if((page==Nodes||page==Node)&&focusNode)d["selected_node"]=meshRadio.idText(focusNode);if(page==Node){d["action"]=action;if(playMenu)d["play_selected"]=playSel;}if(page==ChannelInfo)d["channel"]=meshRadio.idText(focusChannel);if(page==Network)d["wifi_qr"]=wifiQr;if(page==ChatMenu)chatMenuStatus(d);if(page==ChannelAdd)d["add_step"]=int(addStep);d["channels"]=meshRadio.channelCount;if(page==Scope||page==Homing||page==Motion){d["csi_role"]=radar.csi;d["radar_targets"]=radar.count;d["radar_selected"]=scopeSelected();d["radar_sound"]=radarSound;}if(page==DiceView){const char* sheets[]={"main","saved","characters","templates","send","offer","block"};d["dice_sheet"]=sheets[diceSheet];d["dice_selected"]=diceSel;d["sheet_block"]=sheetSel;d["sheet_note"]=sheetNote;d["block_field"]=blockField;}String s;serializeJson(d,s);return s;}
+void uiBegin(){lastInput=millis();page=homePage();openRolePick(true);draw();} // the role choice after every boot
+String uiStatus(){StaticJsonDocument<1024>d;d["page"]=pageNames[page];d["role"]=roleName(config.role);if(page==RolePick)d["boot_pick"]=bootPick;if(page==Radio)d["radio_preset"]=settingValue(draft,RowPreset);d["locked"]=locked;d["selected"]=selected;if(page==PeopleView){d["tally_current"]=people::tally.current;d["tally_new"]=tallyAdding();d["tally_value"]=people::value();}if(page==QuickView){d["quick_targets"]=quickTargets;d["quick_to"]=meshRadio.idText(quickReplyTo?quickReplyTo:quickSend::state.to);if(!quickTargets&&selected>0)d["quick_index"]=selected-1;}d["recipient"]=recipient==meshmesh::Broadcast?"ALL":meshRadio.idText(recipient);d["composer"]=composer;d["composer_bytes"]=composer.length();d["editing"]=editing;d["chat_offset"]=chatOffset;d["idle_seconds"]=(millis()-lastInput)/1000;if(page==Game)gameStatus(d);chessStatus(d);duelStatus(d);tourStatus(d);if(page==Folder){d["folder"]=folderOpen;d["folder_name"]=appsFolderName(folderOpen);}if(appFolder>=0)d["from_folder"]=appFolder;if(page==Node)d["play_menu"]=playMenu;if((page==Nodes||page==Node)&&focusNode)d["selected_node"]=meshRadio.idText(focusNode);if(page==Node){d["action"]=action;if(playMenu)d["play_selected"]=playSel;}if(page==ChannelInfo)d["channel"]=meshRadio.idText(focusChannel);if(page==Network)d["wifi_qr"]=wifiQr;if(page==ChatMenu)chatMenuStatus(d);if(page==ChannelAdd)d["add_step"]=int(addStep);d["channels"]=meshRadio.channelCount;if(page==Scope||page==Homing||page==Motion){d["csi_role"]=radar.csi;d["radar_targets"]=radar.count;d["radar_selected"]=scopeSelected();d["radar_sound"]=radarSound;}if(page==DiceView){const char* sheets[]={"main","saved","characters","templates","send","offer","block"};d["dice_sheet"]=sheets[diceSheet];d["dice_selected"]=diceSel;d["sheet_block"]=sheetSel;d["sheet_note"]=sheetNote;d["block_field"]=blockField;}String s;serializeJson(d,s);return s;}
 void uiKey(int key){if(powerOffPending())return;bool asleep=wakeOnly;lastInput=millis();hardware.brightness(config.brightness);wakeOnly=false;dirty=true;keyed=true;if(locked){ // a hold (timed by the M9 keyboard controller, not by us) or two OK presses within a second unlock
   static uint32_t firstOk=0;bool twice=key==Enter&&firstOk&&millis()-firstOk<1000;firstOk=key==Enter&&!twice?millis():0;
   if(key==KeyHold||twice){locked=false;int game=lockGame();if(game==1)chessEnter(const_cast<ChessMatch*>(lockChess()));else if(game==2)duelEnter(const_cast<Duel*>(lockDuel()));}return;}if(asleep)return;
  if(key==KeyMic||(key==KeyHold&&!hardware.micKey&&page!=Chat)){locked=true;return;} // M9 V1.1: no MIC key, the long OK press locks (stock firmware)
- if(layoutHelp){layoutHelp=false;return;}
  if(key==KeyAt&&page==Chat){openChatMenu();return;}
- if(key==KeyAt&&(((page==Display||page==ChessTourNew||page==PetView||page==PeopleView||(page==DiceView&&!diceEditRaw())||serverPostEdit()||(page==ChannelAdd&&!channelEditRaw()))&&editing))){toggleLanguage();return;}
- if(editing){if(key==KeyBack){editing=false;return;}if(key==Erase){edit.remove(meshmesh::previousCharacter(edit.c_str(),edit.length()));return;}if(key==KeyRight&&page!=Network){toggleLastCase(edit);return;}if(key==Enter){if(page==ChannelAdd){channelEditSave();return;}if(page==ChessTourNew){tourNameSave();return;}if(page==DiceView){diceEditSave();return;}if(page==PeopleView){tallySaveName();return;}if(page==PetView){if(creature.rename(edit)){editing=false;notice(t("Name saved"),ok);}else notice(t("Name: 1-15 UTF-8 bytes"),bad);return;}if(page==ServerHome){serverSaveEdit();return;}if(page==Remote){remoteSaveEdit();return;}if(regionEditPage()){channelRegionSave();return;}if(page==Radio){String r=regions::normalize(edit);if(edit.length()&&!r.length()){notice(t("Region: letters, digits, '-'"),bad);return;}strlcpy(draft.region,r.c_str(),sizeof draft.region);editing=false;return;}if(page==NetList){if(edit.length()<8){notice(t("Password: 8-63 characters"),bad);return;}if(internet.save(pendingSsid,edit)){editing=false;edit="";internet.connectTo(pendingSsid);notice(t("Connecting to ")+pendingSsid);}else notice(netError(),bad);return;}if(page==Network){StaticJsonDocument<128>d;d["key"]=edit;String r=applySettings(d.as<JsonObjectConst>());if(r.startsWith("OK"))editing=false;notice(r);}else if(edit.length()&&edit.length()<=24&&meshmesh::validUtf8((const uint8_t*)edit.c_str(),edit.length())){strlcpy(draft.name,edit.c_str(),sizeof draft.name);editing=false;}else notice(t("Name: 1-24 UTF-8 bytes"),bad);return;}if(key>=32&&key<127){bool raw=page==Network||page==NetList||page==Remote||page==Radio||regionEditPage()||(page==DiceView&&diceEditRaw())||(page==ServerHome&&!serverPostEdit())||(page==ChannelAdd&&channelEditRaw());if(!raw&&spaceSwitch(edit,key))return;String ch=raw?String(char(key)):keyboard(key);if(edit.length()+ch.length()<=(page==Network?64u:page==Radio||regionEditPage()?regions::NameBytes:page==NetList?63u:page==ServerHome?serverEditLimit():page==Remote?remoteEditLimit():page==ChannelAdd?channelEditLimit():page==ChessTourNew?32u:page==PetView?15u:page==DiceView?diceEditLimit():page==PeopleView?people::NameBytes:24u))edit+=ch;}return;}
+ if(editing){if(key==KeyBack){editing=false;return;}if(key==Erase){edit.remove(meshmesh::previousCharacter(edit.c_str(),edit.length()));return;}if(key==KeyRight&&page!=Network){toggleLastCase(edit);return;}if(key==Enter){if(page==ChannelAdd){channelEditSave();return;}if(page==ChessTourNew){tourNameSave();return;}if(page==DiceView){diceEditSave();return;}if(page==PeopleView){tallySaveName();return;}if(page==PetView){if(creature.rename(edit)){editing=false;notice(t("Name saved"),ok);}else notice(t("Name: 1-15 UTF-8 bytes"),bad);return;}if(page==ServerHome){serverSaveEdit();return;}if(page==Remote){remoteSaveEdit();return;}if(regionEditPage()){channelRegionSave();return;}if(page==Radio){String r=regions::normalize(edit);if(edit.length()&&!r.length()){notice(t("Region: letters, digits, '-'"),bad);return;}strlcpy(draft.region,r.c_str(),sizeof draft.region);editing=false;return;}if(page==NetList){if(edit.length()<8){notice(t("Password: 8-63 characters"),bad);return;}if(internet.save(pendingSsid,edit)){editing=false;edit="";internet.connectTo(pendingSsid);notice(t("Connecting to ")+pendingSsid);}else notice(netError(),bad);return;}if(page==Network){StaticJsonDocument<128>d;d["key"]=edit;String r=applySettings(d.as<JsonObjectConst>());if(r.startsWith("OK"))editing=false;notice(r);}else if(edit.length()&&edit.length()<=24&&meshmesh::validUtf8((const uint8_t*)edit.c_str(),edit.length())){strlcpy(draft.name,edit.c_str(),sizeof draft.name);editing=false;}else notice(t("Name: 1-24 UTF-8 bytes"),bad);return;}if(key>=32&&key<127){String ch=String(char(key));if(edit.length()+ch.length()<=(page==Network?64u:page==Radio||regionEditPage()?regions::NameBytes:page==NetList?63u:page==ServerHome?serverEditLimit():page==Remote?remoteEditLimit():page==ChannelAdd?channelEditLimit():page==ChessTourNew?32u:page==PetView?15u:page==DiceView?diceEditLimit():page==PeopleView?people::NameBytes:24u))edit+=ch;}return;}
  if(page==Node&&playMenu){ // the games of "Play"; other keys (HOME, MSG...) leave the card as usual
   if(key==KeyUp||key==KeyDown||key==KeyLeft||key==KeyRight){playSel=(playSel+(key==KeyUp||key==KeyLeft?playGames-1:1))%playGames;return;}
   if(key==Enter||key==KeyHold){playChoose();return;}if(key==KeyBack||key==Erase){playMenu=false;return;}}
@@ -1087,7 +1059,7 @@ void uiKey(int key){if(powerOffPending())return;bool asleep=wakeOnly;lastInput=m
  if(page==ChannelInfo){channelInfoKey(key);return;}
  if(page==ChatMenu){chatMenuKey(key);return;}
  if(page==Threads&&(key==KeyLeft||key==KeyRight)){threads();if(selected<int(conversationCount)&&channels::isChannel(conversations[selected]))openChannelInfo(conversations[selected],Threads);return;}
- if(page==Chat){if(key==Enter){if(meshRadio.sendMessage(composer,recipient)){composer="";chatOffset=0;notice(t("Message queued"));}else notice(t("Cannot send: empty, full queue or radio"),bad);return;}if(key==Erase){composer.remove(meshmesh::previousCharacter(composer.c_str(),composer.length()));return;}if(key==KeyUp){unsigned total=0;for(unsigned i=0;i<meshRadio.historyCount;i++)if(belongs(meshRadio.history[i],recipient))total++;chatOffset=min(chatOffset+1,max(0,int(total)-1));return;}if(key==KeyDown){chatOffset=max(0,chatOffset-1);return;}if(key==KeyHold){layoutHelp=true;return;}if(key==KeyRight){if(!composer.length()){quickReplyTo=recipient;quickTargets=false;change(QuickView);}else toggleLastCase(composer);return;}if(key==KeyLeft){chatLeft();return;}if(key>=32&&key<127){if(spaceSwitch(composer,key))return;String ch=keyboard(key);if(composer.length()+ch.length()<=meshRadio.messageLimit(recipient))composer+=ch;else notice(t("UTF-8 byte limit: ")+String(meshRadio.messageLimit(recipient)),warn);}return;}
+ if(page==Chat){if(key==Enter){if(meshRadio.sendMessage(composer,recipient)){composer="";chatOffset=0;notice(t("Message queued"));}else notice(t("Cannot send: empty, full queue or radio"),bad);return;}if(key==Erase){composer.remove(meshmesh::previousCharacter(composer.c_str(),composer.length()));return;}if(key==KeyUp){unsigned total=0;for(unsigned i=0;i<meshRadio.historyCount;i++)if(belongs(meshRadio.history[i],recipient))total++;chatOffset=min(chatOffset+1,max(0,int(total)-1));return;}if(key==KeyDown){chatOffset=max(0,chatOffset-1);return;}if(key==KeyRight){if(!composer.length()){quickReplyTo=recipient;quickTargets=false;change(QuickView);}else toggleLastCase(composer);return;}if(key==KeyLeft){chatLeft();return;}if(key>=32&&key<127){String ch=String(char(key));if(composer.length()+ch.length()<=meshRadio.messageLimit(recipient))composer+=ch;else notice(t("UTF-8 byte limit: ")+String(meshRadio.messageLimit(recipient)),warn);}return;}
  if(page==NetList&&key==Erase){netListErase();return;}
  if(page==Map){if(key=='l'||key=='L'){change(Library);return;}if(key==KeyLeft)maps.pan(-70,0);if(key==KeyRight)maps.pan(70,0);if(key==KeyUp)maps.pan(0,-70);if(key==KeyDown)maps.pan(0,70);if(key=='+'||key=='=')maps.changeZoom(1);if(key=='-'||key=='_')maps.changeZoom(-1);if(key==Enter){maps.follow=true;if(hardware.gpsFix())maps.center(hardware.gps.location.lat(),hardware.gps.location.lng());else notice(t("Waiting for GPS fix"),warn);}return;}
  if((page==Nodes||page==Node)&&(key=='p'||key=='P')){if(Peer* p=focusedPeer()){if(p->position){maps.follow=false;maps.center(p->latitude,p->longitude);change(Map);}else notice(t("This node has not shared GPS"),warn);}return;}
@@ -1123,7 +1095,6 @@ void uiKey(int key){if(powerOffPending())return;bool asleep=wakeOnly;lastInput=m
  else if(page==Network){if(selected==0)portalToggle();if(selected==1){if(config.role!=RoleNormal)notice(t("Internet over Wi-Fi is off in this mode"),warn);else change(NetList);}if(selected==2)bleToggle();if(selected==3)notice(t("Public key: ")+meshRadio.publicKeyText().substring(0,16));}
  else if(page==Sensors){if(selected==0)gpsToggle();else if(selected==1){bool sent=meshRadio.sendPosition();notice(sent?t("Position shared"):t("Waiting for GPS fix"),sent?ok:warn);}else if(navigation.calibrating){bool saved=navigation.finish();notice(saved?t("Calibration saved"):t("Rotate wider, at least 20 seconds"),saved?ok:warn);}else{navigation.start();notice(t("Rotate in all directions"));}}
  else if(page==NetList)netListEnter();
- else if(page==Help)layoutHelp=true;
  else if(page==Scope){int i=scopeSelected();if(i>=0&&radar.track(i)){scopeManual=true;pingedSamples=radar.samples;change(Homing);}else notice(t("No signal selected"),warn);}
  else if(page==Motion){if(radar.csi==Radar::CsiSensor&&radar.beaconHeard()){radar.calibrate();notice(t("Calibrating: keep the area still for 10 s"),info);}else notice(t("Needs a heard beacon"),warn);}
  else if(page==Homing){radarSound=!radarSound;notice(radarSound?(config.sound?t("Ping on"):t("Device sound is off in settings")):t("Ping off"),radarSound&&!config.sound?warn:dim);}
@@ -1140,7 +1111,6 @@ void uiTouch(char gesture,int x,int y){keyed=true;
  if(page==PeopleView&&!editing&&(gesture=='l'||gesture=='r')){uiKey(gesture=='l'?KeyRight:KeyLeft);return;} // cards follow the finger
  if(gesture!='t'){uiKey(gesture=='u'?KeyUp:gesture=='d'?KeyDown:gesture=='l'?KeyLeft:KeyRight);return;}
  if(dirty)return; // the screen has not caught up with the last action: the tap was aimed at the old one
- if(layoutHelp){uiKey(Enter);return;}
  if(y<21){uiKey(KeyBack);return;}
  if(y>=221){for(unsigned i=0;i<hintCount;i++)if(x>=hintSpots[i].x0&&x<hintSpots[i].x1){realErase=hintSpots[i].key==Erase;uiKey(hintSpots[i].key);return;}return;}
  if(page==DiceView&&!editing&&diceTap(x,y))return;

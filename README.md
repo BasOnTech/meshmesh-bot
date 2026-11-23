@@ -41,7 +41,7 @@ MeshCore nodes.
   with admin login and remote CLI from the MeshCore app; key, contacts and history stay.
   [docs/repeater.md](docs/repeater.md)
 - **MeshCore apps** — the stock MeshCore apps connect over Bluetooth or USB and work with the board's chats, contacts and channels (chess stays in the MeshMesh app). [docs/companion.md](docs/companion.md)
-- **GPS and compass**, position sharing, lock screen, phonetic Cyrillic keyboard input.
+- **GPS and compass**, position sharing, lock screen.
 - **Web interface** over the device's own Wi-Fi access point or the home Wi-Fi it joins (M9).
 - **Device UI in English** (Dutch is planned); the web interface too.
 

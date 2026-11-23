@@ -19,10 +19,9 @@ def main():
     with ExitStack() as stack:
         m9 = stack.enter_context(connect(M9_PORT))
         heltec = stack.enter_context(connect(HELTEC_PORT))
-        config = read(m9, 'config')
         before = [read(d, 'status') for d in (m9, heltec)]
         stamp = str(time.time_ns())
-        text = 'Привет ' + stamp
+        text = 'Hello ' + stamp
         # Select the tested Heltec by address; real MeshCore repeaters may precede it.
         if read(m9, 'ui')['locked']:
             key(m9, 0xa3) # Only a locked screen interprets this as unlock.
@@ -42,17 +41,12 @@ def main():
         assert read(m9, 'ui')['page'] == 'node'
         key(m9, 13)
         assert read(m9, 'ui')['page'] == 'chat'
-        original_keyboard=read(m9,'ui')['keyboard_language']
-        if original_keyboard=='EN':
-            key(m9, 0x83)
         try:
-            # Phonetic Russian: "Priveq" gives "Привея"; backspace removes one Cyrillic character.
-            for character in 'Priveq':
+            # "Hellq", backspace, "o": the backspace removes one character.
+            for character in 'Hellq':
                 key(m9, ord(character))
             key(m9, 8)
-            key(m9, ord('t'))
-            key(m9, 0x83) # Digits 1-7 are Cyrillic letters in RU; type the stamp in EN.
-            assert read(m9, 'ui')['keyboard_language'] == 'EN'
+            key(m9, ord('o'))
             for character in ' ' + stamp:
                 key(m9, ord(character))
             time.sleep(.2)
@@ -70,8 +64,6 @@ def main():
             else:
                 raise TimeoutError('UI message not confirmed over physical LoRa')
         finally:
-            if read(m9, 'ui')['keyboard_language'] != original_keyboard:
-                key(m9, 0x83)
             key(m9, 0x82)
             key(m9, 0xb6) # Home grid: second row, then Connect.
             key(m9, 0xb7)
@@ -81,8 +73,6 @@ def main():
             assert old['boot'] == new['boot']
             assert old['diagnostic_rx'] == new['diagnostic_rx']
             assert new['rx'] > old['rx'] and new['tx'] > old['tx']
-        assert read(m9, 'config')['russian'] == config['russian']
-        assert read(m9, 'ui')['keyboard_language']==original_keyboard
         report = {'input': 'simulated USB keys through real M9 UI; not physical button automation',
                   'transport': 'physical LoRa with delivery ACK', 'text': text,
                   'checks': ['home grid', 'peer selection by address', 'node card', 'RU phonetic keyboard', '@ switches RU/EN', 'Cyrillic backspace', 'send with OK', 'DELIVERED', 'language restored'],

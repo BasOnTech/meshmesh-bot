@@ -45,7 +45,7 @@ static void scenario(){
  // @ in a chat: its settings (scope, sound, QR, input language, erase); BACK closes the QR, then returns to the chat.
  key(0x83);if(uiStatus().indexOf("\"page\":\"chat_menu\"")<0){fprintf(stderr,"@ did not open the chat settings: %s\n",uiStatus().c_str());exit(1);}shot("chat-menu");key(0xb6);shot("chat-menu-sound");
  key(0xb6);key(13);shot("chat-menu-qr");key(0x86);if(uiStatus().indexOf("\"page\":\"chat_menu\"")<0){fprintf(stderr,"BACK on the QR left the chat settings: %s\n",uiStatus().c_str());exit(1);}
- key(0xb6);key(0xb6);key(13);shot("chat-menu-erase");key(0x86);if(uiStatus().indexOf("\"page\":\"chat\"")<0){fprintf(stderr,"BACK left the chat settings elsewhere: %s\n",uiStatus().c_str());exit(1);}key(0x86);
+ key(0xb6);key(13);shot("chat-menu-erase");key(0x86);if(uiStatus().indexOf("\"page\":\"chat\"")<0){fprintf(stderr,"BACK left the chat settings elsewhere: %s\n",uiStatus().c_str());exit(1);}key(0x86);
  // Channels: the list, a hashtag channel's card, a private channel and its card, adding one, an invitation.
  key(0xb6);shot("threads-channels");key(0xb7);shot("channel-hashtag");key(0x86);
  key(0xb6);key(0xb6);key(0xb7);shot("channel-private");key(0xb7);shot("channel-region");key(0xb4);key(0xb6);key(0xb6);key(13);shot("channel-leave");key(0x86);
@@ -55,7 +55,7 @@ static void scenario(){
  for(int i=0;i<4;i++)key(0xb6);key(13);shot("chat-invite");key(0xb4);shot("chat-invite-joined");key(0x86);
  if(!meshRadio.channel(channels::idOf(meshRadio.channelList[3].secret))||strcmp(meshRadio.channelList[3].name,"Hiking")){printf("FAIL invitation not joined\n");exit(1);}
  for(int i=0;i<6;i++)key(0xb6);key(13);shot("chat");
- for(char ch:std::string("Privet! Kak dela? 5to novogo @ 5"))key(ch);key(0xb7);shot("compose");key(0xa3);shot("layout");key(0x86);key(0x86);key(0x86);
+ for(char ch:std::string("Hello! How are you? Anything new @ 5"))key(ch);key(0xb7);shot("compose");key(0x86);key(0x86);
  key(0x85);shot("map");key(0xb7);key(0xb6);shot("map-browse");key('L');shot("library");key(0x86);
  key(0x82);key(0xb7);key(0xb7);key(13);shot("nodes");key(13);shot("node");key(0xb7);key(0xb7);key(0xb7);key(13);shot("node-forget");key(0x86);key(0x86);
  // A repeater's card and its server page: login, status, CLI replies and the trace (fake answers of the preview).

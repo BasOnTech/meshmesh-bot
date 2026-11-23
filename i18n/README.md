@@ -47,7 +47,7 @@ width: `cells` is the English text in 6-pixel columns.
   `{weekday}`, `{month}`, `{day}`) stay exactly as in English: the code glues these strings together.
 - **Keep the names.** MeshMesh, MeshCore, LoRa, Wi-Fi, Bluetooth, BLE, GPS, USB, SD, SNR, RSSI, dBm, ACK, UTC,
   PIN, NTP, CSI, ESP-NOW, OSM, board names, and the device keys written on them (OK, BACK, DEL, HOME, MSG,
-  MAP, CTRL, ADV, MIC, Enter, Sym, `@`) are not translated. `RU/EN` names the keyboard layouts and stays.
+  MAP, CTRL, ADV, MIC, Enter, Sym, `@`) are not translated.
 - **Plurals.** `forms` has the categories of the language (CLDR), e.g. `one`/`other` for Dutch (add them to
   `PLURALS` in `tools/i18n.py` and a case in `category()` in `src/I18n.cpp` for other rules). Write `{n}`
   where the number goes: `"{n} partijen"`.

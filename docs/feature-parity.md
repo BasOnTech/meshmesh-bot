@@ -44,7 +44,7 @@ avatars with initials and unread badges; ✓ / ✓✓ / error marks on
 direct messages; a byte counter; a node card (write, on the map, path reset,
 delete); distance and bearing to the node with a fresh GPS fix; a map with nodes,
 compass heading and a scale bar; a lock screen with clock, date and
-an unread summary; key help; RU/EN input; since 0.3.2 — a Wi-Fi/LoRa signal
+an unread summary; key help; since 0.3.2 — a Wi-Fi/LoRa signal
 radar with RSSI-based bearing (WadaMesh has none); since 0.16.0 — the packet path in the web interface
 and the app: tapping the time under a message shows the repeaters it came through (by the path hashes,
 named and placed from the contacts), SNR/RSSI, the sender's and reception time, the number of copies
@@ -65,7 +65,7 @@ Missing compared with WadaMesh:
   analyser, signal and traffic page.
 - Device: first-run wizard, day/high-contrast theme, interface size,
   keyboard backlight, “do not disturb”, control centre, battery graph and sleep,
-  OTA, settings backup, 14 languages (we have RU/EN).
+  OTA, settings backup, 14 languages (we have English).
 - Other: Lua apps and a store, terminal, file manager, web browser,
   remote control/VNC, MQTT, console mode, online and topographic maps.
 

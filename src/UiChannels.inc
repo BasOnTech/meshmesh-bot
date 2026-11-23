@@ -81,7 +81,6 @@ String channelEditTitle(){
  case AddKey:return fit(t("Key of ")+addName,268,bold);default:return t("New private channel");}
 }
 unsigned channelEditLimit(){return addStep==AddKey?44:channels::NameBytes;}
-bool channelEditRaw(){return addStep==AddKey;}
 String channelEditHint(){
  if(addStep==AddKey)return t("32 hex digits or base64 (16 bytes)");
  if(addStep==AddTag){int n=meshRadio.heardSamples?meshRadio.probeHashtag(edit):0;if(n>0)return t("Heard on air: ")+count(n,"message","messages");return t("Same #name, same channel as in MeshCore apps");}
@@ -167,13 +166,12 @@ void channelRegionSave(){
 // Chat settings (@ in a chat). A channel: its scope (region), the beep of its new messages, its QR code, inviting a
 // chat contact and leaving it (not Public); every chat: the input language and erasing its messages. The scope shares
 // the card's region row (regionChoice, its editor), so <> picks a region and OK saves or types one.
-void toggleLanguage();
-enum ChatMenuRow {MenuScope,MenuSound,MenuQr,MenuInvite,MenuKeyboard,MenuErase,MenuLeave};
+enum ChatMenuRow {MenuScope,MenuSound,MenuQr,MenuInvite,MenuErase,MenuLeave};
 bool menuQr=false; // the channel's QR code fills the menu; BACK or OK closes it
 bool regionEditPage(){return page==ChannelInfo||page==ChatMenu;}
 const channels::Channel* menuChannel(){return channels::isChannel(recipient)?meshRadio.channel(recipient):nullptr;}
 int chatMenuList(ChatMenuRow* out){int n=0;const channels::Channel* c=menuChannel();bool own=c&&!channels::isPublic(c->secret);
- if(c){out[n++]=MenuScope;out[n++]=MenuSound;out[n++]=MenuQr;}out[n++]=MenuKeyboard;
+ if(c){out[n++]=MenuScope;out[n++]=MenuSound;out[n++]=MenuQr;}
  if(own){out[n++]=MenuInvite;out[n++]=MenuLeave;}out[n++]=MenuErase;return n;} // erase: the button below, as Save in the settings
 int chatMenuRows(){ChatMenuRow r[7];return chatMenuList(r);}
 ChatMenuRow chatMenuRow(int i){ChatMenuRow r[7];int n=chatMenuList(r);return r[constrain(i,0,n-1)];}
@@ -196,7 +194,6 @@ void drawChatMenu(){
    case MenuSound:name=t("Sound on new messages");value=flag(c->policy.sound);pick=true;break;
    case MenuQr:name=t("Show channel QR");break;
    case MenuInvite:name=t("Invite");value=people?String(list[inviteTo]->name):String(t("No chat contacts"));pick=people>1;break;
-   case MenuKeyboard:name=t("Input language");value=keyboardRussian?t("Russian"):t("English");pick=true;break;
    default:break;
    case MenuLeave:name=deleteArmed?t("Sure? OK again"):t("Leave channel");color=focus?(deleteArmed?bad:ink):bad;break;
   }
@@ -208,7 +205,7 @@ void drawChatMenu(){
  ChatMenuRow row=chatMenuRow(selected);
  String hint=row==MenuScope?t("Repeaters relay this channel within this region"):row==MenuSound?t("Beep when a message arrives in this channel"):
   row==MenuQr?t("Others join by scanning it"):row==MenuInvite?t("Sends the channel link in a direct message"):
-  row==MenuKeyboard?t("Also: two spaces in the message"):row==MenuLeave?t("History stays; joining again shows it"):t("This chat only, on this device");
+  row==MenuLeave?t("History stays; joining again shows it"):t("This chat only, on this device");
  text(10,207,fit(hint,300,small),faint,small);
  if(row==MenuScope)footer({{"<>",t("Region")},{"OK",regionChoice==c->region?t("Type"):t("Save")},{"^v",t("Select")},{"BACK",t("Back")}});
  else if(row==MenuErase||row==MenuLeave)footer({{"OK",deleteArmed?(row==MenuErase?t("Erase"):t("Leave")):t("Confirm...")},{"^v",t("Select")},{"BACK",t("Back")}});
@@ -228,7 +225,6 @@ void chatMenuKey(int key){
   case MenuScope:if(side){regionChoice=regions::cycle(regionChoice,left?-1:1,true);return;}
    if(regionChoice!=c->region)saveChannelRegion(regionChoice);else{edit=regionChoice==regions::Unscoped?String():regionChoice;editing=true;}return;
   case MenuSound:chatSoundToggle(c);return;
-  case MenuKeyboard:toggleLanguage();return;
   case MenuQr:if(!side)menuQr=true;return;
   case MenuInvite:{if(side){inviteTo+=left?-1:1;return;}Peer* list[24];int people=chatContacts(list);if(!people){notice(t("Discover a chat contact first: ADV"),warn);return;}
    Peer* p=list[(inviteTo%people+people)%people];bool sent=meshRadio.sendInvite(p->id,c->id);notice(sent?t("Invitation queued to ")+p->name:t("Invitation not sent"),sent?ok:bad);return;}
