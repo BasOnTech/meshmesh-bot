@@ -53,7 +53,7 @@ void drawTourList(){
  footer({{"OK",tourSel?t("Open","Открыть"):t("Create","Создать")},{"<>",t("Tabs","Разделы")},{"BACK",t("Menu","Меню")}});
 }
 void tourOpenCard(tour::Tour* T){tourOpen=T;tourView=0;tourRow=0;tour::net.viewed(*T);change(ChessTour);}
-void tourStartWizard(){tourStep=0;tourRounds=0;tourHoursAt=2;memset(tourPicked,0,sizeof tourPicked);tm v;tourName=t("Tournament","Турнир");if(localTime(time(nullptr),v)){char b[8];snprintf(b,sizeof b," %02d.%02d",v.tm_mday,v.tm_mon+1);tourName+=b;}change(ChessTourNew);}
+void tourStartWizard(){tourStep=0;tourRounds=0;tourHoursAt=2;memset(tourPicked,0,sizeof tourPicked);tm v;tourName=t("Tournament","Турнир");if(localTime(time(nullptr),v)){char b[24];snprintf(b,sizeof b," %02d.%02d",v.tm_mday,v.tm_mon+1);tourName+=b;}change(ChessTourNew);}
 bool tourListKey(int key){
  tour::Tour* rows[tour::MaxTours];unsigned n=tourRows(rows),total=1+n;
  if(key==KeyUp||key==KeyDown){tourSel=(tourSel+(key==KeyUp?-1:1)+total)%total;return true;}

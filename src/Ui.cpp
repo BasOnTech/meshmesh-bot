@@ -147,7 +147,6 @@ GFXcanvas16& g(){return *hardware.canvas;}
 void panel(int x,int y,int w,int h,uint16_t fill,int r=6){g().fillRoundRect(x,y,w,h,r,fill);}
 void ring(int x,int y,int w,int h,int r=6,uint16_t color=accent){g().drawRoundRect(x,y,w,h,r,color);g().drawRoundRect(x+1,y+1,w-2,h-2,max(r-1,1),color);}
 void tri(int x,int y,int dir,int s,uint16_t c){if(dir==0)g().fillTriangle(x-s,y+s/2,x+s,y+s/2,x,y-s/2-1,c);else if(dir==2)g().fillTriangle(x-s,y-s/2,x+s,y-s/2,x,y+s/2+1,c);else if(dir==1)g().fillTriangle(x-s/2,y-s,x-s/2,y+s,x+s/2+1,y,c);else g().fillTriangle(x+s/2,y-s,x+s/2,y+s,x-s/2-1,y,c);}
-void arc(int cx,int cy,int r,int a0,int a1,uint16_t c){for(int a=a0;a<=a1;a+=3){float rad=a*M_PI/180;g().drawPixel(cx+roundf(r*sinf(rad)),cy-roundf(r*cosf(rad)),c);}}
 void thickLine(int x0,int y0,int x1,int y1,uint16_t c){g().drawLine(x0,y0,x1,y1,c);g().drawLine(x0+1,y0,x1+1,y1,c);}
 void icon(Icon id,int cx,int cy,int s,uint16_t c,uint16_t hole=bg){drawIcon(g(),id,cx,cy,s,c,hole,faint);if(id==IcHelp)textCenter(cx,cy+5,"?",c,bold);}
 void bars(int x,int y,unsigned level,uint16_t color){for(unsigned k=0;k<4;k++){int h=3+k*2;g().fillRect(x+k*4,y-h,3,h,k<level?color:line);}}
@@ -248,7 +247,7 @@ void change(Page next,bool back=false){if(next==Home&&appFolder>=0&&page!=Home&&
 // Time, distances and short labels.
 bool localTime(time_t at,tm& out){if(at<1700000000)return false;at+=config.utcOffset*60;out=*gmtime(&at);return true;}
 String clockText(){tm v;if(!localTime(time(nullptr),v))return "--:--";char b[6];snprintf(b,sizeof b,"%02d:%02d",v.tm_hour,v.tm_min);return b;}
-String timeText(uint32_t at){tm v,today;if(!localTime(at,v))return "";char b[8];if(localTime(time(nullptr),today)&&(v.tm_yday!=today.tm_yday||v.tm_year!=today.tm_year))snprintf(b,sizeof b,"%02d.%02d",v.tm_mday,v.tm_mon+1);else snprintf(b,sizeof b,"%02d:%02d",v.tm_hour,v.tm_min);return b;}
+String timeText(uint32_t at){tm v,today;if(!localTime(at,v))return "";char b[24];if(localTime(time(nullptr),today)&&(v.tm_yday!=today.tm_yday||v.tm_year!=today.tm_year))snprintf(b,sizeof b,"%02d.%02d",v.tm_mday,v.tm_mon+1);else snprintf(b,sizeof b,"%02d:%02d",v.tm_hour,v.tm_min);return b;}
 String dateText(){tm v;if(!localTime(time(nullptr),v))return t("Clock not set","Время не установлено");
  const char* days[]={tr("Sunday","воскресенье"),tr("Monday","понедельник"),tr("Tuesday","вторник"),tr("Wednesday","среда"),tr("Thursday","четверг"),tr("Friday","пятница"),tr("Saturday","суббота")};
  // Month names as the date below uses them (Russian: genitive).

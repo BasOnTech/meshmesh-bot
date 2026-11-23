@@ -35,7 +35,7 @@ String chatLeftAction(){
  if(invite&&!in)return t("Join","Вступить");return invite?t("Open channel","В канал"):"";
 }
 void chatLeft(){
- String name;uint8_t key[16];bool invite=chatInvite(name,key),in=invite&&meshRadio.channel(channels::idOf(key));
+ String name;uint8_t key[16];bool invite=chatInvite(name,key);
  if(!invite)return;uint64_t id;joined(meshRadio.addChannel(channels::isPublic(key)?String("Public"):name,key,&id),id);
 }
 // A link in a bubble reads as an invitation.

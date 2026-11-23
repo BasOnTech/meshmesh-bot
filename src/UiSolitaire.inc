@@ -33,7 +33,7 @@ void bigSuit(uint8_t s,int cx,int cy,int a,uint16_t c){
  }
 }
 String rankName(uint8_t r){static const char* en[]={"A","2","3","4","5","6","7","8","9","10","J","Q","K"};static const char* ru[]={"Т","2","3","4","5","6","7","8","9","10","В","Д","К"};return config.lang==LangRu||config.lang==LangUk?ru[r]:en[r];}
-String playTime(uint32_t s){char b[12];if(s>=3600)snprintf(b,sizeof b,"%lu:%02lu:%02lu",(unsigned long)(s/3600),(unsigned long)(s/60%60),(unsigned long)(s%60));else snprintf(b,sizeof b,"%lu:%02lu",(unsigned long)(s/60),(unsigned long)(s%60));return b;}
+String playTime(uint32_t s){char b[16];if(s>=3600)snprintf(b,sizeof b,"%lu:%02lu:%02lu",(unsigned long)(s/3600),(unsigned long)(s/60%60),(unsigned long)(s%60));else snprintf(b,sizeof b,"%lu:%02lu",(unsigned long)(s/60),(unsigned long)(s%60));return b;}
 
 // Screen positions: stock, waste, a gap and the foundations on top; seven columns below.
 int pileColumn(uint8_t p){return p==sol::Stock?0:p==sol::Waste?1:sol::isFoundation(p)?3+p-sol::Foundation:p-sol::Tableau;}

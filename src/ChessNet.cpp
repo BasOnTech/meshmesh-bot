@@ -50,7 +50,7 @@ void ChessNet::tick(){
   for(auto& m:matches)if(m.state==ChessMatch::Over&&m.tour&&!m.tourReported){m.tourReported=true;tour::net.gameOver(m);changed(m);}
   // Finished games with moves go to the SD archive once; a board without a card has none.
   for(auto& m:matches)if(m.state==ChessMatch::Over&&!m.archived){m.archived=true;if(!m.game.plies)continue;
-    char name[24];time_t at=m.started?time_t(m.started):time(nullptr);tm v;gmtime_r(&at,&v);snprintf(name,sizeof name,"%04d%02d%02d-%04X.pgn",v.tm_year+1900,v.tm_mon+1,v.tm_mday,m.id);
+    char name[48];time_t at=m.started?time_t(m.started):time(nullptr);tm v;gmtime_r(&at,&v);snprintf(name,sizeof name,"%04d%02d%02d-%04X.pgn",v.tm_year+1900,v.tm_mon+1,v.tm_mday,m.id);
     chessArchiveWrite(name,pgn(m));}
   for(auto& m:matches){
     if(m.state==ChessMatch::Free||!m.pending()||m.sending()||m.autoStopped)continue;
@@ -319,7 +319,7 @@ String chessLocalSan(const char* san){
 String ChessNet::pgn(const ChessMatch& m) const{
   auto tag=[](const char* k,const String& v){String s=v;s.replace("\\","");s.replace("\"","'");return String("[")+k+" \""+s+"\"]\n";};
   const char* result=m.result==ChessMatch::WhiteWon?"1-0":m.result==ChessMatch::BlackWon?"0-1":m.result==ChessMatch::Drawn?"1/2-1/2":"*";
-  char date[12]="????.??.??";if(m.started){time_t at=m.started;tm v;gmtime_r(&at,&v);snprintf(date,sizeof date,"%04d.%02d.%02d",v.tm_year+1900,v.tm_mon+1,v.tm_mday);}
+  char date[40]="????.??.??";if(m.started){time_t at=m.started;tm v;gmtime_r(&at,&v);snprintf(date,sizeof date,"%04d.%02d.%02d",v.tm_year+1900,v.tm_mon+1,v.tm_mday);}
   const tour::Tour* t=m.tour?tour::net.find(m.tour):nullptr;String me=config.name,them=m.name;
   String s=tag("Event",t?String(t->name):String(m.rated?"MeshMesh rated game":"MeshMesh friendly game"))+tag("Site","MeshCore LoRa")+tag("Date",date)+tag("Round",m.round?String(m.round):String("-"))
     +tag("White",m.mine==White?me:them)+tag("Black",m.mine==White?them:me)+tag("Result",result);

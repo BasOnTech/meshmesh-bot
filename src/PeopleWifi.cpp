@@ -17,7 +17,7 @@ void receive(void* buffer,wifi_promiscuous_pkt_type_t type){auto* p=static_cast<
  // Probe requests come from clients. Data is useful only with To DS set and From DS clear.
  if(!((type==WIFI_PKT_MGMT&&(b[0]&0xfc)==0x40)||(type==WIFI_PKT_DATA&&(b[1]&3)==1)))return;
  const uint8_t* source=b+10;if(source[0]&1)return;uint64_t address=0;for(unsigned i=0;i<6;i++)address=address<<8|source[i];if(!address)return;
- taskENTER_CRITICAL(&guard);unsigned next=(head+1)%32;if(next==tail)overflow++;else{queue[head]={address,p->rx_ctrl.rssi};head=next;}taskEXIT_CRITICAL(&guard);
+ taskENTER_CRITICAL(&guard);unsigned next=(head+1)%32;if(next==tail)overflow++;else{queue[head]={address,int8_t(p->rx_ctrl.rssi)};head=next;}taskEXIT_CRITICAL(&guard);
 }
 bool busy(){return portalActive()||radar.active||radar.csi!=Radar::CsiOff||wifiProbeActive()||internet.enabled||internet.periodicActive();}
 }

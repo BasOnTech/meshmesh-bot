@@ -51,7 +51,7 @@ const char* Tour::nameOf(uint64_t id) const{
 
 void Net::begin(){load();}
 // In place: a tournament is large for the stack of the radio callback.
-void Net::reset(Tour& t){memset(&t,0,sizeof t);t.rounds=5;t.hours=24;}
+void Net::reset(Tour& t){memset((void*)&t,0,sizeof t);t.rounds=5;t.hours=24;}
 Tour* Net::find(uint16_t id){for(auto& t:tours)if(t.state!=Free&&t.id==id)return &t;return nullptr;}
 Tour* Net::slot(){Tour* old=nullptr;for(auto& t:tours){if(t.state==Free)return &t;if(!t.active()&&(!old||int32_t(t.changedAt-old->changedAt)<0))old=&t;}return old;}
 unsigned Net::waiting() const{unsigned n=0;for(auto& t:tours)n+=t.state==Invited||t.unseen;return n;}
