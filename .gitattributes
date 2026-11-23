@@ -9,7 +9,6 @@ include/I18nFonts.h linguist-generated=true -diff
 include/AaFonts.h linguist-generated=true -diff
 include/EmojiData.h linguist-generated=true -diff
 include/PetSprites.h linguist-generated=true
-include/NetCatalog.h linguist-generated=true
 include/Version.h linguist-generated=true
 
 # Binary assets

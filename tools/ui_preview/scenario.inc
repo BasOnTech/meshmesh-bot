@@ -73,8 +73,6 @@ static void scenario(){
   RadioProfile before;before.frequency=869.525f;before.bandwidth=250;before.sf=11;before.cr=5;
   config.trial=before;config.setRadio(test);key(0x90);key(13);for(int i=0;i<11;i++)key(0xb6);shot("radio-test");
   key(0x86);config.trial=RadioProfile();config.setRadio(saved);}
- // The network search found the Moscow profile (the preview's netfind): the row offers to test it.
- key(0x90);key(13);for(int i=0;i<12;i++)key(0xb6);key(13);shot("radio-net");netfind::state.phase=netfind::State::Idle;key(0x86);
  // Regional presets: <> on the first row steps through the list (the preview takes every frequency) and fills the radio rows.
  {key(0x90);key(13);for(int i=0;i<16;i++)key(0xb7);shot("radio-preset");
   if(uiStatus().indexOf("\"radio_preset\":\"Netherlands (Limburg)\"")<0){printf("FAIL preset Netherlands (Limburg): %s\n",uiStatus().c_str());exit(1);}
@@ -228,8 +226,8 @@ static void scenario(){
  key(0xa3);key(13);expect("MHz +1","\"radio_draft\":\"869.731\"");key(0xa3);key(0xa3);key(13);key(13);expect("10 kHz +2","\"radio_draft\":\"869.751\"");shot("heltec-radio-freq");
  key(0xa3);key(0xa3);expect("digits done","\"radio_editing\":false");key(13);key(13);key(0xa3);key(13);expect("SF9","\"radio_draft\":\"9\"");shot("heltec-radio-sf");key(0xa3);
  for(int i=0;i<7;i++)key(13);expect("Find row","\"radio_row\":9");key(0xa3);shot("heltec-radio-find");
- for(int i=0;i<13;i++)key(13);expect("Region row","\"radio_row\":8");key(0xa3);key(13);key(13);key(13);key(0xa3);shot("heltec-radio-region");
- for(int i=0;i<2;i++)key(13);expect("Previous row","\"radio_row\":10");shot("heltec-radio-prev");key(13);expect("Network row","\"radio_row\":11");key(0xa3);shot("heltec-radio-net");key(13);expect("Save row","\"radio_row\":12");shot("heltec-radio-save");key(0xa3);expect("saved and closed","\"page\":\"settings\"");
+ for(int i=0;i<12;i++)key(13);expect("Region row","\"radio_row\":8");key(0xa3);key(13);key(13);key(13);key(0xa3);shot("heltec-radio-region");
+ for(int i=0;i<2;i++)key(13);expect("Previous row","\"radio_row\":10");shot("heltec-radio-prev");key(13);expect("Save row","\"radio_row\":11");shot("heltec-radio-save");key(0xa3);expect("saved and closed","\"page\":\"settings\"");
 #else
  config.role=RoleRepeater;key(0x82);shot("repeater");key(0x86);
  config.role=RoleRoom;key(0x82);shot("room");key(13);for(char ch:std::string("Meet at the gate after lunch"))key(ch);shot("room-post");key(0x86);

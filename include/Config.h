@@ -43,7 +43,6 @@ struct Config {
   // The profile before the last change of the shared radio parameters ("radio previous" returns to it), and
   // during a test ("radio try") the saved one: the test lives in memory only, a restart brings the saved one back.
   RadioProfile previous,trial;
-  bool netAuto=true; // the network search runs by itself near a catalogue place with other profiles (NetFind.h)
   bool doubleBack=false; // one-button boards: a double click steps back (single clicks then wait for a second one)
   RadioProfile radio() const {RadioProfile r;r.frequency=frequency;r.bandwidth=bandwidth;r.sf=sf;r.cr=cr;return r;}
   void setRadio(const RadioProfile& r){frequency=r.frequency;bandwidth=r.bandwidth;sf=r.sf;cr=r.cr;}

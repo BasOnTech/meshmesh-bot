@@ -41,11 +41,6 @@ SHOTS = {
     'web-motion': ('motion', 'csi=1', '', False),
     'web-board': ('board/3F2A', '', '', False),
     'web-radio': ('radio', '', '', False),
-    # The networks catalogue: a network chosen in the list, then a test that runs (state of the page only).
-    'web-networks': ('radio', '', "netAction('open').then(()=>{netPick.net='mow-01';renderNetList()})", False),
-    'web-networks-test': ('radio', '', "config.radio_trial={frequency:config.frequency,bandwidth:config.bandwidth,sf:config.sf,cr:config.cr};Object.assign(config,{frequency:868.731,sf:7,cr:7});netPick.check={n:3};buildEditor('radio');renderNet(true)", False),
-    # The network search of the board: the answers of the demo (tools/web_demo.py NETFIND).
-    'web-netfind': ('radio', '', "netScanLoad().then(()=>{$('netScan').scrollIntoView({block:'start'});scrollBy(0,-120)})", False),
     # Backup (docs/backup.md): the save card, then the preview of a restore from a made-up copy of this demo board.
     'web-backup': ('backup', '', '', False),
     'web-backup-restore': ('backup', '', "request('/api/config').then(c=>backupOpen({files:[new File([JSON.stringify({format:'meshmesh-backup',version:1,"

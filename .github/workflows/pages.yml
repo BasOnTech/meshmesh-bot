@@ -26,7 +26,6 @@ jobs:
       - run: |
           python tools/version.py --check
           python tools/i18n.py check
-          python tools/networks.py check
           npm ci --prefix tools
           node tools/web_i18n.cjs check
 

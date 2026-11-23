@@ -11,7 +11,6 @@
 #include "Dice.h"
 #include "Power.h"
 #include "Regions.h"
-#include "NetFind.h"
 #include "Notifications.h"
 #include "QuickSend.h"
 #include "People.h"
@@ -254,9 +253,8 @@ template<class T> String applyOne(const char* key,T value){StaticJsonDocument<96
 // Region: the default one of our floods (Regions.h), chosen among the regions found; Find regions: asks the
 // repeaters that hear this node (hold). Previous: the profile before the last change of frequency, BW, SF or CR (hold
 // returns to it); during a test of a network profile from the page or app it is the test (hold keeps it, a restart
-// returns the saved one). Network: the network search (NetFind.h): hold starts it near the position (or stops it),
-// and once a network is found tests it (radio try).
-enum RadioRow {RowFreq,RowBw,RowSf,RowCr,RowPower,RowHops,RowRelay,RowHash,RowRegion,RowFind,RowPrev,RowNet,RowSave,RowCancel,RadioRows};
+// returns the saved one).
+enum RadioRow {RowFreq,RowBw,RowSf,RowCr,RowPower,RowHops,RowRelay,RowHash,RowRegion,RowFind,RowPrev,RowSave,RowCancel,RadioRows};
 bool radioEdit=false,radioEditing=false;int radioRow=0,radioDigit=0;
 // The draft lives in zeroed memory, made a copy of config when the editor opens: a Config object with its defaults
 // would keep them in the image (536 bytes of the nRF52 flash).
@@ -265,7 +263,7 @@ void openRadio(){new(radioDraftSpace) Config(config);radioEdit=true;radioEditing
 String radioName(int i){
  switch(i){case RowFreq:return t("Frequency");case RowBw:return t("Bandwidth");case RowSf:return "SF";case RowCr:return "CR";
  case RowPower:return t("Power");case RowHops:return t("Relay limit");case RowRelay:return t("Relaying");case RowHash:return t("Path hash");
- case RowRegion:return t("Region");case RowFind:return t("Find regions");case RowNet:return t("Find network");
+ case RowRegion:return t("Region");case RowFind:return t("Find regions");
  case RowPrev:return config.trial.set()?t("Test"):t("Previous");
  case RowSave:return t("Save");default:return t("Cancel");}
 }
@@ -275,8 +273,6 @@ String radioValue(const Config& c,int i){
  case RowHash:return plural(c.pathHash,"byte","bytes");
  case RowRegion:return c.region[0]?String(c.region):String(t("none"));
  case RowPrev:return config.trial.set()?t("keep"):config.previous.set()?String(config.previous.frequency,3)+"/"+String(config.previous.sf):String("-");
- case RowNet:{auto& s=netfind::state;if(netfind::running())return String(s.step+1)+"/"+String(s.count);
-  return s.phase==netfind::State::Done?(s.best!=255?"SF"+String(s.results[s.best].radio.sf)+" "+String(s.results[s.best].radio.frequency,3):String("-")):String("");}
  case RowFind:{auto& s=regions::search;return regions::searching()?String(s.repeaters)+t(" rpt..."):s.state==regions::Search::Done?plural(s.count,"found","found"):String("");}}return "";
 }
 bool radioChanged(){for(int i=0;i<RowSave;i++)if(radioValue(radioDraft,i)!=radioValue(config,i))return true;return false;}
@@ -298,10 +294,6 @@ void radioStep(int dir){
  case RowHash:d.pathHash=1+(d.pathHash-1+dir+3)%3;break;
  case RowRegion:strlcpy(d.region,regions::cycle(d.region,dir,false).c_str(),sizeof d.region);break;
  case RowFind:if(!regions::find())notice(t("Radio offline"));break;
- case RowNet:{auto& s=netfind::state;if(netfind::running()){netfind::stop();break;}
-  if(s.phase==netfind::State::Done&&s.best!=255&&!config.sameRadio(s.results[s.best].radio)){String r=netfind::use(s.best);bool done=r.startsWith("OK");if(done)radioDraft.setRadio(config.radio());
-   notice(done?t("Radio test: restart returns"):r.startsWith("ERR radio busy")?t("Radio busy, retry"):r.substring(4));break;}
-  if(!netfind::start(false))notice(meshRadio.busy()||regions::searching()?t("Radio busy, retry"):t("Radio offline"));break;}
  case RowPrev:{if(!config.trial.set()&&!config.previous.set()){notice(t("No previous settings"));break;}
   String r=executeCommand(config.trial.set()?"radio keep":"radio previous");bool done=r.startsWith("OK");if(done)radioDraft.setRadio(config.radio());
   notice(done?t("Radio settings changed"):r.startsWith("ERR radio busy")?t("Radio busy, retry"):r.substring(4));break;}
@@ -317,7 +309,7 @@ void radioButton(bool click,bool hold){
  if(radioEditing){if(click)radioStep(1);else if(hold){if(radioRow==RowFreq&&radioDigit<3)radioDigit++;else{radioEditing=false;radioDigit=0;}}return;}
  if(click){radioRow=(radioRow+1)%RadioRows;return;}
  if(!hold)return;
- if(radioRow==RowSave)radioSave();else if(radioRow==RowCancel)radioEdit=false;else if(radioRow==RowRelay||radioRow==RowFind||radioRow==RowPrev||radioRow==RowNet)radioStep(1);else{radioEditing=true;radioDigit=0;}
+ if(radioRow==RowSave)radioSave();else if(radioRow==RowCancel)radioEdit=false;else if(radioRow==RowRelay||radioRow==RowFind||radioRow==RowPrev)radioStep(1);else{radioEditing=true;radioDigit=0;}
 }
 // The key hints of the radio screen: what a click and a hold (or the joystick) do now.
 String radioHint(){
@@ -925,10 +917,6 @@ void uiTick(){
   }else if(config.notifyFailed&&(e.kind==notifications::TxError||e.kind==notifications::Unconfirmed)){ledAt=now;ledPattern=3;notice(e.kind==notifications::TxError?t("Radio TX error"):channels::isChannel(e.message.destination)?t("No repeat heard"):t("Delivery not confirmed"));}
   if(wake){if(screenOff){screenOff=false;hardware.brightness(config.brightness);}lastInput=now;}
  }
- // A network found by the automatic search (NetFind.h): told once, the screen wakes.
- {static uint16_t netSeen=0;auto& s=netfind::state;if(s.found!=netSeen){netSeen=s.found;if(s.best!=255){auto& r=s.results[s.best];
-  notice(t("Network nearby: ")+(r.place!=255?netfind::placeName(r.place)+" ":String())+"SF"+String(r.radio.sf));ledAt=now;ledPattern=1;
-  if(screenOff){screenOff=false;hardware.brightness(config.brightness);}lastInput=now;dirty=true;}}}
  // Game news: a popup (none while counting or rolling), the LED and the screen awake. News of the game on the
  // screen updates the board instead of covering it (show false).
  auto news=[&](const String& text,uint8_t kind,bool show){if(show){chessPopupText=text;newsKind=kind;chessPopupAt=page==DicePage||page==PeoplePage?0:now;}

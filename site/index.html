@@ -443,8 +443,6 @@ const FEATURES=[
  {id:'games',ic:'chess',c:'#e9b13b',shots:['m9-checkers','m9-sea-mid','heltec-checkers-move','heltec-sea-hunt','m9-home-folder','m9-folder','m9-checkers-chain','m9-sea-lost']},
  {id:'emoji',ic:'chat',c:'#e9b13b',shots:['m9-chat','heltec-popup','m9-threads']},
  {id:'backup',ic:'backup',c:'#4f9df7',shots:['web-backup-restore','web-backup']},
- {id:'netfind',ic:'tower',c:'#4cc26b',shots:['m9-radio-net','web-netfind','heltec-radio-net']},
- {id:'networks',ic:'region',c:'#4f9df7',shots:['m9-radio-test','web-networks','web-networks-test']},
  {id:'sheet',ic:'dice',c:'#a78bfa',shots:['m9-dice-sheet','m9-dice-sheet-ret','m9-dice-templates','heltec-dice-sheet','m9-dice-offer']},
  {id:'counter',ic:'tally',c:'#4cc26b',shots:['m9-people-cards','m9-people-new','heltec-people-two','m9-home']},
  {id:'wardrive',ic:'route',c:'#4cc26b',shots:['m9-wardrive','m9-wardrive-map','heltec-wardrive','heltec-wardrive-repeaters']},
@@ -472,7 +470,7 @@ const FEATURES=[
 const HERO=['m9-home','m9-chat','m9-map','m9-radar','m9-chess-italian','m9-motion'];
 const OLED=['heltec-home','heltec-messages','heltec-nodes','heltec-radar','heltec-gps','heltec-popup'];
 // Documents: the overview and the details, in English (docs/).
-const DOCS=[['README.md','doc.readme'],['docs/channels.md','doc.channels'],['docs/regions.md','doc.regions'],['docs/networks.md','doc.networks'],['docs/wardrive.md','doc.wardrive'],['docs/meshcore-migration.md','doc.migration'],['docs/companion.md','doc.companion'],['docs/repeater.md','doc.repeater'],['docs/pet.md','doc.pet'],['docs/dice.md','doc.dice'],['docs/chess.md','doc.chess'],['docs/games.md','doc.games'],['docs/maps-format.md','doc.maps'],['docs/feature-parity.md','doc.parity'],['docs/verification.md','doc.verification']];
+const DOCS=[['README.md','doc.readme'],['docs/channels.md','doc.channels'],['docs/regions.md','doc.regions'],['docs/wardrive.md','doc.wardrive'],['docs/meshcore-migration.md','doc.migration'],['docs/companion.md','doc.companion'],['docs/repeater.md','doc.repeater'],['docs/pet.md','doc.pet'],['docs/dice.md','doc.dice'],['docs/chess.md','doc.chess'],['docs/games.md','doc.games'],['docs/maps-format.md','doc.maps'],['docs/feature-parity.md','doc.parity'],['docs/verification.md','doc.verification']];
 function docPath(path){
  if(path==='README.md')return lang==='en'?path:`README.${lang}.md`;
  return path;

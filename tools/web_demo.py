@@ -96,7 +96,7 @@ CONFIG = {
     'name': 'M9', 'frequency': 869.618, 'bandwidth': 62.5, 'sf': 8, 'cr': 8, 'power': 14, 'hops': 3, 'path_hash': 2,
     'relay': False, 'gps': True, 'sound': True, 'battery_volts': False, 'lang': 'en', 'brightness': 180,
     'auto_lock': 120, 'dim_after': 30, 'lock_details': False, 'notify_led': 1, 'notify_wake': 1, 'notify_popup': 1,
-    'notify_failed': True, 'notify_words': '', 'utc_offset': 120, 'region': '', 'net_auto': True,
+    'notify_failed': True, 'notify_words': '', 'utc_offset': 120, 'region': '',
     'apps': 'chats quick nodes nav map radar wardrive people {games chess checkers sea pet dice solitaire} connect health settings',
 }
 CHANNELS = {'max': 8, 'channels': [
@@ -358,25 +358,6 @@ def radio_command(line):
     return 'ERR radio try {JSON}|keep|revert|previous'
 
 
-# The network search of the board (netfind): a finished one, the Moscow profile answered by three repeaters.
-NETFIND = {'state': 'done', 'auto': False, 'located': True, 'step': 3, 'total': 3, 'best': 1, 'found': 0, 'enabled': True,
-           'catalogue': '2026-10-29', 'results': [
-               {'frequency': 869.618, 'bandwidth': 62.5, 'sf': 8, 'cr': 8, 'current': True, 'done': True, 'repeaters': 0, 'packets': 0},
-               {'frequency': 868.731, 'bandwidth': 62.5, 'sf': 7, 'cr': 7, 'place': 'Москва и Московская область', 'done': True,
-                'repeaters': 3, 'packets': 4, 'snr': 6.5},
-               {'frequency': 868.731, 'bandwidth': 62.5, 'sf': 8, 'cr': 8, 'place': 'Москва и Московская область', 'done': True,
-                'repeaters': 0, 'packets': 0}]}
-
-
-def netfind_command(line):
-    if line == 'netfind':
-        return json.dumps(NETFIND, ensure_ascii=False)
-    if line == 'netfind stop' or line.startswith('netfind start'):
-        return 'OK network search started' if line.startswith('netfind start') else 'OK network search stopped'
-    if line.startswith('netfind use '):
-        r = NETFIND['results'][int(line[12:])]
-        return radio_set({k: r[k] for k in ('frequency', 'bandwidth', 'sf', 'cr')}, 'try')
-    return 'ERR netfind start [all|LAT LON]|stop|use N'
 
 
 DEMO_KEY = '5a7c' + '00' * 62  # a demo node key (not a real one): "identity" for the backup page (docs/backup.md)
@@ -503,8 +484,6 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send(404, 'no', 'text/plain')
             d = {k: v for k, v in json.loads(f.read_text()).items() if (v if isinstance(v, str) else any(v.values()))}
             return self.send(200, 'globalThis.MeshMeshWebDict=' + json.dumps(d, ensure_ascii=False) + ';', 'application/javascript; charset=utf-8')
-        if url.path == '/networks.json':  # the catalogue the app carries next to the page
-            return self.send(200, (ROOT / 'site/networks.json').read_text(), 'application/json; charset=utf-8')
         if url.path == '/api/maps/tile':
             f = ROOT / 'tools/web_demo/tiles' / f"{query.get('z', [''])[0]}_{query.get('x', [''])[0]}_{query.get('y', [''])[0]}.png"
             return self.send(200, mmt(f, query), 'application/octet-stream') if f.exists() else self.send(404, 'Map tile not saved', 'text/plain')
@@ -527,8 +506,6 @@ class Handler(BaseHTTPRequestHandler):
             reply = radio_set(body) if STATUS['storage'] else 'ERR settings storage; restored previous'
         elif url.path == '/api/command' and isinstance(body, dict) and str(body.get('command', '')).startswith('radio '):
             reply = radio_command(body['command'])
-        elif url.path == '/api/command' and isinstance(body, dict) and str(body.get('command', '')).startswith('netfind'):
-            reply = netfind_command(body['command'])
         elif url.path == '/api/command' and isinstance(body, dict) and str(body.get('command', '')).startswith('duel'):
             reply = duel_command(body['command'])
         elif url.path == '/api/command' and isinstance(body, dict):

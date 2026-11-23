@@ -23,7 +23,6 @@ MeshCore nodes.
 - **Channels** — up to 8 MeshCore channels: join by #hashtag, `meshcore://` link or QR code, name and key;
   create a private one, invite contacts by direct message, find channels heard on air. [docs/channels.md](docs/channels.md)
 - **Regions** — MeshCore flood scope: a default region and one per channel, a search of the regions nearby repeaters serve; repeaters set up with the `region` commands. [docs/regions.md](docs/regions.md)
-- **Network of your city** — the frequency, bandwidth, SF and CR of a local MeshCore network from the community catalogue, written from the website (stock MeshCore boards too) or applied in the app with a test, Keep, Revert and a way back to the previous settings. The board can also find the network on air: it listens to the catalogue profiles and asks the repeaters nearby, and does it by itself near another city (0.29.0). [docs/networks.md](docs/networks.md)
 - **Backup** — settings, channels with keys, contacts, Quick Send, counters, character sheets and, optionally, the node key in one JSON file from the device page or the app; a restore shows what will change and writes only what you tick, to the same or another board (0.30.0). [docs/backup.md](docs/backup.md)
 - **Offline maps** — OpenStreetMap with relief and contour lines, kept on the phone (app) or the device SD card; nodes, direct links and GPS on the map, with any board.
 - **Wardriving** — a coverage map of the mesh: packets heard and channel pings with the repeaters that pass them on, logged with a trusted GPS or phone position; Wi-Fi and Bluetooth too on ESP32; export to CSV, GeoJSON, KML and WiGLE. [docs/wardrive.md](docs/wardrive.md)
@@ -84,7 +83,7 @@ The screen UI can be rendered on a computer without a board: `tools/ui_preview/b
 
 ## Documentation
 
-Detailed documentation: [channels](docs/channels.md), [regions](docs/regions.md), [network of your city](docs/networks.md), [backup](docs/backup.md), [MeshCore compatibility](docs/meshcore-migration.md),
+Detailed documentation: [channels](docs/channels.md), [regions](docs/regions.md), [backup](docs/backup.md), [MeshCore compatibility](docs/meshcore-migration.md),
 [repeater and room modes](docs/repeater.md),
 [chess protocol](docs/chess.md), [mesh pet](docs/pet.md), [dice](docs/dice.md), [map format](docs/maps-format.md), [comparison with MeshCore](docs/feature-parity.md),
 [hardware verification](docs/verification.md).

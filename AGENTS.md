@@ -5,7 +5,7 @@
 The project is firmware for the Elecrow ThinkNode M9 and the Heltec V4 (this fork supports only these two; the upstream MeshMesh also built for nRF52 and other ESP32 boards): a standalone interface,
 MeshCore chats and channels (hashtag, link/QR, key, invitations; `docs/channels.md`, `src/Channels.cpp`), MeshCore regions
 (default region and per-channel region, search at neighbouring repeaters, companion commands 54/55/63/64; `docs/regions.md`, `src/Regions.cpp`,
-`src/RegionSearch.inc`, check `tools/region_check.py`), city network — a radio profile from the community directory (`site/networks.json`, `tools/networks.py`; the page — `renderNet` in `web/index.html`, trial and previous profile on the board — `radio try|keep|revert|previous`, on-air network search — `netfind`, `src/NetFind.inc`, the directory digest `include/NetCatalog.h`, `docs/networks.md`), LoRa, offline maps (on the device SD or in phone storage in the app — `android/.../api/MapStore.kt`; relief and contour lines from Terrain Tiles during preparation; node map without a base layer — `drawMap` in `web/index.html`; `docs/maps-format.md`), Wi-Fi, BLE, a signal radar, a Wi-Fi CSI motion sensor,
+`src/RegionSearch.inc`, check `tools/region_check.py`), a radio settings test and the previous profile (`radio try|keep|revert|previous`, `renderNet` in `web/index.html`), LoRa, offline maps (on the device SD or in phone storage in the app — `android/.../api/MapStore.kt`; relief and contour lines from Terrain Tiles during preparation; node map without a base layer — `drawMap` in `web/index.html`; `docs/maps-format.md`), Wi-Fi, BLE, a signal radar, a Wi-Fi CSI motion sensor,
 chess with contacts (M9 screen and the web page of both boards, MeshCore direct messages,
 rated ELO games with a result signed by both nodes' keys — `src/ChessRating.cpp`, Swiss-system tournaments — `src/ChessTour.cpp`; `docs/chess.md`; draughts and battleship with contacts, unrated — `src/Checkers.cpp`, `src/Sea.cpp`, `src/Duel.cpp`, screens `src/UiDuel.inc`, `src/UiDuelCompact.inc`, `docs/games.md`, protocol check `tools/duel_check.py`; menu app folders (the "Games" folder) — `src/Apps.cpp`; the site page `chess/` plays through a stock MeshCore companion over Web Serial/Bluetooth —
 `web/chess-companion.js`, `tools/chess_site.py`), a network pet — a tamagotchi that feeds on radio traffic,
@@ -386,35 +386,16 @@ on the T114/GAT562.
 Since 0.26.0 blocks can also be edited on the M9/T-Deck screen (`E` — block, `A` — new, fields as rows, `src/UiDice.inc` `drawDiceBlock`),
 and the board adds the characters "D&D 5e" and "R.E.T." once (`State::flags`, `dice.bin` version 3; version 2 is read).
 
-## City network (0.27.0 / Android 0.19.0)
+## Radio test and previous profile (0.27.0)
 
-The directory is a copy of VoxMesh/meshcore-local-networks' `catalog.json` in `site/networks.json` (`tools/networks.py update|check`,
-checked in Pages); the app embeds it next to the page, the "Update" button keeps a new copy in the browser. The firmware and
-the site do not change the radio without an explicit choice and confirmation per board; only frequency, BW, SF, CR change. The board remembers
-the profile before the last change (`Config::previous`, NVS `radio_prev`) and the trial (`Config::trial`: `Config::save` writes the saved
-profile, a restart brings it back). Screens: the row "Previous radio"/"Radio trial" (M9/T-Deck), "Previous"/"Trial" (compact).
-The ESP32 page gets the directory from the firmware (`/networks.json`, `tools/pio_web.py`). Checked on the M9: `radio` commands, rollback
-by restart, the screen, writing over USB companion as the site does, the page via `tools/web_usb_bridge.py`. Not checked: other boards,
-Web Serial/Bluetooth from the browser, stock MeshCore, the phone's position in the app.
+The board remembers the profile before the last change of frequency, BW, SF or CR (`Config::previous`, NVS `radio_prev`)
+and a test (`Config::trial`: `Config::save` writes the saved profile, a restart brings it back): `radio try|keep|revert|previous`,
+the row "Previous radio"/"Radio test" (M9), "Previous"/"Test" (Heltec), the Keep/Revert/Check block on the page (`renderNet`).
+Only frequency, BW, SF and CR change. The upstream city network catalogue and the on-air network search built on it (0.29.0)
+were removed: every place in it was Russian.
 Since 0.27.0 nRF52 does not start without USB with the battery below 3.4 V and shuts down after 30 s below 3.3 V (`src/Power.cpp`,
 `docs/power.md`): a reset on an empty battery in the middle of rewriting the first storage page probably erased the T114's storage twice.
 Triggering on a discharged battery is not checked; the Chinese T114 image is 712108 bytes (`Platform.cpp`, `Power.cpp` with `-Os`).
-
-## On-air network search (0.29.0 / Android 0.20.0)
-
-`src/NetFind.inc` (in `MeshRadio.cpp`), `include/NetFind.h`: the board cycles through the profiles of the built-in directory digest
-(`include/NetCatalog.h`; written by `tools/networks.py update`, verified by `check` in Pages): the current one, then places within 150 km of
-a trusted position (GPS fix or the phone from the app via `wardrive::position`), without a position — all profiles. On each —
-`MeshRadio::tune` (the transceiver without saving settings, `applyConfig` restores the settings and stops the search), a zero-hop
-repeater discovery request and 8 s of reception; then the saved profile. While the search runs, our messages wait and relay is off.
-A find is applied only by a person as `radio try` (`netfind use N`, the "Find network" row on the screens, a block on the page).
-`net_auto` (NVS `net_auto`, on by default): near a place whose networks do not include the current profile, the search starts by itself
-once per boot for that place; the screen reports "Network nearby". Page and app — `netScan`/`renderNetScan` in
-`web/index.html` (via `/api/command`, Kotlin unchanged). For the Chinese T114 image to fit, the notification queues and the
-radar are allocated on the heap (previously their initial values took ~9.7 KB of flash in .data), `Chess.cpp` on nRF52 is `-Os`.
-Checked: the build of all boards, the screens in `tools/ui_preview`, the page with `tools/web_demo.py`; on the T114 (`4802e8f`, boot 8)
-search across all profiles and by coordinates, stopping, restoring the profile, trial and rollback (`docs/verification.md`). Finding another
-network, automatic start by GPS/phone, the screens on the boards and the other boards on hardware are not checked.
 
 ## Emoji on screens and T114 backlight (0.32.0)
 

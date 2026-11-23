@@ -8,7 +8,7 @@ The page reads and writes the copy with the board's ordinary commands, so the sa
 ## What it holds
 
 - **Settings** (`config`): name, radio profile, power, relaying, path hash, region, screen language and
-  brightness, lock, notifications, time zone, app order, network search (`net_auto`). The previous and test radio
+  brightness, lock, notifications, time zone, app order. The previous and test radio
   profiles (`radio_prev`, `radio_trial`) are not carried over.
 - **Node key** (optional, ticked by default): the MeshCore private key in MeshCore's export format — 64 bytes as
   hexadecimal digits. With it a restored or new board stays the same node for your contacts.

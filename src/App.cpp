@@ -20,7 +20,6 @@
 #include "Dice.h"
 #include "Power.h"
 #include "Regions.h"
-#include "NetFind.h"
 #include "Notifications.h"
 #include "ChannelPolicy.h"
 #include "QuickSend.h"
@@ -134,7 +133,7 @@ String configJson(bool includeKey) {
   d["hops"]=config.hops;d["path_hash"]=config.pathHash;d["relay"]=config.relay;d["gps"]=config.gps;d["sound"]=config.sound;d["battery_volts"]=config.batteryVolts;d["lang"]=langCodes[config.lang<LangCount?config.lang:0];d["brightness"]=config.brightness;if(includeKey)d["key"]=config.keyHex();
   d["auto_lock"]=config.autoLock;d["dim_after"]=config.dimAfter;d["lock_details"]=config.lockDetails;
   d["notify_led"]=config.notifyLed;d["notify_wake"]=config.notifyWake;d["notify_popup"]=config.notifyPopup;d["notify_failed"]=config.notifyFailed;d["notify_words"]=config.notifyWords;
-  d["utc_offset"]=config.utcOffset;d["apps"]=appsText(config.apps);d["region"]=config.region;d["preset"]=config.preset;d["net_auto"]=config.netAuto;
+  d["utc_offset"]=config.utcOffset;d["apps"]=appsText(config.apps);d["region"]=config.region;d["preset"]=config.preset;
 #if defined(MM_ONE_BUTTON)
   d["double_back"]=config.doubleBack; // the page shows the switch only where the board has it
 #endif
@@ -185,8 +184,8 @@ String applySettings(JsonObjectConst v) {
     } else if(name=="lang") {
       int l=value.is<const char*>()?langFromCode(value.as<String>()):-1;
       if(l<0||!langAvailable(l)){String all;for(int i=0;i<LangCount;i++)if(langAvailable(i))all+=String(all.length()?"|":"")+langCodes[i];return "ERR lang: "+all;}next.lang=l;
-    } else if(name=="relay"||name=="gps"||name=="sound"||name=="battery_volts"||name=="lock_details"||name=="notify_failed"||name=="net_auto"||name=="double_back") {
-      if(!value.is<bool>())return "ERR boolean required";bool n=value.as<bool>();if(name=="net_auto")next.netAuto=n;if(name=="double_back")next.doubleBack=n;
+    } else if(name=="relay"||name=="gps"||name=="sound"||name=="battery_volts"||name=="lock_details"||name=="notify_failed"||name=="double_back") {
+      if(!value.is<bool>())return "ERR boolean required";bool n=value.as<bool>();if(name=="double_back")next.doubleBack=n;
       if(name=="notify_failed")next.notifyFailed=n;if(name=="relay")next.relay=n;if(name=="gps")next.gps=n;if(name=="sound")next.sound=n;if(name=="battery_volts")next.batteryVolts=n;if(name=="lock_details")next.lockDetails=n;
     } else return "ERR unknown setting: "+name;
   }
@@ -280,18 +279,6 @@ String executeCommand(const String& input) {
   if(line=="nodes")return nodesJson();
   if(line=="channels")return channelsJson(true); // USB and a paired BLE client: the private links too
   if(line=="regions")return regions::json();
-  // Network search (NetFind.h): "netfind start" - the places near the position (all profiles without one), "all" - every
-  // profile, "LAT LON" - near that position (the page and the app: the phone's or browser's); "use N" tests result N.
-  if(line=="netfind")return netfind::json();
-  if(line=="netfind stop"){netfind::stop();return "OK network search stopped";}
-  if(line.startsWith("netfind use "))return netfind::use(line.substring(12).toInt());
-  if(line=="netfind start"||line.startsWith("netfind start ")){
-    if(config.role!=RoleNormal)return "ERR mode: the network search needs the normal mode";
-    String a=line.substring(13);a.trim();float lat=0,lon=0;int space=a.indexOf(' ');bool at=space>0;
-    if(at){lat=a.substring(0,space).toFloat();lon=a.substring(space+1).toFloat();if(fabsf(lat)>90||fabsf(lon)>180||(!lat&&!lon))return "ERR netfind start [all|LAT LON]";}
-    else if(a.length()&&a!="all")return "ERR netfind start [all|LAT LON]";
-    return netfind::start(a=="all",at?&lat:nullptr,at?&lon:nullptr)?"OK network search started":meshRadio.busy()||regions::searching()?"ERR radio busy; retry":"ERR radio offline";
-  }
   if(line=="regions find")return config.role!=RoleNormal?"ERR mode: the region search needs the normal mode":regions::find()?"OK region search started":"ERR radio offline";
   if(line.startsWith("channel do ")){StaticJsonDocument<512>d;if(deserializeJson(d,line.substring(11))||!d.is<JsonObject>())return "ERR channel do {JSON}";return channelCommand(d.as<JsonObjectConst>());}
   if(line=="hello")return meshRadio.sendHello()?"OK hello queued":"ERR hello failed";
@@ -335,5 +322,5 @@ String executeCommand(const String& input) {
     DynamicJsonDocument d(2048);if(deserializeJson(d,line.substring(4)) || !d.is<JsonObject>())return "ERR set {JSON object}";
     return applySettings(d.as<JsonObjectConst>());
   }
-  return "Commands: status, role, role normal|repeater|room, server, server secrets, server cli TEXT, server post TEXT, config, key, identity, identity set HEX, contact add {JSON}, connections, messages, quick, quick do {JSON}, people, people do {JSON}, wardrive, wardrive do {JSON}, wardrive log mesh|nets FROM, radar, radar web, radar do {JSON}, set {JSON}, radio try {JSON}|keep|revert|previous, send ALL|NODE_ID|CHANNEL_ID text, sendjson {JSON}, channels, channel do {JSON}, regions, regions find, netfind, netfind start [all|LAT LON]|stop|use N, chess, duel, duel invite NODE_ID checkers|sea, pet, pet adopt|release|cuddle|feed|heal|mortal on|off|name NAME|skip SECONDS, hello, position, resetpath NODE_ID, forget NODE_ID, selftest, wifi, internet, ble, remote, remote login|status|cli|trace NODE_ID [text], recalibrate, fsformat, restart, poweroff";
+  return "Commands: status, role, role normal|repeater|room, server, server secrets, server cli TEXT, server post TEXT, config, key, identity, identity set HEX, contact add {JSON}, connections, messages, quick, quick do {JSON}, people, people do {JSON}, wardrive, wardrive do {JSON}, wardrive log mesh|nets FROM, radar, radar web, radar do {JSON}, set {JSON}, radio try {JSON}|keep|revert|previous, send ALL|NODE_ID|CHANNEL_ID text, sendjson {JSON}, channels, channel do {JSON}, regions, regions find, chess, duel, duel invite NODE_ID checkers|sea, pet, pet adopt|release|cuddle|feed|heal|mortal on|off|name NAME|skip SECONDS, hello, position, resetpath NODE_ID, forget NODE_ID, selftest, wifi, internet, ble, remote, remote login|status|cli|trace NODE_ID [text], recalibrate, fsformat, restart, poweroff";
 }
