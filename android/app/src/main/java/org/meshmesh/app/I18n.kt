@@ -9,7 +9,7 @@ import org.json.JSONObject
  * web/i18n/<lang>.js) with the Russian text as the key; {0}, {1}… stand for the values. Russian needs none.
  */
 object I18n {
-    val LANGS = listOf("en", "ru", "uk", "es", "pt", "fr", "de", "it", "pl", "tr", "zh", "ja", "ko", "ar", "id")
+    val LANGS = listOf("en", "ru")
     @Volatile var lang = "ru"; private set
     @Volatile private var dict: JSONObject? = null
 

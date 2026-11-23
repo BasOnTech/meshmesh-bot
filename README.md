@@ -46,9 +46,8 @@ MeshCore nodes.
 - **GPS and compass**, position sharing, lock screen, phonetic Cyrillic keyboard input.
 - **Web interface** over the device's own Wi-Fi access point or the home Wi-Fi it joins (M9), and an **Android app**
   (Wi-Fi, Bluetooth LE or USB) with message notifications.
-- **Device UI in 15 languages**: English, Russian, Ukrainian, Spanish, Portuguese, French, German, Italian,
-  Polish, Turkish, Chinese, Japanese, Korean, Arabic and Indonesian. The website installs the firmware with
-  the language you pick; Settings change it later. The web interface and the Android app speak the same 15 languages.
+- **Device UI in English and Russian** (Dutch is planned). The website installs the firmware with the language
+  you pick; Settings change it later. The web interface and the Android app speak the same languages.
 
 ## Boards
 

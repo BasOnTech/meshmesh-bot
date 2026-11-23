@@ -2,7 +2,7 @@
 """Screenshots of the device page for the site, in every language: tools/web_demo.py with made-up data in a
 headless Chromium.
 
-tools/web_shots.py OUTDIR [LANG...]   (all 15 languages by default)
+tools/web_shots.py OUTDIR [LANG...]   (English and Russian by default)
 Writes OUTDIR/web-<name>-<lang>.webp, the phone at 390x844 CSS pixels x2 and the desktop at 1280x800 x2.
 Chromium: $CHROME, otherwise google-chrome / chromium on the PATH or Playwright's headless shell.
 tools/pages.py copies them into the site; the ones in site/img (ru, en) stay as the fallback.

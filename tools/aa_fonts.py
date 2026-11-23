@@ -3,7 +3,7 @@
 
 Inter, rendered with hinting into 4-bit coverage per pixel. Each face is sized so its cap height (the digit
 height for the digit face) matches the X11 bitmap face it replaces, so the layouts keep their baselines and
-rows. Code points: ASCII, Latin-1, Latin Extended-A (pl, tr, ...), Cyrillic (ru, uk) and the punctuation the
+rows. Code points: ASCII, Latin-1, Latin Extended-A, Cyrillic and the punctuation the
 interface writes (dashes, quotes, ellipsis, bullet, arrows, No); the others come from the u8g2 fonts.
 
 Sources, downloaded once into upstream/fonts/inter (not in Git):

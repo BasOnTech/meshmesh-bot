@@ -12,7 +12,7 @@
 'use strict';
 const fs=require('fs'),path=require('path');
 const ROOT=path.resolve(__dirname,'..'),DIR=path.join(ROOT,'i18n/web');
-const LANGS=['en','uk','es','pt','fr','de','it','pl','tr','zh','ja','ko','ar','id'];
+const LANGS=['en'];
 const CYR=/[А-Яа-яЁё]/;
 
 function keys(){

@@ -72,8 +72,8 @@ int glyph(int x,int y,uint32_t cp,const uint8_t* f,uint16_t color,bool paint){
  if(!use){if(!emoji::pictograph(cp))return 0;if(paint)hardware.canvas->drawRect(x+1,y-9,10,10,color);return 12;}
  useFont(use);if(!paint)return u8g2_GetGlyphWidth(&hardware.font.u8g2,cp);hardware.font.setForegroundColor(color);return hardware.font.drawGlyph(x,y,cp);
 }
-int width(const String& value,const uint8_t* f){String s=visualText(value);int w=0;for(unsigned i=0;i<s.length();)w+=glyph(0,0,utf8Next(s,i),f,0,false);return w;}
-void say(int x,int y,const String& value,const uint8_t* f=body,uint16_t color=1){String s=visualText(value);for(unsigned i=0;i<s.length();)x+=glyph(x,y,utf8Next(s,i),f,color,true);}
+int width(const String& value,const uint8_t* f){const String& s=value;int w=0;for(unsigned i=0;i<s.length();)w+=glyph(0,0,utf8Next(s,i),f,0,false);return w;}
+void say(int x,int y,const String& s,const uint8_t* f=body,uint16_t color=1){for(unsigned i=0;i<s.length();)x+=glyph(x,y,utf8Next(s,i),f,color,true);}
 void sayRight(int x,int y,const String& value,const uint8_t* f=small,uint16_t color=1){say(x-width(value,f),y,value,f,color);}
 // Up to `maximum` 21-column rows, wrapped at spaces; longer text pages every four seconds.
 void textLines(const String& value,int y,unsigned maximum){

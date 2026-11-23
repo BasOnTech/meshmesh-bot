@@ -78,7 +78,7 @@ static void scenario(){
  // Regional presets: <> on the first row steps through the list (the preview takes every frequency) and fills the radio rows.
  {key(0x90);key(13);for(int i=0;i<16;i++)key(0xb7);shot("radio-preset");
   if(uiStatus().indexOf("\"radio_preset\":\"Netherlands (Limburg)\"")<0){printf("FAIL preset Netherlands (Limburg): %s\n",uiStatus().c_str());exit(1);}
-  for(int i=0;i<4;i++)key(0xb6);key(0xb4);if(uiStatus().indexOf("\"radio_preset\":\"Custom\"")<0){printf("FAIL preset after a changed CR: %s\n",uiStatus().c_str());exit(1);}key(0x86);}
+  for(int i=0;i<4;i++)key(0xb6);key(0xb4);if(uiStatus().indexOf(String("\"radio_preset\":\"")+tr("Custom","Свой")+"\"")<0){printf("FAIL preset after a changed CR: %s\n",uiStatus().c_str());exit(1);}key(0x86);}
  key(0x90);shot("settings");key(13);key(0xb6);key(0xb7);shot("radio");for(int i=0;i<7;i++)key(0xb6);key(0xb7);shot("radio-hash");key(0xb6);key(0xb6);key(13);shot("radio-regions");key(0xb5);key(0xb7);key(0xb7);key(0xb7);shot("radio-region");key(13);for(int i=0;i<3;i++)key(8);for(char ch:std::string("sao"))key(ch);shot("radio-region-type");key(0x86);key(0x86);key(0xb6);key(13);for(int i=0;i<8;i++)key(0xb6);key(0xb7);shot("display-battery");for(int i=0;i<8;i++)key(0xb5);shot("display");key(13);shot("display-name");key(0x86);key(0x86);
  tile("connect");key(13);key(13);shot("wifi-ap");key(0xb7);shot("wifi-qr");key(0xb7);shot("wifi-qr-page");key(0x86);key(0xb6);key(13);shot("network");key(13);key(0xb6);key(13);key(0x83);shot("diagnostics");key(0x90);for(int i=0;i<5;i++)key(0xb6);key(13);shot("help");key(13);shot("help-layout");key(0x86);key(13);shot("help-layout");key(0x86);
  // Connections with Bluetooth on: the MeshCore- name the phone apps see, then off again.
@@ -232,7 +232,7 @@ static void scenario(){
  for(int i=0;i<2;i++)key(13);expect("Previous row","\"radio_row\":10");shot("heltec-radio-prev");key(13);expect("Network row","\"radio_row\":11");key(0xa3);shot("heltec-radio-net");key(13);expect("Save row","\"radio_row\":12");shot("heltec-radio-save");key(0xa3);expect("saved and closed","\"page\":\"settings\"");
 #else
  config.role=RoleRepeater;key(0x82);shot("repeater");key(0x86);
- config.role=RoleRoom;key(0x82);shot("room");key(13);for(char ch:std::string(config.lang==LangRu||config.lang==LangUk?"Vstre1a u vhoda posle obeda":"Meet at the gate after lunch"))key(ch);shot("room-post");key(0x86);
+ config.role=RoleRoom;key(0x82);shot("room");key(13);for(char ch:std::string(config.lang==LangRu?"Vstre1a u vhoda posle obeda":"Meet at the gate after lunch"))key(ch);shot("room-post");key(0x86);
  key(0x90);key(0xb5);key(13);key(0xb6);shot("role-pick");key(0x86);config.role=RoleNormal;key(0x82);
 #endif
  // The pet: an egg, a happy kid with a new friend, a hungry adult, an ill teen and a grave with its memory.
@@ -315,7 +315,7 @@ static void scenario(){
   must(dicer.command("dice char use 1").startsWith("OK")&&dicer.value(0)==17,"the character's sheet comes back");
   must(dicer.command("dice pool 3 d8 -2").startsWith("OK")&&dicer.poolText()=="3d8-2","pool");
   // D&D: modifiers, derived values, skills, spending.
-  bool ru=config.lang==LangRu||config.lang==LangUk;
+  bool ru=config.lang==LangRu;
   must(dicer.command("dice char new dnd Arwen").startsWith("OK")&&dicer.sheet.count>=40,"D&D template");
   int dex=dicer.find("dex"),ac=dicer.find("ac"),init=dicer.find("init"),sl1=dicer.find("sl1");must(dex>=0&&ac>=0&&init>=0&&sl1>=0,"D&D codes");
   must(dicer.value(ac)==10&&dicer.badge(dex)=="+0","AC 10 at DEX 10");
@@ -505,7 +505,7 @@ static void scenario(){
   key(0xb5);key(0xb5);shot("quick-last");key(13);
   must(meshRadio.historyCount==sent+2&&String(meshRadio.history[sent+1].text)==quickSend::state.text[quickSend::Count-1],"last preset remains reachable and sends its own text");
   key(0x86);key(0xb7);key(13);int32_t manual=people::value();key(13);must(people::value()==manual+1,"counter +1");key(0xb6);must(people::value()==manual,"counter -1");
-  bool ru=config.lang==LangRu||config.lang==LangUk;people::rename(0,ru?"Гости":"Guests");people::set(0,27);shot("people");
+  bool ru=config.lang==LangRu;people::rename(0,ru?"Гости":"Guests");people::set(0,27);shot("people");
   key(0xb7);must(uiStatus().indexOf("\"tally_new\":true")>=0,"right of the last card: a new one");shot("people-new");key(13);must(people::tally.count==2&&people::tally.current==1,"OK adds a card");
   key('n');for(char ch:std::string(ru?"Kofe":"Coffee"))key(ch);shot("people-name");key(13);key(13);key(13);must(people::value()==2,"the new card counts on its own");
   key(0xb4);must(people::tally.current==0&&people::value()==27,"left turns back to the first card");key(0xb7);key(0x08);key(0x08);must(people::tally.count==1,"DEL twice deletes");

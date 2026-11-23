@@ -4,7 +4,7 @@
 // The language is the site's (?lang=, then "mm-lang" in this browser, then the browser's languages).
 (function(){
 'use strict';
-const LANGS=[['en','English'],['ru','Русский'],['uk','Українська'],['es','Español'],['pt','Português'],['fr','Français'],['de','Deutsch'],['it','Italiano'],['pl','Polski'],['tr','Türkçe'],['zh','中文'],['ja','日本語'],['ko','한국어'],['ar','العربية'],['id','Bahasa Indonesia']];
+const LANGS=[['en','English'],['ru','Русский']];
 const CODES=LANGS.map(l=>l[0]);
 // Piece letters of the notation, K Q R B N: the Russian page writes Кр Ф Л С К.
 const RU_PIECES=['Кр','Ф','Л','С','К'];

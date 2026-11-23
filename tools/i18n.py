@@ -25,20 +25,12 @@ ROOT = Path(__file__).resolve().parents[1]
 DIR = ROOT/'i18n'/'firmware'
 
 # Order matters: the index is the stored language number (Config::lang, I18n.h).
-LANGS = [
-    ('en', 'English'), ('ru', 'Русский'), ('uk', 'Українська'), ('es', 'Español'), ('pt', 'Português'),
-    ('fr', 'Français'), ('de', 'Deutsch'), ('it', 'Italiano'), ('pl', 'Polski'), ('tr', 'Türkçe'),
-    ('zh', '中文'), ('ja', '日本語'), ('ko', '한국어'), ('ar', 'العربية'), ('id', 'Bahasa Indonesia'),
-]
+# A new language goes to the end with its file i18n/firmware/<code>.json and its PLURALS entry.
+LANGS = [('en', 'English'), ('ru', 'Русский')]
 CODES = [c for c, _ in LANGS]
 TRANSLATED = CODES[2:]  # en and ru are in the code
 CATEGORIES = ['zero', 'one', 'two', 'few', 'many', 'other']
-PLURALS = {
-    'en': ['one', 'other'], 'ru': ['one', 'few', 'many'], 'uk': ['one', 'few', 'many'], 'es': ['one', 'other'],
-    'pt': ['one', 'other'], 'fr': ['one', 'other'], 'de': ['one', 'other'], 'it': ['one', 'other'],
-    'pl': ['one', 'few', 'many'], 'tr': ['one', 'other'], 'zh': ['other'], 'ja': ['other'], 'ko': ['other'],
-    'ar': ['zero', 'one', 'two', 'few', 'many', 'other'], 'id': ['other'],
-}
+PLURALS = {'en': ['one', 'other'], 'ru': ['one', 'few', 'many']}
 # Interface families: the 320x240 keyboard interface and the 128x64 one; shared files go to both.
 FULL = ['src/Ui.cpp', 'src/UiServer.inc', 'src/UiSolitaire.inc', 'src/UiChess.inc', 'src/UiTour.inc', 'src/UiChannels.inc', 'src/UiPet.inc', 'src/UiDice.inc', 'src/UiTally.inc', 'src/UiRemote.inc', 'src/UiDuel.inc']
 COMPACT = ['src/UiHeltec.cpp', 'src/UiChessCompact.inc', 'src/UiPetCompact.inc', 'src/UiDiceCompact.inc', 'src/UiDuelCompact.inc']
@@ -205,9 +197,9 @@ def check(strict=True):
                         errors.append(f'{code} {k} {where}: line breaks differ from {e["en"]!r}: {v!r}')
                     if sorted(PLACEHOLDER.findall(v)) != sorted(PLACEHOLDER.findall(e['en'])):
                         errors.append(f'{code} {k} {where}: placeholders differ from {e["en"]!r}: {v!r}')
-                elif PLACEHOLDER.findall(v) != ['{n}'] and not (code == 'ar' and PLACEHOLDER.findall(v) == []):
-                    errors.append(f'{code} {k} {where}: a plural form needs one {{n}} where the number goes (Arabic may leave it out): {v!r}')
-                if re.search(r'[Ѐ-ӿ]', v) and code != 'uk':
+                elif PLACEHOLDER.findall(v) != ['{n}']:
+                    errors.append(f'{code} {k} {where}: a plural form needs one {{n}} where the number goes: {v!r}')
+                if re.search(r'[Ѐ-ӿ]', v):
                     errors.append(f'{code} {k} {where}: Cyrillic left in {v!r}')
                 if can_draw is not None:
                     lost = sorted(set(c for c in v if ord(c) not in can_draw and ord(c) >= 0x20 and not any(c in s for s in sources)))
@@ -228,7 +220,7 @@ def check(strict=True):
 
 
 def check_site():
-    """site/i18n/<lang>.json: the keys of en.json, nothing empty, the same HTML tags; README.<lang>.md with every language linked."""
+    """site/i18n/<lang>.json: the keys of en.json, nothing empty, the same HTML tags."""
     errors = []
     site = ROOT/'site'/'i18n'
     en = json.loads((site/'en.json').read_text())
@@ -246,20 +238,8 @@ def check_site():
         for k, v in d.items():
             if k in en and (not v.strip() or tags(v) != tags(en[k])):
                 errors.append(f'site {code} {k}: empty or HTML tags differ from English: {v!r}')
-            if code not in ('ru', 'uk') and re.search('[А-Яа-яЁё]', v):
+            if code != 'ru' and re.search('[А-Яа-яЁё]', v):
                 errors.append(f'site {code} {k}: Cyrillic left: {v!r}')
-    for code in CODES:
-        path = ROOT/('README.md' if code == 'en' else f'README.{code}.md')
-        if not path.exists():
-            errors.append(f'readme {code}: no {path.name}')
-            continue
-        bar = path.read_text().split('\n')[2]
-        for other, name in LANGS:
-            target = 'README.md' if other == 'en' else f'README.{other}.md'
-            if other != code and f'[{name}]({target})' not in bar:
-                errors.append(f'readme {code}: the language line lacks [{name}]({target})')
-            if other == code and f'**{name}**' not in bar:
-                errors.append(f'readme {code}: the language line should show **{name}**')
     return errors
 
 
@@ -270,7 +250,7 @@ def c_literal(s):
     return '"' + out + '"'
 
 
-# Strings used only by checkers and sea battle (Duel.h): an image without them (nRF52, Modules.h) leaves them out.
+# Strings used only by checkers and sea battle (Duel.h): an image without them (Modules.h) leaves them out.
 GAMES = {'src/UiDuel.inc', 'src/UiDuelCompact.inc', 'src/Duel.cpp'}
 
 
@@ -291,13 +271,8 @@ def table(entries, family, games=True):
             blob += value.encode() + b'\0'
         if len(blob) >= 1 << 16:
             raise SystemExit(f'{code}: {len(blob)} bytes do not fit 16-bit offsets')
-        # MM_LANG_IN (src/I18n.cpp): an nRF52 image keeps only the language it is built for.
-        out.append(f'#if MM_LANG_IN({CODES.index(code)})')
         out.append(f'const uint16_t {code}Offsets[count]={{' + ','.join(map(str, offsets)) + '};')
         out.append(f'const char {code}Text[{len(blob)}]=' + c_literal(blob.decode()[:-1]) + ';')
-        out.append('#else')
-        out.append(f'constexpr const uint16_t* {code}Offsets=nullptr;constexpr const char* {code}Text=nullptr;')
-        out.append('#endif')
     out.append('const uint16_t* const offsets[]={' + ','.join(f'{c}Offsets' for c in TRANSLATED) + '};')
     out.append('const char* const texts[]={' + ','.join(f'{c}Text' for c in TRANSLATED) + '};')
     return out
@@ -305,9 +280,12 @@ def table(entries, family, games=True):
 
 def table_header(entries):
     lines = ['// Generated by tools/i18n.py from i18n/firmware/*.json; do not edit.', '#pragma once', '#include <stdint.h>',
-             f'// Languages after en and ru, in Config::lang order: {" ".join(TRANSLATED)}', 'namespace i18nTable {',
-             '#if defined(MM_COMPACT) && MM_DUEL', *table(entries, 'compact'), '#elif defined(MM_COMPACT)', *table(entries, 'compact', False),
-             '#else', *table(entries, 'full'), '#endif', '}']
+             f'// Languages after en and ru, in Config::lang order: {" ".join(TRANSLATED) or "none"}']
+    if not TRANSLATED:  # src/I18n.cpp looks nothing up
+        return '\n'.join(lines + ['#define MM_I18N_TABLE 0']) + '\n'
+    lines += ['#define MM_I18N_TABLE 1', 'namespace i18nTable {',
+              '#if defined(MM_COMPACT) && MM_DUEL', *table(entries, 'compact'), '#elif defined(MM_COMPACT)', *table(entries, 'compact', False),
+              '#else', *table(entries, 'full'), '#endif', '}']
     return '\n'.join(lines) + '\n'
 
 

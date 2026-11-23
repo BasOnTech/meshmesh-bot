@@ -135,19 +135,19 @@ Update the documentation and these instructions by hand from actual results befo
 
 ## Languages
 
-Firmware screens — 15 languages (`include/I18n.h`; the language number is stored in NVS, do not change the order).
-English and Russian are written in the code: `t("English","Русский")`, `tr(...)`, `count(n,...)`; the rest are in
-`i18n/firmware/<lang>.json` following `i18n/README.md`. After editing strings: `tools/i18n.py sync`,
-translate the new entries, `.venv/bin/python tools/i18n.py generate` (the table and font subsets
-from `upstream/fonts`), `tools/i18n.py check`, build, and review the screens with `tools/site_shots.py OUTDIR <lang>`.
-Site — `site/i18n/<lang>.json`, overview — `README.<lang>.md`, detailed documents are translated into
-`docs/en/` together with the edit of the Russian original. The device web page and the app are also 15 languages (since 0.22.0 / Android 0.15.0):
+Firmware screens — English and Russian (`include/I18n.h`; the language number is stored in NVS, do not change the
+order; the 13 other upstream languages were removed, their stored numbers fall back to English). Both are written in the
+code: `t("English","Русский")`, `tr(...)`, `count(n,...)`. A further language (Dutch is planned) goes to the end of `Lang`
+with `i18n/firmware/<lang>.json` following `i18n/README.md`: `tools/i18n.py sync`, translate,
+`.venv/bin/python tools/i18n.py generate` (the table; the Latin Extended font subsets need `upstream/fonts`),
+`tools/i18n.py check`, build, and review the screens with `tools/site_shots.py OUTDIR <lang>`.
+Site — `site/i18n/en.json` and `ru.json`; detailed documents are translated into
+`docs/en/` together with the edit of the Russian original. The device web page and the app — English and Russian:
 the Russian text in the code is the dictionary key of `i18n/web/<lang>.json`; in `web/index.html` and `host.js` write `L('…')`, `` L`…${x}` ``
 (do not glue a phrase together from pieces), `plural(n,'одна','две','пять')`, in Kotlin — `I18n.t("… {0}", x)`. Then
-`node tools/web_i18n.cjs sync`, translate the new entries in all 14 dictionaries, `node tools/web_i18n.cjs check`
+`node tools/web_i18n.cjs sync`, translate the new entries in `i18n/web/en.json`, `node tools/web_i18n.cjs check`
 (needs `npm ci --prefix tools`). The page language — `?lang=`, chosen on the login screen/in "Settings" (`mm-lang`),
-otherwise the browser language; the app passes it through `MeshNative.language`. Page screenshots for the site in all
-languages — `tools/web_shots.py` (demo data `tools/web_demo.py`, in CI); `site/img` holds the ru/en fallbacks.
+otherwise the browser language; the app passes it through `MeshNative.language`. Page screenshots for the site — `tools/web_shots.py` (demo data `tools/web_demo.py`, in CI); `site/img` holds the ru/en fallbacks.
 The site's chess page (`chess/`) gets the same dictionaries and additionally translates at render time
 (`web/chess-i18n.js`, `i18n/chess/<lang>.json`, check `node tools/chess/i18n_check.cjs`): add new chess strings there too.
 The site installs the firmware with the chosen language: `partitions-<lang>.bin` with a tag at 0x8C00; the tag is applied once.

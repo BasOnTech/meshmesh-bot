@@ -7,7 +7,7 @@ The app shows the device's own web interface (`web/index.html` — the same page
 Wi-Fi, Bluetooth LE and USB. All sections of the page — chats, nodes, map, navigation, connections,
 radar and motion sensor, modules, settings, Klondike solitaire and chess — work over any of them.
 
-The page and the app speak the 15 languages of the screens (`i18n/web/<lang>.json`, rules in `i18n/README.md`).
+The page and the app speak the languages of the screens (English and Russian) (`i18n/web/<lang>.json`, rules in `i18n/README.md`).
 The language is chosen on the login screen and in Settings, by default the phone's; connection messages,
 USB firmware-update errors and the app's notifications (`I18n.kt`) follow the page's language.
 

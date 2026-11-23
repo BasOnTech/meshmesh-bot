@@ -13,7 +13,7 @@ try:
     Import('env')  # noqa: F821
 except NameError:  # imported by a check, not run by PlatformIO
     env = None
-LANGS = ['en', 'uk', 'es', 'pt', 'fr', 'de', 'it', 'pl', 'tr', 'zh', 'ja', 'ko', 'ar', 'id']
+LANGS = ['en']
 
 
 def packed(data):

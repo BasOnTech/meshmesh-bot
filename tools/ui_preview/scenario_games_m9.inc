@@ -16,7 +16,7 @@
  auto nodeCard=[&](int i){key(0x82);key(0xb7);key(0xb7);key(13);String want=String("\"selected_node\":\"")+meshRadio.idText(peerId(i))+"\"";for(int k=0;k<12&&!has(want.c_str());k++)key(0xb6);must(has(want.c_str()),"the contact in the node list");key(13);};(void)nodeCard;
  auto lastSent=[](){return previewSent.empty()?std::string():previewSent.back().text;};
  previewOff=false; // the M9 scenario turned the board off just before
- config.dimAfter=0;config.autoLock=0;config.apps[0]=0;bool ru=config.lang==LangRu||config.lang==LangUk;(void)ru;
+ config.dimAfter=0;config.autoLock=0;config.apps[0]=0;bool ru=config.lang==LangRu;(void)ru;
  for(auto& g:duels.games)g=Duel();
  // The game on the screen (uiStatus "duel_game").
  auto shown=[&]()->Duel*{String id=field("duel_game");return id.length()?duels.find(uint16_t(strtoul(id.c_str(),nullptr,16))):nullptr;};

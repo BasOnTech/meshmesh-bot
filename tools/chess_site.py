@@ -6,7 +6,7 @@ The page is web/index.html, the boards' own page, with web/chess-companion.js an
 web/chess-icon.svg: the rules, the games
 and the companion link run in the browser (docs/chess.md). Web Serial and Web Bluetooth need HTTPS,
 so the page works from the site, not from a board's access point.
-The page speaks the site's 15 languages: web/chess-i18n.js translates the Russian text of the page as it
+The page speaks the site's languages (English and Russian): web/chess-i18n.js translates the Russian text of the page as it
 is drawn, with i18n/chess/<lang>.json (the Russian text is the key; en.json lists all of them).
 """
 import json
@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-LANGS = ['en', 'ru', 'uk', 'es', 'pt', 'fr', 'de', 'it', 'pl', 'tr', 'zh', 'ja', 'ko', 'ar', 'id']
+LANGS = ['en', 'ru']
 PLACEHOLDER = re.compile(r'\{(?:\d|r|san)\}')
 FORMS = {'one', 'two', 'few', 'many', 'other', 'zero'}
 

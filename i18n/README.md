@@ -1,8 +1,7 @@
 # Translations
 
-MeshMesh speaks 15 languages: English (`en`), Russian (`ru`), Ukrainian (`uk`), Spanish (`es`),
-Portuguese (`pt`, Brazilian), French (`fr`), German (`de`), Italian (`it`), Polish (`pl`), Turkish (`tr`),
-Chinese (`zh`, Simplified), Japanese (`ja`), Korean (`ko`), Arabic (`ar`) and Indonesian (`id`).
+MeshMesh speaks English (`en`) and Russian (`ru`); this fork removed the 13 other upstream languages.
+A new language (Dutch is planned) is added to the end of the language lists with its own files below.
 
 | What | Source | Translations |
 |---|---|---|
@@ -10,7 +9,7 @@ Chinese (`zh`, Simplified), Japanese (`ja`), Korean (`ko`), Arabic (`ar`) and In
 | Website | `site/i18n/en.json` (and `ru.json`) | `site/i18n/<lang>.json` |
 | Device web page and Android app | the Russian text of `web/index.html` (`L(...)`, `plural(...)`, markup), `android/.../assets/host.js` and the app's Kotlin `I18n.t(...)` | `i18n/web/<lang>.json` |
 | Chess page of the website (`chess/`) | the Russian text of `web/index.html` and `web/chess-companion.js`, listed in `i18n/chess/en.json` | `i18n/chess/<lang>.json` |
-| Overview | `README.md` | `README.<lang>.md` (`README.ru.md` is the full Russian guide) |
+| Overview | `README.md` | `README.ru.md` (the full Russian guide) |
 | Detailed documents | `docs/*.md` (Russian) | `docs/en/*.md` (English) |
 
 The website's chess page is built from the device page; `web/chess-i18n.js` translates what the page's own
@@ -22,7 +21,7 @@ placeholders when the site is built.
 
 ```sh
 python3 tools/i18n.py sync        # after changing strings in src/: new ones appear empty, removed ones go
-python3 tools/i18n.py todo de     # what German still lacks, with the code line it comes from
+python3 tools/i18n.py todo LANG   # what a language still lacks, with the code line it comes from
 python3 tools/i18n.py check       # everything below; the build of the site fails without it
 .venv/bin/python tools/i18n.py generate   # include/I18nTable.h and the glyph subsets in include/I18nFonts.h
 ```
