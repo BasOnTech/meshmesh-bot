@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The mesh pet's species: pixel art and colours -> include/PetSprites.h.
+"""The mesh pet's species: pixel art and colours -> src/games/pet/PetSprites.h.
 
 python3 tools/pet_sprites.py            writes the header
 python3 tools/pet_sprites.py --sheet OUT.png   also draws every species, young and grown, with a face
@@ -614,7 +614,7 @@ if __name__ == '__main__':
         print(e)
     if errors:
         raise SystemExit(1)
-    (ROOT / 'include/PetSprites.h').write_text(header())
+    (ROOT / 'src/games/pet/PetSprites.h').write_text(header())
     if len(sys.argv) > 2 and sys.argv[1] == '--sheet':
         sheet(sys.argv[2])
-    print(f'include/PetSprites.h: {len(SPECIES)} species')
+    print(f'src/games/pet/PetSprites.h: {len(SPECIES)} species')

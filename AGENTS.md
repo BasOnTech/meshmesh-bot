@@ -3,16 +3,16 @@
 ## Purpose and communication
 
 The project is firmware for the Elecrow ThinkNode M9 and the Heltec V4 (this fork supports only these two; the upstream MeshMesh also built for nRF52 and other ESP32 boards): a standalone interface,
-MeshCore chats and channels (hashtag, link/QR, key, invitations; `docs/channels.md`, `src/Channels.cpp`), MeshCore regions
-(default region and per-channel region, search at neighbouring repeaters, companion commands 54/55/63/64; `docs/regions.md`, `src/Regions.cpp`,
-`src/RegionSearch.inc`, check `tools/region_check.py`), a radio settings test and the previous profile (`radio try|keep|revert|previous`, `renderNet` in `web/index.html`), LoRa, offline maps (on the device SD or in phone storage in the app — `android/.../api/MapStore.kt`; relief and contour lines from Terrain Tiles during preparation; node map without a base layer — `drawMap` in `web/index.html`; `docs/maps-format.md`), Wi-Fi, BLE, a signal radar, a Wi-Fi CSI motion sensor,
+MeshCore chats and channels (hashtag, link/QR, key, invitations; `docs/channels.md`, `src/mesh/Channels.cpp`), MeshCore regions
+(default region and per-channel region, search at neighbouring repeaters, companion commands 54/55/63/64; `docs/regions.md`, `src/mesh/Regions.cpp`,
+`src/mesh/RegionSearch.inc`, check `tools/region_check.py`), a radio settings test and the previous profile (`radio try|keep|revert|previous`, `renderNet` in `web/index.html`), LoRa, offline maps (on the device SD or in phone storage in the app — `android/.../api/MapStore.kt`; relief and contour lines from Terrain Tiles during preparation; node map without a base layer — `drawMap` in `web/index.html`; `docs/maps-format.md`), Wi-Fi, BLE, a signal radar, a Wi-Fi CSI motion sensor,
 chess with contacts (M9 screen and the web page of both boards, MeshCore direct messages,
-rated ELO games with a result signed by both nodes' keys — `src/ChessRating.cpp`, Swiss-system tournaments — `src/ChessTour.cpp`; `docs/chess.md`; draughts and battleship with contacts, unrated — `src/Checkers.cpp`, `src/Sea.cpp`, `src/Duel.cpp`, screens `src/UiDuel.inc`, `src/UiDuelCompact.inc`, `docs/games.md`, protocol check `tools/duel_check.py`; menu app folders (the "Games" folder) — `src/Apps.cpp`; the site page `chess/` plays through a stock MeshCore companion over Web Serial/Bluetooth —
+rated ELO games with a result signed by both nodes' keys — `src/games/chess/ChessRating.cpp`, Swiss-system tournaments — `src/games/chess/ChessTour.cpp`; `docs/chess.md`; draughts and battleship with contacts, unrated — `src/games/duel/Checkers.cpp`, `src/games/duel/Sea.cpp`, `src/games/duel/Duel.cpp`, screens `src/games/duel/UiDuel.inc`, `src/games/duel/UiDuelCompact.inc`, `docs/games.md`, protocol check `tools/duel_check.py`; menu app folders (the "Games" folder) — `src/core/Apps.cpp`; the site page `chess/` plays through a stock MeshCore companion over Web Serial/Bluetooth —
 `web/chess-companion.js`, `tools/chess_site.py`), a network pet — a tamagotchi that feeds on radio traffic,
-grows and can die (`src/Pet.cpp`, screens `src/UiPet.inc`, `src/UiPetCompact.inc`;
-`docs/pet.md`), dice — the DIC3R dicer: RPG rolls and formulas, a Warhammer grid, a character sheet of blocks with formulas, D&D and R.E.T. templates, sending a sheet to a contact (`src/Dice.cpp`,
-screens `src/UiDice.inc`, `src/UiDiceCompact.inc`; `docs/dice.md`), a message's packet path on the web and in the app (repeaters by path hashes, SNR/RSSI, repeats of our own messages —
-`MeshRadio::echo`, `renderMsg` in `web/index.html`), web and app notifications (kinds, mentions, per-chat settings, quiet hours, feed — `alertFor` in `web/index.html`, `android/.../Alerts.kt`), MeshCore repeater and room modes (chosen at boot, `src/MeshServer.cpp`, `docs/repeater.md`), wardriving — a network coverage map: a log of received packets with position, pings in `#wardrive` with repeater echoes, radar Wi-Fi/BLE on ESP32, CSV/GeoJSON/KML/WiGLE export, phone position from the app (`src/Wardrive.cpp`, `docs/wardrive.md`; recording only with a trusted position, `gpsFix` or a `fix` from the app), backup — settings, node key, channels, contacts, quick send, counters and sheets in one JSON file from the page and the app, selective restore (`backup*` in `web/index.html`, commands `identity`, `identity set`, `contact add`; `docs/backup.md`), diagnostics, the screen interface (emoji on screens — `src/Emoji.cpp`, `tools/emoji.py`), the device web page, the app and the site in 15 languages (section "Languages") and the Android app (`android/`, `docs/android.md`). Communicate with the user
+grows and can die (`src/games/pet/Pet.cpp`, screens `src/games/pet/UiPet.inc`, `src/games/pet/UiPetCompact.inc`;
+`docs/pet.md`), dice — the DIC3R dicer: RPG rolls and formulas, a Warhammer grid, a character sheet of blocks with formulas, D&D and R.E.T. templates, sending a sheet to a contact (`src/games/dice/Dice.cpp`,
+screens `src/games/dice/UiDice.inc`, `src/games/dice/UiDiceCompact.inc`; `docs/dice.md`), a message's packet path on the web and in the app (repeaters by path hashes, SNR/RSSI, repeats of our own messages —
+`MeshRadio::echo`, `renderMsg` in `web/index.html`), web and app notifications (kinds, mentions, per-chat settings, quiet hours, feed — `alertFor` in `web/index.html`, `android/.../Alerts.kt`), MeshCore repeater and room modes (chosen at boot, `src/mesh/MeshServer.cpp`, `docs/repeater.md`), wardriving — a network coverage map: a log of received packets with position, pings in `#wardrive` with repeater echoes, radar Wi-Fi/BLE on ESP32, CSV/GeoJSON/KML/WiGLE export, phone position from the app (`src/apps/Wardrive.cpp`, `docs/wardrive.md`; recording only with a trusted position, `gpsFix` or a `fix` from the app), backup — settings, node key, channels, contacts, quick send, counters and sheets in one JSON file from the page and the app, selective restore (`backup*` in `web/index.html`, commands `identity`, `identity set`, `contact add`; `docs/backup.md`), diagnostics, the screen interface (emoji on screens — `src/ui/Emoji.cpp`, `tools/emoji.py`), the device web page, the app and the site in 15 languages (section "Languages") and the Android app (`android/`, `docs/android.md`). Communicate with the user
 in English. Carry agreed changes through to build, installation and verification
 when the devices are available. Distinguish between an implemented feature, a successful build,
 installed firmware and confirmed hardware operation.
@@ -53,8 +53,8 @@ changes into separate commits (e.g. build flags apart from the code fixes they n
 - The `heltec_v4_r8` target is for another revision with 8 MB PSRAM;
   a successful build does not mean that revision was checked on hardware.
 - Shared code distinguishes the M9 from the Heltec by the family (`MM_COMPACT`, set together with `MM_HELTEC_V4`),
-  the transceiver (`MM_RADIO_*`) and native USB (`MM_NATIVE_USB`). Pins — `include/BoardPins.h`, board properties —
-  `include/Board.h`; the Heltec — `src/HardwareHeltec.cpp` with `src/UiHeltec.cpp`, the M9 — `src/Hardware.cpp` with `src/Ui.cpp`.
+  the transceiver (`MM_RADIO_*`) and native USB (`MM_NATIVE_USB`). Pins — `src/hw/BoardPins.h`, board properties —
+  `src/hw/Board.h`; the Heltec — `src/hw/HardwareHeltec.cpp` with `src/ui/UiHeltec.cpp`, the M9 — `src/hw/Hardware.cpp` with `src/ui/Ui.cpp`.
 - Last known ports: M9 `/dev/cu.wchusbserial110`,
   Heltec `/dev/cu.usbmodem101`; `tools/ports.py`
   finds them by USB bridge.
@@ -71,11 +71,11 @@ MeshMesh uses MeshCore from 0.3.0 onwards (`docs/meshcore-migration.md`,
 `lib/MeshCore`). The archived 0.2.0 uses MM/1 (`docs/protocol.md`,
 `lib/MeshProtocol/Mm1Packet.h`). Meshtastic is not supported.
 The 0.3.0 compatibility concerns the radio. Since 0.9.0 the board implements the MeshCore companion protocol itself
-(`src/Companion.inc`, `docs/companion.md`): BLE Nordic UART and the name `MeshCore-<name> XXXX` (4 characters of the key) always (the MeshMesh app looks for the `MM` tag
+(`src/mesh/Companion.inc`, `docs/companion.md`): BLE Nordic UART and the name `MeshCore-<name> XXXX` (4 characters of the key) always (the MeshMesh app looks for the `MM` tag
 of company 0xFFFF in the advertisement, our own service still answers), USB frames `<`/`>`;
 since 0.10.0 — login to repeaters and rooms, CLI, status, telemetry,
 room posts, tracing and path discovery; since 0.13.0 login, status, CLI, tracing and room posts are also on the screen,
-the web page and over USB (`remote`, `include/Remote.h`, `src/Remote.inc`, M9 — `src/UiRemote.inc`); no TCP. Requests to a server need a clock later than
+the web page and over USB (`remote`, `src/mesh/Remote.h`, `src/mesh/Remote.inc`, M9 — `src/ui/UiRemote.inc`); no TCP. Requests to a server need a clock later than
 the previous request (replay protection): set the board's clock in checks (`set_time`).
 Matching frequency and other radio parameters does not make the packet, advert, address, key, message and
 acknowledgement formats compatible.
@@ -93,7 +93,12 @@ device has one LoRa transceiver, different radio profiles require switching.
 
 ## Code and build
 
-- `src/`, `include/` — the application and drivers; `lib/MeshProtocol/` — MM/1.
+- `src/` — the application and drivers, each header next to its source, grouped by feature: `core/` (app, config,
+storage, power, clock, version), `i18n/`, `hw/` (boards, pins, displays), `mesh/` (radio, server roles, channels,
+regions, companion, remote, history), `ui/` (screens, icons, navigation, notifications, emoji), `net/` (Wi-Fi, portal,
+diagnostics), `apps/` (maps, radar, wardrive, counter), `games/<game>/` (chess, dice, duel, pet, solitaire: logic and
+its `Ui*.inc` screens together). Includes are written from `src/`: `#include "games/chess/Chess.h"`.
+`lib/MeshProtocol/` — MM/1.
 - `web/index.html` — the source of the web interface. ESP32 firmware serves it and the dictionaries compressed (gzip):
   `tools/pio_web.py` generates `PortalWeb.h` in the build folder at build time; it is not in Git. The page is English; a further language's dictionary is packed with its keys once (`/i18n/keys.js`) and `/i18n/<lang>.js` carrying the translations in order (`MeshMeshWebDict`). Page text —
   `L('…')`/`` L`…${x}` `` and `plural(n,…)` (section "Languages"). Demo without a board — `tools/web_demo.py`.
@@ -115,7 +120,7 @@ found; do not add tests that merely duplicate the implementation.
 
 The public firmware version is SemVer; the single source is
 `versions.properties`. After a change: `python tools/version.py --generate`, then `--check`;
-`include/Version.h` is generated and committed. Details — `docs/releases.md`.
+`src/core/Version.h` is generated and committed. Details — `docs/releases.md`.
 The firmware reports `version`, `revision` (Git SHA + `-dirty` locally), `build_sha256`; packages and the site
 include the revision and hashes. Do not treat an identical SemVer as proof of an identical image.
 A push to `main` runs `.github/workflows/pages.yml`: version and translation checks (screens, page, chess),
@@ -126,7 +131,7 @@ Update the documentation and these instructions by hand from actual results befo
 
 ## Languages
 
-Firmware screens — English (`include/I18n.h`; the language number is stored in NVS, do not change the
+Firmware screens — English (`src/i18n/I18n.h`; the language number is stored in NVS, do not change the
 order; upstream Russian and 13 other languages were removed, their stored numbers fall back to English). English is
 written in the code: `t("English")`, `tr("English")`, `count(n,"one","many")`; strings of a table are marked with
 `N_("...")` and read with `trText()`. A further language (Dutch is planned) goes to the end of `Lang`
@@ -141,7 +146,7 @@ code is the dictionary key of `i18n/web/<lang>.json` for a further language; in 
 the site — `tools/web_shots.py` (demo data `tools/web_demo.py`, in CI); `site/img` holds the fallbacks.
 The site's chess page (`chess/`) is the same page in English and gets the same dictionaries.
 The site installs the firmware with the chosen language: `partitions-<lang>.bin` with a tag at 0x8C00; the tag is applied once.
-`include/Modules.h` (`MM_CHESS`, `MM_PET`, `MM_DICE`, `MM_WARDRIVE`, `MM_CHECKERS`, `MM_SEA`) comes from the upstream
+`src/core/Modules.h` (`MM_CHESS`, `MM_PET`, `MM_DICE`, `MM_WARDRIVE`, `MM_CHECKERS`, `MM_SEA`) comes from the upstream
 nRF52 images: both boards build everything. Cyrillic fonts stay in all images: Cyrillic messages arrive over the radio.
 
 ## Installation and data safety
@@ -190,7 +195,7 @@ ESP32-S3 driver (`logs/heltec-wifi-reset-trace.log`). Do not mask the problem
 by disabling BLE in the interface coexistence check.
 
 One process owns each USB port. Other sessions may be working in the same
-working tree: coordinate USB ports and shared files with them (especially `src/Ui.cpp`)
+working tree: coordinate USB ports and shared files with them (especially `src/ui/Ui.cpp`)
 and do not build packages from someone else's unfinished edits. Do not start several reads or
 a flash on top of an active check of the same port. Use `tools/device.py`:
 it handles DTR/RTS and the accumulation of partial native-USB replies on the Heltec.
@@ -214,7 +219,7 @@ turn off again on its timer — a late read of `screen_off` does not prove there
 Battery voltage (0.30.3): Heltec V4 — 2.5 dB attenuation and a 4.9 × 1.045 divider. Check new multipliers against the owner's voltmeter, not
 against another firmware. Feedback on the V3 (reading 3–6 % low) — `docs/verification.md`; not yet checked on hardware.
 
-`src/Power.cpp`: 80 MHz with the screen off and no Wi-Fi/radar, light sleep in repeater and room modes
+`src/core/Power.cpp`: 80 MHz with the screen off and no Wi-Fi/radar, light sleep in repeater and room modes
 (`docs/repeater.md`). The transceiver's IRQ line has a RadioLib edge interrupt: set the level type for
 wake-up only inside a critical section and restore `GPIO_INTR_POSEDGE` after sleep —
 otherwise an interrupt storm (interrupt watchdog on the M9) or lost reception. Bytes that woke the board over
@@ -265,20 +270,20 @@ The SD holds Kazan (1022 tiles, z12–14) and a detailed area of about 4×4 km
 (218 tiles, z15–16). Packages — `artifacts/maps/*.mmmap`. The detailed zoom
 does not cover the whole city. Keep the map, the catalogue and the previous intact tiles
 on corrupted or interrupted downloads. The M9 access point does not provide
-internet. The M9 as a Wi-Fi client (`src/Internet.cpp`, "Network → Internet over Wi-Fi")
+internet. The M9 as a Wi-Fi client (`src/net/Internet.cpp`, "Network → Internet over Wi-Fi")
 downloads missing OSM tiles, NTP time and IP-based position itself, caching tiles
 on the SD. The client yields Wi-Fi to the access point, the radar and the Wi-Fi probe
 (`internet.yieldRadio()` before a mode change) and reconnects after them.
 
 The GPS modules of the M9 and Heltec V4 receive a spoofed signal: a 10-satellite fix dated 8 July 2026.
-GPS/RTC time earlier than the build date is rejected (`src/Clock.cpp`, `gps_conflict`, the position is not used);
+GPS/RTC time earlier than the build date is rejected (`src/core/Clock.cpp`, `gps_conflict`, the position is not used);
 GPS does not overwrite time from the phone/NTP; such a date must not be taken as a current position,
 used for following, sending coordinates or overwriting trusted time. ESP32 time
 survives a restart (not a power-off) and is saved only with a known source; messages
 recorded before the clock was set get their time when it is set (`MeshRadio::stampLate`).
 A saved compass calibration does not prove accuracy or axis orientation.
 
-Repeater and room modes (`src/MeshServer.cpp`, `docs/repeater.md`) are checked from the side of the
+Repeater and room modes (`src/mesh/MeshServer.cpp`, `docs/repeater.md`) are checked from the side of the
 official MeshCore companion: `tools/repeater_check.py`, `tools/room_check.py`. For this the Heltec is
 temporarily flashed with the stock companion from `upstream/meshcore-stock`
 (the `meshmesh_stock_interop` build for our flash layout). Order: JSON snapshots and a full flash
@@ -320,14 +325,14 @@ and do not size-check against the Chinese T114 image any more.
 
 ## Notifications, quick replies and the counter (0.19.0)
 
-`docs/notifications.md`, `src/Notifications.cpp`, `src/QuickSend.cpp`, `src/ChannelPolicy.cpp`,
-`src/History.cpp` and `src/HistoryStorage.cpp`: independent notifications and an event queue,
-10 templates with a recipient by ID, channel priority and depth. `src/People.cpp` and `src/PeopleWifi.cpp` —
+`docs/notifications.md`, `src/ui/Notifications.cpp`, `src/mesh/QuickSend.cpp`, `src/mesh/ChannelPolicy.cpp`,
+`src/mesh/History.cpp` and `src/mesh/HistoryStorage.cpp`: independent notifications and an event queue,
+10 templates with a recipient by ID, channel priority and depth. `src/apps/People.cpp` and `src/apps/PeopleWifi.cpp` —
 a separate manual count and an approximate number of BLE/Wi-Fi devices; the counter does not depend on `MM_DICE`.
 Android 0.12.0 keeps a bounded archive per node by public key (`api/ArchiveApi.kt`).
 Compact ESP32 boards use the shared Wi-Fi client and optional periodic NTP; nRF52 has no Wi-Fi.
 The LED colour depends on the hardware; the absence of a repeat is not proof of non-delivery.
-On nRF52 `messages` over USB/BLE returns an immutable snapshot in chunks (`src/HistoryReply.cpp`), without a second
+On nRF52 `messages` over USB/BLE returns an immutable snapshot in chunks (`src/mesh/HistoryReply.cpp`), without a second
 large contiguous JSON buffer. Batched `Preferences` writes apply only inside `Config::save`;
 replay-protection timestamps are saved synchronously. The final targeted checks of 0.19.0 —
 `docs/verification.md` and the local `artifacts/wishlist/`: the full M9/V4 pass succeeded on images
@@ -361,9 +366,9 @@ under a focused input field (otherwise the keyboard closes on Android). Checked 
 
 ## Quick counter, app order and path hash (0.24.0)
 
-The "People counter" became the "Quick counter": up to 8 cards (`people::Tally` in `include/People.h`, file `/meshmesh/tally`;
+The "People counter" became the "Quick counter": up to 8 cards (`people::Tally` in `src/apps/People.h`, file `/meshmesh/tally`;
 the manual count of earlier versions moves into the first card), the open card is shared by the screen, the page and the app.
-M9/T-Deck — `src/UiTally.inc` (left/right page through, after the last one — "New counter"), compact — a menu in `UiHeltec.cpp`,
+M9/T-Deck — `src/apps/UiTally.inc` (left/right page through, after the last one — "New counter"), compact — a menu in `UiHeltec.cpp`,
 T114 — `UiHires.inc`, web — the `renderPeople`/`tallyAct` carousel in `web/index.html`. The app identifier and commands
 stayed `people`. Default order (`uiApps`): messages, places, tools, games, device; the user's saved `apps`
 is not changed. Icons `IcSend`/`IcTally` (`UiIcons.cpp`, on the page `send`/`tally`). `path_hash` defaults to 2;
@@ -371,7 +376,7 @@ boards with the value 1 switch to 2 once (NVS key `path_hash2`), the repeater an
 
 ## Character sheet (0.25.0)
 
-The third dice mode is a sheet of blocks (`include/Dice.h`: stat, gauge, marks, ability, note, header; up to 64,
+The third dice mode is a sheet of blocks (`src/games/dice/Dice.h`: stat, gauge, marks, ability, note, header; up to 64,
 width 1/6…the whole row of 12 columns), replacing the earlier counters: a 0.24 `dice.bin` is converted on first start
 (counters → gauges, saved rolls → abilities; confirmed on the M9, "Pupig" 10/19/23). Formulas reference block codes
 (`@dex`, `@dex!`); stat rules are a plain number, the D&D modifier, a d20 bonus, the R.E.T. die by level (`rN`,
@@ -383,7 +388,7 @@ From a phone, long strings use `dice sheet put K/N` (a BLE write is 255 bytes). 
 keeps the program, `PATH --dice` answers `dice` commands from stdin (`loopback` returns the sent parts as
 received). For the Chinese T114 image to fit, the nRF52 libraries are built with `-Os` — check the radio exchange with this change
 on the T114/GAT562.
-Since 0.26.0 blocks can also be edited on the M9/T-Deck screen (`E` — block, `A` — new, fields as rows, `src/UiDice.inc` `drawDiceBlock`),
+Since 0.26.0 blocks can also be edited on the M9/T-Deck screen (`E` — block, `A` — new, fields as rows, `src/games/dice/UiDice.inc` `drawDiceBlock`),
 and the board adds the characters "D&D 5e" and "R.E.T." once (`State::flags`, `dice.bin` version 3; version 2 is read).
 
 ## Radio test and previous profile (0.27.0)
@@ -393,27 +398,27 @@ and a test (`Config::trial`: `Config::save` writes the saved profile, a restart 
 the row "Previous radio"/"Radio test" (M9), "Previous"/"Test" (Heltec), the Keep/Revert/Check block on the page (`renderNet`).
 Only frequency, BW, SF and CR change. The upstream city network catalogue and the on-air network search built on it (0.29.0)
 were removed: every place in it was Russian.
-Since 0.27.0 nRF52 does not start without USB with the battery below 3.4 V and shuts down after 30 s below 3.3 V (`src/Power.cpp`,
+Since 0.27.0 nRF52 does not start without USB with the battery below 3.4 V and shuts down after 30 s below 3.3 V (`src/core/Power.cpp`,
 `docs/power.md`): a reset on an empty battery in the middle of rewriting the first storage page probably erased the T114's storage twice.
 Triggering on a discharged battery is not checked; the Chinese T114 image is 712108 bytes (`Platform.cpp`, `Power.cpp` with `-Os`).
 
 ## Emoji on screens and T114 backlight (0.32.0)
 
-`tools/emoji.py` builds `include/EmojiData.h` from Twemoji 15.1 (CC-BY 4.0, attribution in the README and the header): ~300 emoji
+`tools/emoji.py` builds `src/ui/EmojiData.h` from Twemoji 15.1 (CC-BY 4.0, attribution in the README and the header): ~300 emoji
 12×12, a shared 31-colour palette, bit packing (local palette, "same as the pixel above", gamma codes; ~10 KB). The pictures
-are cached in `upstream/twemoji`. `src/Emoji.cpp` — lookup and decoder, `include/Emoji.h` — modifiers (FE0F, skin tones,
+are cached in `upstream/twemoji`. `src/ui/Emoji.cpp` — lookup and decoder, `src/ui/Emoji.h` — modifiers (FE0F, skin tones,
 ZWJ — zero width), flags as letters, a frame for emoji without a picture, `mono()` for monochrome screens. Drawn by `glyph()`
-in `src/Ui.cpp` (M9/T-Deck, RGB565), `emojiGlyph()`/`glyph()` in `src/UiHeltec.cpp` (palette colours `ColEmoji0…` on ST7735,
+in `src/ui/Ui.cpp` (M9/T-Deck, RGB565), `emojiGlyph()`/`glyph()` in `src/ui/UiHeltec.cpp` (palette colours `ColEmoji0…` on ST7735,
 a silhouette on OLED/e-ink), `hiGlyph()` (T114, 16 px); the width in columns — `glyphCells()` (2). For the Chinese T114 to fit,
-the T114 (`MM_HIRES`) does not take the 8 px CJK fonts (`fallbackFonts` in `src/I18n.cpp`): small text there is drawn with 12–13 px
+the T114 (`MM_HIRES`) does not take the 8 px CJK fonts (`fallbackFonts` in `src/i18n/I18n.cpp`): small text there is drawn with 12–13 px
 fonts anyway. New emoji go into the generator's `EMOJI` list; check the size against the Chinese T114.
 T114/T096 backlight: after `analogWrite` the LEDA pin belongs to the PWM module, `digitalWrite` does not turn it off — `light()`
 first detaches the pin from PWM (`HwPWMx[i]->removePin`). On ESP32 the LEDC backlight has no such problem.
 
 ## Double click — back (0.31.0)
 
-One-button boards (`MM_ONE_BUTTON` in `include/Board.h`: compact boards without a joystick): `config.doubleBack` (NVS `dbl_back`,
-`double_back` in `/api/config` only on them; off by default). `uiKey` in `src/UiHeltec.cpp` holds a click for 0.4 s (`clickAt`,
+One-button boards (`MM_ONE_BUTTON` in `src/hw/Board.h`: compact boards without a joystick): `config.doubleBack` (NVS `dbl_back`,
+`double_back` in `/api/config` only on them; off by default). `uiKey` in `src/ui/UiHeltec.cpp` holds a click for 0.4 s (`clickAt`,
 `click_wait` in `ui`), a second click is `stepBack()`, another key first releases the pending click; the counter and button counting in dice
 (`fastClicks`) do not wait. Add new nested states of the one-button interface to `stepBack()`. Check — a
 `tools/ui_preview` scenario (heltec/t114); not checked on hardware.
@@ -439,10 +444,10 @@ our own torn one — still only via `fsformat`. Not checked on hardware.
 
 ## Draughts, battleship and folders (0.33.0 / Android 0.22.0)
 
-`docs/games.md`: Russian draughts (`src/Checkers.cpp`) and battleship (`src/Sea.cpp`) with contacts via direct messages
-`🏁…`/`🚢…` with ACK and resend as in chess, unrated; games of both kinds — `src/Duel.cpp` (`duels`, up to 6, file
+`docs/games.md`: Russian draughts (`src/games/duel/Checkers.cpp`) and battleship (`src/games/duel/Sea.cpp`) with contacts via direct messages
+`🏁…`/`🚢…` with ACK and resend as in chess, unrated; games of both kinds — `src/games/duel/Duel.cpp` (`duels`, up to 6, file
 `/meshmesh/duels.0|1`), USB `duel …`, `GET /api/duel`. The battleship winner sends their layout, the loser checks it
-against the answers. Screens: M9/T-Deck — `src/UiDuel.inc`, compact and T114 — `src/UiDuelCompact.inc`, `UiHires.inc`; page —
+against the answers. Screens: M9/T-Deck — `src/games/duel/UiDuel.inc`, compact and T114 — `src/games/duel/UiDuelCompact.inc`, `UiHires.inc`; page —
 sections `checkers`, `sea`, `duel`, the "Games" tile (`games`) and the folder editor in `renderApps` (`web/index.html`), app —
 `DuelNews.kt`. Folders: the `apps` setting — `{NAME id …}`, `-{…}` hidden, `games` — "Games" in the screen language; on the first start of
 0.33.0 the saved order moves the games into the folder once (`appsAddGames`, NVS `apps3`). Protocol check —

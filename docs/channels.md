@@ -27,7 +27,7 @@ is open: anyone who knows or guesses the name can read it.
 `meshcore://channel/add?name=<URL-encoded name>&secret=<32 hex>`. The `region_scope` parameter (the channel's
 region, MeshCore App 1.47+) sets the region on joining since 0.15.0, and MeshMesh links carry it
 (`docs/regions.md`). The link is found anywhere in a text, so a pasted piece of a conversation works too.
-QR code: byte mode, error correction M, versions 1–10; the encoder is our own (`src/Channels.cpp`, its
+QR code: byte mode, error correction M, versions 1–10; the encoder is our own (`src/mesh/Channels.cpp`, its
 JavaScript copy is in `web/index.html`), checked bit for bit against python-qrcode and read by zxing.
 
 **Name and key.** 16 bytes: 32 hexadecimal digits or base64 (24 characters with `==`, like the Public key

@@ -5,10 +5,10 @@ Like chess (`docs/chess.md`) they are games between two MeshCore nodes over ackn
 any repeaters and read as plain text in a stock MeshCore app. No rating, points or tournaments — just play with
 someone. All games sit in a Games folder of the main menu; folders can be created, renamed, hidden and filled with apps.
 
-Code: `src/Checkers.cpp` (draughts rules), `src/Sea.cpp` (field, fleet, answers), `src/Duel.cpp` (games of both kinds,
-commands, resending, storage in `/meshmesh/duels.0|1`), screens — `src/UiDuel.inc` (M9, T-Deck),
-`src/UiDuelCompact.inc` (128×64 and T114), the web page and the app — the Checkers and Sea battle sections of
-`web/index.html`; folders — `src/Apps.cpp`. Up to six games of both kinds run at once (chess has its own six).
+Code: `src/games/duel/Checkers.cpp` (draughts rules), `src/games/duel/Sea.cpp` (field, fleet, answers), `src/games/duel/Duel.cpp` (games of both kinds,
+commands, resending, storage in `/meshmesh/duels.0|1`), screens — `src/games/duel/UiDuel.inc` (M9, T-Deck),
+`src/games/duel/UiDuelCompact.inc` (128×64 and T114), the web page and the app — the Checkers and Sea battle sections of
+`web/index.html`; folders — `src/core/Apps.cpp`. Up to six games of both kinds run at once (chess has its own six).
 
 ## Checkers
 
@@ -147,7 +147,7 @@ board. A limit: over BLE a command is at most 255 bytes, so the page does not sa
 
 In the 1 MB flash of the GAT562, T114, T096 and fakeTec checkers and sea battle do not fit yet together with every
 language, so their images (from the site, the app and `tools/nrf52.py package ENV`) are built **without these two
-games** (`include/Modules.h`: `MM_NO_CHECKERS` and `MM_NO_SEA` on nRF52 unless `MM_WITH_GAMES` is set). Folders, and
+games** (`src/core/Modules.h`: `MM_NO_CHECKERS` and `MM_NO_SEA` on nRF52 unless `MM_WITH_GAMES` is set). Folders, and
 the Games folder with chess, the pet and the dice, are there; a checkers or sea battle challenge reaches such a board as
 an ordinary message whose text explains it, and the page and the app hide these games (`status.modules`). The games'
 strings stay out of such an image's translation table (`tools/i18n.py`, the `GAMES` group).

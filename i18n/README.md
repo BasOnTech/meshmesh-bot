@@ -17,13 +17,13 @@ page's dictionaries.
 python3 tools/i18n.py sync        # after changing strings in src/: new ones appear empty, removed ones go
 python3 tools/i18n.py todo LANG   # what a language still lacks, with the code line it comes from
 python3 tools/i18n.py check       # everything below; the build of the site fails without it
-.venv/bin/python tools/i18n.py generate   # include/I18nTable.h and the glyph subsets in include/I18nFonts.h
+.venv/bin/python tools/i18n.py generate   # src/i18n/I18nTable.h and the glyph subsets in src/i18n/I18nFonts.h
 ```
 
 `generate` needs the BDF fonts and u8g2 `bdfconv` in `upstream/fonts` (see `tools/i18n_fonts.py`).
 The glyph subsets come from Fusion Pixel Font (SIL OFL 1.1, licenses in `i18n/fonts/fusion-pixel/`),
 ClearlyU 12 (`i18n/fonts/clearlyu-cu12.txt`) and the public-domain X11 misc-fixed fonts.
-It also renders the anti-aliased Inter faces of the 320x240 screens (M9, T-Deck) into `include/AaFonts.h`
+It also renders the anti-aliased Inter faces of the 320x240 screens (M9, T-Deck) into `src/ui/AaFonts.h`
 (`tools/aa_fonts.py`, Inter v4.1 TTFs in `upstream/fonts/inter`, SIL OFL 1.1 in `i18n/fonts/inter/OFL.txt`).
 Run it after every translation change, then build the boards and look at the screens:
 `.venv/bin/python tools/site_shots.py OUTDIR de` renders them on a computer.
@@ -49,7 +49,7 @@ width: `cells` is the English text in 6-pixel columns.
   PIN, NTP, CSI, ESP-NOW, OSM, board names, and the device keys written on them (OK, BACK, DEL, HOME, MSG,
   MAP, CTRL, ADV, MIC, Enter, Sym, `@`) are not translated.
 - **Plurals.** `forms` has the categories of the language (CLDR), e.g. `one`/`other` for Dutch (add them to
-  `PLURALS` in `tools/i18n.py` and a case in `category()` in `src/I18n.cpp` for other rules). Write `{n}`
+  `PLURALS` in `tools/i18n.py` and a case in `category()` in `src/i18n/I18n.cpp` for other rules). Write `{n}`
   where the number goes: `"{n} partijen"`.
 - **Dates.** `{weekday}, {month} {day}` is the order of the date line; month names are in the form that
   order needs.

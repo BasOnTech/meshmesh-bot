@@ -16,7 +16,7 @@ from device import connect, command
 from ports import M9_PORT, HELTEC_PORT
 
 TAG = '♟'
-CHESS_LIST = 7  # "Game list" in the game menu: ChessAct in src/UiChessCompact.inc
+CHESS_LIST = 7  # "Game list" in the game menu: ChessAct in src/games/chess/UiChessCompact.inc
 CLICK, HOLD = 13, 0xa3
 MOVES = ['e2e4', 'e7e5', 'f1c4', 'b8c6', 'd1h5', 'g8f6', 'h5f7']  # White (Heltec) mates on move 4
 

@@ -20,7 +20,7 @@ def header():
 
 
 def check():
-    if (ROOT / 'include/Version.h').read_text() != header():
+    if (ROOT / 'src/core/Version.h').read_text() != header():
         raise ValueError('Run python tools/version.py --generate; Version.h is stale')
 
 
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     p.add_argument('--check', action='store_true')
     args = p.parse_args()
     if args.generate:
-        target = ROOT / 'include/Version.h'
+        target = ROOT / 'src/core/Version.h'
         if not target.exists() or target.read_text() != header():
             target.write_text(header())
     check()

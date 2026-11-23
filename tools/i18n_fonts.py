@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Glyph subsets for the interface languages: include/I18nFonts.h (tools/i18n.py generate).
+"""Glyph subsets for the interface languages: src/i18n/I18nFonts.h (tools/i18n.py generate).
 
 The screens draw with u8g2 fonts that hold Latin-1 and Cyrillic. Latin Extended letters come from
-fallback fonts (src/I18n.cpp) cut from the same X11 misc-fixed faces. Only the glyphs the
+fallback fonts (src/i18n/I18n.cpp) cut from the same X11 misc-fixed faces. Only the glyphs the
 translations use are kept; text received over the radio shows only the glyphs in the subset.
 
 Sources, downloaded once into upstream/fonts (not in Git):
@@ -115,7 +115,7 @@ def generate():
                '// Latin Extended: X11 misc-fixed fonts (public domain) via u8g2; subsets, glyphs unchanged.\n'
                '// glyphs: ' + ' '.join(f'{cp:x}' for cp in sorted(drawable)) + '\n')
     (ROOT/'include'/'I18nFonts.h').write_text(licence + '#pragma once\n#include <stdint.h>\n#include <U8g2_for_Adafruit_GFX.h>\n' + '\n'.join(parts) + '\n')
-    print('include/I18nFonts.h:', sum(1 for _ in FONTS), 'fonts')
+    print('src/i18n/I18nFonts.h:', sum(1 for _ in FONTS), 'fonts')
 
 
 if __name__ == '__main__':

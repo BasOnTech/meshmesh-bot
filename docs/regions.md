@@ -10,8 +10,8 @@ The key of a public region is the first 16 bytes of SHA-256 of the string `#name
 Names are case-sensitive, as on repeaters: `msk` and `MSK` are different regions. A region starting with `$` is
 private: its key does not come from the name, and only the MeshCore app sets it.
 
-Code: `include/Regions.h`, `src/Regions.cpp`, the search in `src/RegionSearch.inc`, sending in
-`MeshCoreBackend::floodScoped` and `MeshRadio::scopeKey` of `src/MeshRadio.cpp`.
+Code: `src/mesh/Regions.h`, `src/mesh/Regions.cpp`, the search in `src/mesh/RegionSearch.inc`, sending in
+`MeshCoreBackend::floodScoped` and `MeshRadio::scopeKey` of `src/mesh/MeshRadio.cpp`.
 
 ## Normal mode (chats)
 
@@ -58,7 +58,7 @@ contacts: an answer is opened with the key from the discovery answer, so the sea
 
 ## Repeater and room modes
 
-In a server mode MeshMesh runs the MeshCore 1.17 CLI (`src/MeshServer.cpp`, `docs/repeater.md`), including every
+In a server mode MeshMesh runs the MeshCore 1.17 CLI (`src/mesh/MeshServer.cpp`, `docs/repeater.md`), including every
 `region` command. Commands go over USB as `server cli <command>`, in the CLI console of the web page, from the
 MeshCore app or from another MeshMesh board after an admin login.
 

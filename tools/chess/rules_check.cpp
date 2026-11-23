@@ -1,6 +1,6 @@
-// Host check of src/Chess.cpp: move generation against published perft counts, notation and the
+// Host check of src/games/chess/Chess.cpp: move generation against published perft counts, notation and the
 // automatic endings. Build and run: tools/chess/rules_check.sh
-#include "Chess.h"
+#include "games/chess/Chess.h"
 #include <stdio.h>
 #include <string.h>
 using namespace chess;

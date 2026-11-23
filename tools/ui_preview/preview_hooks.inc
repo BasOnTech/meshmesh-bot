@@ -2,8 +2,8 @@
 bool MeshRadio::resetPath(uint64_t id){Peer* p=contact(id);if(!p)return false;p->pathLength=255;return true;}
 bool MeshRadio::removeContact(uint64_t id){Peer* p=contact(id);if(!p)return false;unsigned i=p-peers;memmove(peers+i,peers+i+1,sizeof(Peer)*(peerCount-i-1));peerCount--;return true;}
 void Hardware::ping(uint16_t,uint16_t){}
-// Signal radar: synthetic sweep results; the table and trend logic are the real src/RadarModel.cpp.
-#include "Radar.h"
+// Signal radar: synthetic sweep results; the table and trend logic are the real src/apps/RadarModel.cpp.
+#include "apps/Radar.h"
 Radar& radar=*new Radar;
 void Radar::open(){if(active)return;active=true;wifi=WifiReady;sweeps=3;count=0;
  struct {uint64_t id;const char* name;uint8_t ch;bool open;int rssi;} aps[]={{0x5A1F0C9E1101ULL,"MM-9E77D2",1,false,-41},{0x34E8941A2B3CULL,"Keenetic-4471",6,false,-58},{0xA0F3C1223344ULL,"TP-Link_5GHz",11,false,-66},{0x10FEED000001ULL,"",3,false,-72},{0x28CDC1ABCDEFULL,"Cafe Bakhetle",1,true,-79},{0xB827EB000102ULL,"DIRECT-HP-M28",6,false,-88}};
@@ -26,15 +26,15 @@ bool Radar::track(unsigned index){if(index>=count)return false;focus=targets[ind
  lastSample=millis()-300;rate=21;return true;}
 void Radar::untrack(){tracking=false;reset();}
 // Chess: the real ChessNet with its saved games kept in memory; sent commands only get an ID.
-#include "ChessNet.h"
+#include "games/chess/ChessNet.h"
 #include <vector>
 static std::vector<uint8_t> chessSaved;
 bool chessStoreWrite(const uint8_t* d,size_t n){chessSaved.assign(d,d+n);return true;}
 size_t chessStoreRead(uint8_t* d,size_t cap){if(chessSaved.size()>cap)return 0;memcpy(d,chessSaved.data(),chessSaved.size());return chessSaved.size();}
 struct PreviewSent{uint32_t id;uint64_t peer;std::string text;};static std::vector<PreviewSent> previewSent; // game and tournament commands sent
 uint32_t MeshRadio::sendGame(const String& text,uint64_t peer){previewSent.push_back({++nextId,peer,text.c_str()});return nextId;}
-// Rated results: the real src/ChessRating.cpp with its file in memory; the node "signs" with a fixed pattern.
-#include "ChessRating.h"
+// Rated results: the real src/games/chess/ChessRating.cpp with its file in memory; the node "signs" with a fixed pattern.
+#include "games/chess/ChessRating.h"
 static std::vector<uint8_t> ratingSaved;
 bool rating::storeWrite(const uint8_t* d,size_t n){ratingSaved.assign(d,d+n);return true;}
 size_t rating::storeRead(uint8_t* d,size_t cap){if(ratingSaved.size()>cap)return 0;memcpy(d,ratingSaved.data(),ratingSaved.size());return ratingSaved.size();}
@@ -47,13 +47,13 @@ static std::vector<std::pair<std::string,std::string>> previewArchive;
 bool chessArchiveWrite(const String& name,const String& text){for(auto& a:previewArchive)if(a.first==name.c_str()){a.second=text.c_str();return true;}previewArchive.push_back({name.c_str(),text.c_str()});return true;}
 String chessArchiveList(){String s="{\"games\":[";for(size_t i=0;i<previewArchive.size();i++)s+=String(i?",":"")+"\""+previewArchive[i].first.c_str()+"\"";return s+"],\"sd\":true}";}
 String chessArchiveRead(const String& name){for(auto& a:previewArchive)if(a.first==name.c_str())return a.second.c_str();return "";}
-// Tournaments: the real src/ChessTour.cpp with its file in memory.
-#include "ChessTour.h"
+// Tournaments: the real src/games/chess/ChessTour.cpp with its file in memory.
+#include "games/chess/ChessTour.h"
 static std::vector<uint8_t> tourSaved;
 bool tour::storeWrite(const uint8_t* d,size_t n){tourSaved.assign(d,d+n);return true;}
 size_t tour::storeRead(uint8_t* d,size_t cap){if(tourSaved.size()!=cap)return 0;memcpy(d,tourSaved.data(),cap);return cap;}
 // Internet over Wi-Fi and the web radar holder: switched off in the preview.
-#include "Internet.h"
+#include "net/Internet.h"
 Internet internet;
 #if !defined(MM_HELTEC_V4)
 static int previewRescans=0; // the T-Deck touch check: DEL in the network list rescans
@@ -75,7 +75,7 @@ int powerOnWay(){return 0;}
 int powerOnWay(){return -1;}
 #endif
 String executeCommand(const String& line){previewCommands+=line+";";return "OK";} // UiHeltec.cpp: the GAT562 GPS menu
-// Same as src/MeshRadio.cpp (the preview does not link the radio).
+// Same as src/mesh/MeshRadio.cpp (the preview does not link the radio).
 String MeshRadio::routeText(const ChatMessage& m,bool brief) const{
  if(m.protocol!=2||m.route==ChatMessage::RouteNone||(m.outgoing&&(m.status==ChatMessage::Failed||channels::isChannel(m.destination))))return "";
  String hops=m.hops==255?String():!m.hops?String(brief?tr("direct"):tr("direct")):(brief?String(m.hops)+tr(" rpt"):String(tr("via "))+m.hops+tr(" rpt"));
@@ -86,8 +86,8 @@ String MeshRadio::routeText(const ChatMessage& m,bool brief) const{
  return s;
 }
 // Device modes: a repeater or room server with made-up passwords and counts.
-#include "MeshServer.h"
-#include "Regions.h"
+#include "mesh/MeshServer.h"
+#include "mesh/Regions.h"
 MeshServer meshServer;
 bool MeshServer::room() const{return config.role==RoleRoom;}
 ServerView MeshServer::view(){ServerView v;v.running=config.role!=RoleNormal;v.room=room();v.forwarding=!v.room;v.password="48213906";v.guest=v.room?"garden":"";
@@ -97,8 +97,8 @@ bool MeshServer::post(const String&){return true;}
 bool MeshServer::advertise(bool){return true;}
 const char* roleName(uint8_t role){return role==RoleRepeater?"repeater":role==RoleRoom?"room":"normal";}
 String setRole(uint8_t role){return String("OK role ")+roleName(role)+"; restarting";}
-// Channels: the table in memory (src/MeshRadio.cpp keeps it in NVS and gives it to MeshCore); the names,
-// keys, links and QR codes are the real src/Channels.cpp.
+// Channels: the table in memory (src/mesh/MeshRadio.cpp keeps it in NVS and gives it to MeshCore); the names,
+// keys, links and QR codes are the real src/mesh/Channels.cpp.
 const channels::Channel* MeshRadio::channel(uint64_t id) const{int i=channelIndex(id);return i<0?nullptr:&channelList[i];}
 int MeshRadio::channelIndex(uint64_t id) const{for(unsigned i=0;i<channelCount;i++)if(channelList[i].id==id)return i;return -1;}
 MeshRadio::ChannelResult MeshRadio::addChannel(const String& name,const uint8_t secret[16],uint64_t* id){

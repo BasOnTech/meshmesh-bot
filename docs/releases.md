@@ -12,7 +12,7 @@ python tools/version.py --generate
 python tools/version.py --check
 ```
 
-The generated `include/Version.h` is committed and checked by PlatformIO. Firmware `status`
+The generated `src/core/Version.h` is committed and checked by PlatformIO. Firmware `status`
 reports `version`, Git `revision` (with `-dirty` for local changes) and the image's `build_sha256`.
 A matching version never replaces a hash check. Package `manifest.json` includes the version and
 revision; site generation rejects packages from different revisions.

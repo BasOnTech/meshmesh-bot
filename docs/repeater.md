@@ -88,10 +88,10 @@ Differences from the stock `simple_repeater` and `simple_room_server`:
   `set radio.rxgain` replies “unsupported”; gain is controlled by MeshMesh.
 
 Code:
-- `src/MeshServer.cpp`: shared `ServerMesh`, `RepeaterMesh`, `RoomMesh` — a port of the MeshCore
+- `src/mesh/MeshServer.cpp`: shared `ServerMesh`, `RepeaterMesh`, `RoomMesh` — a port of the MeshCore
   1.17.1 examples (MIT);
-- `include/MeshServer.h`;
-- `src/UiServer.inc` (M9 screen), `src/UiHeltec.cpp` (Heltec);
+- `src/mesh/MeshServer.h`;
+- `src/ui/UiServer.inc` (M9 screen), `src/ui/UiHeltec.cpp` (Heltec);
 - the server section in `web/index.html`;
 - MeshCore helper modules in `lib/MeshCore/src/helpers/` (see `lib/MeshCore/UPSTREAM.md`,
   `PATCHES.md`);
@@ -100,7 +100,7 @@ Code:
 ## Other repeaters and rooms from the screen (0.13.0)
 
 In the normal mode MeshMesh itself logs in to the network's repeaters and rooms, stock and MeshMesh ones, as the
-MeshCore app does (`include/Remote.h`, `src/Remote.inc`):
+MeshCore app does (`src/mesh/Remote.h`, `src/mesh/Remote.inc`):
 
 - **M9 and T-Deck:** the node card → "Server". The "Server and route" page: "Login" (a password; empty takes the
   saved one or a guest login), "Status" (battery, uptime, received and sent, noise, RSSI and SNR, room posts),
@@ -122,7 +122,7 @@ login a room pushes posts and may miss the request.
 
 ## Power saving
 
-On ESP32 boards (`src/Power.cpp`, in every mode) the CPU runs at 80 MHz while the screen is dark and
+On ESP32 boards (`src/core/Power.cpp`, in every mode) the CPU runs at 80 MHz while the screen is dark and
 Wi-Fi, the radar and the CSI sensor are off; a key, a USB or a BLE command brings 240 MHz back at once.
 The clock does not change while the Wi-Fi driver or the Bluetooth controller runs (once BLE has been on,
 the controller runs until reboot): a change after a CSI check with the Wi-Fi driver still up ended in an

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Checkers and sea battle between two copies of the real src/Duel.cpp (no radio).
+"""Checkers and sea battle between two copies of the real src/games/duel/Duel.cpp (no radio).
 
 tools/ui_preview/build.sh with KEEP=PATH builds the host program; "PATH --duel" serves the games on stdin/stdout.
 This check starts two of them, A and B, carries every message one sends to the other (each sees the other as

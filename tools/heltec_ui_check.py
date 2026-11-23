@@ -7,7 +7,7 @@ from device import connect,command,screenshot
 from radio_check import delivery
 from ports import M9_PORT, HELTEC_PORT
 
-CHESS_LIST=7 # "Game list" in the game menu: ChessAct in src/UiChessCompact.inc
+CHESS_LIST=7 # "Game list" in the game menu: ChessAct in src/games/chess/UiChessCompact.inc
 
 def read(d,c):return json.loads(command(d,c,timeout=25))
 def key(d,c):

@@ -10,7 +10,7 @@ State of MeshMesh 0.3.2 from the sources as of 30 September 2026. Sources:
 
 | Feature | MeshMesh | Where |
 | --- | --- | --- |
-| Ed25519 key, signed adverts, receiving other nodes' adverts | Yes | `src/MeshRadio.cpp` |
+| Ed25519 key, signed adverts, receiving other nodes' adverts | Yes | `src/mesh/MeshRadio.cpp` |
 | GPS position in the advert and the ADV button; as in the stock companion, no periodic adverts: the node advertises itself only with a new key or a new name after boot | Yes | `MeshCoreBackend::advertise` |
 | Direct messages TXT_MSG, ACK, 3 attempts, direct/flood along the known path | Yes | `startMessage`, `processAck` |
 | Public channel (GRP_TXT) | Yes | `onChannelMessageRecv` |
@@ -18,17 +18,17 @@ State of MeshMesh 0.3.2 from the sources as of 30 September 2026. Sources:
 | Contacts: auto-add, node type, path, saving in NVS | Yes, up to 24 | `saveContacts` |
 | Path reset and contact deletion | Yes since 0.3.1 (node card) | `MeshRadio::resetPath/removeContact` |
 | Hashtag and private channels (`#name`, own key) | No: `MAX_GROUP_CHANNELS=1` | — |
-| Server modes: repeater and room server, like the stock `simple_repeater` / `simple_room_server` (login, status, telemetry, neighbours, ACL, CLI, posts, regions) | Yes since 0.3.3: separate modes, chosen at boot ([repeater.md](repeater.md)) | `src/MeshServer.cpp` |
-| Login to another node's room server/repeater from normal mode (ANON_REQ), room posts (SIGNED_PLAIN) | Yes since 0.13.0: screen, web page, USB `remote` ([repeater.md](repeater.md)) | `src/Remote.inc`, `src/UiRemote.inc` |
-| Commands to another node's repeater from normal mode (CLI, TXT_TYPE_CLI_DATA) | Yes since 0.13.0 (M9, T-Deck, web; not the one-button boards) | `src/Remote.inc` |
+| Server modes: repeater and room server, like the stock `simple_repeater` / `simple_room_server` (login, status, telemetry, neighbours, ACL, CLI, posts, regions) | Yes since 0.3.3: separate modes, chosen at boot ([repeater.md](repeater.md)) | `src/mesh/MeshServer.cpp` |
+| Login to another node's room server/repeater from normal mode (ANON_REQ), room posts (SIGNED_PLAIN) | Yes since 0.13.0: screen, web page, USB `remote` ([repeater.md](repeater.md)) | `src/mesh/Remote.inc`, `src/ui/UiRemote.inc` |
+| Commands to another node's repeater from normal mode (CLI, TXT_TYPE_CLI_DATA) | Yes since 0.13.0 (M9, T-Deck, web; not the one-button boards) | `src/mesh/Remote.inc` |
 | Status, telemetry (CayenneLPP) and neighbour requests; replies to other nodes' requests | No; `onContactRequest` returns 0 | — |
-| Trace path, path discovery, discover neighbours (CONTROL) | Trace from the screen and web page since 0.13.0; path discovery in the MeshCore app; neighbour discovery: no | `src/Remote.inc` |
+| Trace path, path discovery, discover neighbours (CONTROL) | Trace from the screen and web page since 0.13.0; path discovery in the MeshCore app; neighbour discovery: no | `src/mesh/Remote.inc` |
 | Share contact (zero-hop), export/import, `meshcore://` | No | — |
 | Favourite contacts, manual add, auto-add settings | No | — |
-| Regions (flood scope): default, per channel, search among repeaters, the app's commands ([regions.md](regions.md)) | Yes since 0.15.0 | `src/Regions.cpp`, `src/RegionSearch.inc` |
-| Path hash size | Yes since 0.11.0 | `src/MeshRadio.cpp` |
+| Regions (flood scope): default, per channel, search among repeaters, the app's commands ([regions.md](regions.md)) | Yes since 0.15.0 | `src/mesh/Regions.cpp`, `src/mesh/RegionSearch.inc` |
+| Path hash size | Yes since 0.11.0 | `src/mesh/MeshRadio.cpp` |
 | Multi-ACK, GRP_DATA, raw | No | — |
-| Companion API (the official app over BLE/USB/TCP) | Yes over BLE and USB; since 0.10.0 repeater and room logins, CLI, status, telemetry, trace and path discovery; no TCP ([companion.md](companion.md)) | `src/Companion.inc`, `src/Portal.cpp` |
+| Companion API (the official app over BLE/USB/TCP) | Yes over BLE and USB; since 0.10.0 repeater and room logins, CLI, status, telemetry, trace and path discovery; no TCP ([companion.md](companion.md)) | `src/mesh/Companion.inc`, `src/net/Portal.cpp` |
 
 Consequences for exchange with third-party nodes: in normal mode MeshMesh sees
 repeaters, room servers and sensors as contacts, but cannot log in to a room server, read

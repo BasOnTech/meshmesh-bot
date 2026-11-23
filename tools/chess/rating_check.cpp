@@ -1,6 +1,6 @@
-// Host check of rated results (src/ChessRating.cpp): tools/chess/rating_check.sh
+// Host check of rated results (src/games/chess/ChessRating.cpp): tools/chess/rating_check.sh
 // Signatures with the MeshCore Ed25519 code, ratings, the daily limit, folding of old records and the saved file.
-#include "ChessRating.h"
+#include "games/chess/ChessRating.h"
 #include "ed_25519.h"
 #include <cstdio>
 #include <vector>

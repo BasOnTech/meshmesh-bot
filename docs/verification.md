@@ -14,7 +14,7 @@
 
 > **0.32.0: emoji on the screens, T114 backlight** (13 November 2026). At a T114 user's request. Emoji: about 300
 > common emoji (faces, hands, hearts, weather, animals, food, things, travel, signs) as 12x12 pictures after Twemoji 15.1
-> (CC-BY 4.0), `tools/emoji.py` → `include/EmojiData.h` (~10 KB). In colour on the M9/T-Deck (12 px), T114 (16 px), T096
+> (CC-BY 4.0), `tools/emoji.py` → `src/ui/EmojiData.h` (~10 KB). In colour on the M9/T-Deck (12 px), T114 (16 px), T096
 > and Wireless Tracker (palette `ColEmoji0…`), as silhouettes on monochrome OLEDs and e-ink. Skin tones, FE0F and ZWJ are
 > not drawn (the base emoji shows), a flag shows its country letters, an emoji without a picture a frame. Before, the M9
 > drew a frame and the compact boards and the T114 skipped emoji. For the Chinese T114 to fit, the T114 leaves out the
@@ -159,7 +159,7 @@
 > unchanged list (`setHtml`) while `host.js` kept adding its cards to it; they now have their own box. The app's home
 > shows the link with a "Disconnect" button (BACK on home only puts the app in the background). (2) One-button screens
 > and the T114 estimated the charge linearly, the page, app and M9 with a Li-ion curve: 47% against 41% at 3.73 V; all
-> now share `batteryPercent()` (`include/Hardware.h`), checked equal to the JS over 3.0–4.3 V. (3) "Our relay limit" is
+> now share `batteryPercent()` (`src/hw/Hardware.h`), checked equal to the JS over 3.0–4.3 V. (3) "Our relay limit" is
 > now "Relay hop limit" with an explanation (like `flood.max`), "Always connected" is "Keep Wi-Fi connected" with a
 > description. 0% on the Heltec V3 matches the 3.08 V the board measured (below 3.3 V is empty); whether the measurement
 > itself is right (divider 4.9, 11 dB attenuation) is not established without the board and a multimeter.
@@ -398,7 +398,7 @@
 > as a repeater — login, status, CLI, trace (SNR 13.75 › you 12.5). The web page through `web_usb_bridge.py` to the
 > Heltec in headless Chromium: the repeater card with status, replies and trace, no JavaScript errors. The M9, T-Deck,
 > Heltec and T114 screens: `tools/ui_preview` only; physical buttons and the M9 screen not checked. The first build hung
-> on `remote`: an endless recursion after a search-and-replace in `src/Remote.inc` (fixed before the checks above). The
+> on `remote`: an endless recursion after a search-and-replace in `src/mesh/Remote.inc` (fixed before the checks above). The
 > T114 is in the normal mode afterwards (boot 26), `tools/companion_check.py` passes.
 
 > **0.12.0: radio settings on the Heltec, GAT562, T114 and community board screens** (8 October 2026, no full run).
@@ -475,7 +475,7 @@
 > not checked on hardware; the T114 Chinese image has 2 KB left.
 
 > **nRF52 modules** (7 October 2026, branch `feature/dice`; the T114 and GAT562 were not connected — not checked on
-> hardware). Chess, the pet and the dice are left out with `MM_NO_CHESS|PET|DICE` (`include/Modules.h`); a custom package
+> hardware). Chess, the pet and the dice are left out with `MM_NO_CHESS|PET|DICE` (`src/core/Modules.h`); a custom package
 > is built by `tools/nrf52.py package ENV --without … [--lang CODE]`. The T114 and GAT562 were built without each module,
 > without chess and dice, without all three (T114: 686 → 581, 629, 641, 566, 567 KB); a T114 package without chess and the
 > pet with the Chinese image was made, `manifest.modules` = `dice`. Full set: the 15 boards build, the preview scenarios
@@ -651,7 +651,7 @@
 
 > **Heltec T114: the M9-style interface** (5–6 October 2026, build `606703b`, package `EDBC33C5…` through
 > `tools/nrf52.py flash`, settings kept). The compact interface's one-button logic is drawn on the T114 by its own
-> layer, `src/UiHires.inc`, at 240×135: M9 colours and icons (`include/UiIcons.h`, code shared with the M9), cards,
+> layer, `src/UiHires.inc`, at 240×135: M9 colours and icons (`src/ui/UiIcons.h`, code shared with the M9), cards,
 > avatars, a status bar with clock and battery, key chips, a full-screen chess board; CJK and Arabic at their own
 > size. **On hardware**: every page captured over USB (`device.py --screenshot`), ~78 KB RAM free, no restarts; the
 > owner looked at the screen and confirmed it. The largest image (Chinese) is 674 KB of 712. **On the computer**:
@@ -715,7 +715,7 @@
 
 > **Chess with a stock MeshCore companion — the site page `chess/`** (2 October 2026; `docs/chess.md`).
 > On the computer: `node tools/chess/companion_check.cjs` — 174 checks, including 300 random games
-> (44,692 plies) that matched `src/Chess.cpp` ply by ply. Over the radio: the GAT562 temporarily ran the stock
+> (44,692 plies) that matched `src/games/chess/Chess.cpp` ply by ply. Over the radio: the GAT562 temporarily ran the stock
 > USB companion v1.17.1 (build `GAT562_30S_Mesh_Kit_companion_radio_usb` from `upstream/meshcore-stock`,
 > serial DFU) against the M9 on MeshMesh 0.3.3 (boot 125 before and after). `chess_companion_check.py`: the page
 > code in Node via `usb_tcp_bridge.py --raw` — a challenge from the page and mate in 7 plies, a repeated and an
@@ -848,8 +848,8 @@
 > and sound on a phone.
 
 > **0.3.2 + chess with contacts** (1 October 2026, after the CSI check commit):
-> `src/Chess.cpp` (rules), `src/ChessNet.cpp` (games, `♟…` commands in MeshCore direct
-> messages, LittleFS `/meshmesh/chess.bin`), `src/UiChess.inc` (M9 screen),
+> `src/games/chess/Chess.cpp` (rules), `src/games/chess/ChessNet.cpp` (games, `♟…` commands in MeshCore direct
+> messages, LittleFS `/meshmesh/chess.bin`), `src/games/chess/UiChess.inc` (M9 screen),
 > USB `chess ...` on both boards; protocol — `docs/chess.md`. Installed with targeted checks via
 > `flash.py`, a full run was not performed: M9 — boot #83, ELF
 > `B4CA2A937B03CFF0B84848ECBF2D5C91C8586440D6B8B3AB8B84C38AFE9B8271`; Heltec — boot
@@ -874,9 +874,9 @@
 > and against the stock MeshCore app it was not checked; the Heltec has no chess screen.
 
 > **0.3.2 + online maps over Wi-Fi on the M9** (30 September 2026, after the web portal commit):
-> Wi-Fi client (`src/Internet.cpp`: up to 5 networks in NVS `mm-wifi`, scanning, connecting,
-> NTP), OpenStreetMap tiles over HTTPS with certificate verification (`include/RootCerts.h`),
-> our own PNG decoder (`src/MapPng.cpp`, ROM miniz), a cache of downloaded tiles on SD
+> Wi-Fi client (`src/net/Internet.cpp`: up to 5 networks in NVS `mm-wifi`, scanning, connecting,
+> NTP), OpenStreetMap tiles over HTTPS with certificate verification (`src/net/RootCerts.h`),
+> our own PNG decoder (`src/apps/MapPng.cpp`, ROM miniz), a cache of downloaded tiles on SD
 > in MMT1 format, zoom 3–18, the last view in NVS `mm-map`, position by IP
 > (get.geojs.io, fallback ipapi.co) if there is no GPS and no saved view. The screen “Connect →
 > Internet over Wi-Fi”: list of networks, password entry. Installed on the M9 with targeted checks via
@@ -917,7 +917,7 @@
 > breathing by reflection need a 60 GHz radar (for example MR60BHA2).
 
 > **0.3.2 + Solitaire** (30 September 2026, after the CSI commit): Klondike solitaire on the M9 —
-> `src/Solitaire.cpp` (rules, undo, hint, saving), `src/UiSolitaire.inc`
+> `src/games/solitaire/Solitaire.cpp` (rules, undo, hint, saving), `src/games/solitaire/UiSolitaire.inc`
 > (screen), a menu tile. Installed on the M9 with targeted checks via `flash.py`: boot #71,
 > ELF `816269D0F867B12337155CE597236FFFFB1752CBBE76213AF03A741EBDB51D6F`; the Heltec was not
 > reflashed (the game is excluded from its build, its sources did not change).

@@ -1,6 +1,6 @@
 # PlatformIO extra script: the device page for the firmware's web server, made at build time as PortalWeb.h
 # in the build folder: web/index.html and the page's dictionaries (i18n/web/<lang>.json), each compressed
-# with gzip and sent as gzip content (src/Portal.cpp). The header is rewritten only when its contents change.
+# with gzip and sent as gzip content (src/net/Portal.cpp). The header is rewritten only when its contents change.
 # The dictionaries share their keys, the English text, which is most of each: i18n/keys.js has them once, and
 # i18n/<lang>.js the translations in their order; it loads keys.js and makes globalThis.MeshMeshWebDict as
 # tools/web_i18n.cjs build does. English is the source and needs none: without LANGS the page is sent alone.

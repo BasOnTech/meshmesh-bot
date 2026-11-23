@@ -1,6 +1,6 @@
 // MeshMesh Chess through a stock MeshCore companion (docs/chess.md, "With a stock MeshCore companion").
 // The site's chess page is web/index.html with this file (tools/chess_site.py). The rules port
-// src/Chess.cpp and the games src/ChessNet.cpp: the same text commands, ACKs and resending, so a game
+// src/games/chess/Chess.cpp and the games src/games/chess/ChessNet.cpp: the same text commands, ACKs and resending, so a game
 // with an M9 or a Heltec on MeshMesh goes as between two boards. The radio is the
 // companion's: USB (Web Serial) or Bluetooth (Web Bluetooth), frames of the MeshCore companion
 // protocol (upstream/meshcore-stock/examples/companion_radio/MyMesh.cpp). The games are kept in this
@@ -8,7 +8,7 @@
 (function(){
 'use strict';
 
-// ---- Rules (src/Chess.cpp) ----
+// ---- Rules (src/games/chess/Chess.cpp) ----
 // Squares 0..63: a1=0 .. h8=63. A piece is +type for White, -type for Black.
 // A move: from | to<<6 | promotion<<12; 0 is never a legal move.
 const Pawn=1,Knight=2,Bishop=3,Rook=4,Queen=5,King=6,White=0,Black=1,MaxPlies=512;
@@ -129,7 +129,7 @@ class Game{
   return plies>=MaxPlies?TooLong:Ongoing}
 }
 
-// ---- Games and commands (src/ChessNet.cpp) ----
+// ---- Games and commands (src/games/chess/ChessNet.cpp) ----
 // "♟3F2A 5 g1f3 3. Nf3": a tag, the game number, then the command; the rest is for a human reader.
 const Tag='♟',Queued=1,Sent=2,Delivered=3,Failed=4,MaxMatches=12;
 // Automatic resending: after 2, 5 and 10 minutes, then every 15; at once when the other player is

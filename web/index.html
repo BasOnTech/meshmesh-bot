@@ -9,7 +9,7 @@ globalThis.MeshMeshLang=document.documentElement.lang=l;
 if(l!=='en'&&!globalThis.MeshMeshWebDict)document.write('<script src="i18n/'+l+'.js"><\/script>')})();
 </script><style>
 .quick-fields label,.people-fields label{display:block;margin:10px 0}.quick-fields textarea{display:block;width:100%;min-height:64px;resize:vertical;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;margin-top:6px;outline-color:var(--accent)}.quick-fields input[type=checkbox],.people-fields input[type=checkbox]{width:20px;flex:none}.quick-fields label.two,.people-fields label.two{display:flex;align-items:center;justify-content:space-between;gap:12px}.quick-fields .btns .btn:first-child{background:var(--hi)}
-/* The palette and shapes of the M9 screen (src/Ui.cpp): neutral dark surfaces, colour for focus and state. */
+/* The palette and shapes of the M9 screen (src/ui/Ui.cpp): neutral dark surfaces, colour for focus and state. */
 :root{--bg:#080c11;--bar:#000;--card:#131a22;--hi:#1c2835;--line:#2a3542;--grid:#223040;--ink:#e4e9ee;--dim:#8d99a6;--faint:#56626e;--accent:#1fc2ae;--deep:#14524b;--ok:#4cc26b;--warn:#e9b13b;--bad:#e5564d;--info:#4f9df7;--violet:#a78bfa;--pink:#f472b6;--out:#103a35;--in:#1a232d;color-scheme:dark;font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg)}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);min-height:100vh;-webkit-tap-highlight-color:transparent}
 button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}a{color:var(--accent)}
@@ -406,8 +406,8 @@ function stampText(at){const d=local(at),now=local(deviceNow());if(!d)return'';c
 function ago(s){s=Math.max(0,s|0);return s<60?L('now'):s<3600?L`${s/60|0} min`:s<86400?L`${s/3600|0} h`:L`${s/86400|0} d`}
 const age=p=>p.age_seconds+(Date.now()-fetchedAt)/1000;
 
-// Conversations: the same filters as the screen (src/Ui.cpp belongs()).
-// Group channels (/api/channels, src/Channels.cpp): Public is "ALL", the others "FF" and 14 hex digits; node IDs never start with FF.
+// Conversations: the same filters as the screen (src/ui/Ui.cpp belongs()).
+// Group channels (/api/channels, src/mesh/Channels.cpp): Public is "ALL", the others "FF" and 14 hex digits; node IDs never start with FF.
 const isChan=id=>id==='ALL'||/^FF[0-9A-F]{14}$/.test(id),dest=m=>m.destination==='FFFFFFFFFFFFFFFF'?'ALL':m.destination,chan=id=>chans?.channels?.find(c=>c.id===id);
 function matches(m,id){const d=dest(m);return isChan(id)||isChan(d)?d===id:m.outgoing?d===id:m.source===id&&(d===status.node||m.protocol===1)}
 function other(m){const d=dest(m);return isChan(d)||m.outgoing?d:m.source}
@@ -726,7 +726,7 @@ const PET_MOOD={happy:[L('happy'),'ok'],calm:[L('calm'),'muted'],hungry:[L('hung
 async function loadPet(){if(petBusy)return;petBusy=true;try{pet=await request('/api/pet');petAt=Date.now()}catch(e){if(!pet)pet=false}finally{petBusy=false}}
 function enterPet(){if(petTimer)return;loadPet().then(()=>{if(route==='pet')renderPet()});
  petTimer=setInterval(async()=>{if(route!=='pet'){clearInterval(petTimer);petTimer=null;return}await loadPet();if(route==='pet'&&!petNaming)renderPet()},window.MeshNative?2000:1200)}
-// Optional modules of the nRF52 images (firmware include/Modules.h): status.modules lists those built in; older firmware has them all.
+// Optional modules of the nRF52 images (firmware src/core/Modules.h): status.modules lists those built in; older firmware has them all.
 const hasModule=m=>typeof status.modules!=='string'||status.modules.split(' ').includes(m);
 function petTile(){const p=pet;if(!p||!hasModule('pet'))return[];const detail=p.stage==='none'?L('No pet'):p.stage==='dead'?L('Dead'):p.stage==='egg'?L('Egg'):`${p.name} · ${(PET_MOOD[p.mood]||[''])[0]}`;
  return[['pet','paw',p.needs_care?'warn':p.stage==='none'?'muted':'pink',L('Pet'),detail]]}
@@ -1144,7 +1144,7 @@ async function chanClick(d){
  const s=deleteArmed===c.id+1?1:deleteArmed===c.id+2?2:0;
  if(s<2){const a=deleteArmed=c.id+(s+1);notify(s?L('Tap again to delete the channel'):L('Deleting channel: confirm twice more'),'warn');setTimeout(()=>{if(deleteArmed===a){deleteArmed='';render()}},5000);renderChanInfo();return}
  deleteArmed='';try{await chanDo({action:'remove',channel:c.id});notify(L('Channel deleted; history remains and returns if you join again'),'ok');await loadChans();go('chats')}catch(e){notify(chanError(e),'bad')}}
-// QR code of a channel link: channels::qr() of src/Channels.cpp, module for module (byte mode, level M, versions 1-10).
+// QR code of a channel link: channels::qr() of src/mesh/Channels.cpp, module for module (byte mode, level M, versions 1-10).
 function qrCode(text){
  const d=new TextEncoder().encode(text),len=d.length,EC=[0,10,16,26,18,24,16,18,22,22,26],BL=[0,1,1,1,2,2,4,4,4,5,5],abs=Math.abs,max=Math.max;
  const rawBits=v=>{let n=(16*v+128)*v+64;if(v>=2){const a=(v/7|0)+2;n-=(25*a-10)*a-55;if(v>=7)n-=36}return n};
@@ -1331,7 +1331,7 @@ function renderModules(){const s=moduleStates(),names=['LoRa',L('Keyboard'),'SD'
  $('bootLine').textContent=L`Boot ${status.boot}`+(heltec()?'':L` · last key: ${keyName(status.last_key)}`)+(status.event?L` · event: ${eventLabel(status.event)}`:'');
  $('firmware').innerHTML=[[L('Firmware'),status.firmware],[L('Board'),boardName()],[L('Node'),status.node],[L('Protocol'),L('MeshCore · Public channel')],[L('Build'),String(status.build_sha256||'').slice(0,16)],[L('Free PSRAM'),Math.round((status.psram||0)/1024)+' K']].map(([a,b])=>`<div class="detail"><span>${a}</span><span class="${a===L('Build')?'mono':''}">${esc(b)}</span></div>`).join('')}
 
-// Screen languages of the firmware (include/I18n.h).
+// Screen languages of the firmware (src/i18n/I18n.h).
 const SCREEN_LANGS=[['en','English']];
 function langName(){const l=SCREEN_LANGS.find(x=>x[0]===config.lang);return l?l[1]:'English'}
 // Settings: the M9 settings list and its two editors.
@@ -1342,7 +1342,7 @@ function renderSettings(){
   ['modules','pulse','ok',L('Module status'),L`RX ${status.rx} · TX ${status.tx} · ${status.relayed} relayed`],['help','help','muted',L('Keys and hints'),L('What each key does')],['library','pin','ok',L('Saved maps'),mapInfo.name?`${mapInfo.name} · ${plural(mapInfo.tiles,'{n} tile','{n} tiles')}`:L('No maps')],['role','tower','violet',L('Operating mode'),status.role==='repeater'?L('MeshCore repeater'):status.role==='room'?L('MeshCore room'):L('Normal: chats, maps, radar')],['backup','down','info',L('Backup'),L('Save settings to a file or restore them')]];
  const off=status.power_on!==undefined;$('powerOff').hidden=$('powerOffHint').hidden=!off;if(off)$('powerOffHint').textContent=powerOnText();
  $('settingsList').innerHTML=storageCard()+items.map(([go,i,c,n,d])=>`<button class="row" data-go="${go}"><span class="icbox" style="width:34px;height:34px;border-radius:8px;background:var(--card);display:grid;place-items:center;font-size:18px;flex:none">${ic(i,c)}</span><span class="main"><b>${n}</b><small>${esc(d)}</small></span><span class="go">${ic('next')}</span></button>`).join('')}
-// Apps of the device's screen menu (firmware "apps" setting, src/Apps.cpp): IDs separated by spaces, "-" before one
+// Apps of the device's screen menu (firmware "apps" setting, src/core/Apps.cpp): IDs separated by spaces, "-" before one
 // hides it; "{NAME id id}" is a folder ("_" for the spaces of its name, "games" the games folder in the interface
 // language), "-{NAME ...}" hides the folder with its apps. Settings stay at the top level and shown.
 const APP_NAMES={chats:['chat',L('Chats')],map:['pin',L('Map')],nodes:['mesh',L('Nodes')],nav:['compass',L('Navigation')],connect:['wifi',L('Connectivity')],radar:['radar',L('Radar')],health:['pulse',L('Modules')],settings:['gear',L('Settings')],solitaire:['cards',L('Solitaire')],chess:['chess',L('Chess')],checkers:['checkers',L('Checkers')],sea:['ship',L('Sea battle')],pet:['paw',L('Pet')],dice:['dice',L('Dice')],quick:['send',L('Quick Send')],people:['tally',L('Quick counter')],wardrive:['tower',L('Wardrive')],gps:['compass','GPS'],wifi:['wifi','Wi-Fi'],ble:['ble','Bluetooth']};
@@ -1688,7 +1688,7 @@ function drawMap(){if(route!=='map')return;const c=$('mapCanvas'),box=$('mapBox'
  const mpp=Math.cos(mapState.lat*Math.PI/180)*40075016.686/scale(mapState.z);let dist=5;for(const v of [5,10,20,50,100,200,500,1000,2000,5000,10000,20000,50000,100000])if(v/mpp<=110)dist=v;
  $('chipScale').hidden=false;$('chipScale').innerHTML=`<span style="display:inline-block;width:${Math.max(8,Math.round(dist/mpp))}px;height:5px;border:2px solid var(--ink);border-top:0"></span>${dist>=1000?L`${dist/1000} km`:L`${dist} m`}`}
 
-// Solitaire: Klondike with the rules and scoring of src/Solitaire.cpp; played in this browser.
+// Solitaire: Klondike with the rules and scoring of src/games/solitaire/Solitaire.cpp; played in this browser.
 const SUITS=['♠','♥','♦','♣'],RANKS=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 const cSuit=c=>((c&63)/13)|0,cRank=c=>(c&63)%13,cRed=c=>cSuit(c)===1||cSuit(c)===2,cUp=c=>(c&128)!==0,isF=p=>p>=2&&p<6,isT=p=>p>=6;
 const fits=(lower,upper)=>cRed(lower)!==cRed(upper)&&cRank(lower)===cRank(upper)+1,capacity=p=>p<=1?24:isF(p)?13:19;
@@ -1743,7 +1743,7 @@ function gameClick(el,auto){if(!el||collecting)return;const p=+el.dataset.pile,i
 function newGame(){const g=game;if(g&&g.counted&&!won(g)){if(Date.now()-newArmed>4000){newArmed=Date.now();notify(L('Again: new game, this one will count as lost'),'warn');return}const s=stats();s.played++;store('solstats',s)}newArmed=0;game=deal(drawNext);pick=hintMove=null;saveGame();renderGame()}
 
 // Data: the screen state, polled; events become toasts as on the M9.
-// Device role and the server roles (src/MeshServer.cpp). Their settings go through the MeshCore CLI, as from the app.
+// Device role and the server roles (src/mesh/MeshServer.cpp). Their settings go through the MeshCore CLI, as from the app.
 let roleChoice=null,rpt={},rptSecrets={},rptFormBuilt=false;
 const ROLES=[['normal','chat','acc',L('Normal mode'),L('Screen, chats, maps, radar and games; MeshCore chat node')],['repeater','tower','violet',L('MeshCore repeater'),L('Relays network packets, no chats; login and setup from the MeshCore app')],['room','room','warn',L('MeshCore room'),L('Stores posts and delivers them to members; room password and setup from the MeshCore app')]];
 function serverRole(){return status.role==='repeater'||status.role==='room'}
@@ -1801,7 +1801,7 @@ async function refresh(){if(refreshing||uploading||!auth||companion)return;refre
  for(const v of document.querySelectorAll('.version'))v.textContent=String(status.firmware||'').replace(/^MeshMesh\s*/,'');
  render();authFails=0;if(joinLink&&!joinLink.offered){joinLink.offered=true;go('join')}}catch(e){if(/Authentication/.test(e.message)){if(++authFails<2)return;auth='';try{sessionStorage.removeItem('mm-auth')}catch{}clearInterval(timer);$('app').hidden=true;$('login').hidden=false;hud();notify(L('Wi-Fi password required'),'warn')}else notify(L`No connection to the device: ${e.message}`,'bad')}finally{refreshing=false;if(refreshAgain)setTimeout(refresh,0)}}
 
-// Map package upload and preparation (formats shared with tools/maps.py and src/Maps.cpp).
+// Map package upload and preparation (formats shared with tools/maps.py and src/apps/Maps.cpp).
 function download(data,name,type='application/octet-stream'){const url=URL.createObjectURL(new Blob([data],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 function readPackage(buffer){const a=new Uint8Array(buffer),v=new DataView(buffer);if(a.length<10||new TextDecoder().decode(a.slice(0,6))!=='MMAP1\n')throw Error(L('A .mmmap map file is required'));const n=v.getUint32(6,true);if(n>2048||10+n>a.length)throw Error(L('Invalid map header'));const manifest=JSON.parse(new TextDecoder().decode(a.slice(10,10+n)));if(!manifest||typeof manifest.name!=='string'||!manifest.name.length||new TextEncoder().encode(manifest.name).length>96||!Number.isFinite(manifest.latitude)||Math.abs(manifest.latitude)>85.05112878||!Number.isFinite(manifest.longitude)||Math.abs(manifest.longitude)>180||!Number.isInteger(manifest.default_zoom)||manifest.default_zoom<10||manifest.default_zoom>17||!Number.isInteger(manifest.tiles)||manifest.tiles<1)throw Error(L('Invalid map area parameters'));const records=[];let at=10+n;while(at<a.length){if(at+17>a.length)throw Error(L('Incomplete tile'));const z=a[at],x=v.getUint32(at+1,true),y=v.getUint32(at+5,true),size=v.getUint32(at+9,true),crc=v.getUint32(at+13,true);at+=17;if(z<10||z>17||x>=2**z||y>=2**z||!size||size>262144||size%4||at+size>a.length)throw Error(L('Invalid tile size or coordinates'));const data=a.slice(at,at+size);at+=size;if(crc32(data)!==crc)throw Error(L('File checksum error'));decodeTile(data);records.push({z,x,y,size,crc,data})}if(records.length!==manifest.tiles)throw Error(L('Invalid tile count'));return{manifest,records}}
 // Saving an area: to the phone (app), to the device SD over the current link, or as a .mmmap file.
@@ -1869,7 +1869,7 @@ async function buildMap(e){e.preventDefault();const b=$('buildButton'),dest=$('a
  else{$('buildTask').textContent=destDone(dest)+warn;notify(L('Map saved'),'ok');mapState={lat,lon,z:Math.max(...zooms),center:true,follow:false};if(dest==='sd'&&auth)await refresh();await loadAreas();drawMap()}}
  catch(e){$('buildTask').textContent=L`${e.message} Getting a map needs internet; already saved maps keep working.`}finally{b.disabled=false}}
 
-// Chess with contacts. The device keeps the rules, the games and the radio commands (src/ChessNet.cpp);
+// Chess with contacts. The device keeps the rules, the games and the radio commands (src/games/chess/ChessNet.cpp);
 // this page shows them, sends moves through /api/command and announces the other player's moves.
 let chess={games:[],events:0,event:'',waiting:0},chessLoaded=false,chessDetail=null,chessSel=null,chessPromo=null,chessArmed='',chessQuiet=false;
 // Rating (firmware with "chess rating"; the companion page has none): the tab, the rated choice for new games and the last answer of "chess rating".
@@ -1878,7 +1878,7 @@ let tours=null,tourForm=null,tourArmed=''; // tournaments (firmware with "tour")
 let chessColor=store('chess-color')??2,chessSound=store('chess-sound')||false,chessAudio=null;
 // System notifications while the tab is in the background: only on HTTPS (the site's chess page), not in the app (it notifies itself).
 const chessAlertsUsable=typeof Notification!=='undefined'&&typeof window!=='undefined'&&window.isSecureContext&&!window.MeshHost;let chessAlerts=chessAlertsUsable&&!!store('chess-alerts')&&Notification.permission==='granted';
-const CHESS_ART=['..................|..................|..................|........##........|.......####.......|......######......|......######......|.......####.......|......######......|.......####.......|.......####.......|......######......|.....########.....|....##########....|...############...|...############...','........#.#.......|.......#####......|......########....|.....##+#######...|....############..|...#############..|..###############.|.#######..#######.|.#####....#######.|..###....#######..|........#######...|.......#######....|......########....|....#++++++++#....|...############...|..##############..','........##........|........##........|.......####.......|......###+##......|.....###+####.....|.....##+#####.....|.....########.....|......######......|.......####.......|......#++++#......|.....########.....|......######......|.....########.....|....##########....|..##############..|..##############..','..................|..##...####...##..|..##...####...##..|..##############..|..##############..|...#++++++++++#...|....##########....|....##########....|....##########....|....##########....|....##########....|...#++++++++++#...|..##############..|..##############..|.################.|.################.','.#......##......#.|.##....####....##.|.###..######..###.|.####.######.####.|.################.|..##############..|...############...|....##########....|.....########.....|.....########.....|....#++++++++#....|....##########....|.....########.....|...############...|..##############..|..##############..','........##........|......######......|........##........|....###.##.###....|..######++######..|.#######++#######.|.################.|.################.|..##############..|...############...|....#++++++++#....|....##########....|.....########.....|...############...|..##############..|..##############..'].map(a=>a.split('|')); // P N B R Q K, as src/UiChess.inc
+const CHESS_ART=['..................|..................|..................|........##........|.......####.......|......######......|......######......|.......####.......|......######......|.......####.......|.......####.......|......######......|.....########.....|....##########....|...############...|...############...','........#.#.......|.......#####......|......########....|.....##+#######...|....############..|...#############..|..###############.|.#######..#######.|.#####....#######.|..###....#######..|........#######...|.......#######....|......########....|....#++++++++#....|...############...|..##############..','........##........|........##........|.......####.......|......###+##......|.....###+####.....|.....##+#####.....|.....########.....|......######......|.......####.......|......#++++#......|.....########.....|......######......|.....########.....|....##########....|..##############..|..##############..','..................|..##...####...##..|..##...####...##..|..##############..|..##############..|...#++++++++++#...|....##########....|....##########....|....##########....|....##########....|....##########....|...#++++++++++#...|..##############..|..##############..|.################.|.################.','.#......##......#.|.##....####....##.|.###..######..###.|.####.######.####.|.################.|..##############..|...############...|....##########....|.....########.....|.....########.....|....#++++++++#....|....##########....|.....########.....|...############...|..##############..|..##############..','........##........|......######......|........##........|....###.##.###....|..######++######..|.#######++#######.|.################.|.################.|..##############..|...############...|....#++++++++#....|....##########....|.....########.....|...############...|..##############..|..##############..'].map(a=>a.split('|')); // P N B R Q K, as src/games/chess/UiChess.inc
 const pieceCache={};
 function pieceSvg(letter){ // a FEN letter: upper case is White
  if(pieceCache[letter])return pieceCache[letter];
@@ -2086,7 +2086,7 @@ async function chessTap(s,g){
  renderBoard()}
 async function chessMove(uci){const g=chessGame(param);chessSel=null;chessPromo=null;if(!g)return;await chessCommand(`chess move ${g.id} ${uci}`)}
 
-// Checkers and sea battle with contacts (firmware "duel", src/Duel.cpp, docs/games.md): no rating, just a game.
+// Checkers and sea battle with contacts (firmware "duel", src/games/duel/Duel.cpp, docs/games.md): no rating, just a game.
 // The device keeps the games and sends every move or shot as a direct message; this page shows them, sends the
 // player's moves and shots through /api/command and announces the other side's (compared with the previous list).
 let duel=null,duelOk=null,duelAt=0,duelBusy=false,duelDetail=null,duelSel=null,duelPaths=null,duelAim='',duelArmed='',duelQuiet=false,duelColor=store('duel-color')??2;

@@ -24,7 +24,7 @@ The first text command closes the link with the app, so frames never mix with te
 
 ## What works
 
-Protocol version 10 (`examples/companion_radio` of MeshCore companion-v1.17.1), code in `src/Companion.inc`.
+Protocol version 10 (`examples/companion_radio` of MeshCore companion-v1.17.1), code in `src/mesh/Companion.inc`.
 
 - Device and node information: name, key, radio parameters, power.
 - Contacts: the list (also only those changed since a given mark), lookup by key, adding, editing,

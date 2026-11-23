@@ -10,10 +10,10 @@ sheet can be sent to a contact (below).
 On every board: a "Dice" tile on the M9 and T-Deck, a screen after "Pet" on the one-button boards, the GAT562
 and the T114. It works in every role, the repeater and room server included.
 
-Code: `src/Dice.cpp`, `include/Dice.h` (rolls, formulas, the sheet, templates, storage, sending, the `dice`
-command), `src/UiDice.inc` (the 320×240 screen), `src/UiDiceCompact.inc` (the 128×64 OLED and the menus of the
+Code: `src/games/dice/Dice.cpp`, `src/games/dice/Dice.h` (rolls, formulas, the sheet, templates, storage, sending, the `dice`
+command), `src/games/dice/UiDice.inc` (the 320×240 screen), `src/games/dice/UiDiceCompact.inc` (the 128×64 OLED and the menus of the
 one-button boards), the page in `src/UiHires.inc` (T114), the shapes of dice and stats — `drawDieShape`,
-`drawStatShape` in `src/UiIcons.cpp`. The state is `/meshmesh/dice.bin` in LittleFS (mode, pool, grid, the
+`drawStatShape` in `src/ui/UiIcons.cpp`. The state is `/meshmesh/dice.bin` in LittleFS (mode, pool, grid, the
 characters' names); each character's sheet is its own file `/meshmesh/sheetN.bin` (only the blocks in use and
 their descriptions, with a checksum); the current character's sheet is in memory. The last eight rolls and the
 grid values live in memory only.

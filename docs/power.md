@@ -1,6 +1,6 @@
 # Power saving
 
-Since 0.4.0 every board uses shared event waits (`src/Power.cpp`) in normal chat, repeater and
+Since 0.4.0 every board uses shared event waits (`src/core/Power.cpp`) in normal chat, repeater and
 room roles. With the screen off, a ready idle radio and no active radar/CSI or diagnostic probes,
 the application task waits up to 20 ms instead of polling every 2 ms. A LoRa interrupt notifies
 it without waiting for the timeout. Buttons, GPS and USB are serviced between waits. USB/BLE

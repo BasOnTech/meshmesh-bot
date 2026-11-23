@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Anti-aliased faces of the 320x240 screens (M9, T-Deck): include/AaFonts.h (tools/i18n.py generate).
+"""Anti-aliased faces of the 320x240 screens (M9, T-Deck): src/ui/AaFonts.h (tools/i18n.py generate).
 
 Inter, rendered with hinting into 4-bit coverage per pixel. Each face is sized so its cap height (the digit
 height for the digit face) matches the X11 bitmap face it replaces, so the layouts keep their baselines and
@@ -93,8 +93,8 @@ def generate():
             '// two to a byte, high nibble first, continuous across rows).\n'
             'struct AaGlyph{uint16_t cp;uint8_t w,h;int8_t dx,top;uint8_t advance;uint32_t offset;};\n'
             'struct AaFont{const AaGlyph* glyphs;const uint8_t* data;uint16_t count;uint8_t ascent,descent,zeroWidth,capHeight;};\n')
-    (ROOT/'include'/'AaFonts.h').write_text(head + '\n'.join(parts) + '\n')
-    print('include/AaFonts.h:', len(FONTS), 'faces')
+    (ROOT/'src/ui/AaFonts.h').write_text(head + '\n'.join(parts) + '\n')
+    print('src/ui/AaFonts.h:', len(FONTS), 'faces')
 
 
 if __name__ == '__main__':

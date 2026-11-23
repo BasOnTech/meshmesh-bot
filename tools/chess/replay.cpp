@@ -1,6 +1,6 @@
 // Replays games for tools/chess/companion_check.cjs: one game of UCI moves per input line; per ply
 // "SAN FEN legal-moves outcome", so the browser rules (web/chess-companion.js) are compared with these.
-#include "Chess.h"
+#include "games/chess/Chess.h"
 #include <stdio.h>
 #include <string.h>
 using namespace chess;

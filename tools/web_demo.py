@@ -7,7 +7,7 @@ Nothing here comes from a real device: names, keys, places and messages are inve
     python3 tools/web_demo.py [--port 8790]      then open http://127.0.0.1:8790/?lang=de#chats
 
 Checkers and sea battle are fixed games without --duel. With --duel PROGRAM (tools/ui_preview/build.sh with
-KEEP=PROGRAM builds it) the real src/Duel.cpp plays them: one copy is this board, a second one answers as Bob V4
+KEEP=PROGRAM builds it) the real src/games/duel/Duel.cpp plays them: one copy is this board, a second one answers as Bob V4
 (accepts, moves a random legal move, shoots at random) and the demo carries their messages both ways.
 """
 import argparse
@@ -113,7 +113,7 @@ GAME = {'id': '3F2A', 'peer': 'B0B5A11E7C42D9E3', 'name': 'Bob V4', 'color': 'wh
         'my_turn': True, 'check': False, 'result': '', 'reason': '', 'draw_offer': '', 'out_status': 3, 'retry_in': -1,
         'retries': 0, 'auto_stopped': False, 'last_san': 'Nf6', 'last': 'g8f6', 'fen': FEN, 'rated': True, 'sign': '',
         'elo_before': 1500, 'elo_after': 1500, 'elo_counted': False, 'move_open': False, 'unseen': False, 'updated': NOW - 120}
-# Checkers and sea battle (firmware "duel", src/Duel.cpp): positions played by the real code (tools/ui_preview).
+# Checkers and sea battle (firmware "duel", src/games/duel/Duel.cpp): positions played by the real code (tools/ui_preview).
 DUEL_LIST = ('id', 'kind', 'peer', 'name', 'state', 'result', 'reason', 'my_turn', 'unseen', 'out_status', 'retry_in', 'auto_stopped',
              'updated', 'color', 'plies', 'last', 'draw_offer', 'mine_left', 'their_left', 'shots', 'first', 'aim', 'last_out', 'last_in',
              'ships_left', 'sunk', 'can_shuffle', 'fair')
@@ -316,7 +316,7 @@ def mmt(png, query):
     return b'MMT1' + bytes([z, 0, 0, 0]) + struct.pack('<IIII', x, y, len(runs), zlib.crc32(runs)) + bytes(runs)
 
 
-# The radio profiles of firmware 0.27.0 (src/App.cpp radioCommand): the previous profile, a test not saved.
+# The radio profiles of firmware 0.27.0 (src/core/App.cpp radioCommand): the previous profile, a test not saved.
 RADIO = ('frequency', 'bandwidth', 'sf', 'cr')
 
 

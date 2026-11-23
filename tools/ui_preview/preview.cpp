@@ -1,23 +1,23 @@
 #include <iostream>
-// Host renderer for the production screen UI. It links the real src/Ui.cpp
-// (or src/UiHeltec.cpp) against in-memory state and writes PPM frames, so
+// Host renderer for the production screen UI. It links the real src/ui/Ui.cpp
+// (or src/ui/UiHeltec.cpp) against in-memory state and writes PPM frames, so
 // layout can be reviewed without a device. It is not a hardware check.
-#include "App.h"
-#include "HistoryReply.h"
-#include "Notifications.h"
-#include "QuickSend.h"
-#include "People.h"
-#include "BlobStore.h"
-#include "Hardware.h"
-#include "Palette.h"
-#include "MeshRadio.h"
-#include "Wardrive.h"
-#include "Remote.h"
-#include "Maps.h"
-#include "Pet.h"
-#include "Dice.h"
-#include "Duel.h"
-#include "Navigation.h"
+#include "core/App.h"
+#include "mesh/HistoryReply.h"
+#include "ui/Notifications.h"
+#include "mesh/QuickSend.h"
+#include "apps/People.h"
+#include "core/BlobStore.h"
+#include "hw/Hardware.h"
+#include "ui/Palette.h"
+#include "mesh/MeshRadio.h"
+#include "apps/Wardrive.h"
+#include "mesh/Remote.h"
+#include "apps/Maps.h"
+#include "games/pet/Pet.h"
+#include "games/dice/Dice.h"
+#include "games/duel/Duel.h"
+#include "ui/Navigation.h"
 #include "Wire.h"
 #include <time.h>
 #include <string>
@@ -32,7 +32,7 @@ String Config::keyHex() const{return String("00");}bool Config::setKey(const Str
 static bool wifiOn=false,bleOn=false;
 bool portalActive(){return wifiOn;}String portalPassword(){return "k7pm3xq9rt4w";}void portalToggle(){wifiOn=!wifiOn;}
 bool bleActive(){return bleOn;}void bleToggle(){bleOn=!bleOn;}uint32_t blePin(){return 123456;}
-// Repeater and room sessions (src/Remote.inc): fake answers, set up with the nodes below.
+// Repeater and room sessions (src/mesh/Remote.inc): fake answers, set up with the nodes below.
 namespace remote{Session sessions[MaxSessions];Trace trace;
 Session* find(uint64_t id){for(auto& x:sessions)if(x.id&&x.id==id)return &x;return nullptr;}
 bool login(uint64_t,const String&,bool){return true;}bool status(uint64_t){return true;}bool command(uint64_t,const String&){return true;}bool traceTo(uint64_t){return true;}
@@ -158,7 +158,7 @@ int main(int argc,char** argv){
   add(peerId(5),meshRadio.nodeId,"Marat",channels::link(invite).c_str(),false,ChatMessage::Received,200);}
  maps.available=true;maps.tileCount=1240;maps.title="Kazan";maps.zoom=15;maps.center(55.7963,49.1088);
  navigation.headingValid=true;navigation.heading=37;navigation.calibrated=true;
- // "--dice LANG": the dice of src/Dice.cpp as a server for the web page checks: a command a line on stdin, its answer
+ // "--dice LANG": the dice of src/games/dice/Dice.cpp as a server for the web page checks: a command a line on stdin, its answer
  // a line on stdout. "loopback" delivers the sheet parts sent so far and hands them back as if the contact sent them.
  if(std::string(outDir)=="--dice"){dicer.begin();std::string line;size_t done=0;
   while(std::getline(std::cin,line)){fakeMillis+=2500;
@@ -166,7 +166,7 @@ int main(int argc,char** argv){
      const Peer* from=meshRadio.findContact(p.peer);dicer.receive(p.peer,from?from->name:"",p.text.c_str());}dicer.tick();printf("OK loopback\n");fflush(stdout);continue;}
    String r=dicer.command(String(line.c_str()));dicer.tick();printf("%s\n",r.c_str());fflush(stdout);}
   return 0;}
- // "--duel": checkers and sea battle (src/Duel.cpp) as a server for the protocol and web page checks: a line on stdin,
+ // "--duel": checkers and sea battle (src/games/duel/Duel.cpp) as a server for the protocol and web page checks: a line on stdin,
  // a line on stdout. "recv PEER TEXT" - a direct message from a contact; "ack ID" / "fail ID" - the delivery of a sent
  // message; "sent" - the messages sent since the last "sent" as JSON; "wait SECONDS" - time passes; anything else is a
  // "duel ..." command. tools/duel_check.py runs two of them against each other.

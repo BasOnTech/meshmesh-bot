@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Emoji on the screens: Twemoji pictures as 12x12 pixel art -> include/EmojiData.h.
+"""Emoji on the screens: Twemoji pictures as 12x12 pixel art -> src/ui/EmojiData.h.
 
 .venv/bin/python tools/emoji.py                 writes the header (the pictures are cached in upstream/twemoji)
 .venv/bin/python tools/emoji.py --sheet OUT.png also draws every emoji, enlarged and at its own size
@@ -222,7 +222,7 @@ def main():
     for i in range(0, len(blob), 32):
         lines.append(' ' + ','.join(f'0x{b:02x}' for b in blob[i:i + 32]) + ',')
     lines += ['};', '#endif', '}', '']
-    (ROOT / 'include' / 'EmojiData.h').write_text('\n'.join(lines))
+    (ROOT / 'src/ui/EmojiData.h').write_text('\n'.join(lines))
     print(f'{len(codes)} emoji, {len(blob)} bytes of pictures, {len(blob) + 3 * len(codes)} with the index')
     if args.sheet:
         from PIL import Image

@@ -5,7 +5,7 @@
 #include <mutex>
 #include <thread>
 #include <deque>
-// Host key -> M9 keyboard code (src/Ui.cpp, enum Key). Printable characters come through SDL_TEXTINPUT.
+// Host key -> M9 keyboard code (src/ui/Ui.cpp, enum Key). Printable characters come through SDL_TEXTINPUT.
 static int liveKey(const SDL_Keysym& k){
  bool shift=k.mod&KMOD_SHIFT;
  switch(k.sym){
@@ -27,8 +27,8 @@ static int liveKey(const SDL_Keysym& k){
 // Lines typed on stdin while the window runs: "recv N TEXT" (a direct message from demo peer N, 0-5),
 // "all N TEXT" (the same on Public), "key CODE" (any key code, e.g. key 0xa3), "status" (uiStatus JSON).
 static std::mutex liveLock;static std::deque<std::string> liveLines;
-// MeshRadio::addMessage is private; RemoteAccess is one of its friends (include/MeshRadio.h). Its firmware definition
-// (src/Remote.inc, through src/MeshRadio.cpp) is not linked into the preview, so the simulator gives it this one.
+// MeshRadio::addMessage is private; RemoteAccess is one of its friends (src/mesh/MeshRadio.h). Its firmware definition
+// (src/mesh/Remote.inc, through src/mesh/MeshRadio.cpp) is not linked into the preview, so the simulator gives it this one.
 struct RemoteAccess {static void add(const ChatMessage& m){meshRadio.addMessage(m,false);}};
 static void liveCommand(const std::string& line){
  auto incoming=[](int peer,uint64_t to,const std::string& text){

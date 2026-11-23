@@ -1,4 +1,4 @@
-// Host check of web/chess-companion.js: the browser rules against src/Chess.cpp (perft, notation,
+// Host check of web/chess-companion.js: the browser rules against src/games/chess/Chess.cpp (perft, notation,
 // endings and random games replayed by both), two players exchanging the real command texts with lost
 // ACKs and repeats, and the MeshCore companion protocol against a simulated companion.
 // Run: node tools/chess/companion_check.cjs
@@ -32,7 +32,7 @@ ok(play('e2e3 a7a5 d1h5 a8a6 h5a5 h7h5 h2h4 a6h6 a5c7 f7f6 c7d7 e8f7 d7b7 d8d3 b
 ok(fen('8/8/2b5/4k3/8/8/8/4K2B w - - 0 1').insufficientMaterial()&&!fen('8/8/3b4/4k3/8/8/8/4K2B w - - 0 1').insufficientMaterial()&&!fen('8/8/3n4/4k3/8/8/8/4K2N w - - 0 1').insufficientMaterial(),'material');
 {const g=new Game();ok(!g.load([12|28<<6,12|28<<6])&&g.plies===0,'illegal replay')}
 
-// Random games, replayed by src/Chess.cpp: notation, position, number of legal moves and outcome per ply.
+// Random games, replayed by src/games/chess/Chess.cpp: notation, position, number of legal moves and outcome per ply.
 let seed=7;const rnd=n=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed%n};
 const games=[];
 for(let i=0;i<300;i++){const g=new Game(),lines=[];
@@ -40,11 +40,11 @@ for(let i=0;i<300;i++){const g=new Game(),lines=[];
  games.push({moves:g.moves.map(uci).join(' '),lines})}
 const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'mmchess-'));
 try{
- execFileSync('c++',['-std=gnu++17','-O2','-I',path.join(ROOT,'include'),path.join(ROOT,'src/Chess.cpp'),path.join(ROOT,'tools/chess/replay.cpp'),'-o',path.join(tmp,'replay')]);
+ execFileSync('c++',['-std=gnu++17','-O2','-I',path.join(ROOT,'src'),path.join(ROOT,'src/games/chess/Chess.cpp'),path.join(ROOT,'tools/chess/replay.cpp'),'-o',path.join(tmp,'replay')]);
  const out=execFileSync(path.join(tmp,'replay'),{input:games.map(g=>g.moves).join('\n')+'\n',maxBuffer:1<<28}).toString().split('end\n');
  let plies=0,ends=new Set();
- games.forEach((g,i)=>{const c=out[i].trim().split('\n');assert.deepStrictEqual(c,g.lines,`game ${i} differs from src/Chess.cpp`);plies+=c.length;ends.add(g.lines.at(-1).split(' ').at(-1))});
- ok(ends.size>=4,'random games reach several endings: '+[...ends]);console.log(`PASS rules: perft, notation, endings, ${games.length} random games (${plies} plies) as src/Chess.cpp`)}
+ games.forEach((g,i)=>{const c=out[i].trim().split('\n');assert.deepStrictEqual(c,g.lines,`game ${i} differs from src/games/chess/Chess.cpp`);plies+=c.length;ends.add(g.lines.at(-1).split(' ').at(-1))});
+ ok(ends.size>=4,'random games reach several endings: '+[...ends]);console.log(`PASS rules: perft, notation, endings, ${games.length} random games (${plies} plies) as src/games/chess/Chess.cpp`)}
 finally{fs.rmSync(tmp,{recursive:true,force:true})}
 
 // ---- Two players over a simulated radio: the real command texts ----

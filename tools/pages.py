@@ -9,7 +9,7 @@ chooses to erase the device.
 
 Device language: manifest-<lang>.json writes partitions-<lang>.bin, the partition table with
 "MMLANG:<lang>" in the unused tail of its sector (0x8C00); the firmware applies it once
-(src/I18n.cpp, Config::load).
+(src/i18n/I18n.cpp, Config::load).
 Screenshots in every language come from tools/site_shots.py (artifacts/site-shots) and tools/web_shots.py
 (artifacts/web-shots).
 """

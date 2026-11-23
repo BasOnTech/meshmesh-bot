@@ -7,8 +7,8 @@ any MeshCore repeaters, and the stock MeshCore app shows them as readable
 text. The public channel (Public) is not used for moves: its sender is not
 authenticated by a key.
 
-Code: `src/Chess.cpp` (rules), `src/ChessNet.cpp` (games, commands, storage),
-`src/UiChess.inc` (M9 screen), `src/UiChessCompact.inc` (128×64 OLED), the “Chess” section of the web page
+Code: `src/games/chess/Chess.cpp` (rules), `src/games/chess/ChessNet.cpp` (games, commands, storage),
+`src/games/chess/UiChess.inc` (M9 screen), `src/games/chess/UiChessCompact.inc` (128×64 OLED), the “Chess” section of the web page
 (`web/index.html`). You play on the screen of any board that has one, or on the web page and in the app;
 the USB commands `chess ...` exist on every board.
 
@@ -255,8 +255,8 @@ device: it connects to a board running the stock MeshCore Companion firmware ove
 or Bluetooth (Web Bluetooth) and plays through it with ordinary direct messages. The opponent plays
 on MeshMesh (M9, Heltec, GAT562) or on the same page.
 
-- The rules and games run in the browser: `web/chess-companion.js` is a port of `src/Chess.cpp` and
-  `src/ChessNet.cpp` (the same commands, reception, retries, automatic resending of undelivered commands).
+- The rules and games run in the browser: `web/chess-companion.js` is a port of `src/games/chess/Chess.cpp` and
+  `src/games/chess/ChessNet.cpp` (the same commands, reception, retries, automatic resending of undelivered commands).
   `tools/chess_site.py` builds the page from `web/index.html` and this file
   (`tools/pages.py` puts it into `chess/` on the website); the file is not part of the firmware.
 - The companion protocol (`upstream/meshcore-stock/examples/companion_radio/MyMesh.cpp`):
@@ -350,7 +350,7 @@ is a separate file, `rating.bin` (see “ELO rating”).
   check the physical button).
 - `node tools/chess/companion_check.cjs` — on a computer, for the companion page: perft, the move
   record and the browser rules' game endings, 300 random games checked half-move by half-move against
-  `src/Chess.cpp` (`tools/chess/replay.cpp`); a game between two instances with a lost ACK, a retry,
+  `src/games/chess/Chess.cpp` (`tools/chess/replay.cpp`); a game between two instances with a lost ACK, a retry,
   checkmate, automatic resending, a draw and storage; the companion protocol on a simulator (frames with garbage
   in front of them, contacts, ACK, three attempts with a path reset, “not delivered”).
 - `tools/chess_companion_check.py --companion PORT` — over the radio: the page code in Node

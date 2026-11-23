@@ -22,10 +22,10 @@ Pengu, Shroom (a mushroom), Jelly (a slime), Buzz (a bee), Axolotl. A new egg ge
 ![Every species on the M9 and the T114](pet-species.png)
 
 The drawings are in `tools/pet_sprites.py` (16×16, two bits a pixel, about 2 KB for all species); it writes
-`include/PetSprites.h`, and with `--sheet OUT.png` draws every species. The T114 palette takes the colours from there.
+`src/games/pet/PetSprites.h`, and with `--sheet OUT.png` draws every species. The T114 palette takes the colours from there.
 
-Code: `src/Pet.cpp`, `include/Pet.h` (life, food, saving), `src/UiPet.inc` (320×240
-screen), `src/UiPetCompact.inc` (128×64 OLED), its page in `src/UiHires.inc` (T114). The state is the
+Code: `src/games/pet/Pet.cpp`, `src/games/pet/Pet.h` (life, food, saving), `src/games/pet/UiPet.inc` (320×240
+screen), `src/games/pet/UiPetCompact.inc` (128×64 OLED), its page in `src/UiHires.inc` (T114). The state is the
 file `/meshmesh/pet.bin` in LittleFS (about 450 bytes with a checksum), not NVS.
 
 ## What it eats
