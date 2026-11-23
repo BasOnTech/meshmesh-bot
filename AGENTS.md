@@ -2,17 +2,17 @@
 
 ## Purpose and communication
 
-The project is firmware for the Elecrow ThinkNode M9, Heltec V4, GAT562 30S and Heltec T114 (nRF52840): a standalone interface,
+The project is firmware for the Elecrow ThinkNode M9 and the Heltec V4 (this fork supports only these two; the upstream MeshMesh also built for nRF52 and other ESP32 boards): a standalone interface,
 MeshCore chats and channels (hashtag, link/QR, key, invitations; `docs/channels.md`, `src/Channels.cpp`), MeshCore regions
 (default region and per-channel region, search at neighbouring repeaters, companion commands 54/55/63/64; `docs/regions.md`, `src/Regions.cpp`,
 `src/RegionSearch.inc`, check `tools/region_check.py`), city network — a radio profile from the community directory (`site/networks.json`, `tools/networks.py`; the site's `site/netpick.js` (collapsed block, Russian site only) writes it over companion, the page/app — `renderNet` in `web/index.html`, trial and previous profile on the board — `radio try|keep|revert|previous`, on-air network search — `netfind`, `src/NetFind.inc`, the directory digest `include/NetCatalog.h`, `docs/networks.md`), LoRa, offline maps (on the device SD or in phone storage in the app — `android/.../api/MapStore.kt`; relief and contour lines from Terrain Tiles during preparation; node map without a base layer — `drawMap` in `web/index.html`; `docs/maps-format.md`), Wi-Fi, BLE, a signal radar, a Wi-Fi CSI motion sensor,
 chess with contacts (M9 screen and the web page of both boards, MeshCore direct messages,
 rated ELO games with a result signed by both nodes' keys — `src/ChessRating.cpp`, Swiss-system tournaments — `src/ChessTour.cpp`; `docs/chess.md`; draughts and battleship with contacts, unrated — `src/Checkers.cpp`, `src/Sea.cpp`, `src/Duel.cpp`, screens `src/UiDuel.inc`, `src/UiDuelCompact.inc`, `docs/games.md`, protocol check `tools/duel_check.py`; menu app folders (the "Games" folder) — `src/Apps.cpp`; the site page `chess/` plays through a stock MeshCore companion over Web Serial/Bluetooth —
 `web/chess-companion.js`, `tools/chess_site.py`), a network pet — a tamagotchi that feeds on radio traffic,
-grows and can die (`src/Pet.cpp`, screens `src/UiPet.inc`, `src/UiPetCompact.inc`, T114 — `src/UiHires.inc`;
+grows and can die (`src/Pet.cpp`, screens `src/UiPet.inc`, `src/UiPetCompact.inc`;
 `docs/pet.md`), dice — the DIC3R dicer: RPG rolls and formulas, a Warhammer grid, a character sheet of blocks with formulas, D&D and R.E.T. templates, sending a sheet to a contact (`src/Dice.cpp`,
-screens `src/UiDice.inc`, `src/UiDiceCompact.inc`, T114 — `src/UiHires.inc`; `docs/dice.md`), a message's packet path on the web and in the app (repeaters by path hashes, SNR/RSSI, repeats of our own messages —
-`MeshRadio::echo`, `renderMsg` in `web/index.html`), web and app notifications (kinds, mentions, per-chat settings, quiet hours, feed — `alertFor` in `web/index.html`, `android/.../Alerts.kt`), MeshCore repeater and room modes (chosen at boot, `src/MeshServer.cpp`, `docs/repeater.md`), wardriving — a network coverage map: a log of received packets with position, pings in `#wardrive` with repeater echoes, radar Wi-Fi/BLE on ESP32, CSV/GeoJSON/KML/WiGLE export, phone position from the app (`src/Wardrive.cpp`, `docs/wardrive.md`; recording only with a trusted position, `gpsFix` or a `fix` from the app; an optional nRF52 module, `MM_NO_WARDRIVE`), backup — settings, node key, channels, contacts, quick send, counters and sheets in one JSON file from the page and the app, selective restore (`backup*` in `web/index.html`, commands `identity`, `identity set`, `contact add`; `docs/backup.md`), diagnostics, the screen interface (emoji on screens — `src/Emoji.cpp`, `tools/emoji.py`), the device web page, the app and the site in 15 languages (section "Languages") and the Android app (`android/`, `docs/android.md`). Communicate with the user
+screens `src/UiDice.inc`, `src/UiDiceCompact.inc`; `docs/dice.md`), a message's packet path on the web and in the app (repeaters by path hashes, SNR/RSSI, repeats of our own messages —
+`MeshRadio::echo`, `renderMsg` in `web/index.html`), web and app notifications (kinds, mentions, per-chat settings, quiet hours, feed — `alertFor` in `web/index.html`, `android/.../Alerts.kt`), MeshCore repeater and room modes (chosen at boot, `src/MeshServer.cpp`, `docs/repeater.md`), wardriving — a network coverage map: a log of received packets with position, pings in `#wardrive` with repeater echoes, radar Wi-Fi/BLE on ESP32, CSV/GeoJSON/KML/WiGLE export, phone position from the app (`src/Wardrive.cpp`, `docs/wardrive.md`; recording only with a trusted position, `gpsFix` or a `fix` from the app), backup — settings, node key, channels, contacts, quick send, counters and sheets in one JSON file from the page and the app, selective restore (`backup*` in `web/index.html`, commands `identity`, `identity set`, `contact add`; `docs/backup.md`), diagnostics, the screen interface (emoji on screens — `src/Emoji.cpp`, `tools/emoji.py`), the device web page, the app and the site in 15 languages (section "Languages") and the Android app (`android/`, `docs/android.md`). Communicate with the user
 in English. Carry agreed changes through to build, installation and verification
 when the devices are available. Distinguish between an implemented feature, a successful build,
 installed firmware and confirmed hardware operation.
@@ -52,33 +52,11 @@ changes into separate commits (e.g. build flags apart from the code fixes they n
   128×64 OLED and the PRG button. Target `heltec_v4`.
 - The `heltec_v4_r8` target is for another revision with 8 MB PSRAM;
   a successful build does not mean that revision was checked on hardware.
-- GAT562 30S Mesh Kit (`docs/gat562.md`): nRF52840, SX1262 with a power amplifier, 128×64 OLED,
-  joystick and a "back" button, buzzer (pin 33), L76K GPS per the schematic (the module is not fitted on our unit).
-  Target `gat562_30s`; the nRF52 layer — `src/nrf52/` (storage, `Preferences`, Bluefruit BLE, BLE/LoRa
-  radar), flags `MM_NRF52`, `MM_NO_WIFI`, `MM_JOYSTICK`. No Wi-Fi: the page is only available
-  through the app (BLE/USB). Install, update and backups — `tools/nrf52.py`; with MeshMesh the board
-  enters serial DFU on its own via a 1200-baud touch, stock MeshCore only via a double
-  RESET (drive `GAT562-BOOT`). A full copy of the original flash — `backups/gat562/` (`CURRENT.UF2`
-  covers 0x1000–0xEA000, the rest is a raw dump of 0xD4000–0xF4000).
-- Heltec Mesh Node T114 V2 (`docs/t114.md`): nRF52840, SX1262, 240×135 colour TFT (ST7789), USER button,
-  L76K GPS (fitted on our unit). Target `heltec_t114`, hardware layer — `src/nrf52/HardwareT114.cpp`,
-  shared nRF52 layer as on the GAT562. The logic of the one-button Heltec interface, with its own M9-style drawing layer
-  at native resolution (`MM_HIRES`, `src/UiHires.inc`, M9 icons — `include/UiIcons.h`, colours — `include/Palette.h`);
-  preview — `tools/ui_preview/build.sh t114`.
-  USB: firmware 239a:8071, bootloader 239a:0071, drive `HT-n5262` via double RESET. A copy of the original flash
-  (Meshtastic 2.7.15, the owner allowed not keeping it) — `backups/t114/`.
-- Community boards (`docs/boards.md`): `heltec_v3`, `heltec_tracker`, `tdeck`,
-  `tbeam`, `tbeam_supreme`, `t3s3`, `tlora_v2_1_6`, `xiao_s3_wio`, `station_g2`,
-  `thinknode_m2`, `heltec_e213` (250×122 e-ink: `src/EinkE213.cpp`, the heltec-eink-modules library as in MeshCore,
-  refreshed in its own task), on nRF52 — `heltec_t096` (`src/nrf52/HardwareT096.cpp`, KCT8103L amplifier)
-  and `faketec` (`src/nrf52/HardwareFaketec.cpp`, ProMicro, MeshCore `promicro` pins as GPIO numbers). We have no such devices:
-  the build, the emulator and the web page are checked; owners confirm operation on the board. Pins — `include/BoardPins.h`, board properties —
-  `include/Board.h`; one-button boards — `src/HardwareCompact.cpp` with the
-  Heltec interface, T-Deck — `src/HardwareTDeck.cpp` with the M9 interface. Shared code distinguishes
-  the family (`MM_COMPACT`), the transceiver (`MM_RADIO_*`) and native USB (`MM_NATIVE_USB`),
-  not specific boards.
+- Shared code distinguishes the M9 from the Heltec by the family (`MM_COMPACT`, set together with `MM_HELTEC_V4`),
+  the transceiver (`MM_RADIO_*`) and native USB (`MM_NATIVE_USB`). Pins — `include/BoardPins.h`, board properties —
+  `include/Board.h`; the Heltec — `src/HardwareHeltec.cpp` with `src/UiHeltec.cpp`, the M9 — `src/Hardware.cpp` with `src/Ui.cpp`.
 - Last known ports: M9 `/dev/cu.wchusbserial110`,
-  Heltec `/dev/cu.usbmodem101`, GAT562 and T114 `/dev/cu.usbmodem1101` (VID 239a); `tools/ports.py`
+  Heltec `/dev/cu.usbmodem101`; `tools/ports.py`
   finds them by USB bridge.
   Check that devices are present and are the expected ones; port names change after
   reconnecting.
@@ -134,7 +112,6 @@ device has one LoRa transceiver, different radio profiles require switching.
 .venv/bin/python tools/package.py m9
 .venv/bin/python tools/package.py heltec_v4
 .venv/bin/python tools/package.py heltec_v4_r8
-# community boards: the same commands with their targets; the package includes a factory image and INSTALL.txt
 ```
 
 Build the affected boards. Repeat and extend checks for the errors and changes
@@ -173,19 +150,9 @@ otherwise the browser language; the app passes it through `MeshNative.language`.
 languages — `tools/web_shots.py` (demo data `tools/web_demo.py`, in CI); `site/img` holds the ru/en fallbacks.
 The site's chess page (`chess/`) gets the same dictionaries and additionally translates at render time
 (`web/chess-i18n.js`, `i18n/chess/<lang>.json`, check `node tools/chess/i18n_check.cjs`): add new chess strings there too.
-The site installs the firmware with the chosen language: ESP32 — `partitions-<lang>.bin` with a tag at 0x8C00, nRF52 —
-the `MMLANG:` field in the image (`site/nrf52dfu.js`); the tag is applied once. GAT562 and T114 (1 MB flash) get
-an "English + Russian" or "English + chosen language" image without the Russian strings (`lang/<code>/`, `MM_LANG`,
-`MM_NO_RU`, `tools/pio_lang.py`; the `tr()` translation key is computed at compile time, `include/I18n.h`; `docs/gat562.md`):
-check the size against the largest, Chinese (`tools/nrf52.py package`). On nRF52 `UiHeltec.cpp`, `Dice.cpp`, `Wardrive.cpp`, `Clock.cpp`, `Config.cpp`, `Navigation.cpp`, `RadarModel.cpp`, `Power.cpp`, `nrf52/PortalNrf.cpp`, `nrf52/Platform.cpp`, `nrf52/HardwareT114.cpp`, `nrf52/RadarNrf.cpp`
-and `MeshRadio.cpp` (with the companion protocol), as well as `App.cpp`, chess, `Pet.cpp`, `Channels.cpp`, `MeshServer.cpp`, `main.cpp`, `UiIcons.cpp` and `I18n.cpp` are built with `-Os` (a pragma in the file; the rest of our code is `-O2` via `build_src_flags`); since 0.25.0 the nRF52 libraries and core are built with `-Os` (`build_flags`): otherwise the Chinese T114 image did not fit.
-Chess, the pet, dice and wardriving on nRF52 are optional modules (`include/Modules.h`, `MM_NO_CHESS|PET|DICE|WARDRIVE`,
-`tools/nrf52.py package ENV --without …`, `docs/gat562.md`); the site and the app install the full set. Draughts and battleship
-(`MM_CHECKERS`, `MM_SEA`, shared `MM_DUEL`) are off by default on nRF52 (no room: the Chinese T114 has only 2.6 KB
-free even without them); an image with them — `--with-games`, en+ru only, on the T114 also `--without chess`. Strings that exist only in game code
-are not in the translation table of an image without them (`tools/i18n.py`, `GAMES`). Wrap new
-references to these modules from shared code and the compact interface in `#if MM_CHESS` etc. and check
-the build without them. Cyrillic fonts stay in all
+The site installs the firmware with the chosen language: `partitions-<lang>.bin` with a tag at 0x8C00; the tag is applied once.
+`include/Modules.h` (`MM_CHESS`, `MM_PET`, `MM_DICE`, `MM_WARDRIVE`, `MM_CHECKERS`, `MM_SEA`) and the `MM_LANG_IN`/`MM_NO_RU`
+language subsets in `src/I18n.cpp` and `tools/i18n.py` come from the upstream nRF52 images: both boards build everything. Cyrillic fonts stay in all
 images: Russian messages arrive over the radio.
 
 ## Installation and data safety
@@ -255,9 +222,7 @@ the task's waiting, not CPU sleep or current. Check — `tools/power_check.py --
 when checking a direct message, do not poll the receiver's USB until the ACK. After a message the screen may
 turn off again on its timer — a late read of `screen_off` does not prove there was no wake-up.
 `docs/power.md`, `docs/en/power.md`; RXPS and cyclic GPS power are not implemented yet.
-Battery voltage (0.30.3): the switched divider is read 10 ms after switching on, without stalling the loop
-(`dividerOn` in `src/HardwareCompact.cpp`, `src/nrf52/HardwareT114.cpp`, `HardwareT096.cpp`); Heltec V3/Tracker/V4 — 2.5 dB
-and 4.9 × 1.045, E213 — × 1.03 (Meshtastic), the rest — as in MeshCore. Check new multipliers against the owner's voltmeter, not
+Battery voltage (0.30.3): Heltec V4 — 2.5 dB attenuation and a 4.9 × 1.045 divider. Check new multipliers against the owner's voltmeter, not
 against another firmware. Feedback on the V3 (reading 3–6 % low) — `docs/verification.md`; not yet checked on hardware.
 
 `src/Power.cpp`: 80 MHz with the screen off and no Wi-Fi/radar, light sleep in repeater and room modes
@@ -357,6 +322,12 @@ Also not checked: a repeater forwarding and refusing to forward a packet with a 
 repeater and region codes in frames are confirmed, `docs/regions.md`), the MeshCore app's region menu, installing with a chosen language from the site in Chrome, and translations by native
 speakers; 12 px Arabic on OLED overlaps neighbouring lines (there is no smaller pixel font).
 Update this information from actual results, not assumptions.
+
+## Release history (upstream)
+
+The sections below are the upstream project's release notes. They also cover boards this fork no longer builds
+(T-Deck, GAT562, T114 and other nRF52 boards; `UiHires.inc`, `src/nrf52/`, `tools/nrf52.py`): ignore those parts,
+and do not size-check against the Chinese T114 image any more.
 
 ## Notifications, quick replies and the counter (0.19.0)
 

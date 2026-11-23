@@ -8,7 +8,7 @@ This is the Bas on Tech UI mod of the original MeshMesh. It focuses on creating 
 
 **Website and one-click browser install: https://ikrasnodymov.github.io/meshmesh/**
 
-Off-grid messaging firmware for ESP32 and nRF52 LoRa devices. Messages hop by radio from device to
+Off-grid messaging firmware for the ThinkNode M9 and Heltec V4 LoRa devices. Messages hop by radio from device to
 device, with no internet, no cell network and no servers. The radio layer is
 [MeshCore](https://github.com/meshcore-dev/MeshCore), so MeshMesh nodes talk to standard
 MeshCore nodes.
@@ -44,7 +44,7 @@ MeshCore nodes.
   [docs/en/repeater.md](docs/en/repeater.md)
 - **MeshCore apps** — the stock MeshCore apps connect over Bluetooth or USB and work with the board's chats, contacts and channels (chess stays in the MeshMesh app). [docs/en/companion.md](docs/en/companion.md)
 - **GPS and compass**, position sharing, lock screen, phonetic Cyrillic keyboard input.
-- **Web interface** over the device's own Wi-Fi access point or the home Wi-Fi it joins (M9, T-Deck), and an **Android app**
+- **Web interface** over the device's own Wi-Fi access point or the home Wi-Fi it joins (M9), and an **Android app**
   (Wi-Fi, Bluetooth LE or USB) with message notifications.
 - **Device UI in 15 languages**: English, Russian, Ukrainian, Spanish, Portuguese, French, German, Italian,
   Polish, Turkish, Chinese, Japanese, Korean, Arabic and Indonesian. The website installs the firmware with
@@ -56,13 +56,9 @@ MeshCore nodes.
 |---|---|
 | Elecrow ThinkNode M9 (keyboard, 320×240 screen) | tested on hardware |
 | Heltec WiFi LoRa 32 V4 (OLED, one button) | tested on hardware |
-| GAT562 30S Mesh Kit (nRF52840, OLED, joystick; no Wi-Fi) | tested on hardware (our unit has no GPS module fitted) — [docs/en/gat562.md](docs/en/gat562.md) |
-| Heltec Mesh Node T114 (nRF52840, 240×135 colour TFT, one button; no Wi-Fi) | tested on hardware — [docs/en/t114.md](docs/en/t114.md) |
-| Heltec V4-R8, Heltec V3, Heltec Wireless Tracker, LilyGO T-Deck, T-Beam, T-Beam Supreme, T3-S3, T-LoRa V2.1-1.6, Seeed XIAO ESP32S3 + Wio-SX1262, B&Q Station G2, Elecrow ThinkNode M2, Heltec Vision Master E213, Heltec Mesh Node T096, fakeTec (ProMicro nRF52840) | builds only, not yet run on hardware — reports welcome |
+| Heltec WiFi LoRa 32 V4-R8 (8 MB PSRAM revision) | builds; not yet run on hardware |
 
-ESP32 boards have every feature. The GAT562 (nRF52840) has no Wi-Fi: no access point, Wi-Fi radar,
-motion sensor or internet client; the phone connects through the Android app over Bluetooth or USB.
-It adds an on-screen keyboard and chess on the OLED. Pins and details: [docs/en/boards.md](docs/en/boards.md).
+This fork supports only these boards; the original MeshMesh also builds for nRF52 and other ESP32 boards.
 
 ## Install
 
@@ -77,12 +73,6 @@ python -m esptool --chip esp32s3 --port PORT write-flash --flash-mode dio --flas
   0x0 bootloader.bin 0x8000 partitions.bin 0xe000 boot_app0.bin 0x10000 firmware.bin
 ```
 
-(ESP32 boards: `--chip esp32`, bootloader at `0x1000`, `--flash-freq 40m`; flash size per board.)
-
-**GAT562 (nRF52840):** the same **Install** button on the website (serial DFU over Web Serial); a board
-with other firmware first needs RESET pressed twice. Or press RESET twice — a `GAT562-BOOT` drive
-appears — and copy `firmware.uf2` from the website onto it. Later updates: `python tools/nrf52.py flash PACKAGE` ([docs/en/gat562.md](docs/en/gat562.md)).
-
 Default radio: 868.731 MHz, BW 62.5 kHz, SF8, CR4/6 — change it in Settings → Radio; all nodes
 of a network must match. Follow your country's radio regulations.
 
@@ -90,8 +80,8 @@ of a network must match. Follow your country's radio regulations.
 
 ```sh
 python3 -m venv .venv
-.venv/bin/pip install platformio esptool pyserial cryptography
-.venv/bin/pio run -e m9            # or heltec_v4, tdeck, tbeam, ...
+.venv/bin/pip install -r tools/requirements.txt
+.venv/bin/pio run -e m9            # or heltec_v4, heltec_v4_r8
 .venv/bin/python tools/package.py m9
 ```
 
@@ -100,8 +90,8 @@ The screen UI can be rendered on a computer without a board: `tools/ui_preview/b
 
 ## Documentation
 
-Detailed documentation in English: [channels](docs/en/channels.md), [regions](docs/en/regions.md), [network of your city](docs/en/networks.md), [backup](docs/en/backup.md), [MeshCore compatibility](docs/en/meshcore-migration.md), [boards](docs/en/boards.md),
-[GAT562](docs/en/gat562.md), [Android](docs/en/android.md), [repeater and room modes](docs/en/repeater.md),
+Detailed documentation in English: [channels](docs/en/channels.md), [regions](docs/en/regions.md), [network of your city](docs/en/networks.md), [backup](docs/en/backup.md), [MeshCore compatibility](docs/en/meshcore-migration.md),
+[Android](docs/en/android.md), [repeater and room modes](docs/en/repeater.md),
 [chess protocol](docs/en/chess.md), [mesh pet](docs/en/pet.md), [dice](docs/en/dice.md), [map format](docs/en/maps-format.md), [comparison with MeshCore](docs/en/feature-parity.md),
 [hardware verification](docs/en/verification.md). The Russian originals are in [docs/](docs/), with the full
 guide to controls and features in [README.ru.md](README.ru.md).
