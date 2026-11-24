@@ -13,7 +13,7 @@
 #define MM_BOARD_ID "heltec_v4"
 #define MM_BOARD_NAME "Heltec V4"
 #define MM_NODE_NAME "Heltec V4"
-#define MM_ABSENT 1,2,4,6,7,
+#define MM_ABSENT 1, 2, 4, 6, 7,
 #else
 #define MM_BOARD_ID "m9"
 #define MM_BOARD_NAME "ThinkNode M9"

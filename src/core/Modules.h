@@ -38,7 +38,7 @@
 #else
 #define MM_SEA 1
 #endif
-#define MM_DUEL (MM_CHECKERS||MM_SEA)
-#if (!MM_CHESS||!MM_PET||!MM_DICE||!MM_WARDRIVE||!MM_CHECKERS||!MM_SEA)&&!defined(MM_UI_PREVIEW)
+#define MM_DUEL (MM_CHECKERS || MM_SEA)
+#if (!MM_CHESS || !MM_PET || !MM_DICE || !MM_WARDRIVE || !MM_CHECKERS || !MM_SEA) && !defined(MM_UI_PREVIEW)
 #error "Optional modules can be left out only in the host UI preview"
 #endif

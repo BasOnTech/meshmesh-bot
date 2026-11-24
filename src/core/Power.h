@@ -10,9 +10,13 @@
 void powerWake();             // input arrived: full clock now, no light sleep for a while
 void powerTick(bool usbIdle); // end of each loop pass; usbIdle: no USB output or baud change pending
 uint8_t powerMhz();
-uint32_t powerSleeps();uint32_t powerSleptMs();uint32_t powerSlowMs(); // light sleeps, time asleep, time at 80 MHz
+uint32_t powerSleeps();
+uint32_t powerSleptMs();
+uint32_t powerSlowMs(); // light sleeps, time asleep, time at 80 MHz
 void powerRadioIrq(); // RadioLib ISR only
-uint32_t powerIdleWaits();uint32_t powerIdleMs();uint32_t powerRadioEvents();
+uint32_t powerIdleWaits();
+uint32_t powerIdleMs();
+uint32_t powerRadioEvents();
 // Power off: deep sleep on the ESP32, System OFF on the nRF52 (Hardware::powerDown), a T-Beam's PMU
 // switches itself off. The request answers at once; 1.5 s later (the reply leaves over USB, Wi-Fi or
 // BLE; a packet being sent gets up to 5 s more) delayed writes are flushed, the transceiver sleeps and
