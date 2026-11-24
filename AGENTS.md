@@ -123,6 +123,30 @@ UI and simulator). A tool that imports from another folder adds it to `sys.path`
 Build the affected boards. Repeat and extend checks for the errors and changes
 found; do not add tests that merely duplicate the implementation.
 
+## Colours and themes
+
+- The colour screen UI (`src/ui/Ui.cpp` and the `Ui*.inc` it includes) takes its colours from a theme:
+  `src/ui/Theme.h` declares the `Theme` struct and `themes[]` (the first is the default), each theme is a file in
+  `src/ui/themes/` (Midnight is the only one so far). `applyTheme()` in `Ui.cpp` converts the chosen theme to the
+  RGB565 globals the UI draws with; `theme->…` keeps the `0xRRGGBB` values for `mix()`. The Heltec mono UI
+  (`UiHeltec.cpp`, `*Compact.inc`) does not use themes.
+- Colours are named by role, never by hue or a vague word (no `violet`, `pink`, `ink`, `dim`, `card`). Hue names live
+  only in a theme file's own palette namespace (`midnight::violet`), and the theme assigns them to roles.
+- The roles: surfaces `surfacePage`, `surfaceBar` (status and key bars), `surfaceCard`, `surfaceFocus` (focused row),
+  `surfaceWell` (inset: icon squares, input fields), `border`, `gridLine`; foreground per kind, each with
+  `Primary`/`Muted`/`Subtle` — `text*` for text, `icon*` for `icon()` and arrow glyphs, `graphic*` for drawn shapes
+  (lines, knobs, bars, chart strokes, the toast's colour bar); `onFill` for text and glyphs on a coloured fill
+  (badges, buttons, toggle knob, checkmarks); `accent`, `secondary`, `tertiary` for categories; state `info`, `ok`,
+  `warn`, `alert` (between warn and bad), `bad`; `*Deep` for the dark tint behind a role's icon or text;
+  `outBubble`, `inBubble`, `avatarHues[]`.
+- Pick the role by what is drawn and on what: text on a panel — `text*`; an icon's hole is the colour behind it
+  (`surfacePage` on the page, `surfaceWell` on a well); content on an `accent` or state fill — `onFill`.
+- No `rgb(0x…)` for UI chrome: use a role, or add one to `Theme.h`, to every theme file (designated initializers in
+  the struct's order) and to `applyTheme()`. Game art (chess board and pieces, cards, dice and pet colours, emoji)
+  keeps its own colours.
+- Check a colour refactor on screenshots: render before and after with `tools/site/site_shots.py` to two folders and
+  compare the pixels; only the clock and message times may differ.
+
 ## Versions and publishing
 
 The public firmware version is SemVer; the single source is
