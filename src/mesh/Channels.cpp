@@ -3,6 +3,7 @@
 #include <Mm1Packet.h>
 #include <ctype.h>
 #include <limits.h>
+#include <strings.h>
 namespace channels {
 const uint8_t publicSecret[16] = {0x8b, 0x33, 0x87, 0xe9, 0xc5, 0xcd, 0xea, 0x6a, 0xc9, 0xe5, 0xed, 0xba, 0xa1, 0x15, 0xcd, 0x72};
 // Names people tend to give open channels; each costs two hashes per heard packet with a matching byte.
@@ -141,10 +142,13 @@ static String decode(const String& v) {
   }
   return out;
 }
+// Case-insensitive, in place: the chat looks for links in every message on every frame, so no lowercase copy.
 static int findLink(const String& text) {
-  String low = text;
-  low.toLowerCase();
-  return low.indexOf("meshcore://channel/add?");
+  static const char prefix[] = "meshcore://channel/add?";
+  const size_t n = sizeof prefix - 1;
+  for(size_t i = 0; i + n <= text.length(); i++)
+    if(!strncasecmp(text.c_str() + i, prefix, n)) return int(i);
+  return -1;
 }
 bool hasLink(const String& text) { return findLink(text) >= 0; }
 bool parseLink(const String& text, String& name, uint8_t secret[16], String* region) {

@@ -281,7 +281,8 @@ int text(int x, int y, const String& s, uint16_t color = ink, const Face& f = bo
 }
 void textRight(int x, int y, const String& s, uint16_t color = ink, const Face& f = body) { text(x - measure(s, f), y, s, color, f); }
 void textCenter(int x, int y, const String& s, uint16_t color = ink, const Face& f = body) { text(x - measure(s, f) / 2, y, s, color, f); }
-String fit(const String& s, int px, const Face& f = body) {
+// By value: a temporary (t(), a concatenation) is moved in and back out, so text that fits is not copied.
+String fit(String s, int px, const Face& f = body) {
   if(measure(s, f) <= px) return s;
   int dots = measure("...", f), w = 0;
   unsigned i = 0, end = 0;
@@ -291,7 +292,9 @@ String fit(const String& s, int px, const Face& f = body) {
     w += g;
     end = i;
   }
-  return s.substring(0, end) + "...";
+  s.remove(end);
+  s += "...";
+  return s;
 }
 // Word wrap by pixel width; long words break anywhere.
 unsigned wrap(const String& s, String* rows, unsigned maxRows, int px, const Face& f = body) {
@@ -1017,7 +1020,7 @@ void appTiles(AppTile* out) {
     {IcPulse, faults ? bad : ok, t("Module health"), faults ? count(faults, "fault", "faults") : t("All OK"), 0},
     {IcGear, dim, t("Settings"), t("Radio, screen"), 0}};
   static_assert(sizeof tiles / sizeof *tiles == sizeof uiApps / sizeof *uiApps, "a tile for every app ID");
-  for(unsigned i = 0; i < uiAppCount; i++) out[i] = tiles[i];
+  for(unsigned i = 0; i < uiAppCount; i++) out[i] = std::move(tiles[i]);
 }
 // A folder's tile: the names of its shown apps and the sum of their badges (games waiting, new messages).
 AppTile folderTile(uint8_t f, const AppTile* tiles) {
@@ -1060,7 +1063,8 @@ void drawTiles(const uint8_t* order, int shown, const AppTile* tiles) {
   int first = menuFirst(shown, tileRowsShown);
   for(int i = first; i < shown && i < first + tileRowsShown; i++) {
     bool folder = order[i] & AppFolder;
-    AppTile tile = folder ? folderTile(order[i] & ~AppFolder, tiles) : tiles[order[i]];
+    AppTile folderRow;
+    const AppTile& tile = folder ? (folderRow = folderTile(order[i] & ~AppFolder, tiles)) : tiles[order[i]];
     menuRow(tileTop + (i - first) * tileRowH, i, tile.ic, tile.hue, tile.name, tile.detail, tile.badge);
   }
   scrollbar(first, tileRowsShown, shown, tileTop, tileRowsShown * tileRowH - 1);
@@ -1077,7 +1081,10 @@ void drawHome() {
   auto counter = [&](unsigned n, int dir, uint16_t c) {String v(n);textRight(r,39,v,ink,small);r-=measure(v,small)+7;tri(r,36,dir,3,c);r-=10; };
   counter(meshRadio.rxCount, 2, ok);
   counter(meshRadio.txCount, 0, accent); // sent, then received, on the right
-  text(x, 39, fit(meshRadio.ready ? String(config.frequency, 3) + t(" MHz · SF") + String(config.sf) + " · BW " + String(config.bandwidth, 1) + " · CR 4/" + String(config.cr) : t("Radio error ") + String(meshRadio.radioError), r - x, small), meshRadio.ready ? dim : bad, small);
+  char radio[64]; // one snprintf instead of six growing concatenations on the most drawn page
+  if(meshRadio.ready) snprintf(radio, sizeof radio, "%.3f%s%d · BW %.1f · CR 4/%d", config.frequency, tr(" MHz · SF"), int(config.sf), config.bandwidth, int(config.cr));
+  else snprintf(radio, sizeof radio, "%s%d", tr("Radio error "), int(meshRadio.radioError));
+  text(x, 39, fit(radio, r - x, small), meshRadio.ready ? dim : bad, small);
   AppTile tiles[sizeof uiApps / sizeof *uiApps];
   appTiles(tiles);
   uint8_t order[AppEntriesMax];
