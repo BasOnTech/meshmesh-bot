@@ -6,7 +6,7 @@ height for the digit face) matches the X11 bitmap face it replaces, so the layou
 rows. Code points: ASCII, Latin-1, Latin Extended-A, Cyrillic and the punctuation the
 interface writes (dashes, quotes, ellipsis, bullet, arrows, No); the others come from the u8g2 fonts.
 
-Sources, downloaded once into upstream/fonts/inter (not in Git):
+Sources, downloaded once into vendor-cache/fonts/inter (not in Git):
   https://github.com/rsms/inter/releases v4.1 (Inter-4.1.zip): extras/ttf/{Inter-Regular,Inter-Medium,
   Inter-SemiBold,Inter-Bold,InterDisplay-Medium}.ttf (OFL, i18n/fonts/inter/OFL.txt)
 Needs Pillow and fontTools.
@@ -17,7 +17,7 @@ from PIL import Image, ImageDraw, ImageFont
 from fontTools.ttLib import TTFont
 
 ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT/'upstream'/'fonts'/'inter'
+SRC = ROOT/'vendor-cache'/'fonts'/'inter'
 INTER = 'v4.1'
 
 TEXT = (list(range(0x20, 0x7f)) + list(range(0xa0, 0x180)) + list(range(0x400, 0x460)) + [0x490, 0x491]

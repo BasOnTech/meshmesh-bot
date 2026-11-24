@@ -10,7 +10,7 @@ tools/gen/i18n.py check      every string translated, same edges and placeholder
 tools/gen/i18n.py generate   src/i18n/I18nTable.h (strings) and src/i18n/I18nFonts.h (glyph subsets)
 tools/gen/i18n.py todo LANG  the untranslated strings of one language, with context
 
-The fonts are subsets of BDF fonts (upstream/fonts, see FONT_SOURCES) made with the
+The fonts are subsets of BDF fonts (vendor-cache/fonts, see FONT_SOURCES) made with the
 u8g2 bdfconv tool; generate needs them, check does not.
 """
 import json
@@ -148,7 +148,7 @@ def missing(code):
 
 
 def glyphs_available():
-    """Codepoints the firmware can draw: the source fonts when they are here (upstream/fonts), else the
+    """Codepoints the firmware can draw: the source fonts when they are here (vendor-cache/fonts), else the
     glyph list of src/i18n/I18nFonts.h (what generate kept), with Latin-1 and Cyrillic of the u8g2 fonts."""
     import i18n_fonts
     if i18n_fonts.BDFCONV.exists():

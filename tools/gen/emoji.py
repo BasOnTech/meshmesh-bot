@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Emoji on the screens: Twemoji pictures as 12x12 pixel art -> src/ui/EmojiData.h.
 
-.venv/bin/python tools/gen/emoji.py                 writes the header (the pictures are cached in upstream/twemoji)
+.venv/bin/python tools/gen/emoji.py                 writes the header (the pictures are cached in vendor-cache/twemoji)
 .venv/bin/python tools/gen/emoji.py --sheet OUT.png also draws every emoji, enlarged and at its own size
 
 Pictures: Twemoji 15.1 (https://github.com/jdecked/twemoji), graphics by Twitter, Inc and other contributors,
@@ -20,7 +20,7 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-CACHE = ROOT / 'upstream' / 'twemoji'
+CACHE = ROOT / 'vendor-cache' / 'twemoji'
 URL = 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/72x72/{}.png'
 N = 12
 

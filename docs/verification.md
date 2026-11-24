@@ -716,7 +716,7 @@
 > **Chess with a stock MeshCore companion — the site page `chess/`** (2 October 2026; `docs/chess.md`).
 > On the computer: `node tests/chess/companion_check.cjs` — 174 checks, including 300 random games
 > (44,692 plies) that matched `src/games/chess/Chess.cpp` ply by ply. Over the radio: the GAT562 temporarily ran the stock
-> USB companion v1.17.1 (build `GAT562_30S_Mesh_Kit_companion_radio_usb` from `upstream/meshcore-stock`,
+> USB companion v1.17.1 (build `GAT562_30S_Mesh_Kit_companion_radio_usb` from MeshCore `companion-v1.17.1`,
 > serial DFU) against the M9 on MeshMesh 0.3.3 (boot 125 before and after). `chess_companion_check.py`: the page
 > code in Node via `usb_tcp_bridge.py --raw` — a challenge from the page and mate in 7 plies, a repeated and an
 > illegal move sent as text were ignored, a challenge from the M9 and a draw by agreement, an ACK for every command,

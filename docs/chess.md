@@ -253,7 +253,7 @@ on MeshMesh (M9, Heltec V4) or on the same page.
   `src/games/chess/ChessNet.cpp` (the same commands, reception, retries, automatic resending of undelivered commands).
   `tools/site/chess_site.py` builds the page from `web/index.html` and this file
   (`tools/site/pages.py` puts it into `chess/` on the website); the file is not part of the firmware.
-- The companion protocol (`upstream/meshcore-stock/examples/companion_radio/MyMesh.cpp`):
+- The companion protocol (MeshCore `companion-v1.17.1`, `examples/companion_radio/MyMesh.cpp`):
   `DEVICE_QUERY` (version 3), `APP_START`, setting the clock (forward only, as in the app),
   `GET_CONTACTS`, `SEND_TXT_MSG`, ACK — `PUSH_SEND_CONFIRMED`, reception — `MSG_WAITING` and
   `SYNC_NEXT_MESSAGE`. USB: `<`/`>` frames with a length; Bluetooth: Nordic UART, one frame per

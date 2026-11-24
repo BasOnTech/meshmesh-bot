@@ -147,7 +147,7 @@ and `status` counts it in `radio_recal`.
 
 `tools/hw/repeater_check.py` and `tools/hw/room_check.py` test the M9 in the corresponding mode from the side of
 the official MeshCore companion_radio_usb v1.17.1 firmware, temporarily installed on the Heltec. This is
-the `upstream/meshcore-stock` build for the MeshMesh flash layout.
+MeshCore `companion-v1.17.1` built as `meshmesh_stock_interop` for the MeshMesh flash layout.
 
 Procedure:
 1. Full copy of the Heltec flash and `verify-flash`.

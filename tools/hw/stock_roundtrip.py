@@ -41,7 +41,7 @@ def restore_saved(folder):
  print('PASS V4 full-flash recovery, byte-exact readback and original settings')
 def main():
  os.chdir(ROOT);os.umask(0o077)
- stock=ROOT/'upstream/meshcore-stock';image=stock/'.pio/build/meshmesh_stock_interop/firmware.bin'
+ stock=ROOT/'vendor-cache/meshcore-stock';image=stock/'.pio/build/meshmesh_stock_interop/firmware.bin'
  bootloader=image.with_name('bootloader.bin')
  partitions=image.with_name('partitions.bin')
  tag=subprocess.check_output(['git','-C',str(stock),'describe','--tags','--always'],text=True).strip()

@@ -1,6 +1,6 @@
 .venv/
 .pio/
-upstream/
+vendor-cache/
 backups/
 logs/
 artifacts/

@@ -20,11 +20,11 @@ python3 tools/gen/i18n.py check       # everything below; the build of the site 
 .venv/bin/python tools/gen/i18n.py generate   # src/i18n/I18nTable.h and the glyph subsets in src/i18n/I18nFonts.h
 ```
 
-`generate` needs the BDF fonts and u8g2 `bdfconv` in `upstream/fonts` (see `tools/gen/i18n_fonts.py`).
+`generate` needs the BDF fonts and u8g2 `bdfconv` in `vendor-cache/fonts` (see `tools/gen/i18n_fonts.py`).
 The glyph subsets come from Fusion Pixel Font (SIL OFL 1.1, licenses in `i18n/fonts/fusion-pixel/`),
 ClearlyU 12 (`i18n/fonts/clearlyu-cu12.txt`) and the public-domain X11 misc-fixed fonts.
 It also renders the anti-aliased Inter faces of the 320x240 screen (M9) into `src/ui/AaFonts.h`
-(`tools/gen/aa_fonts.py`, Inter v4.1 TTFs in `upstream/fonts/inter`, SIL OFL 1.1 in `i18n/fonts/inter/OFL.txt`).
+(`tools/gen/aa_fonts.py`, Inter v4.1 TTFs in `vendor-cache/fonts/inter`, SIL OFL 1.1 in `i18n/fonts/inter/OFL.txt`).
 Run it after every translation change, then build the boards and look at the screens:
 `.venv/bin/python tools/site/site_shots.py OUTDIR de` renders them on a computer.
 

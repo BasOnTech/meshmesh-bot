@@ -1,8 +1,8 @@
 # Comparison with MeshCore and WadaMesh
 
 State of MeshMesh 0.3.2 from the sources as of 30 September 2026. Sources:
-`upstream/meshcore-stock` (companion, repeater, room server, secure chat) and
-`upstream/wadamesh` (firmware with the MeshCore core and an LVGL interface for the M9).
+MeshCore `companion-v1.17.1` (companion, repeater, room server, secure chat) and
+WadaMesh (firmware with the MeshCore core and an LVGL interface for the M9).
 “Yes” means implemented in code. What is confirmed on hardware is listed in
 [verification.md](verification.md).
 

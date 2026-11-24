@@ -5,7 +5,7 @@ The screens draw with u8g2 fonts that hold Latin-1 and Cyrillic. Latin Extended 
 fallback fonts (src/i18n/I18n.cpp) cut from the same X11 misc-fixed faces. Only the glyphs the
 translations use are kept; text received over the radio shows only the glyphs in the subset.
 
-Sources, downloaded once into upstream/fonts (not in Git):
+Sources, downloaded once into vendor-cache/fonts (not in Git):
   u8g2 tools/font/bdf/{6x13,6x13B,5x8,4x6,10x20,6x12}.bdf and tools/font/bdfconv (built with cc)
 """
 import json
@@ -14,7 +14,7 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT/'upstream'/'fonts'
+SRC = ROOT/'vendor-cache'/'fonts'
 BDFCONV = SRC/'bdfconv'/'bdfconv'
 
 # name, BDF, which characters: 'ext' Latin Extended and symbols.

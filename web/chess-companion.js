@@ -3,7 +3,7 @@
 // src/games/chess/Chess.cpp and the games src/games/chess/ChessNet.cpp: the same text commands, ACKs and resending, so a game
 // with an M9 or a Heltec on MeshMesh goes as between two boards. The radio is the
 // companion's: USB (Web Serial) or Bluetooth (Web Bluetooth), frames of the MeshCore companion
-// protocol (upstream/meshcore-stock/examples/companion_radio/MyMesh.cpp). The games are kept in this
+// protocol (MeshCore companion-v1.17.1, examples/companion_radio/MyMesh.cpp). The games are kept in this
 // browser, separately for every companion key.
 (function(){
 'use strict';

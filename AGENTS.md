@@ -29,7 +29,7 @@ builds all boards and `tools/site/pages.py` (ESP Web Tools browser-install manif
 writing at offsets without erasing NVS). Screen screenshots — `tools/ui_preview`; the interactive simulator in an SDL2 window —
 `tools/ui_preview/sim.sh [m9] [LANG]` (`SIM=1` in `build.sh`, code in `tools/ui_preview/live.inc`; rebuilds via fswatch).
 Keep sources, vendored MeshCore with its licences, tools and
-documentation in Git. `backups/`, `artifacts/`, `logs/`, `upstream/`, the Python environment,
+documentation in Git. `backups/`, `artifacts/`, `logs/`, `vendor-cache/`, the Python environment,
 build outputs and `.env` stay local and are excluded via `.gitignore`.
 The repository is public: do not add flash/NVS dumps, chat history, private keys,
 Wi-Fi passwords, BLE PINs, real node addresses or coordinates. Check the
@@ -80,8 +80,7 @@ the previous request (replay protection): set the board's clock in checks (`set_
 Matching frequency and other radio parameters does not make the packet, advert, address, key, message and
 acknowledgement formats compatible.
 
-WadaMesh uses the MeshCore core; reference sources are in
-`upstream/wadamesh`. Do not present WadaMesh as a separate protocol incompatible
+WadaMesh uses the MeshCore core. Do not present WadaMesh as a separate protocol incompatible
 with MeshCore. Keep original headers and source attributions.
 
 When adding compatibility, keep our UI, maps and hardware drivers;
@@ -144,7 +143,7 @@ order; upstream Russian and 13 other languages were removed, their stored number
 written in the code: `t("English")`, `tr("English")`, `count(n,"one","many")`; strings of a table are marked with
 `N_("...")` and read with `trText()`. A further language (Dutch is planned) goes to the end of `Lang`
 with `i18n/firmware/<lang>.json` following `i18n/README.md`: `tools/gen/i18n.py sync`, translate,
-`.venv/bin/python tools/gen/i18n.py generate` (the table; the Latin Extended font subsets need `upstream/fonts`),
+`.venv/bin/python tools/gen/i18n.py generate` (the table; the Latin Extended font subsets need `vendor-cache/fonts`),
 `tools/gen/i18n.py check`, build, and review the screens with `tools/site/site_shots.py OUTDIR <lang>`.
 Site — `site/i18n/en.json`; the detailed documents in `docs/` are English. The device web page — English: the English text in the
 code is the dictionary key of `i18n/web/<lang>.json` for a further language; in `web/index.html` write `L('…')`,
@@ -291,8 +290,9 @@ A saved compass calibration does not prove accuracy or axis orientation.
 
 Repeater and room modes (`src/mesh/MeshServer.cpp`, `docs/repeater.md`) are checked from the side of the
 official MeshCore companion: `tools/hw/repeater_check.py`, `tools/hw/room_check.py`. For this the Heltec is
-temporarily flashed with the stock companion from `upstream/meshcore-stock`
-(the `meshmesh_stock_interop` build for our flash layout). Order: JSON snapshots and a full flash
+temporarily flashed with the stock companion: MeshCore `companion-v1.17.1`, built as
+`meshmesh_stock_interop` for our flash layout (`tools/hw/stock_roundtrip.py` expects the checkout in
+`vendor-cache/meshcore-stock`). Order: JSON snapshots and a full flash
 copy in `backups/` with `verify-flash`, the checks, then the copy is written back and verified.
 The stock firmware formats our LittleFS, so do not install it without a copy.
 `tools/hw/stock_roundtrip.py` is part of the full pass: stock protocol/sources v1.17.1, DIO/dio_qspi,
@@ -412,7 +412,7 @@ Triggering on a discharged battery is not checked; the Chinese T114 image is 712
 
 `tools/gen/emoji.py` builds `src/ui/EmojiData.h` from Twemoji 15.1 (CC-BY 4.0, attribution in the README and the header): ~300 emoji
 12×12, a shared 31-colour palette, bit packing (local palette, "same as the pixel above", gamma codes; ~10 KB). The pictures
-are cached in `upstream/twemoji`. `src/ui/Emoji.cpp` — lookup and decoder, `src/ui/Emoji.h` — modifiers (FE0F, skin tones,
+are cached in `vendor-cache/twemoji`. `src/ui/Emoji.cpp` — lookup and decoder, `src/ui/Emoji.h` — modifiers (FE0F, skin tones,
 ZWJ — zero width), flags as letters, a frame for emoji without a picture, `mono()` for monochrome screens. Drawn by `glyph()`
 in `src/ui/Ui.cpp` (M9/T-Deck, RGB565), `emojiGlyph()`/`glyph()` in `src/ui/UiHeltec.cpp` (palette colours `ColEmoji0…` on ST7735,
 a silhouette on OLED/e-ink), `hiGlyph()` (T114, 16 px); the width in columns — `glyphCells()` (2). For the Chinese T114 to fit,
