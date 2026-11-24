@@ -166,14 +166,14 @@ int aaDraw(int x, int y, const AaGlyph& gl, const AaFont& f, uint16_t color) {
   const int W = c.width(), H = c.height();
   const int fr = color >> 11, fg = (color >> 5) & 0x3f, fb = color & 0x1f, x0 = x + gl.dx, y0 = y - gl.top;
   const uint8_t* d = f.data + gl.offset;
-  unsigned n = 0;
-  for(int r = 0; r < gl.h; r++) {
-    int py = y0 + r;
-    for(int k = 0; k < gl.w; k++, n++) {
+  // Clipped once per glyph rather than per pixel: only the rows and columns on the canvas are visited.
+  const int r0 = max(0, -y0), r1 = min(int(gl.h), H - y0), k0 = max(0, -x0), k1 = min(int(gl.w), W - x0);
+  for(int r = r0; r < r1; r++) {
+    uint16_t* row = buf + (y0 + r) * W + x0;
+    for(int k = k0, n = r * gl.w + k0; k < k1; k++, n++) {
       int a = n & 1 ? d[n >> 1] & 0x0f : d[n >> 1] >> 4;
-      int px = x0 + k;
-      if(!a || py < 0 || py >= H || px < 0 || px >= W) continue;
-      uint16_t& p = buf[py * W + px];
+      if(!a) continue;
+      uint16_t& p = row[k];
       if(a == 15) {
         p = color;
         continue;
