@@ -110,13 +110,13 @@ void drawChannelAdd() {
       detail = t("Key from another app: 32 hex or base64");
     } else if(i == 2) {
       ic = IcLock;
-      hue = violet;
+      hue = secondary;
       name = t("Create a private channel");
       detail = t("Random key; its QR invites the others");
     } else {
       const auto& h = meshRadio.heard[i - addFixed];
       ic = IcRadio;
-      hue = h.name[0] ? ok : faint;
+      hue = h.name[0] ? ok : iconSubtle;
       char hash[3];
       snprintf(hash, 3, "%02X", h.hash);
       String heard = count(h.packets, "packet", "packets") + " · " + ago(millis() - h.at);
@@ -128,13 +128,13 @@ void drawChannelAdd() {
         detail = heard + t(" · OK: try a #name");
       }
     }
-    g().fillCircle(32, y + 22, 15, card);
-    icon(ic, 32, y + 22, 7, hue, card);
-    text(56, y + 18, fit(name, 250, bold), ink, bold);
-    text(56, y + 36, fit(i < addFixed && full ? t("Full: 8 channels, Public included") : detail, 250, small), i < addFixed && full ? warn : dim, small);
-    if(i == addFixed) { g().drawFastHLine(8, y - 2, 304, line); }
+    g().fillCircle(32, y + 22, 15, surfaceCard);
+    icon(ic, 32, y + 22, 7, hue, surfaceCard);
+    text(56, y + 18, fit(name, 250, bold), textPrimary, bold);
+    text(56, y + 36, fit(i < addFixed && full ? t("Full: 8 channels, Public included") : detail, 250, small), i < addFixed && full ? warn : textMuted, small);
+    if(i == addFixed) { g().drawFastHLine(8, y - 2, 304, border); }
   }
-  if(total == addFixed) { textCenter(160, 24 + 3 * 48 + 20, meshRadio.heardSamples ? t("Other channels heard: none") : t("Channels heard on air will appear here"), faint, small); }
+  if(total == addFixed) { textCenter(160, 24 + 3 * 48 + 20, meshRadio.heardSamples ? t("Other channels heard: none") : t("Channels heard on air will appear here"), textSubtle, small); }
   scrollbar(first, 4, total, 24, 190);
   footer({{"OK", t("Choose")}, {"^v", t("Select")}, {"BACK", t("Chats")}});
 }
@@ -245,20 +245,20 @@ void drawChannelQr(const channels::Channel& ch, unsigned lines, int& x, int& w) 
   bool priv = privateChannel(*c);
   x = x0 + side + 10;
   w = 312 - x;
-  text(x, y, fit(c->name, w, bold), ink, bold);
+  text(x, y, fit(c->name, w, bold), textPrimary, bold);
   y += 14;
-  text(x, y, fit(channelKind(*c), w, small), priv ? violet : accent, small);
+  text(x, y, fit(channelKind(*c), w, small), priv ? secondary : accent, small);
   y += 12;
   char hash[3];
   snprintf(hash, 3, "%02X", channels::hashOf(c->secret));
-  text(x, y, t("Hash ") + hash, faint, small);
+  text(x, y, t("Hash ") + hash, textSubtle, small);
   y += 16;
   if(priv) {
     String key = channels::keyHex(c->secret);
-    text(x, y, t("Key:"), dim, small);
+    text(x, y, t("Key:"), textMuted, small);
     y += 10;
     for(int k = 0; k < 32; k += 16) {
-      text(x, y, key.substring(k, k + 16), ink, small);
+      text(x, y, key.substring(k, k + 16), textPrimary, small);
       y += 10;
     }
     y += 4;
@@ -266,14 +266,14 @@ void drawChannelQr(const channels::Channel& ch, unsigned lines, int& x, int& w) 
   String rows[3];
   unsigned n = wrap(channels::isPublic(c->secret) ? t("Every MeshCore node has it") : t("Scan with MeshMesh or the MeshCore app"), rows, lines, w, small);
   for(unsigned i = 0; i < n; i++) {
-    text(x, y, rows[i], dim, small);
+    text(x, y, rows[i], textMuted, small);
     y += 10;
   }
 }
 void drawChannelInfo() {
   const channels::Channel* c = meshRadio.channel(focusChannel);
   if(!c) {
-    textCenter(160, 110, t("Channel removed"), dim);
+    textCenter(160, 110, t("Channel removed"), textMuted);
     footer({{"BACK", t("Back")}});
     return;
   }
@@ -294,12 +294,12 @@ void drawChannelInfo() {
     int ry = 218 - (actions - i) * 26, cx = x - 2 + (w + 2) / 2;
     bool focus = selected == i, danger = i == InfoLeave;
     target(x - 2, ry, w + 2, 24, i);
-    panel(x - 2, ry, w + 2, 24, focus ? (danger && deleteArmed ? bad : cardHi) : card, 7);
+    panel(x - 2, ry, w + 2, 24, focus ? (danger && deleteArmed ? bad : surfaceFocus) : surfaceCard, 7);
     if(focus) ring(x - 2, ry, w + 2, 24, 7, danger ? bad : accent);
     if(i == InfoRegion || (i == InfoInvite && people)) {
       bool region = i == InfoRegion;
-      textCenter(cx, ry + 9, region ? (regionChoice == c->region ? t("Region") : t("Region · OK: save")) : t("Invite"), region && regionChoice != c->region ? accent : dim, small);
-      textCenter(cx, ry + 20, fit(region ? channelRegionText(regionChoice) : String(list[inviteTo]->name), w - 20, small), ink, small);
+      textCenter(cx, ry + 9, region ? (regionChoice == c->region ? t("Region") : t("Region · OK: save")) : t("Invite"), region && regionChoice != c->region ? accent : textMuted, small);
+      textCenter(cx, ry + 20, fit(region ? channelRegionText(regionChoice) : String(list[inviteTo]->name), w - 20, small), textPrimary, small);
       if(focus) {
         tri(x + 5, ry + 15, 3, 3, accent);
         tri(x + w - 7, ry + 15, 1, 3, accent);
@@ -308,8 +308,8 @@ void drawChannelInfo() {
     }
     String label = i == InfoInvite ? t("No chat contacts") : deleteArmed ? t("Sure? OK again")
                                                                          : t("Leave channel");
-    textCenter(cx, ry + 16, fit(label, w - 6), danger ? (focus ? ink : bad) : i == InfoLeave ? ink
-                                                                                             : dim);
+    textCenter(cx, ry + 16, fit(label, w - 6), danger ? (focus ? textPrimary : bad) : i == InfoLeave ? textPrimary
+                                                                                                     : textMuted);
   }
   if(selected == InfoRegion) footer({{"<>", t("Region")}, {"OK", regionChoice == c->region ? t("Type") : t("Save")}, {"^v", t("Select")}, {"BACK", t("Back")}});
   else footer({{"^v", t("Select")}, {"<>", t("Contact")}, {"OK", t("Run")}, {"BACK", t("Back")}});
@@ -479,16 +479,16 @@ void drawChatMenu() {
     listRow(y, 23, focus);
     if(row == MenuErase) {
       unsigned n = chatMessages();
-      panel(8, y, 304, 23, n ? (focus ? bad : rgb(0x521a1a)) : card, 6);
-      if(focus && !n) ring(8, y, 304, 23, 6, line);
+      panel(8, y, 304, 23, n ? (focus ? bad : badDeep) : surfaceCard, 6);
+      if(focus && !n) ring(8, y, 304, 23, 6, border);
       textCenter(160, y + 16, !n ? t("No messages") : deleteArmed ? t("Sure? OK again")
                                                                   : t("Erase messages") + " (" + String(n) + ")",
-                 n ? (focus ? bg : ink) : dim, bold);
+                 n ? (focus ? onFill : textPrimary) : textMuted, bold);
       continue;
     }
     String name, value;
     bool pick = false;
-    uint16_t color = focus ? ink : dim;
+    uint16_t color = focus ? textPrimary : textMuted;
     switch(row) {
     case MenuScope:
       name = t("Scope");
@@ -510,7 +510,7 @@ void drawChatMenu() {
     default: break;
     case MenuLeave:
       name = deleteArmed ? t("Sure? OK again") : t("Leave channel");
-      color = focus ? (deleteArmed ? bad : ink) : bad;
+      color = focus ? (deleteArmed ? bad : textPrimary) : bad;
       break;
     }
     text(24, y + 16, name, color);
@@ -519,7 +519,7 @@ void drawChatMenu() {
       tri(300, y + 11, 1, 4, accent);
       text(292 - w, y + 16, fit(value, 140, bold), accent, bold);
       tri(284 - w, y + 11, 3, 4, accent);
-    } else if(value.length()) textRight(300, y + 16, fit(value, 140), focus ? ink : dim, focus ? bold : body);
+    } else if(value.length()) textRight(300, y + 16, fit(value, 140), focus ? textPrimary : textMuted, focus ? bold : body);
   }
   scrollbar(first, 7, rows, 25, 175);
   ChatMenuRow row = chatMenuRow(selected);
@@ -528,7 +528,7 @@ void drawChatMenu() {
                                                                                         : row == MenuInvite ? t("Sends the channel link in a direct message")
                                                                                         : row == MenuLeave  ? t("History stays; joining again shows it")
                                                                                                             : t("This chat only, on this device");
-  text(10, 207, fit(hint, 300, small), faint, small);
+  text(10, 207, fit(hint, 300, small), textSubtle, small);
   if(row == MenuScope) footer({{"<>", t("Region")}, {"OK", regionChoice == c->region ? t("Type") : t("Save")}, {"^v", t("Select")}, {"BACK", t("Back")}});
   else if(row == MenuErase || row == MenuLeave) footer({{"OK", deleteArmed ? (row == MenuErase ? t("Erase") : t("Leave")) : t("Confirm...")}, {"^v", t("Select")}, {"BACK", t("Back")}});
   else if(row == MenuQr) footer({{"OK", t("Show")}, {"^v", t("Select")}, {"BACK", t("Back")}});
@@ -594,7 +594,7 @@ void chatMenuKey(int key) {
   }
   if(side) return;
   if(row == MenuErase && !chatMessages()) {
-    notice(t("No messages"), dim);
+    notice(t("No messages"), graphicMuted);
     return;
   }
   if(!deleteArmed) {

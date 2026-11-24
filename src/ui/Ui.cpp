@@ -32,6 +32,7 @@
 #include "ui/Emoji.h"
 #include <algorithm>
 #include "ui/AaFonts.h"
+#include "ui/Theme.h"
 // Defined in U8g2_for_Adafruit_GFX.cpp; used to fall back to Latin-1 and placeholders for missing glyphs.
 uint8_t u8g2_IsGlyph(u8g2_font_t* u8g2, uint16_t encoding);
 int8_t u8g2_GetGlyphWidth(u8g2_font_t* u8g2, uint16_t encoding);
@@ -131,11 +132,27 @@ uint64_t conversations[65];
 unsigned conversationCount = 1;
 unsigned nodeOrder[24], nodeTotal = 0;
 
-// Palette: neutral dark surfaces, colour reserved for focus and state.
+// Palette: the active theme (ui/Theme.h, ui/themes/) as RGB565; theme keeps its 0xRRGGBB values for mix().
 constexpr uint16_t rgb(uint32_t v) { return ((v >> 8) & 0xf800) | ((v >> 5) & 0x07e0) | ((v >> 3) & 0x1f); }
-const uint16_t bg = rgb(0x080c11), bar = rgb(0x000000), card = rgb(0x131a22), cardHi = rgb(0x1c2835), line = rgb(0x2a3542), ink = rgb(0xe4e9ee), dim = rgb(0x8d99a6), faint = rgb(0x56626e);
-const uint16_t accent = rgb(0x1fc2ae), ok = rgb(0x4cc26b), warn = rgb(0xe9b13b), bad = rgb(0xe5564d), info = rgb(0x4f9df7), violet = rgb(0xa78bfa), outBubble = rgb(0x103a35), inBubble = rgb(0x1a232d);
-const uint16_t avatarHues[] = {rgb(0x2f7d6f), rgb(0x3f6fb5), rgb(0x8a5cc2), rgb(0xb5693f), rgb(0x4f8a3a), rgb(0xa8466a), rgb(0x3a8aa0), rgb(0x8f7a2e)};
+const Theme* theme = themes[0];
+uint16_t surfacePage, surfaceBar, surfaceCard, surfaceFocus, surfaceWell, border, gridLine, accent, accentDeep;
+uint16_t textPrimary, textMuted, textSubtle, iconPrimary, iconMuted, iconSubtle, graphicPrimary, graphicMuted, graphicSubtle, onFill;
+uint16_t secondary, secondaryDeep, tertiary, info, ok, okDeep, warn, warnDeep, alert, bad, badDeep, outBubble, inBubble;
+uint16_t avatarHues[8];
+void applyTheme(const Theme& t) {
+  theme = &t;
+  surfacePage = rgb(t.surfacePage), surfaceBar = rgb(t.surfaceBar), surfaceCard = rgb(t.surfaceCard), surfaceFocus = rgb(t.surfaceFocus), surfaceWell = rgb(t.surfaceWell), border = rgb(t.border), gridLine = rgb(t.gridLine);
+  textPrimary = rgb(t.textPrimary), textMuted = rgb(t.textMuted), textSubtle = rgb(t.textSubtle);
+  iconPrimary = rgb(t.iconPrimary), iconMuted = rgb(t.iconMuted), iconSubtle = rgb(t.iconSubtle);
+  graphicPrimary = rgb(t.graphicPrimary), graphicMuted = rgb(t.graphicMuted), graphicSubtle = rgb(t.graphicSubtle);
+  onFill = rgb(t.onFill);
+  accent = rgb(t.accent), accentDeep = rgb(t.accentDeep);
+  secondary = rgb(t.secondary), secondaryDeep = rgb(t.secondaryDeep), tertiary = rgb(t.tertiary), info = rgb(t.info);
+  ok = rgb(t.ok), okDeep = rgb(t.okDeep), warn = rgb(t.warn), warnDeep = rgb(t.warnDeep), alert = rgb(t.alert), bad = rgb(t.bad), badDeep = rgb(t.badDeep);
+  outBubble = rgb(t.outBubble), inBubble = rgb(t.inBubble);
+  for(unsigned i = 0; i < 8; i++) avatarHues[i] = rgb(t.avatarHues[i]);
+}
+const bool themeApplied = (applyTheme(*themes[0]), true); // before any drawing, also in the host preview
 
 // Text: the Cyrillic fonts lack Latin-1 and punctuation such as "·", "°", "№"; other languages' letters
 // come from the fallback fonts of I18n.h, and Arabic is drawn in visual order.
@@ -275,12 +292,12 @@ int measure(const String& text, const Face& f = body) {
   for(unsigned i = 0; i < s.length();) w += glyph(0, 0, nextCp(s, i), f, 0, false);
   return w;
 }
-int text(int x, int y, const String& s, uint16_t color = ink, const Face& f = body) {
+int text(int x, int y, const String& s, uint16_t color = textPrimary, const Face& f = body) {
   for(unsigned i = 0; i < s.length();) x += glyph(x, y, nextCp(s, i), f, color, true);
   return x;
 }
-void textRight(int x, int y, const String& s, uint16_t color = ink, const Face& f = body) { text(x - measure(s, f), y, s, color, f); }
-void textCenter(int x, int y, const String& s, uint16_t color = ink, const Face& f = body) { text(x - measure(s, f) / 2, y, s, color, f); }
+void textRight(int x, int y, const String& s, uint16_t color = textPrimary, const Face& f = body) { text(x - measure(s, f), y, s, color, f); }
+void textCenter(int x, int y, const String& s, uint16_t color = textPrimary, const Face& f = body) { text(x - measure(s, f) / 2, y, s, color, f); }
 // By value: a temporary (t(), a concatenation) is moved in and back out, so text that fits is not copied.
 String fit(String s, int px, const Face& f = body) {
   if(measure(s, f) <= px) return s;
@@ -371,14 +388,14 @@ void thickLine(int x0, int y0, int x1, int y1, uint16_t c) {
   g().drawLine(x0, y0, x1, y1, c);
   g().drawLine(x0 + 1, y0, x1 + 1, y1, c);
 }
-void icon(Icon id, int cx, int cy, int s, uint16_t c, uint16_t hole = bg) {
-  drawIcon(g(), id, cx, cy, s, c, hole, faint);
+void icon(Icon id, int cx, int cy, int s, uint16_t c, uint16_t hole = surfacePage) {
+  drawIcon(g(), id, cx, cy, s, c, hole, iconSubtle);
   if(id == IcHelp) textCenter(cx, cy + 5, "?", c, bold);
 }
 void bars(int x, int y, unsigned level, uint16_t color) {
   for(unsigned k = 0; k < 4; k++) {
     int h = 3 + k * 2;
-    g().fillRect(x + k * 4, y - h, 3, h, k < level ? color : line);
+    g().fillRect(x + k * 4, y - h, 3, h, k < level ? color : border);
   }
 }
 unsigned snrLevel(float snr) { return snr >= 5 ? 4 : snr >= 0   ? 3
@@ -405,7 +422,7 @@ String initial(const String& name) {
 void avatar(int cx, int cy, int r, uint64_t id, const String& name, int type = -1) {
   uint16_t hue = avatarHues[(id ^ id >> 17 ^ id >> 41) % 8];
   if(!id) {
-    g().fillCircle(cx, cy, r, card);
+    g().fillCircle(cx, cy, r, surfaceCard);
     g().fillRect(cx - r / 2, cy - 1, r, 3, accent);
     g().fillRect(cx - 1, cy - r / 2, 3, r, accent);
     return;
@@ -413,22 +430,22 @@ void avatar(int cx, int cy, int r, uint64_t id, const String& name, int type = -
   if(channels::isChannel(id)) {
     const channels::Channel* c = meshRadio.channel(id);
     bool priv = c && !channels::isPublic(c->secret) && !channels::isHashtag(*c);
-    g().fillCircle(cx, cy, r, priv ? rgb(0x2e2450) : rgb(0x14524b));
-    icon(priv ? IcLock : IcHash, cx, cy, r / 2, priv ? violet : accent);
+    g().fillCircle(cx, cy, r, priv ? secondaryDeep : accentDeep);
+    icon(priv ? IcLock : IcHash, cx, cy, r / 2, priv ? secondary : accent);
     return;
   }
   if(type > 1) {
-    uint16_t tc = type == 2 ? violet : type == 3 ? warn
-                                                 : info;
-    g().fillCircle(cx, cy, r, card);
+    uint16_t tc = type == 2 ? secondary : type == 3 ? warn
+                                                    : info;
+    g().fillCircle(cx, cy, r, surfaceCard);
     g().drawCircle(cx, cy, r, tc);
     icon(type == 2 ? IcTower : type == 3 ? IcRoom
                                          : IcSensor,
-         cx, cy, r / 2 + 1, tc, card);
+         cx, cy, r / 2 + 1, tc, surfaceCard);
     return;
   }
   g().fillCircle(cx, cy, r, hue);
-  textCenter(cx, cy + (r > 12 ? 5 : 4), initial(name), ink, r > 12 ? bold : small);
+  textCenter(cx, cy + (r > 12 ? 5 : 4), initial(name), textPrimary, r > 12 ? bold : small);
 }
 // Touch targets of the frame on screen (uiTouch): the items a tap selects (index as in "selected")
 // and the footer hints, which act as their keys. draw() clears them.
@@ -463,8 +480,8 @@ struct Hint {
 };
 void footer(std::initializer_list<Hint> hints) {
   auto& d = g();
-  d.fillRect(0, 221, 320, 19, bar);
-  d.drawFastHLine(0, 220, 320, line);
+  d.fillRect(0, 221, 320, 19, surfaceBar);
+  d.drawFastHLine(0, 220, 320, border);
   int x = 6;
   for(auto& h : hints) {
     bool arrows = !strcmp(h.key, "<>") || !strcmp(h.key, "^v") || !strcmp(h.key, "<");
@@ -472,16 +489,16 @@ void footer(std::initializer_list<Hint> hints) {
     if(x + kw + 4 + aw > 316) break;
     if(int key = hintKey(h.key))
       if(hintCount < 6) hintSpots[hintCount++] = {int16_t(x - 3), int16_t(x + kw + 4 + aw + 5), key};
-    d.fillRoundRect(x, 224, kw, 13, 3, line);
+    d.fillRoundRect(x, 224, kw, 13, 3, border);
     if(!strcmp(h.key, "<>")) {
-      tri(x + 5, 230, 3, 3, ink);
-      tri(x + 12, 230, 1, 3, ink);
-    } else if(!strcmp(h.key, "<")) tri(x + 8, 230, 3, 3, ink);
+      tri(x + 5, 230, 3, 3, iconPrimary);
+      tri(x + 12, 230, 1, 3, iconPrimary);
+    } else if(!strcmp(h.key, "<")) tri(x + 8, 230, 3, 3, iconPrimary);
     else if(!strcmp(h.key, "^v")) {
-      tri(x + 5, 231, 0, 3, ink);
-      tri(x + 12, 229, 2, 3, ink);
-    } else text(x + 4, 234, h.key, ink, small);
-    text(x + kw + 4, 235, h.action, dim);
+      tri(x + 5, 231, 0, 3, iconPrimary);
+      tri(x + 12, 229, 2, 3, iconPrimary);
+    } else text(x + 4, 234, h.key, textPrimary, small);
+    text(x + kw + 4, 235, h.action, textMuted);
     x += kw + 4 + aw + 10;
   }
 }
@@ -788,7 +805,7 @@ String hashText(const uint8_t* h, uint8_t size) {
 String snrText(int8_t q) { return String(q / 4.0f, 1) + t(" dB"); }
 uint16_t snrColor(int8_t q) { return q == -128 ? bad : q >= 20  ? ok
                                                      : q >= -20 ? warn
-                                                                : rgb(0xf08a4b); } // quarter dB: 5 dB and over, -5 dB and over, weaker; -128 nobody
+                                                                : alert; } // quarter dB: 5 dB and over, -5 dB and over, weaker; -128 nobody
 String pathText(const Peer& p) {
   if(p.pathLength == 255) return t("path unknown");
   if(!(p.pathLength & 63)) return t("direct");
@@ -803,9 +820,9 @@ String typeText(uint8_t type) {
   }
   return t("Node");
 }
-uint16_t typeColor(uint8_t type) { return type == 2 ? violet : type == 3 ? warn
-                                                             : type == 4 ? info
-                                                                         : accent; }
+uint16_t typeColor(uint8_t type) { return type == 2 ? secondary : type == 3 ? warn
+                                                                : type == 4 ? info
+                                                                            : accent; }
 bool distanceTo(const Peer& p, float& metres, float& bearing) {
   if(!p.position || !hardware.gpsFix()) return false;
   double la1 = hardware.gps.location.lat() * M_PI / 180, la2 = p.latitude * M_PI / 180, dl = (p.longitude - hardware.gps.location.lng()) * M_PI / 180;
@@ -873,18 +890,18 @@ String title() {
 }
 void statusBar() {
   auto& d = g();
-  d.fillRect(0, 0, 320, 20, bar);
-  d.drawFastHLine(0, 20, 320, line);
+  d.fillRect(0, 0, 320, 20, surfaceBar);
+  d.drawFastHLine(0, 20, 320, border);
   int x = 313;
   uint16_t mv = hardware.batteryMv;
   bool external = hardware.usbPower >= 0 ? hardware.usbPower > 0 : mv > 4250;
   unsigned pct = batteryPercent(mv);
-  uint16_t level = !mv ? faint : external  ? accent
-                               : pct <= 15 ? bad
-                               : pct <= 30 ? warn
-                                           : ok;
-  d.drawRoundRect(x - 19, 5, 19, 10, 2, dim);
-  d.fillRect(x, 8, 2, 4, dim);
+  uint16_t level = !mv ? graphicSubtle : external  ? accent
+                                       : pct <= 15 ? bad
+                                       : pct <= 30 ? warn
+                                                   : ok;
+  d.drawRoundRect(x - 19, 5, 19, 10, 2, graphicMuted);
+  d.fillRect(x, 8, 2, 4, graphicMuted);
   if(external) {
     d.fillTriangle(x - 8, 6, x - 13, 11, x - 9, 11, accent);
     d.fillTriangle(x - 10, 9, x - 6, 9, x - 11, 14, accent);
@@ -892,11 +909,11 @@ void statusBar() {
   x -= 23;
   if(mv && (config.batteryVolts || !external)) {
     String p = config.batteryVolts ? String(mv / 1000.f, 2) + "V" : String(pct) + "%";
-    textRight(x, 14, p, dim, small);
+    textRight(x, 14, p, textMuted, small);
     x -= measure(p, small) + 6;
   }
   String clock = clockText();
-  textRight(x, 15, clock, ink, bold);
+  textRight(x, 15, clock, textPrimary, bold);
   x -= measure(clock, bold) + 8;
   bool fresh = meshRadio.lastRxAt && millis() - meshRadio.lastRxAt < 600000;
   bars(x - 15, 15, meshRadio.ready && fresh ? max(1u, snrLevel(meshRadio.lastSnr)) : 0, ok);
@@ -912,18 +929,18 @@ void statusBar() {
   if(config.gps) {
     icon(IcPin, x - 5, 10, 6, hardware.gpsFix() ? ok : hardware.clockConflict ? bad
                                                                               : warn,
-         bar);
+         surfaceBar);
     x -= 15;
   }
   if(portalActive()) {
-    icon(IcWifi, x - 6, 10, 7, accent, bar);
+    icon(IcWifi, x - 6, 10, 7, accent, surfaceBar);
     x -= 17;
   } else if(internet.state != Internet::Off && internet.state != Internet::Paused) {
-    icon(IcWifi, x - 6, 10, 7, internet.online() ? ok : faint, bar);
+    icon(IcWifi, x - 6, 10, 7, internet.online() ? ok : iconSubtle, surfaceBar);
     x -= 17;
   }
   if(bleActive()) {
-    icon(IcBle, x - 3, 10, 6, info, bar);
+    icon(IcBle, x - 3, 10, 6, info, surfaceBar);
     x -= 12;
   }
   unsigned n = page == Threads || page == Chat ? 0 : unreadTotal();
@@ -931,42 +948,42 @@ void statusBar() {
     String c = String(n);
     textRight(x, 14, c, warn, small);
     x -= measure(c, small) + 2;
-    icon(IcMail, x - 7, 10, 7, warn, bar);
+    icon(IcMail, x - 7, 10, 7, warn, surfaceBar);
     x -= 19;
   }
   String name = title();
   if(page == Chat || page == Node) {
-    tri(10, 10, 3, 4, dim);
-    text(17, 15, fit(name, x - 22, bold), ink, bold);
-  } else text(8, 15, fit(name, x - 14, bold), page == Home ? accent : ink, bold);
+    tri(10, 10, 3, 4, iconMuted);
+    text(17, 15, fit(name, x - 22, bold), textPrimary, bold);
+  } else text(8, 15, fit(name, x - 14, bold), page == Home ? accent : textPrimary, bold);
 }
 void drawToast() {
   if(!toast.length() || millis() - toastAt >= 3500) return;
   String s = fit(toast, 280);
   int w = measure(s) + 26, x = 160 - w / 2;
-  panel(x, 193, w, 23, cardHi, 6);
-  g().drawRoundRect(x, 193, w, 23, 6, line);
+  panel(x, 193, w, 23, surfaceFocus, 6);
+  g().drawRoundRect(x, 193, w, 23, 6, border);
   g().fillRoundRect(x + 5, 198, 3, 13, 1, toastColor);
-  text(x + 15, 209, s, ink);
+  text(x + 15, 209, s, textPrimary);
 }
 void scrollbar(int first, int visible, int total, int y, int h) {
   if(total <= visible) return;
   int th = max(12, h * visible / total), ty = y + (h - th) * first / max(1, total - visible);
-  g().fillRoundRect(315, y, 3, h, 1, card);
-  g().fillRoundRect(315, ty, 3, th, 1, faint);
+  g().fillRoundRect(315, y, 3, h, 1, surfaceCard);
+  g().fillRoundRect(315, ty, 3, th, 1, graphicSubtle);
 }
 // The highlight alone marks the selection, as on home. An unselected row is not painted: it would only write
 // bg over the cleared bg, and on the M9 every filled pixel is a PSRAM write (half of a home frame was fills).
 void listRow(int y, int h, bool focus) {
-  if(focus) panel(8, y, 304, h, cardHi, 7);
+  if(focus) panel(8, y, 304, h, surfaceFocus, 7);
 }
 // The first row of a game list (chess, checkers, sea battle): a plus in a disc centred at cy, "New game" and a hint.
 void newGameRow(int cy, int r, int hintY, const String& hint, int hintW) {
-  g().fillCircle(32, cy, r, rgb(0x14524b));
+  g().fillCircle(32, cy, r, accentDeep);
   g().fillRect(31, cy - 8, 3, 17, accent);
   g().fillRect(24, cy - 1, 17, 3, accent);
-  text(56, cy - 4, t("New game"), ink, bold);
-  text(56, hintY, fit(hint, hintW, small), dim, small);
+  text(56, cy - 4, t("New game"), textPrimary, bold);
+  text(56, hintY, fit(hint, hintW, small), textMuted, small);
 }
 
 // Module health: the same eight modules as the diagnostics page.
@@ -1001,7 +1018,7 @@ void appTiles(AppTile* out) {
   AppTile tiles[] = {
     {IcChat, accent, t("Chats"), unreadCount ? String() : count(meshRadio.historyCount, "message", "messages"), unreadCount},
     {IcSend, info, t("Quick send"), quickSend::targetName(), 0},
-    {IcMesh, violet, t("Nodes"), String(near) + t(" of ") + String(total) + t(" nearby"), 0},
+    {IcMesh, secondary, t("Nodes"), String(near) + t(" of ") + String(total) + t(" nearby"), 0},
     {IcCompass, warn, t("Navigation"), hardware.gpsFix() ? "GPS: " + count(hardware.gps.satellites.value(), "sat", "sats") : config.gps ? t("GPS: searching")
                                                                                                                                         : t("GPS off"),
      0},
@@ -1010,19 +1027,19 @@ void appTiles(AppTile* out) {
                                                                                                  : t("No maps yet"),
      0},
     {IcRadar, accent, t("Radar"), "Wi-Fi, BLE, LoRa", 0},
-    {IcTower, wardrive::running() ? ok : dim, t("Wardrive"), wardrive::running() ? count(wardrive::points(), "point", "points") : t("Off"), 0},
+    {IcTower, wardrive::running() ? ok : iconMuted, t("Wardrive"), wardrive::running() ? count(wardrive::points(), "point", "points") : t("Off"), 0},
     {IcTally, tallyHue(people::tally.current), t("Quick counter"), tallyTileDetail(), 0},
-    {IcChess, ink, t("Chess"), chessTileDetail(), chessNet.waiting()},
+    {IcChess, iconPrimary, t("Chess"), chessTileDetail(), chessNet.waiting()},
     {IcCheckers, rgb(0xf0d9b5), t("Checkers"), duelTileDetail(Duel::Checkers), duels.waiting(Duel::Checkers)},
     {IcShip, info, t("Sea battle"), duelTileDetail(Duel::Sea), duels.waiting(Duel::Sea)},
-    {IcPaw, creature.needsCare() ? warn : creature.has() ? rgb(0xf472b6)
-                                                         : dim,
+    {IcPaw, creature.needsCare() ? warn : creature.has() ? tertiary
+                                                         : iconMuted,
      t("Pet"), petTileDetail(), 0},
-    {IcDice, dicer.last() ? warn : dim, t("Dice"), diceTileDetail(), 0},
+    {IcDice, dicer.last() ? warn : iconMuted, t("Dice"), diceTileDetail(), 0},
     {IcCards, warn, t("Solitaire"), gameTileDetail(), 0},
     {IcWifi, info, t("Connect"), links, 0},
     {IcPulse, faults ? bad : ok, t("Module health"), faults ? count(faults, "fault", "faults") : t("All OK"), 0},
-    {IcGear, dim, t("Settings"), t("Radio, screen"), 0}};
+    {IcGear, iconMuted, t("Settings"), t("Radio, screen"), 0}};
   static_assert(sizeof tiles / sizeof *tiles == sizeof uiApps / sizeof *uiApps, "a tile for every app ID");
   for(unsigned i = 0; i < uiAppCount; i++) out[i] = std::move(tiles[i]);
 }
@@ -1048,19 +1065,19 @@ void menuRow(int y, int i, Icon ic, uint16_t hue, const String& name, const Stri
   bool focus = selected == i;
   listRow(y, h, focus);
   target(8, y, 304, h, i);
-  icon(ic, 20, y + h / 2, 6, hue, focus ? cardHi : bg);
+  icon(ic, 20, y + h / 2, 6, hue, focus ? surfaceFocus : surfacePage);
   int right = 306;
   if(badge) {
     String b = badge > 99 ? "99+" : String(badge);
     int w = max(16, measure(b, small) + 8);
     d.fillRoundRect(right - w, y + (h - 14) / 2, w, 14, 7, bad);
-    textCenter(right - w / 2, y + (h - 14) / 2 + 11, b, ink, small);
+    textCenter(right - w / 2, y + (h - 14) / 2 + 11, b, textPrimary, small);
     right -= w + 6;
   }
   int nameW = min(measure(name, bold), right - 33 - 40);
-  text(33, y + h / 2 + 5, fit(name, nameW, bold), ink, bold);
+  text(33, y + h / 2 + 5, fit(name, nameW, bold), textPrimary, bold);
   int detailW = right - 33 - nameW - 10;
-  if(detailW > 20) textRight(right, y + h / 2 + 4, fit(detail, detailW, small), dim, small);
+  if(detailW > 20) textRight(right, y + h / 2 + 4, fit(detail, detailW, small), textMuted, small);
 }
 void drawTiles(const uint8_t* order, int shown, const AppTile* tiles) {
   selected = max(0, min(selected, shown - 1));
@@ -1075,20 +1092,20 @@ void drawTiles(const uint8_t* order, int shown, const AppTile* tiles) {
 }
 // The one-line strip above the home and folder rows: icon, name in bold, then the detail.
 void strip(Icon ic, uint16_t hue, const String& name, int nameW) {
-  panel(8, 25, 304, 20, card, 6);
-  icon(ic, 20, 35, 6, hue, card);
-  text(33, 39, fit(name, nameW, bold), ink, bold);
+  panel(8, 25, 304, 20, surfaceCard, 6);
+  icon(ic, 20, 35, 6, hue, surfaceCard);
+  text(33, 39, fit(name, nameW, bold), textPrimary, bold);
 }
 void drawHome() {
   strip(IcRadio, meshRadio.ready ? accent : bad, config.name, 110);
   int x = 33 + min(measure(config.name, bold), 110) + 8, r = 306;
-  auto counter = [&](unsigned n, int dir, uint16_t c) {String v(n);textRight(r,39,v,ink,small);r-=measure(v,small)+7;tri(r,36,dir,3,c);r-=10; };
+  auto counter = [&](unsigned n, int dir, uint16_t c) {String v(n);textRight(r,39,v,textPrimary,small);r-=measure(v,small)+7;tri(r,36,dir,3,c);r-=10; };
   counter(meshRadio.rxCount, 2, ok);
   counter(meshRadio.txCount, 0, accent); // sent, then received, on the right
   char radio[64]; // one snprintf instead of six growing concatenations on the most drawn page
   if(meshRadio.ready) snprintf(radio, sizeof radio, "%.3f%s%d · BW %.1f · CR 4/%d", config.frequency, tr(" MHz · SF"), int(config.sf), config.bandwidth, int(config.cr));
   else snprintf(radio, sizeof radio, "%s%d", tr("Radio error "), int(meshRadio.radioError));
-  text(x, 39, fit(radio, r - x, small), meshRadio.ready ? dim : bad, small);
+  text(x, 39, fit(radio, r - x, small), meshRadio.ready ? textMuted : bad, small);
   AppTile tiles[sizeof uiApps / sizeof *uiApps];
   appTiles(tiles);
   uint8_t order[AppEntriesMax];
@@ -1106,9 +1123,9 @@ void drawFolder() {
   String head = count(shown, "app", "apps") + (badge ? " · " + String(badge) + t(" waiting") : String());
   strip(IcFolder, warn, head, 150);
   int x = 33 + min(measure(head, bold), 150) + 8;
-  text(x, 39, fit(t("Folders and order: web page or app"), 306 - x, small), dim, small);
+  text(x, 39, fit(t("Folders and order: web page or app"), 306 - x, small), textMuted, small);
   if(!shown) {
-    textCenter(160, 130, t("No apps in this folder"), dim);
+    textCenter(160, 130, t("No apps in this folder"), textMuted);
     footer({{"BACK", t("Menu")}});
     return;
   }
@@ -1148,7 +1165,7 @@ void drawThreads() {
     avatar(32, y + 22, 15, id, nameOf(id), p ? p->type : -1);
     if(!id) {
       text(56, y + 18, t("Add a channel"), accent, bold);
-      text(56, y + 36, fit(t("Hashtag, name and key, new, heard on air"), 244), dim);
+      text(56, y + 36, fit(t("Hashtag, name and key, new, heard on air"), 244), textMuted);
       continue;
     }
     const channels::Channel* c = meshRadio.channel(id);
@@ -1159,8 +1176,8 @@ void drawThreads() {
         break;
       }
     String when = last ? timeText(last->timestamp) : "";
-    if(when.length()) textRight(306, 19 + y, when, dim, small);
-    text(56, y + 18, fit(nameOf(id), 240 - measure(when, small), bold), ink, bold);
+    if(when.length()) textRight(306, 19 + y, when, textMuted, small);
+    text(56, y + 18, fit(nameOf(id), 240 - measure(when, small), bold), textPrimary, bold);
     String preview = last                            ? (last->outgoing ? t("You: ") : c || isRoom(id) ? String(last->name) + ": "
                                                                                                       : String()) +
                                                          bubbleText(*last)
@@ -1175,9 +1192,9 @@ void drawThreads() {
       String b = String(n);
       pillW = max(18, measure(b, small) + 10);
       g().fillRoundRect(306 - pillW, y + 26, pillW, 14, 7, accent);
-      textCenter(306 - pillW / 2, y + 36, b, bg, small);
+      textCenter(306 - pillW / 2, y + 36, b, onFill, small);
     }
-    text(56, y + 36, fit(preview, 244 - pillW), n ? ink : dim);
+    text(56, y + 36, fit(preview, 244 - pillW), n ? textPrimary : textMuted);
   }
   scrollbar(first, 4, conversationCount, 24, 190);
   if(channels::isChannel(conversations[selected])) footer({{"OK", t("Open")}, {"<>", t("Channel")}, {"ADV", t("Announce")}, {"HOME", t("Menu")}});
@@ -1187,13 +1204,13 @@ void statusMark(int x, int y, const ChatMessage& m) {
   auto& d = g();
   switch(m.status) {
   case ChatMessage::Queued:
-    d.drawCircle(x + 3, y - 3, 3, dim);
-    d.drawFastVLine(x + 3, y - 5, 3, dim);
-    d.drawFastHLine(x + 3, y - 3, 2, dim);
+    d.drawCircle(x + 3, y - 3, 3, graphicMuted);
+    d.drawFastVLine(x + 3, y - 5, 3, graphicMuted);
+    d.drawFastHLine(x + 3, y - 3, 2, graphicMuted);
     break;
   case ChatMessage::Sent:
-    d.drawLine(x, y - 3, x + 2, y - 1, dim);
-    d.drawLine(x + 2, y - 1, x + 6, y - 6, dim);
+    d.drawLine(x, y - 3, x + 2, y - 1, graphicMuted);
+    d.drawLine(x + 2, y - 1, x + 6, y - 6, graphicMuted);
     break;
   case ChatMessage::Delivered:
     for(int k : {0, 4}) {
@@ -1203,8 +1220,8 @@ void statusMark(int x, int y, const ChatMessage& m) {
     break;
   case ChatMessage::Failed:
     d.fillCircle(x + 3, y - 3, 4, bad);
-    d.drawFastVLine(x + 3, y - 5, 3, ink);
-    d.drawPixel(x + 3, y - 1, ink);
+    d.drawFastVLine(x + 3, y - 5, 3, graphicPrimary);
+    d.drawPixel(x + 3, y - 1, graphicPrimary);
     break;
   default: break;
   }
@@ -1216,7 +1233,7 @@ void drawChat() {
   String sub = channels::isChannel(recipient) ? (ch && !channels::isPublic(ch->secret) && !channels::isHashtag(*ch) ? t("Private channel · senders unverified · no ACK") : t("Open channel · senders unverified · no ACK")) : p && p->type == 3 ? typeText(p->type) + " · " + (remote::find(p->id) && remote::find(p->id)->login == remote::Done ? t("logged in") : t("log in: node card > Server"))
                                                                                                                                                                                                                             : p                 ? typeText(p->type) + " · " + pathText(*p) + (p->heard ? " · " + ago(millis() - p->seen) : String())
                                                                                                                                                                                                                                                 : t("Not in contacts");
-  text(8, 33, fit(sub, 270, small), dim, small);
+  text(8, 33, fit(sub, 270, small), textMuted, small);
   String rows[6];
   unsigned inputRows = max(1u, wrap(composer, rows, 6, 276));
   unsigned shown = min(inputRows, 3u);
@@ -1251,39 +1268,39 @@ void drawChat() {
     }
     for(unsigned k = 0; k < n; k++) text(x + 8, ty + k * 13, lines[k]);
     int mx = x + w - 7 - (m.outgoing ? 11 : 0), my = y + h - 4;
-    textRight(mx, my, when, dim, small);
-    if(state.length()) textRight(mx - measure(when, small) - 4, my, state, m.status == ChatMessage::Failed ? bad : faint, small);
+    textRight(mx, my, when, textMuted, small);
+    if(state.length()) textRight(mx - measure(when, small) - 4, my, state, m.status == ChatMessage::Failed ? bad : textSubtle, small);
     if(m.outgoing) statusMark(x + w - 15, my, m);
     bottom = y - 5;
   }
   if(!total) {
     icon(ch && !channels::isPublic(ch->secret) && !channels::isHashtag(*ch) ? IcLock : channels::isChannel(recipient) ? IcHash
                                                                                                                       : IcChat,
-         160, 86, 14, faint);
-    textCenter(160, 124, t("No messages yet"), dim);
-    textCenter(160, 142, t("Type and press OK to send"), faint, small);
+         160, 86, 14, iconSubtle);
+    textCenter(160, 124, t("No messages yet"), textMuted);
+    textCenter(160, 142, t("Type and press OK to send"), textSubtle, small);
   }
   if(chatOffset) {
     String c = String(chatOffset);
     int w = measure(c, small) + 18;
     d.fillRoundRect(304 - w, boxY - 19, w, 14, 7, accent);
-    tri(304 - w + 7, boxY - 12, 2, 3, bg);
-    text(304 - w + 12, boxY - 8, c, bg, small);
+    tri(304 - w + 7, boxY - 12, 2, 3, onFill);
+    text(304 - w + 12, boxY - 8, c, onFill, small);
   }
-  panel(8, boxY, 304, boxH, card, 7);
-  d.drawRoundRect(8, boxY, 304, boxH, 7, composer.length() ? accent : line);
+  panel(8, boxY, 304, boxH, surfaceCard, 7);
+  d.drawRoundRect(8, boxY, 304, boxH, 7, composer.length() ? accent : border);
   if(composer.length()) {
     unsigned firstRow = inputRows > 3 ? inputRows - 3 : 0;
     int cx = 14;
-    for(unsigned i = firstRow; i < inputRows; i++) cx = text(14, boxY + 14 + (i - firstRow) * 13, rows[i], ink);
+    for(unsigned i = firstRow; i < inputRows; i++) cx = text(14, boxY + 14 + (i - firstRow) * 13, rows[i], textPrimary);
     d.fillRect(cx + 1, boxY + 4 + (shown - 1) * 13, 2, 12, accent);
   } else {
     d.fillRect(14, boxY + 5, 2, 12, accent);
-    text(20, boxY + 15, t("Message..."), faint);
+    text(20, boxY + 15, t("Message..."), textSubtle);
   }
   unsigned used = composer.length(), limit = meshRadio.messageLimit(recipient);
   String counter = String(used) + "/" + String(limit);
-  textRight(306, boxY + boxH - 3, counter, used * 10 >= limit * 9 ? (used >= limit ? bad : warn) : faint, small);
+  textRight(306, boxY + boxH - 3, counter, used * 10 >= limit * 9 ? (used >= limit ? bad : warn) : textSubtle, small);
   String left = chatLeftAction();
   if(left.length()) footer({{"OK", t("Send")}, {"<", left}, {"BACK", t("Back")}});
   else footer({{"OK", t("Send")}, {"@", t("Settings")}, {"BACK", t("Back")}});
@@ -1294,12 +1311,12 @@ void drawMap() {
   maps.draw(0, 21, 320, 199);
   bool online = internet.online();
   if(!maps.haveCenter || (!maps.available && !online)) {
-    panel(30, 70, 260, 86, card, 10);
-    icon(IcPin, 160, 96, 12, faint, card);
+    panel(30, 70, 260, 86, surfaceCard, 10);
+    icon(IcPin, 160, 96, 12, iconSubtle, surfaceCard);
     textCenter(160, 128, online ? t("Finding location by IP...") : !maps.available ? t("Needs Wi-Fi internet or an SD card")
                                                                                    : t("Connect Wi-Fi or load a map"),
-               ink);
-    textCenter(160, 144, online ? t("GPS will take over after a fix") : t("Connections > Internet over Wi-Fi"), dim, small);
+               textPrimary);
+    textCenter(160, 144, online ? t("GPS will take over after a fix") : t("Connections > Internet over Wi-Fi"), textMuted, small);
   } else {
     double scale = 256.0 * (1UL << maps.zoom);
     auto yy = [&](double l) {double r=l*M_PI/180;return (1-log(tan(r)+1/cos(r))/M_PI)/2*scale; };
@@ -1311,7 +1328,7 @@ void drawMap() {
         int x, y;
         if(!point(pts[i].lat / 1e6, pts[i].lon / 1e6, x, y)) continue; // the wardrive log: pings larger
         if(pts[i].kind == wardrive::Ping) {
-          d.fillCircle(x, y, 5, bar);
+          d.fillCircle(x, y, 5, surfaceBar);
           d.fillCircle(x, y, 3, snrColor(pts[i].snr));
         } else d.fillCircle(x, y, 2, snrColor(pts[i].snr));
       }
@@ -1320,12 +1337,12 @@ void drawMap() {
       auto& p = meshRadio.peers[i];
       int x, y;
       if(!p.position || !point(p.latitude, p.longitude, x, y)) continue;
-      d.fillCircle(x, y, 6, bar);
+      d.fillCircle(x, y, 6, surfaceBar);
       d.fillCircle(x, y, 4, typeColor(p.type));
       String name = fit(p.name, 80, small);
       int w = measure(name, small) + 6, lx = constrain(x + 8, 2, 316 - w);
-      d.fillRoundRect(lx, y - 6, w, 11, 3, bar);
-      text(lx + 3, y + 2, name, ink, small);
+      d.fillRoundRect(lx, y - 6, w, 11, 3, surfaceBar);
+      text(lx + 3, y + 2, name, textPrimary, small);
     }
     if(hardware.gpsFix()) {
       int x, y;
@@ -1334,24 +1351,24 @@ void drawMap() {
           float a = navigation.heading * M_PI / 180;
           d.fillTriangle(x + roundf(18 * sinf(a)), y - roundf(18 * cosf(a)), x + roundf(8 * sinf(a - 0.6f)), y - roundf(8 * cosf(a - 0.6f)), x + roundf(8 * sinf(a + 0.6f)), y - roundf(8 * cosf(a + 0.6f)), info);
         }
-        d.fillCircle(x, y, 7, ink);
+        d.fillCircle(x, y, 7, graphicPrimary);
         d.fillCircle(x, y, 5, info);
       }
     }
     if(!maps.follow) {
-      d.fillRect(151, 119, 19, 3, bar);
-      d.fillRect(159, 111, 3, 19, bar);
-      d.drawFastHLine(152, 120, 17, ink);
-      d.drawFastVLine(160, 112, 17, ink);
-      d.drawCircle(160, 120, 5, bar);
+      d.fillRect(151, 119, 19, 3, surfaceBar);
+      d.fillRect(159, 111, 3, 19, surfaceBar);
+      d.drawFastHLine(152, 120, 17, graphicPrimary);
+      d.drawFastVLine(160, 112, 17, graphicPrimary);
+      d.drawCircle(160, 120, 5, surfaceBar);
     }
     if(!maps.visibleTiles) {
-      panel(30, 96, 260, 44, card, 8);
+      panel(30, 96, 260, 44, surfaceCard, 8);
       textCenter(160, 114, maps.fetching ? t("Downloading map...") : maps.waiting ? t("Reading map from SD...")
                                                                    : online       ? t("Tiles unavailable")
                                                                                   : t("This zoom is not downloaded"),
-                 ink);
-      if(!maps.waiting) textCenter(160, 130, online ? fit(netError(), 240, small) : t("+/- zoom · Wi-Fi internet loads maps"), dim, small);
+                 textPrimary);
+      if(!maps.waiting) textCenter(160, 130, online ? fit(netError(), 240, small) : t("+/- zoom · Wi-Fi internet loads maps"), textMuted, small);
     }
     double metresPerPx = cos(maps.latitude * M_PI / 180) * 40075016.686 / scale;
     int nice[] = {5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000, 2000000}, dist = nice[0];
@@ -1360,50 +1377,50 @@ void drawMap() {
     int px = max(8, int(dist / metresPerPx));
     String scaleText = dist >= 1000 ? String(dist / 1000) + t(" km") : String(dist) + t(" m");
     int sw = max(px, measure(scaleText, small)) + 12;
-    d.fillRoundRect(312 - sw, 196, sw, 19, 4, bar);
-    d.fillRect(306 - px, 209, px, 2, ink);
-    d.drawFastVLine(306 - px, 206, 5, ink);
-    d.drawFastVLine(305, 206, 5, ink);
-    textRight(306, 204, scaleText, ink, small);
-    d.fillRoundRect(4, 203, 82, 12, 3, bar);
-    text(8, 212, "© OpenStreetMap", dim, small);
+    d.fillRoundRect(312 - sw, 196, sw, 19, 4, surfaceBar);
+    d.fillRect(306 - px, 209, px, 2, graphicPrimary);
+    d.drawFastVLine(306 - px, 206, 5, graphicPrimary);
+    d.drawFastVLine(305, 206, 5, graphicPrimary);
+    textRight(306, 204, scaleText, textPrimary, small);
+    d.fillRoundRect(4, 203, 82, 12, 3, surfaceBar);
+    text(8, 212, "© OpenStreetMap", textMuted, small);
   }
   String area = fit(maps.available && maps.inArea() ? maps.title : online ? "OpenStreetMap"
                                                                           : t("Offline map"),
                     120, small) +
                 "  z" + String(maps.zoom) + (maps.fetching ? t(" · loading") : "");
   int aw = measure(area, small) + 22;
-  d.fillRoundRect(6, 26, aw, 16, 4, bar);
-  icon(IcPin, 14, 34, 5, ok, bar);
-  text(22, 37, area, ink, small);
+  d.fillRoundRect(6, 26, aw, 16, 4, surfaceBar);
+  icon(IcPin, 14, 34, 5, ok, surfaceBar);
+  text(22, 37, area, textPrimary, small);
   bool fix = hardware.gpsFix();
   String gps = !config.gps ? t("GPS off") : fix                    ? "GPS " + String(hardware.gps.satellites.value())
                                           : hardware.clockConflict ? t("GPS: old date")
                                                                    : t("GPS: searching");
   int gw = measure(gps, small) + 10;
-  d.fillRoundRect(6, 45, gw, 15, 4, bar);
-  text(11, 56, gps, !config.gps ? dim : fix ? ok
-                                            : warn,
+  d.fillRoundRect(6, 45, gw, 15, 4, surfaceBar);
+  text(11, 56, gps, !config.gps ? textMuted : fix ? ok
+                                                  : warn,
        small);
   if(navigation.headingValid) {
     int cx = 298, cy = 42;
-    d.fillCircle(cx, cy, 15, bar);
-    d.drawCircle(cx, cy, 15, line);
+    d.fillCircle(cx, cy, 15, surfaceBar);
+    d.drawCircle(cx, cy, 15, border);
     float a = navigation.heading * M_PI / 180;
     d.fillTriangle(cx + roundf(11 * sinf(a)), cy - roundf(11 * cosf(a)), cx + roundf(4 * cosf(a)), cy + roundf(4 * sinf(a)), cx - roundf(4 * cosf(a)), cy - roundf(4 * sinf(a)), bad);
-    d.fillTriangle(cx - roundf(11 * sinf(a)), cy + roundf(11 * cosf(a)), cx + roundf(4 * cosf(a)), cy + roundf(4 * sinf(a)), cx - roundf(4 * cosf(a)), cy - roundf(4 * sinf(a)), dim);
+    d.fillTriangle(cx - roundf(11 * sinf(a)), cy + roundf(11 * cosf(a)), cx + roundf(4 * cosf(a)), cy + roundf(4 * sinf(a)), cx - roundf(4 * cosf(a)), cy - roundf(4 * sinf(a)), graphicMuted);
     String deg = String(int(navigation.heading + .5f) % 360) + "°";
-    d.fillRoundRect(cx - 15, 60, 30, 12, 3, bar);
-    textCenter(cx, 69, deg, ink, small);
+    d.fillRoundRect(cx - 15, 60, 30, 12, 3, surfaceBar);
+    textCenter(cx, 69, deg, textPrimary, small);
   }
   footer({{"<>", t("Pan")}, {"+/-", t("Zoom")}, {"OK", maps.follow ? t("Following") : t("To GPS")}, {"L", t("Maps")}});
 }
 void drawLibrary() {
   unsigned total = library.size();
   if(!total) {
-    icon(IcPin, 160, 90, 14, faint);
-    textCenter(160, 128, t("No saved maps"), ink);
-    textCenter(160, 146, t("Upload a map via Wi-Fi or USB"), dim, small);
+    icon(IcPin, 160, 90, 14, iconSubtle);
+    textCenter(160, 128, t("No saved maps"), textPrimary);
+    textCenter(160, 146, t("Upload a map via Wi-Fi or USB"), textMuted, small);
   }
   int first = max(0, selected - 3);
   for(unsigned i = first; i < total && i < unsigned(first + 4); i++) {
@@ -1411,11 +1428,11 @@ void drawLibrary() {
     bool focus = selected == int(i);
     listRow(y, 45, focus);
     target(8, y, 304, 45, i);
-    g().fillRoundRect(18, y + 8, 30, 30, 7, card);
-    icon(IcPin, 33, y + 22, 9, ok, card);
+    g().fillRoundRect(18, y + 8, 30, 30, 7, surfaceCard);
+    icon(IcPin, 33, y + 22, 9, ok, surfaceCard);
     String name = library[i]["name"].as<String>();
-    text(58, y + 19, fit(name, 200, bold), ink, bold);
-    text(58, y + 36, count(library[i]["tiles"].as<unsigned>(), "tile on SD", "tiles on SD"), dim, small);
+    text(58, y + 19, fit(name, 200, bold), textPrimary, bold);
+    text(58, y + 36, count(library[i]["tiles"].as<unsigned>(), "tile on SD", "tiles on SD"), textMuted, small);
     if(name == maps.title) {
       g().drawLine(284, y + 22, 288, y + 26, accent);
       g().drawLine(288, y + 26, 296, y + 17, accent);
@@ -1429,9 +1446,9 @@ void drawLibrary() {
 void drawNodes() {
   sortNodes();
   if(!nodeTotal) {
-    icon(IcMesh, 160, 86, 16, faint);
-    textCenter(160, 126, t("No nodes discovered yet"), ink);
-    textCenter(160, 144, t("ADV sends your announcement"), dim, small);
+    icon(IcMesh, 160, 86, 16, iconSubtle);
+    textCenter(160, 126, t("No nodes discovered yet"), textPrimary);
+    textCenter(160, 144, t("ADV sends your announcement"), textMuted, small);
   }
   int first = max(0, selected - 3);
   uint32_t now = millis();
@@ -1443,15 +1460,15 @@ void drawNodes() {
     target(8, y, 304, 45, i);
     avatar(32, y + 22, 15, p.id, p.name, p.type);
     String age = p.heard ? ago(now - p.seen) : t("saved");
-    textRight(306, y + 18, age, p.heard && now - p.seen < 1800000 ? ok : dim, small);
+    textRight(306, y + 18, age, p.heard && now - p.seen < 1800000 ? ok : textMuted, small);
     if(p.heard) bars(286 - measure(age, small), y + 18, snrLevel(p.snr), ok);
-    text(56, y + 18, fit(p.name, 200 - measure(age, small), bold), ink, bold);
+    text(56, y + 18, fit(p.name, 200 - measure(age, small), bold), textPrimary, bold);
     float metres, bearing;
     String detail = typeText(p.type) + " · " + pathText(p);
     if(p.heard) detail += " · " + String(int(p.rssi)) + " dBm";
     if(distanceTo(p, metres, bearing)) detail += " · " + distanceText(metres, bearing);
     else if(p.position) detail += " · GPS";
-    text(56, y + 36, fit(detail, 250, small), typeColor(p.type) == accent ? dim : typeColor(p.type), small);
+    text(56, y + 36, fit(detail, 250, small), typeColor(p.type) == accent ? textMuted : typeColor(p.type), small);
   }
   scrollbar(first, 4, nodeTotal, 24, 190);
   footer({{"OK", t("Details")}, {"P", t("On map")}, {"ADV", t("Announce")}, {"BACK", t("Back")}});
@@ -1482,9 +1499,9 @@ void drawPlayMenu(const Peer& p) {
   targetCount = hintCount = 0;
   uint16_t* px = g().getBuffer();
   for(int i = 0; i < 320 * 240; i++) px[i] = (px[i] >> 1) & 0x7bef; // dim the card under the menu
-  panel(40, 46, 240, 142, cardHi, 10);
-  g().drawRoundRect(40, 46, 240, 142, 10, line);
-  text(54, 66, fit(t("Play with ") + p.name, 212, bold), ink, bold);
+  panel(40, 46, 240, 142, surfaceFocus, 10);
+  g().drawRoundRect(40, 46, 240, 142, 10, border);
+  text(54, 66, fit(t("Play with ") + p.name, 212, bold), textPrimary, bold);
   const Icon icons[] = {IcChess, IcCheckers, IcShip};
   const String names[] = {t("Chess"), t("Checkers"), t("Sea battle")};
   const String about[] = {t("Rated or friendly"), t("Russian draughts"), t("Ten ships each")};
@@ -1492,25 +1509,25 @@ void drawPlayMenu(const Peer& p) {
     int y = 76 + i * 36;
     bool focus = playSel == i;
     target(48, y, 224, 32, i);
-    panel(48, y, 224, 32, focus ? card : cardHi, 7);
+    panel(48, y, 224, 32, focus ? surfaceCard : surfaceFocus, 7);
     if(focus) ring(48, y, 224, 32, 7);
-    g().fillRoundRect(54, y + 5, 22, 22, 5, bg);
-    icon(icons[i], 65, y + 16, 6, focus ? accent : dim, bg);
-    text(84, y + 14, names[i], ink, bold);
-    text(84, y + 26, fit(about[i], 180, small), dim, small);
+    g().fillRoundRect(54, y + 5, 22, 22, 5, surfaceWell);
+    icon(icons[i], 65, y + 16, 6, focus ? accent : iconMuted, surfaceWell);
+    text(84, y + 14, names[i], textPrimary, bold);
+    text(84, y + 26, fit(about[i], 180, small), textMuted, small);
   }
   footer({{"OK", t("Choose")}, {"^v", t("Select")}, {"BACK", t("Close")}});
 }
 void drawNode() {
   Peer* p = focusedPeer();
   if(!p) {
-    textCenter(160, 110, t("Node was removed"), dim);
+    textCenter(160, 110, t("Node was removed"), textMuted);
     footer({{"BACK", t("Nodes")}});
     return;
   }
   auto& d = g();
   avatar(36, 50, 20, p->id, p->name, p->type);
-  text(66, 48, fit(p->name, 240, big), ink, big);
+  text(66, 48, fit(p->name, 240, big), textPrimary, big);
   text(66, 64, typeText(p->type), typeColor(p->type), small);
   float metres, bearing;
   String rows[][2] = {
@@ -1526,9 +1543,9 @@ void drawNode() {
   bool two = n > 4; // five or six actions: two rows of buttons
   for(int i = 0; i < 5; i++) {
     int y = two ? 86 + i * 16 : 90 + i * 18;
-    text(14, y, rows[i][0], dim);
-    textRight(306, y, fit(rows[i][1], 180), ink);
-    if(i < 4) d.drawFastHLine(14, y + (two ? 4 : 5), 292, card);
+    text(14, y, rows[i][0], textMuted);
+    textRight(306, y, fit(rows[i][1], 180), textPrimary);
+    if(i < 4) d.drawFastHLine(14, y + (two ? 4 : 5), 292, surfaceCard);
   }
   const String names[] = {p->type == 3 ? t("Room") : t("Message"), t("On map"), t("Reset path"), deleteArmed ? t("Sure?") : t("Forget"), t("Server"), t("Trace"), t("Play")};
   unsigned per = two ? (n + 1) / 2 : n;
@@ -1537,87 +1554,87 @@ void drawNode() {
     int w = (304 - (inRow - 1) * 6) / inRow, x = 8 + k * (w + 6), h = two ? 25 : 28, y = two ? 160 + row * 29 : 184;
     bool focus = action == int(i), danger = acts[i] == ActForget;
     target(x, y, w, h, i);
-    panel(x, y, w, h, focus ? (danger && deleteArmed ? bad : cardHi) : card, 7);
+    panel(x, y, w, h, focus ? (danger && deleteArmed ? bad : surfaceFocus) : surfaceCard, 7);
     if(focus) ring(x, y, w, h, 7, danger ? bad : accent);
     if(acts[i] == ActPlay) {
       int tw = measure(names[ActPlay]) + 16;
-      icon(IcChess, x + w / 2 - tw / 2 + 5, y + h / 2, 5, focus ? accent : dim, focus ? cardHi : card);
-      text(x + w / 2 - tw / 2 + 16, y + h / 2 + 5, names[ActPlay], ink);
+      icon(IcChess, x + w / 2 - tw / 2 + 5, y + h / 2, 5, focus ? accent : iconMuted, focus ? surfaceFocus : surfaceCard);
+      text(x + w / 2 - tw / 2 + 16, y + h / 2 + 5, names[ActPlay], textPrimary);
       continue;
     }
-    textCenter(x + w / 2, y + h / 2 + 5, fit(names[acts[i]], w - 8), danger ? (focus ? ink : bad) : ink);
+    textCenter(x + w / 2, y + h / 2 + 5, fit(names[acts[i]], w - 8), danger ? (focus ? textPrimary : bad) : textPrimary);
   }
   footer({{"<>", t("Action")}, {"OK", t("Run")}, {"BACK", t("Nodes")}});
   if(playMenu) drawPlayMenu(*p);
 }
 void compassRose(int cx, int cy, int r) {
   auto& d = g();
-  d.fillCircle(cx, cy, r, card);
-  d.drawCircle(cx, cy, r, line);
-  d.drawCircle(cx, cy, r - 1, line);
+  d.fillCircle(cx, cy, r, surfaceCard);
+  d.drawCircle(cx, cy, r, border);
+  d.drawCircle(cx, cy, r - 1, border);
   for(int a = 0; a < 360; a += 30) {
     float rad = a * M_PI / 180;
     int l = a % 90 ? 4 : 7;
-    d.drawLine(cx + roundf((r - 2) * sinf(rad)), cy - roundf((r - 2) * cosf(rad)), cx + roundf((r - 2 - l) * sinf(rad)), cy - roundf((r - 2 - l) * cosf(rad)), a % 90 ? faint : dim);
+    d.drawLine(cx + roundf((r - 2) * sinf(rad)), cy - roundf((r - 2) * cosf(rad)), cx + roundf((r - 2 - l) * sinf(rad)), cy - roundf((r - 2 - l) * cosf(rad)), a % 90 ? graphicSubtle : graphicMuted);
   }
   const char* dirs[] = {tr("N"), tr("E"), tr("S"), tr("W")};
   for(int k = 0; k < 4; k++) {
     float rad = k * M_PI / 2;
-    textCenter(cx + roundf((r - 16) * sinf(rad)), cy - roundf((r - 16) * cosf(rad)) + 4, dirs[k], k ? dim : bad, bold);
+    textCenter(cx + roundf((r - 16) * sinf(rad)), cy - roundf((r - 16) * cosf(rad)) + 4, dirs[k], k ? textMuted : bad, bold);
   }
   if(navigation.headingValid) {
     float a = navigation.heading * M_PI / 180;
     int tx = cx + roundf((r - 8) * sinf(a)), ty = cy - roundf((r - 8) * cosf(a));
     d.fillTriangle(tx, ty, cx + roundf(5 * cosf(a)), cy + roundf(5 * sinf(a)), cx - roundf(5 * cosf(a)), cy - roundf(5 * sinf(a)), accent);
-    d.fillCircle(cx, cy, 3, ink);
-  } else textCenter(cx, cy + 4, "--", faint, bold);
+    d.fillCircle(cx, cy, 3, graphicPrimary);
+  } else textCenter(cx, cy + 4, "--", textSubtle, bold);
 }
 void drawSensors() {
   compassRose(62, 84, 54);
   String heading = navigation.headingValid ? String(int(navigation.heading + .5f) % 360) + "°" : navigation.calibrated ? t("hold flat")
                                                                                                                        : t("not calibrated");
-  textCenter(62, 153, heading, navigation.headingValid ? ink : warn, navigation.headingValid ? bold : small);
+  textCenter(62, 153, heading, navigation.headingValid ? textPrimary : warn, navigation.headingValid ? bold : small);
   bool fix = hardware.gpsFix();
   int y = 38;
-  auto row = [&](const String& name, const String& value, uint16_t color) {text(130,y,name,dim,small);textRight(306,y,fit(value,120),color);y+=19; };
+  auto row = [&](const String& name, const String& value, uint16_t color) {text(130,y,name,textMuted,small);textRight(306,y,fit(value,120),color);y+=19; };
   // The GPS switch is the first item: the receiver is turned on and off where its position is used.
   {
     bool focus = selected == 0;
     target(122, 24, 192, 22, 0);
-    panel(122, 24, 192, 22, focus ? cardHi : card, 6);
+    panel(122, 24, 192, 22, focus ? surfaceFocus : surfaceCard, 6);
     if(focus) ring(122, 24, 192, 22, 6);
-    text(130, y, "GPS", dim, small);
-    g().fillRoundRect(280, 28, 26, 14, 7, config.gps ? ok : line);
-    g().fillCircle(config.gps ? 298 : 287, 35, 5, ink);
+    text(130, y, "GPS", textMuted, small);
+    g().fillRoundRect(280, 28, 26, 14, 7, config.gps ? ok : border);
+    g().fillCircle(config.gps ? 298 : 287, 35, 5, graphicPrimary);
     textRight(274, y, fit(!config.gps ? t("off") : fix                    ? t("fix")
                                                  : hardware.clockConflict ? t("old date")
                                                                           : t("searching"),
                           136),
-              !config.gps ? dim : fix ? ok
-                                      : warn);
+              !config.gps ? textMuted : fix ? ok
+                                            : warn);
     y += 19;
   }
   unsigned view = config.gps ? hardware.gpsInView() : 0;
-  row(t("Satellites"), String(hardware.gps.satellites.value()) + (view ? t(" of ") + String(view) + t(" in view") : String()), ink);
-  row(t("Latitude"), fix ? String(hardware.gps.location.lat(), 5) : String("-"), ink);
-  row(t("Longitude"), fix ? String(hardware.gps.location.lng(), 5) : String("-"), ink);
+  row(t("Satellites"), String(hardware.gps.satellites.value()) + (view ? t(" of ") + String(view) + t(" in view") : String()), textPrimary);
+  row(t("Latitude"), fix ? String(hardware.gps.location.lat(), 5) : String("-"), textPrimary);
+  row(t("Longitude"), fix ? String(hardware.gps.location.lng(), 5) : String("-"), textPrimary);
   row(t("Clock"), (hardware.clockSource == "unset" ? t("not set") : hardware.clockSource == "manual" ? t("manual")
                                                                                                      : hardware.clockSource) +
                     (hardware.clockTrusted ? t(" · trusted") : String()),
-      ink);
+      textPrimary);
   row(t("Compass"), navigation.calibrating ? count(navigation.samples, "sample", "samples") : navigation.calibrated ? t("calibrated")
                                                                                                                     : t("needs calibration"),
-      navigation.calibrating ? warn : ink);
+      navigation.calibrating ? warn : textPrimary);
   String actions[] = {t("Share position"), navigation.calibrating ? t("Finish calibration") : t("Calibrate compass")};
   String hints[] = {fix ? t("Advert with GPS") : t("Needs a fresh GPS fix"), navigation.calibrating ? t("Rotate in all directions") : t("Rotate for 20+ seconds")};
   for(int i = 0; i < 2; i++) {
     int x = 8 + i * 154;
     bool focus = selected == i + 1;
     target(x, 168, 150, 46, i + 1);
-    panel(x, 168, 150, 46, focus ? cardHi : card, 7);
+    panel(x, 168, 150, 46, focus ? surfaceFocus : surfaceCard, 7);
     if(focus) ring(x, 168, 150, 46, 7);
-    text(x + 10, 186, fit(actions[i], 132, bold), ink, bold);
-    text(x + 10, 203, fit(hints[i], 132, small), dim, small);
+    text(x + 10, 186, fit(actions[i], 132, bold), textPrimary, bold);
+    text(x + 10, 203, fit(hints[i], 132, small), textMuted, small);
   }
   footer({{"<>", t("Select")}, {"OK", selected ? t("Run") : config.gps ? t("GPS off")
                                                                        : t("GPS on")},
@@ -1652,9 +1669,9 @@ uint16_t mix(uint32_t a, uint32_t b, float f) {
   auto ch = [&](int s) { return int(((a >> s) & 255) * (1 - f) + ((b >> s) & 255) * f); };
   return rgb(ch(16) << 16 | ch(8) << 8 | ch(0));
 }
-uint32_t targetHue(const RadarTarget& r) { return r.kind == RadarTarget::Lora ? 0xa78bfa : r.kind == RadarTarget::Ble ? (r.device ? 0xf472b6 : 0x8d99a6)
-                                                                                         : r.open                     ? 0xe9b13b
-                                                                                                                      : 0x4f9df7; }
+uint32_t targetHue(const RadarTarget& r) { return r.kind == RadarTarget::Lora ? theme->secondary : r.kind == RadarTarget::Ble ? (r.device ? theme->tertiary : theme->graphicMuted)
+                                                                                                 : r.open                     ? theme->warn
+                                                                                                                              : theme->info; }
 String deviceText(const RadarTarget& r) {
   switch(r.device) {
   case RadarTarget::Phone: return t("Phone");
@@ -1708,16 +1725,16 @@ String wifiState() {
 void drawScope() {
   auto& d = g();
   const int cx = 96, cy = 116, R = 86;
-  const uint32_t cardRgb = 0x131a22, gridRgb = 0x223040;
+  const uint32_t cardRgb = theme->surfaceCard;
   uint32_t now = millis();
-  d.fillCircle(cx, cy, R, card);
-  for(int k = 1; k <= 4; k++) d.drawCircle(cx, cy, R * k / 4, k == 4 ? line : rgb(gridRgb));
-  d.drawFastHLine(cx - R, cy, 2 * R + 1, rgb(gridRgb));
-  d.drawFastVLine(cx, cy - R, 2 * R + 1, rgb(gridRgb));
+  d.fillCircle(cx, cy, R, surfaceCard);
+  for(int k = 1; k <= 4; k++) d.drawCircle(cx, cy, R * k / 4, k == 4 ? border : gridLine);
+  d.drawFastHLine(cx - R, cy, 2 * R + 1, gridLine);
+  d.drawFastVLine(cx, cy - R, 2 * R + 1, gridLine);
   float sweep = (now % 3000) * 2 * M_PI / 3000; // one turn per 3 s, fading trail behind the beam
   for(int k = 24; k >= 0; k--) {
     float a = sweep - k * .03f;
-    d.drawLine(cx, cy, cx + roundf(R * sinf(a)), cy - roundf(R * cosf(a)), mix(0x1fc2ae, cardRgb, .25f + k * .03f));
+    d.drawLine(cx, cy, cx + roundf(R * sinf(a)), cy - roundf(R * cosf(a)), mix(theme->accent, cardRgb, .25f + k * .03f));
   }
   int sel = scopeSelected();
   for(int i = radar.count - 1; i >= 0; i--) {
@@ -1730,29 +1747,29 @@ void drawScope() {
     float faded = r.kind == RadarTarget::Wifi ? 0 : constrain((now - r.seen) / 30000.f, 0.f, .5f); // quiet targets fade
     d.fillCircle(x, y, i == sel ? 4 : 3, mix(targetHue(r), cardRgb, min(.85f, .15f + .6f * since + faded)));
     if(i == sel) {
-      d.drawCircle(x, y, 7, ink);
+      d.drawCircle(x, y, 7, graphicPrimary);
       d.drawCircle(x, y, 8, accent);
     }
   }
-  d.fillCircle(cx, cy, 3, ink);
-  textCenter(cx, 216, t("closer to centre = stronger"), faint, small);
-  text(194, 34, fit("Wi-Fi " + String(radar.counted(RadarTarget::Wifi)) + "·BLE " + String(radar.counted(RadarTarget::Ble)) + "·LoRa " + String(radar.counted(RadarTarget::Lora)), 120, small), dim, small);
+  d.fillCircle(cx, cy, 3, graphicPrimary);
+  textCenter(cx, 216, t("closer to centre = stronger"), textSubtle, small);
+  text(194, 34, fit("Wi-Fi " + String(radar.counted(RadarTarget::Wifi)) + "·BLE " + String(radar.counted(RadarTarget::Ble)) + "·LoRa " + String(radar.counted(RadarTarget::Lora)), 120, small), textMuted, small);
   int first = max(0, sel - 6);
   for(int i = first; i < int(radar.count) && i < first + 7; i++) {
     const RadarTarget& r = radar.targets[i];
     int y = 40 + (i - first) * 22;
     bool focus = i == sel;
-    if(focus) panel(190, y, 124, 20, cardHi, 5);
+    if(focus) panel(190, y, 124, 20, surfaceFocus, 5);
     d.fillCircle(199, y + 10, 3, rgb(targetHue(r)));
-    text(206, y + 14, fit(targetName(r), 76), focus ? ink : dim);
-    textRight(310, y + 14, String(int(r.rssi)), focus ? ink : dim, bold);
+    text(206, y + 14, fit(targetName(r), 76), focus ? textPrimary : textMuted);
+    textRight(310, y + 14, String(int(r.rssi)), focus ? textPrimary : textMuted, bold);
   }
   String state = wifiState();
   if(!state.length()) state = bleState();
   unsigned people = radar.personal(30000);
   if(!state.length() && people) state = count(people, "phone/watch nearby", "phones/watches nearby");
-  if(!radar.count) textCenter(252, 110, state.length() ? state : t("No signals yet"), radar.wifi == Radar::WifiReady ? dim : warn, small);
-  else if(state.length()) text(194, 212, fit(state, 120, small), radar.wifi == Radar::WifiReady && radar.ble != Radar::BleFailed && radar.ble != Radar::BleBusy ? dim : warn, small);
+  if(!radar.count) textCenter(252, 110, state.length() ? state : t("No signals yet"), radar.wifi == Radar::WifiReady ? textMuted : warn, small);
+  else if(state.length()) text(194, 212, fit(state, 120, small), radar.wifi == Radar::WifiReady && radar.ble != Radar::BleFailed && radar.ble != Radar::BleBusy ? textMuted : warn, small);
   footer({{"OK", t("Home in")}, {"<>", t("Motion")}, {"^v", t("Select")}, {"BACK", t("Menu")}});
 }
 void drawHoming() {
@@ -1760,28 +1777,28 @@ void drawHoming() {
   const RadarTarget& f = radar.focus;
   uint16_t hue = rgb(targetHue(f));
   bool fresh = radarFresh(), lora = f.kind == RadarTarget::Lora, bt = f.kind == RadarTarget::Ble;
-  panel(8, 26, 304, 34, card, 8);
-  d.fillRoundRect(14, 31, 24, 24, 6, bg);
+  panel(8, 26, 304, 34, surfaceCard, 8);
+  d.fillRoundRect(14, 31, 24, 24, 6, surfaceWell);
   icon(lora ? IcTower : bt ? (f.device ? IcPerson : IcBle)
                            : IcWifi,
-       26, 43, 7, hue, bg);
-  text(46, 40, fit(targetName(f), 258, bold), ink, bold);
+       26, 43, 7, hue, surfaceWell);
+  text(46, 40, fit(targetName(f), 258, bold), textPrimary, bold);
   String vendor = vendorText(f.vendor);
   text(46, 54, fit(lora ? "LoRa · " + meshRadio.idText(f.id) + t(" · direct packets only") : bt ? "Bluetooth · " + deviceText(f) + (vendor.length() ? " · " + vendor : String()) + t(" · address changes over time")
                                                                                                 : "Wi-Fi · " + t("channel ") + String(f.channel) + " · " + macText(f.id),
                    258, small),
-       dim, small);
-  int x = text(14, 112, radar.samples ? String(int(lroundf(radar.fast))) : String("--"), fresh ? ink : faint, digits);
-  text(x + 4, 112, "dBm", dim, small);
+       textMuted, small);
+  int x = text(14, 112, radar.samples ? String(int(lroundf(radar.fast))) : String("--"), fresh ? textPrimary : textSubtle, digits);
+  text(x + 4, 112, "dBm", textMuted, small);
   // Homing indicator: the fast average against the slow one, as in the RSSI tracker.
   int trend = radar.trend();
-  panel(186, 66, 126, 46, card, 8);
+  panel(186, 66, 126, 46, surfaceCard, 8);
   if(f.kind == RadarTarget::Wifi && radar.wifi != Radar::WifiReady) text(196, 93, fit(wifiState(), 108, small), warn, small);
   else if(bt && radar.ble != Radar::BleReady) text(196, 93, fit(bleState(), 108, small), warn, small);
   else if(!fresh) text(196, 93, radar.samples > 1 ? t("Lost") : t("No signal"), warn, bold);
   else {
     uint16_t c = trend > 0 ? ok : trend < 0 ? bad
-                                            : dim;
+                                            : iconMuted;
     if(trend) tri(206, 89, trend > 0 ? 0 : 2, 10, c);
     else {
       d.fillRect(197, 83, 18, 3, c);
@@ -1790,26 +1807,26 @@ void drawHoming() {
     text(224, 86, trend > 0 ? t("Stronger") : trend < 0 ? t("Weaker")
                                                         : t("Steady"),
          c, bold);
-    text(224, 101, t("keep moving"), faint, small);
+    text(224, 101, t("keep moving"), textSubtle, small);
   }
   // Strength meter with the peak marker.
   float level = signalLevel(lroundf(radar.fast));
-  d.fillRoundRect(14, 120, 292, 8, 3, line);
-  if(radar.samples) d.fillRoundRect(14, 120, max(3, int(292 * level)), 8, 3, !fresh ? faint : level < .3f ? bad
-                                                                                            : level < .6f ? warn
-                                                                                                          : ok);
+  d.fillRoundRect(14, 120, 292, 8, 3, border);
+  if(radar.samples) d.fillRoundRect(14, 120, max(3, int(292 * level)), 8, 3, !fresh ? graphicSubtle : level < .3f ? bad
+                                                                                                    : level < .6f ? warn
+                                                                                                                  : ok);
   if(radar.samples) {
     int px = 14 + int(291 * signalLevel(radar.peak));
-    d.fillRect(px - 1, 116, 3, 16, ink);
+    d.fillRect(px - 1, 116, 3, 16, graphicPrimary);
   }
-  text(14, 142, "-100", faint, small);
-  textRight(306, 142, "-35 dBm", faint, small);
-  textCenter(160, 142, t("peak ") + (radar.samples ? String(int(lroundf(radar.peak))) + " dBm (" + String(radar.fast - radar.peak, 0) + ")" : String("-")), dim, small);
+  text(14, 142, "-100", textSubtle, small);
+  textRight(306, 142, "-35 dBm", textSubtle, small);
+  textCenter(160, 142, t("peak ") + (radar.samples ? String(int(lroundf(radar.peak))) + " dBm (" + String(radar.fast - radar.peak, 0) + ")" : String("-")), textMuted, small);
   // History: the last 120 samples, oldest on the left.
-  panel(8, 148, 304, 58, card, 6);
+  panel(8, 148, 304, 58, surfaceCard, 6);
   for(int dbm : {-90, -70, -50}) {
     int y = 202 - int(50 * signalLevel(dbm));
-    d.drawFastHLine(12, y, 296, rgb(0x223040));
+    d.drawFastHLine(12, y, 296, gridLine);
   }
   unsigned n = radar.historyCount();
   int px = 0, py = 0;
@@ -1820,14 +1837,14 @@ void drawHoming() {
     px = x;
     py = y;
   }
-  if(!n) textCenter(160, 181, t("Waiting for samples"), faint, small);
+  if(!n) textCenter(160, 181, t("Waiting for samples"), textSubtle, small);
   uint32_t age = radar.samples ? millis() - radar.lastSample : 0;
   String stats = lora ? count(radar.samples, "packet", "packets") : String(radar.rate) + (bt ? t(" adverts/s") : t(" beacons/s"));
-  int sx = text(12, 216, stats, dim, small);
+  int sx = text(12, 216, stats, textMuted, small);
   // Sample age: green up to 0.5 s, yellow up to 1.5 s, then red (LoRa counts in minutes).
-  if(radar.samples) text(sx, 216, " · " + (age < 60000 ? String(age / 1000.f, 1) + t(" s ago") : ago(age)), lora ? dim : age < 500  ? ok
-                                                                                                                       : age < 1500 ? warn
-                                                                                                                                    : bad,
+  if(radar.samples) text(sx, 216, " · " + (age < 60000 ? String(age / 1000.f, 1) + t(" s ago") : ago(age)), lora ? textMuted : age < 500  ? ok
+                                                                                                                             : age < 1500 ? warn
+                                                                                                                                          : bad,
                          small);
   footer({{"OK", radarSound ? t("Mute") : t("Sound")}, {"<>", t("Reset peak")}, {"BACK", t("List")}});
 }
@@ -1838,20 +1855,20 @@ void drawMotion() {
   auto& d = g();
   bool beacon = radar.csi == Radar::CsiBeacon, heard = radar.beaconHeard();
   uint32_t now = millis();
-  panel(8, 26, 304, 34, card, 8);
-  d.fillRoundRect(14, 31, 24, 24, 6, bg);
+  panel(8, 26, 304, 34, surfaceCard, 8);
+  d.fillRoundRect(14, 31, 24, 24, 6, surfaceWell);
   icon(beacon ? IcRadio : IcPulse, 26, 43, 7, beacon ? accent : heard ? ok
                                                                       : warn,
-       bg);
+       surfaceWell);
   String blocked = radar.wifi == Radar::WifiBusy ? t("Wi-Fi busy: probe") : radar.wifi == Radar::WifiFailed              ? t("Wi-Fi error")
                                                                           : (!beacon && radar.wifi == Radar::WifiPortal) ? t("Turn the access point off")
                                                                                                                          : "";
-  text(46, 40, beacon ? t("Beacon for another board") : t("Sensor"), ink, bold);
+  text(46, 40, beacon ? t("Beacon for another board") : t("Sensor"), textPrimary, bold);
   text(46, 54, fit(blocked.length() ? blocked : beacon ? String(radar.csiRate) + t(" frames/s on channel 1")
                                               : heard  ? t("beacon ") + String(radar.csiRate) + t(" frames/s · ") + String(int(radar.csiRssi)) + " dBm"
                                                        : t("waiting: set the other board to CSI beacon"),
                    258, small),
-       blocked.length() ? warn : dim, small);
+       blocked.length() ? warn : textMuted, small);
   String state;
   uint16_t color;
   if(blocked.length()) {
@@ -1879,19 +1896,19 @@ void drawMotion() {
   textCenter(160, 92, state, color, big);
   if(!beacon) {
     float threshold = radar.motionThreshold(), scale = max(threshold * 2.5f, radar.activity * 1.1f);
-    d.fillRoundRect(14, 104, 292, 8, 3, line);
+    d.fillRoundRect(14, 104, 292, 8, 3, border);
     if(heard) d.fillRoundRect(14, 104, max(3, int(292 * min(1.f, radar.activity / scale))), 8, 3, radar.moving ? bad : ok);
     int tx = 14 + int(291 * threshold / scale);
-    d.fillRect(tx - 1, 100, 3, 16, ink);
-    text(14, 128, t("activity ") + String(radar.activity * 1000, 1), dim, small);
-    textRight(306, 128, t("threshold ") + String(threshold * 1000, 1) + (radar.baseline > 0 ? String() : t(" (default)")), radar.baseline > 0 ? dim : warn, small);
+    d.fillRect(tx - 1, 100, 3, 16, graphicPrimary);
+    text(14, 128, t("activity ") + String(radar.activity * 1000, 1), textMuted, small);
+    textRight(306, 128, t("threshold ") + String(threshold * 1000, 1) + (radar.baseline > 0 ? String() : t(" (default)")), radar.baseline > 0 ? textMuted : warn, small);
     // History: one point per 0.5 s, threshold dotted.
-    panel(8, 136, 304, 70, card, 6);
+    panel(8, 136, 304, 70, surfaceCard, 6);
     unsigned n = radar.motionCount();
     float top = threshold * 2.5f;
     for(unsigned i = 0; i < n; i++) top = max(top, radar.motion(i));
     int ty = 202 - int(62 * threshold / top);
-    for(int x = 12; x < 308; x += 6) d.drawFastHLine(x, ty, 3, faint);
+    for(int x = 12; x < 308; x += 6) d.drawFastHLine(x, ty, 3, graphicSubtle);
     int px = 0, py = 0;
     for(unsigned i = 0; i < n; i++) {
       int x = 12 + int(i * 296 / (Radar::MotionHistory - 1)), y = 202 - int(62 * radar.motion(i) / top);
@@ -1899,9 +1916,9 @@ void drawMotion() {
       px = x;
       py = y;
     }
-    if(!n) textCenter(160, 175, t("Walk between the boards to see the trace"), faint, small);
-    text(12, 216, fit(t("Calibrate with the area empty and still (10 s)"), 296, small), faint, small);
-  } else text(12, 130, fit(t("Place the boards 2-5 m apart; motion between them is sensed"), 296, small), dim, small);
+    if(!n) textCenter(160, 175, t("Walk between the boards to see the trace"), textSubtle, small);
+    text(12, 216, fit(t("Calibrate with the area empty and still (10 s)"), 296, small), textSubtle, small);
+  } else text(12, 130, fit(t("Place the boards 2-5 m apart; motion between them is sensed"), 296, small), textMuted, small);
   if(beacon) footer({{"<>", t("Signals")}, {"B", t("Sensor")}, {"BACK", t("Menu")}});
   else footer({{"OK", t("Calibrate")}, {"<>", t("Signals")}, {"B", t("Beacon")}, {"BACK", t("Menu")}});
 }
@@ -1910,16 +1927,16 @@ const int settingsCount = 9;
 String powerOnHint() { return powerOnWay() >= 0 ? t("To turn on, hold the trackball pressed") : t("To turn on: RESET or the power switch"); }
 bool farewell = false; // the board is about to turn off: the last frame
 void drawOff() {
-  panel(30, 62, 260, 116, card, 10);
-  icon(IcPower, 160, 96, 14, farewell ? dim : warn, card);
-  textCenter(160, 138, farewell ? t("Device is off") : t("Turning off..."), ink, bold);
-  textCenter(160, 160, powerOnHint(), dim, small);
+  panel(30, 62, 260, 116, surfaceCard, 10);
+  icon(IcPower, 160, 96, 14, farewell ? iconMuted : warn, surfaceCard);
+  textCenter(160, 138, farewell ? t("Device is off") : t("Turning off..."), textPrimary, bold);
+  textCenter(160, 160, powerOnHint(), textMuted, small);
 }
 uint32_t powerArmed = 0; // the first OK on "Turn off" arms it for 5 s
 uint32_t discardArmed = 0; // the first BACK on an unsaved Radio or Display draft arms discarding it for 5 s
 void drawSettings() {
   Icon icons[] = {IcRadio, IcScreen, IcCompass, IcWifi, IcPulse, IcHelp, IcPin, IcTower, IcPower};
-  uint16_t hues[] = {accent, info, warn, info, ok, dim, ok, violet, bad};
+  uint16_t hues[] = {accent, info, warn, info, ok, iconMuted, ok, secondary, bad};
   String names[] = {t("Radio"), t("Screen & device"), t("GPS & compass"), t("Connections"), t("Module health"), t("Keys & help"), t("Saved maps"), t("Device mode"), t("Turn off")};
   String details[] = {String(config.frequency, 3) + t(" MHz · SF") + String(config.sf) + " · " + String(config.power) + " dBm",
                       t("Brightness ") + String(config.brightness) + " · " + langNames[config.lang < LangCount ? config.lang : 0],
@@ -2057,33 +2074,33 @@ String wardriveMode() {
 void drawWardrive() {
   int32_t lat, lon;
   bool phone, fix = wardrive::position(lat, lon, phone), on = wardrive::running();
-  panel(8, 26, 304, 44, card, 8);
-  icon(IcTower, 26, 48, 9, on ? ok : faint, card);
-  text(44, 44, fit(wardriveMode(), 256, bold), on ? ink : dim, bold);
-  text(44, 61, fit(fix ? (phone ? t("Phone: ") : "GPS: ") + String(lat / 1e6, 5) + ", " + String(lon / 1e6, 5) : t("No position: GPS fix or phone app"), 256, small), fix ? dim : warn, small);
-  panel(8, 74, 304, 42, card, 8);
+  panel(8, 26, 304, 44, surfaceCard, 8);
+  icon(IcTower, 26, 48, 9, on ? ok : iconSubtle, surfaceCard);
+  text(44, 44, fit(wardriveMode(), 256, bold), on ? textPrimary : textMuted, bold);
+  text(44, 61, fit(fix ? (phone ? t("Phone: ") : "GPS: ") + String(lat / 1e6, 5) + ", " + String(lon / 1e6, 5) : t("No position: GPS fix or phone app"), 256, small), fix ? textMuted : warn, small);
+  panel(8, 74, 304, 42, surfaceCard, 8);
   String counts = count(wardrive::points(), "point", "points");
   if(wardrive::settings.nets || wardrive::nets()) counts += " · Wi-Fi/BLE " + String(wardrive::nets());
-  text(18, 90, fit(counts, 288, small), ink, small);
+  text(18, 90, fit(counts, 288, small), textPrimary, small);
   const auto& r = wardrive::last();
   String last = wardrive::pinging() ? t("Ping sent, listening for repeaters...") : !r.done ? t("No pings yet: P sends one")
                                                                                  : r.count ? t("Last ping: ") + count(r.count, "repeater", "repeaters") + ", " + hashText(r.hash, r.size) + " " + snrText(r.snr) + " · " + ago(millis() - r.at)
                                                                                            : t("Last ping: no repeater heard it") + String(" · ") + ago(millis() - r.at);
   text(18, 107, fit(last, 288, small), wardrive::pinging() ? accent : r.done && !r.count ? bad
-                                                                                         : dim,
+                                                                                         : textMuted,
        small);
   const wardrive::Repeater* list;
   unsigned n = wardrive::repeaters(list), order[24];
   for(unsigned i = 0; i < n; i++) order[i] = i;
   std::sort(order, order + n, [&](unsigned a, unsigned b) {unsigned x=list[a].echoes*4+list[a].rx,y=list[b].echoes*4+list[b].rx;return x!=y?x>y:list[a].snr>list[b].snr; });
-  if(!n) textCenter(160, 150, on ? t("No repeaters heard yet") : t("OK starts listening and pings"), faint, small);
+  if(!n) textCenter(160, 150, on ? t("No repeaters heard yet") : t("OK starts listening and pings"), textSubtle, small);
   for(unsigned i = 0; i < n && i < 5; i++) {
     auto& e = list[order[i]];
     int y = 132 + i * 17;
-    text(18, y, hashText(e.hash, e.size), ink, bold);
+    text(18, y, hashText(e.hash, e.size), textPrimary, bold);
     text(80, y, snrText(e.snr), snrColor(e.snr), small);
-    text(150, y, t("rx ") + String(e.rx) + t(" · echo ") + String(e.echoes), dim, small);
-    textRight(306, y, ago(millis() - e.at), faint, small);
+    text(150, y, t("rx ") + String(e.rx) + t(" · echo ") + String(e.echoes), textMuted, small);
+    textRight(306, y, ago(millis() - e.at), textSubtle, small);
   }
   footer({{"OK", on ? t("Stop") : t("Start")}, {"P", t("Ping")}, {"N", "Wi-Fi/BLE"}, {"BACK", t("Back")}});
 }
@@ -2100,7 +2117,7 @@ bool wardriveKey(int key) {
     }
     String r = wardrive::command(d.as<JsonObjectConst>());
     if(r.startsWith("ERR")) notice(r, bad);
-    else notice(wardrive::running() ? t("Wardrive on") : t("Wardrive off"), wardrive::running() ? ok : dim);
+    else notice(wardrive::running() ? t("Wardrive on") : t("Wardrive off"), wardrive::running() ? ok : graphicMuted);
     return true;
   }
   if(key == 'p' || key == 'P') {
@@ -2134,15 +2151,15 @@ void drawQuick() {
       int y = 52 + (i - first) * 26;
       listRow(y, 24, int(i) == selected);
       target(8, y, 304, 24, i);
-      text(18, y + 17, fit(quickName(quickSend::target(i)), 284), int(i) == selected ? ink : dim);
+      text(18, y + 17, fit(quickName(quickSend::target(i)), 284), int(i) == selected ? textPrimary : textMuted);
     }
     scrollbar(first, 6, n, 52, 156);
   } else {
     bool focus = selected == 0;
     target(8, 28, 304, 40, 0);
-    panel(8, 28, 304, 40, focus ? cardHi : card, 7);
+    panel(8, 28, 304, 40, focus ? surfaceFocus : surfaceCard, 7);
     if(focus) ring(8, 28, 304, 40, 7);
-    text(18, 42, fit(t("Choose recipient"), 260, small), dim, small);
+    text(18, 42, fit(t("Choose recipient"), 260, small), textMuted, small);
     text(18, 59, fit(quickName(quickReplyTo ? quickReplyTo : quickSend::state.to), 260, bold), accent, bold);
     tri(299, 49, 1, 4, accent);
     int first = max(1, selected - 4);
@@ -2150,7 +2167,7 @@ void drawQuick() {
       int y = 75 + (i - first) * 26;
       listRow(y, 24, int(i) == selected);
       target(8, y, 304, 24, i);
-      text(18, y + 17, fit(String(quickSend::state.text[i - 1]), 284), int(i) == selected ? ink : dim);
+      text(18, y + 17, fit(String(quickSend::state.text[i - 1]), 284), int(i) == selected ? textPrimary : textMuted);
     }
     scrollbar(first - 1, 5, quickSend::Count, 75, 130);
   }
@@ -2204,25 +2221,25 @@ void drawEditor() {
     bool focus = selected == i;
     target(8, y, 304, 21, i);
     if(i == rows - 1) {
-      panel(8, y, 304, 21, changed ? (focus ? accent : rgb(0x14524b)) : card, 6);
-      if(focus && !changed) ring(8, y, 304, 21, 6, line);
-      textCenter(160, y + 15, changed ? t("Save changes") : t("No changes"), changed ? (focus ? bg : ink) : dim, bold);
+      panel(8, y, 304, 21, changed ? (focus ? accent : accentDeep) : surfaceCard, 6);
+      if(focus && !changed) ring(8, y, 304, 21, 6, border);
+      textCenter(160, y + 15, changed ? t("Save changes") : t("No changes"), changed ? (focus ? onFill : textPrimary) : textMuted, bold);
       continue;
     }
     listRow(y, 21, focus);
     String value = settingValue(draft, i);
     bool diff = value != settingValue(config, i);
     if(diff) g().fillCircle(17, y + 10, 2, accent);
-    text(24, y + 15, settingName(i), focus ? ink : dim);
+    text(24, y + 15, settingName(i), focus ? textPrimary : textMuted);
     if(focus && !(page == Display && i == 0) && !(page == Radio && (i == RowFind || i == RowPrev))) {
       int w = measure(value, bold);
       tri(300, y + 10, 1, 4, accent);
       text(292 - w, y + 15, value, accent, bold);
       tri(284 - w, y + 10, 3, 4, accent);
-    } else textRight((page == Display && i == 0) || (page == Radio && (i == RowFind || i == RowPrev)) ? 306 : 300, y + 15, fit(value, 150), diff ? accent : ink, focus ? bold : body);
+    } else textRight((page == Display && i == 0) || (page == Radio && (i == RowFind || i == RowPrev)) ? 306 : 300, y + 15, fit(value, 150), diff ? accent : textPrimary, focus ? bold : body);
   }
   scrollbar(first, 7, rows, 25, 160);
-  text(10, 207, fit(settingHint(selected), 300, small), faint, small);
+  text(10, 207, fit(settingHint(selected), 300, small), textSubtle, small);
   if(page == Display && selected == 0) footer({{"OK", t("Edit name")}, {"^v", t("Select")}, {"BACK", t("Cancel")}});
   else if(page == Radio && selected == RowPrev) footer({{"OK", config.trial.set() ? t("Keep") : t("Return")}, {"^v", t("Select")}, {"BACK", t("Cancel")}});
   else if(page == Radio && selected == RowFind) footer({{"OK", t("Search")}, {"^v", t("Select")}, {"BACK", t("Cancel")}});
@@ -2230,8 +2247,8 @@ void drawEditor() {
   else footer({{"<>", t("Change")}, {"OK", selected == rows - 1 ? t("Save") : t("Next value")}, {"BACK", t("Cancel")}});
 }
 void toggle(int x, int y, bool on) {
-  panel(x, y, 30, 16, on ? accent : line, 8);
-  g().fillCircle(on ? x + 22 : x + 8, y + 8, 6, on ? bg : dim);
+  panel(x, y, 30, 16, on ? accent : border, 8);
+  g().fillCircle(on ? x + 22 : x + 8, y + 8, 6, on ? onFill : graphicMuted);
 }
 // The access point as QR codes, so a phone needs no typing: 0 - joining it (the WIFI: text of camera apps), 1 - the
 // device page with the password after "#" (it stays in the browser). Beside the code the network and the password,
@@ -2270,19 +2287,19 @@ void drawWifiQr() {
   String rows[2];
   unsigned n = wrap(wifiQr == 0 ? t("1. Join the Wi-Fi") : t("2. Open the page"), rows, 2, w, bold);
   for(unsigned i = 0; i < n; i++) {
-    text(x, y, rows[i], ink, bold);
+    text(x, y, rows[i], textPrimary, bold);
     y += 14;
   }
   n = wrap(wifiQr == 0 ? t("Scan with the phone camera") : t("Logged in, after step 1"), rows, 2, w, small);
   for(unsigned i = 0; i < n; i++) {
-    text(x, y, rows[i], dim, small);
+    text(x, y, rows[i], textMuted, small);
     y += 10;
   }
   y = max(y + 6, wifiQr == 0 ? 80 : 76);
-  text(x, y, t("Network"), dim, small);
+  text(x, y, t("Network"), textMuted, small);
   text(x, y + 14, fit(wifiSsid(), w, bold), accent, bold);
-  text(x, y + 30, t("Password"), dim, small);
-  for(unsigned i = 0; i < pw.length(); i += 4) text(x, y + 50 + int(i / 4) * 22, pw.substring(i, i + 4), ink, big);
+  text(x, y + 30, t("Password"), textMuted, small);
+  for(unsigned i = 0; i < pw.length(); i += 4) text(x, y + 50 + int(i / 4) * 22, pw.substring(i, i + 4), textPrimary, big);
   if(wifiQr == 1) text(x, y + 126, "192.168.4.1", accent, bold);
   footer({{"<>", t("Other code")}, {"BACK", t("Back")}});
 }
@@ -2315,7 +2332,7 @@ void drawNetwork() {
   auto& d = g();
   bool wifi = portalActive(), ble = bleActive(), web = internet.enabled;
   int y = 25;
-  auto cardAt = [&](int i, int h, Icon ic, const String& name, const String& state, bool on) {bool focus=selected==i;target(8,y,304,h,i);panel(8,y,304,h,focus?cardHi:card,8);if(focus)ring(8,y,304,h,8);d.fillRoundRect(16,y+7,24,24,6,bg);icon(ic,28,y+19,7,on?info:faint,bg);text(48,y+17,name,ink,bold);text(48,y+30,fit(state,220,small),dim,small); };
+  auto cardAt = [&](int i, int h, Icon ic, const String& name, const String& state, bool on) {bool focus=selected==i;target(8,y,304,h,i);panel(8,y,304,h,focus?surfaceFocus:surfaceCard,8);if(focus)ring(8,y,304,h,8);d.fillRoundRect(16,y+7,24,24,6,surfaceWell);icon(ic,28,y+19,7,on?info:iconSubtle,surfaceWell);text(48,y+17,name,textPrimary,bold);text(48,y+30,fit(state,220,small),textMuted,small); };
   int wh = wifi ? 56 : 38;
   cardAt(0, wh, IcWifi, t("Wi-Fi access point"), wifi ? "192.168.4.1 · " + String(t("Web chat and map upload")) : t("Off"), wifi);
   toggle(274, y + 11, wifi);
@@ -2323,8 +2340,8 @@ void drawNetwork() {
   if(wifi) {
     text(48, y + 48, wifiSsid(), accent, bold);
     int pw = measure(groupedPassword(), bold);
-    textRight(302, y + 48, groupedPassword(), ink, bold);
-    icon(IcKey, 291 - pw, y + 44, 6, dim, selected == 0 ? cardHi : card);
+    textRight(302, y + 48, groupedPassword(), textPrimary, bold);
+    icon(IcKey, 291 - pw, y + 44, 6, iconMuted, selected == 0 ? surfaceFocus : surfaceCard);
   }
   // On the home network the device page answers at the client's address, with the same password.
   y += wh + 6;
@@ -2334,8 +2351,8 @@ void drawNetwork() {
   if(internet.online()) {
     text(48, y + 48, "http://" + internet.address(), accent, bold);
     int pw = measure(groupedPassword(), bold);
-    textRight(302, y + 48, groupedPassword(), ink, bold);
-    icon(IcKey, 291 - pw, y + 44, 6, dim, selected == 1 ? cardHi : card);
+    textRight(302, y + 48, groupedPassword(), textPrimary, bold);
+    icon(IcKey, 291 - pw, y + 44, 6, iconMuted, selected == 1 ? surfaceFocus : surfaceCard);
   } // the password, whole
   y += ih + 6;
   cardAt(2, 38, IcBle, "Bluetooth LE", ble ? bleName() : t("Off"), ble);
@@ -2386,7 +2403,7 @@ uint32_t netScanAt = 0;
 void netListEnter() {
   if(selected == 0) {
     internet.setEnabled(!internet.enabled);
-    notice(internet.enabled ? t("Wi-Fi client on") : t("Wi-Fi client off"), internet.enabled ? ok : dim);
+    notice(internet.enabled ? t("Wi-Fi client on") : t("Wi-Fi client off"), internet.enabled ? ok : graphicMuted);
     return;
   }
   NetRow rows[Internet::MaxSeen + Internet::MaxSaved];
@@ -2411,34 +2428,34 @@ void netListErase() {
   unsigned total = netRows(rows, Internet::MaxSeen + Internet::MaxSaved);
   if(selected > 0 && unsigned(selected - 1) < total && rows[selected - 1].saved) {
     String name = rows[selected - 1].ssid;
-    if(internet.forget(name)) notice(t("Forgotten: ") + name, dim);
+    if(internet.forget(name)) notice(t("Forgotten: ") + name, graphicMuted);
     selected = min(selected, int(netCount()));
     return;
   }
   internet.rescan();
-  notice(t("Searching..."), dim);
+  notice(t("Searching..."), graphicMuted);
 }
 void drawNetList() {
   auto& d = g();
   bool focus = selected == 0;
   target(8, 25, 304, 40, 0);
-  panel(8, 25, 304, 40, focus ? cardHi : card, 8);
+  panel(8, 25, 304, 40, focus ? surfaceFocus : surfaceCard, 8);
   if(focus) ring(8, 25, 304, 40, 8);
-  d.fillRoundRect(16, 33, 24, 24, 6, bg);
+  d.fillRoundRect(16, 33, 24, 24, 6, surfaceWell);
   icon(IcWifi, 28, 45, 7, internet.online() ? ok : internet.enabled ? info
-                                                                    : faint,
-       bg);
+                                                                    : iconSubtle,
+       surfaceWell);
   // The last failure (wrong password, no answer) stays visible until the next attempt starts.
   bool failed = internet.enabled && !internet.online() && internet.error.length() && internet.state != Internet::Connecting && internet.state != Internet::Scanning;
-  text(48, 42, t("Wi-Fi client"), ink, bold);
+  text(48, 42, t("Wi-Fi client"), textPrimary, bold);
   text(48, 56, fit(failed ? netError() : internet.stateText(), 220, small), internet.online() ? ok : failed ? warn
-                                                                                                            : dim,
+                                                                                                            : textMuted,
        small);
   toggle(274, 37, internet.enabled);
   NetRow rows[Internet::MaxSeen + Internet::MaxSaved];
   unsigned total = netRows(rows, Internet::MaxSeen + Internet::MaxSaved);
-  if(!internet.enabled) textCenter(160, 120, t("Turn the client on to find networks"), dim);
-  else if(!total) textCenter(160, 120, internet.state == Internet::Paused ? internet.stateText() : t("Searching for networks..."), dim);
+  if(!internet.enabled) textCenter(160, 120, t("Turn the client on to find networks"), textMuted);
+  else if(!total) textCenter(160, 120, internet.state == Internet::Paused ? internet.stateText() : t("Searching for networks..."), textMuted);
   int first = max(0, selected - 1 - 5);
   for(unsigned i = first; i < total && i < unsigned(first + 6); i++) {
     int y = 70 + (i - first) * 24;
@@ -2450,16 +2467,16 @@ void drawNetList() {
     if(r.visible) bars(18, y + 16, r.rssi >= -55 ? 4 : r.rssi >= -67 ? 3
                                                      : r.rssi >= -78 ? 2
                                                                      : 1,
-                       current ? ok : f ? ink
-                                        : dim);
-    else text(18, y + 15, "--", faint, small);
-    text(40, y + 15, fit(r.ssid, 150), current ? ok : ink, f ? bold : body);
+                       current ? ok : f ? graphicPrimary
+                                        : graphicMuted);
+    else text(18, y + 15, "--", textSubtle, small);
+    text(40, y + 15, fit(r.ssid, 150), current ? ok : textPrimary, f ? bold : body);
     String tag = current ? t("connected") : r.saved ? (r.visible ? t("saved") : t("saved, away"))
                                           : r.open  ? t("open")
                                                     : "";
-    if(!r.open && !current) icon(IcLock, 297, y + 11, 6, dim);
+    if(!r.open && !current) icon(IcLock, 297, y + 11, 6, iconMuted);
     if(tag.length()) textRight(286, y + 15, tag, current ? ok : r.saved ? accent
-                                                                        : dim,
+                                                                        : textMuted,
                                small);
   }
   scrollbar(first, 6, total, 70, 144);
@@ -2501,22 +2518,22 @@ void drawDiagnostics() {
   moduleStates(state);
   for(int i = 0; i < 8; i++) {
     int x = 8 + (i % 2) * 154, y = 25 + (i / 2) * 22;
-    panel(x, y, 150, 19, card, 5);
+    panel(x, y, 150, 19, surfaceCard, 5);
     g().fillCircle(x + 11, y + 9, 4, state[i] ? ok : bad);
-    text(x + 21, y + 14, label[i], ink);
+    text(x + 21, y + 14, label[i], textPrimary);
     textRight(x + 144, y + 14, state[i] ? "OK" : t("n/a"), state[i] ? ok : bad, small);
   }
-  panel(8, 116, 304, 74, card, 8);
+  panel(8, 116, 304, 74, surfaceCard, 8);
   uint32_t up = millis() / 1000;
   char uptime[16];
   snprintf(uptime, sizeof uptime, "%lu:%02lu:%02lu", (unsigned long)(up / 3600), (unsigned long)(up / 60 % 60), (unsigned long)(up % 60));
   String cells[][2] = {{"RX", String(meshRadio.rxCount)}, {"TX", String(meshRadio.txCount)}, {t("Relayed"), String(meshRadio.relayed)}, {t("Rejected"), String(meshRadio.rejected)}, {"RSSI", String(int(meshRadio.lastRssi)) + " dBm"}, {"SNR", String(meshRadio.lastSnr, 1) + " dB"}, {"RAM", String(ESP.getFreeHeap() / 1024) + " K"}, {t("Uptime"), uptime}};
   for(int i = 0; i < 8; i++) {
     int x = 16 + (i % 4) * 75, y = 134 + (i / 4) * 32;
-    text(x, y, cells[i][0], dim, small);
-    text(x, y + 15, cells[i][1], ink, bold);
+    text(x, y, cells[i][0], textMuted, small);
+    text(x, y + 15, cells[i][1], textPrimary, bold);
   }
-  text(10, 207, t("Boot ") + String(config.bootCounter) + t(" · last key: ") + keyName(hardware.lastKey), faint, small);
+  text(10, 207, t("Boot ") + String(config.bootCounter) + t(" · last key: ") + keyName(hardware.lastKey), textSubtle, small);
   footer({{"OK", hardware.fsOk ? t("Crypto test + sound") : t("Create storage...")}, {"BACK", t("Back")}});
 }
 void drawHelp() {
@@ -2524,9 +2541,9 @@ void drawHelp() {
   for(int i = 0; i < 10; i++) {
     int y = 24 + i * 19;
     int kw = max(30, measure(keys[i].key, small) + 10);
-    g().fillRoundRect(10, y, kw, 15, 3, line);
-    textCenter(10 + kw / 2, y + 11, keys[i].key, ink, small);
-    text(max(50, kw + 16), y + 12, fit(keys[i].action, 258), i % 2 ? dim : ink);
+    g().fillRoundRect(10, y, kw, 15, 3, border);
+    textCenter(10 + kw / 2, y + 11, keys[i].key, textPrimary, small);
+    text(max(50, kw + 16), y + 12, fit(keys[i].action, 258), i % 2 ? textMuted : textPrimary);
   }
   footer({{"BACK", t("Settings")}});
 }
@@ -2549,8 +2566,8 @@ void drawLocked() {
   int game = lockGame();
   bool chess = game != 0;
   int top = chess ? (n ? -30 : -20) : 0; // a game card moves the clock up
-  textCenter(160, 106 + top, clockText(), ink, digits);
-  textCenter(160, 130 + top, dateText(), dim);
+  textCenter(160, 106 + top, clockText(), textPrimary, digits);
+  textCenter(160, 130 + top, dateText(), textMuted);
   int y = 144 + top;
   if(chess) {
     if(game == 1) drawLockChess(y);
@@ -2564,17 +2581,17 @@ void drawLocked() {
         last = &meshRadio.history[i];
         break;
       }
-    panel(40, y, 240, 40, card, 8);
-    icon(IcMail, 62, y + 20, 9, warn, card);
-    text(80, y + 16, count(n, "new message", "new messages"), ink, bold);
-    if(!config.lockDetails) text(80, y + 32, t("Unlock to read"), dim, small);
-    else if(last) text(80, y + 32, fit(t("Last from ") + String(last->name), 190, small), dim, small);
+    panel(40, y, 240, 40, surfaceCard, 8);
+    icon(IcMail, 62, y + 20, 9, warn, surfaceCard);
+    text(80, y + 16, count(n, "new message", "new messages"), textPrimary, bold);
+    if(!config.lockDetails) text(80, y + 32, t("Unlock to read"), textMuted, small);
+    else if(last) text(80, y + 32, fit(t("Last from ") + String(last->name), 190, small), textMuted, small);
   } else if(!chess && creature.alive() && creature.s.stage != pet::Egg) drawLockPet(140);
   else if(!chess) textCenter(160, 166, meshRadio.ready ? (config.role == RoleRepeater ? t("The repeater keeps relaying") : config.role == RoleRoom ? t("The room keeps serving members")
                                                                                                                                                    : t("Radio and GPS keep working"))
                                                        : t("Radio error"),
-                             meshRadio.ready ? faint : bad, small);
-  icon(IcLock, 160, chess && n ? 210 : 200, chess && n ? 6 : 7, dim);
+                             meshRadio.ready ? textSubtle : bad, small);
+  icon(IcLock, 160, chess && n ? 210 : 200, chess && n ? 6 : 7, iconMuted);
   if(hardware.micKey) footer({{"OK", chess ? t("Twice or hold: the game") : t("Twice or hold: unlock")}, {"MIC", t("Lock")}});
   else footer({{"OK", chess ? t("Twice or hold: the game") : t("Twice or hold: unlock")}});
 }
@@ -2586,8 +2603,8 @@ void drawEditing() {
   uint16_t* px = g().getBuffer();
   for(int i = 0; i < 320 * 240; i++) px[i] = (px[i] >> 1) & 0x7bef; // dim the page under the dialog
   bool key = page == Network, pass = page == NetList || page == ServerHome;
-  panel(12, 60, 296, 122, cardHi, 10);
-  g().drawRoundRect(12, 60, 296, 122, 10, line);
+  panel(12, 60, 296, 122, surfaceFocus, 10);
+  g().drawRoundRect(12, 60, 296, 122, 10, border);
   text(26, 82, key ? t("Network key · 64 hex") : page == ChannelAdd   ? channelEditTitle()
                                                : page == ChessTourNew ? String(t("Tournament name"))
                                                : page == PetView      ? String(t("Pet name"))
@@ -2599,13 +2616,13 @@ void drawEditing() {
                                                : regionEditPage()     ? String(t("Region of the channel"))
                                                : pass                 ? fit(t("Wi-Fi password: ") + pendingSsid, 268, bold)
                                                                       : t("Device name"),
-       ink, bold);
-  panel(24, 92, 272, 52, bg, 6);
+       textPrimary, bold);
+  panel(24, 92, 272, 52, surfaceWell, 6);
   g().drawRoundRect(24, 92, 272, 52, 6, accent);
   String rows[10];
   unsigned n = wrap(edit, rows, 10, 258), first = n > 3 ? n - 3 : 0;
   int cx = 32;
-  for(unsigned i = first; i < n; i++) cx = text(32, 108 + (i - first) * 15, rows[i], ink);
+  for(unsigned i = first; i < n; i++) cx = text(32, 108 + (i - first) * 15, rows[i], textPrimary);
   g().fillRect(cx + 1, 98 + max(0, int(n - first) - 1) * 15, 2, 12, accent); // a long text shows its end, where the cursor is
   textRight(294, 160, String(edit.length()) + "/" + String(key ? 64 : page == Radio || regionEditPage() ? int(regions::NameBytes)
                                                                     : page == ChannelAdd                ? channelEditLimit()
@@ -2618,23 +2635,23 @@ void drawEditing() {
                                                                     : page == PeopleView                ? int(people::NameBytes)
                                                                                                         : 24) +
                         t(" bytes"),
-            faint, small);
+            textSubtle, small);
   if(page == DiceView) {
-    text(26, 160, diceEditHint(), faint, small);
+    text(26, 160, diceEditHint(), textSubtle, small);
   } else if(page == ChannelAdd) {
-    text(26, 160, fit(channelEditHint(), 230, small), faint, small);
+    text(26, 160, fit(channelEditHint(), 230, small), textSubtle, small);
   } else if(page == Remote) {
-    text(26, 160, remoteEdit == EditPassword ? t("Saved after a successful login") : t("As in the MeshCore app: ver, get name, neighbors..."), faint, small);
+    text(26, 160, remoteEdit == EditPassword ? t("Saved after a successful login") : t("As in the MeshCore app: ver, get name, neighbors..."), textSubtle, small);
   } else if(page == ServerHome) {
-    text(26, 160, serverEditHint(), faint, small);
+    text(26, 160, serverEditHint(), textSubtle, small);
   } else if(page == Radio || regionEditPage()) {
-    text(26, 160, page == Radio ? t("As on repeaters: msk, sao...; empty: none") : t("As on repeaters: msk, sao...; empty: default"), faint, small);
-  } else if(pass) text(26, 160, t("8-63 characters; -> after a letter: capital"), faint, small);
+    text(26, 160, page == Radio ? t("As on repeaters: msk, sao...; empty: none") : t("As on repeaters: msk, sao...; empty: default"), textSubtle, small);
+  } else if(pass) text(26, 160, t("8-63 characters; -> after a letter: capital"), textSubtle, small);
   text(26, 175, page == DiceView ? diceEditOk() : page == ChannelAdd ? channelEditOk()
                                                 : page == Remote     ? (remoteEdit == EditPassword ? t("OK: log in   BACK: cancel") : t("OK: send   BACK: cancel"))
                                                 : serverPostEdit()   ? t("OK: post   BACK: cancel")
                                                                      : t("OK: save   BACK: cancel"),
-       dim, small);
+       textMuted, small);
 }
 #include "games/solitaire/UiSolitaire.inc"
 #include "games/chess/UiChess.inc"
@@ -2670,7 +2687,7 @@ String perfReport() {
 void draw() {
   uint32_t started = micros();
   auto& c = g();
-  c.fillScreen(bg);
+  c.fillScreen(surfacePage);
   targetCount = hintCount = 0;
   if(powerOffPending()) {
     drawOff();
@@ -2837,7 +2854,7 @@ void gpsToggle() {
   config.save();
   hardware.setGps(config.gps);
   draft.gps = config.gps;
-  notice("GPS: " + flag(config.gps), config.gps ? ok : dim);
+  notice("GPS: " + flag(config.gps), config.gps ? ok : graphicMuted);
 }
 void playChoose() {
   Peer* p = focusedPeer();
@@ -3331,7 +3348,7 @@ void uiKey(int key) {
   }
   if(page == Homing && (key == KeyLeft || key == KeyRight)) {
     radar.resetPeak();
-    notice(t("Peak reset"), dim);
+    notice(t("Peak reset"), graphicMuted);
     return;
   }
   if(key == KeyUp || key == KeyDown) {
@@ -3397,7 +3414,7 @@ void uiKey(int key) {
   } else if(page == Radio || page == Display) {
     if(selected == settingRows() - 1) {
       if(draftChanged()) saveDraft();
-      else notice(t("Nothing to save"), dim);
+      else notice(t("Nothing to save"), graphicMuted);
     } else if(page == Display && selected == 0) {
       editing = true;
       edit = draft.name;
@@ -3406,7 +3423,7 @@ void uiKey(int key) {
       edit = draft.region;
     } else if(page == Radio && selected == RowPrev) {
       if(!config.trial.set() && !config.previous.set()) {
-        notice(t("No previous settings"), dim);
+        notice(t("No previous settings"), graphicMuted);
         return;
       }
       String r = executeCommand(config.trial.set() ? "radio keep" : "radio previous");
@@ -3454,7 +3471,7 @@ void uiKey(int key) {
     } else notice(t("Needs a heard beacon"), warn);
   } else if(page == Homing) {
     radarSound = !radarSound;
-    notice(radarSound ? (config.sound ? t("Ping on") : t("Device sound is off in settings")) : t("Ping off"), radarSound && !config.sound ? warn : dim);
+    notice(radarSound ? (config.sound ? t("Ping on") : t("Device sound is off in settings")) : t("Ping off"), radarSound && !config.sound ? warn : graphicMuted);
   } else if(page == Diagnostics && !hardware.fsOk) { // storage left by another firmware: create ours after a second OK
     static uint32_t armed = 0;
     if(!armed || millis() - armed > 5000) {

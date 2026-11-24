@@ -15,7 +15,7 @@ uint16_t petInk(uint8_t ink, unsigned kind, pet::Mood m) {
   case pet::InkTear: return info;
   case pet::InkGlow: return rgb(0xf6f669);
   }
-  return bg;
+  return surfacePage;
 }
 void petSprite(int x, int y, int scale, uint32_t now) {
   uint8_t grid[pet::Size][pet::Size];
@@ -47,7 +47,7 @@ void petEffects(int x, int y, int scale, uint32_t now) {
   int top = y + 3 * scale, mid = x + 8 * scale;
   if(creature.mood() == pet::Sleepy) {
     int k = (now / 600) % 3;
-    for(int i = 0; i <= k; i++) text(mid + 3 * scale + i * 9, top - i * 10, i % 2 ? "Z" : "z", dim, i == 2 ? bold : body);
+    for(int i = 0; i <= k; i++) text(mid + 3 * scale + i * 9, top - i * 10, i % 2 ? "Z" : "z", textMuted, i == 2 ? bold : body);
   }
   if(e >= 2500) return;
   float f = e / 2500.f;
@@ -63,7 +63,7 @@ void petEffects(int x, int y, int scale, uint32_t now) {
     break;
   case pet::Food: {
     int fy = top - 20 + int(f * (6 * scale));
-    icon(IcMail, mid, fy, 6, warn, card);
+    icon(IcMail, mid, fy, 6, warn, surfaceCard);
     break;
   }
   case pet::Medicine: {
@@ -78,9 +78,9 @@ void petEffects(int x, int y, int scale, uint32_t now) {
 void petBar(int x, int y, int w, const String& name, uint16_t value) {
   uint16_t c = value >= 500 ? ok : value >= 250 ? warn
                                                 : bad;
-  text(x, y, name, dim, small);
-  textRight(x + w, y, String((value + 5) / 10) + "%", value < 250 ? bad : ink, small);
-  g().fillRoundRect(x, y + 4, w, 7, 3, line);
+  text(x, y, name, textMuted, small);
+  textRight(x + w, y, String((value + 5) / 10) + "%", value < 250 ? bad : textPrimary, small);
+  g().fillRoundRect(x, y + 4, w, 7, 3, border);
   if(value) g().fillRoundRect(x, y + 4, max(4, int(w * value / pet::Full)), 7, 3, c);
 }
 String petTileDetail() {
@@ -92,22 +92,22 @@ String petTileDetail() {
 // No pet: what it is and OK to start one; the memory of earlier pets stays.
 void drawPetEmpty() {
   const auto& s = creature.s;
-  panel(8, 26, 156, 188, card, 10);
+  panel(8, 26, 156, 188, surfaceCard, 10);
   target(8, 26, 156, 188, -Enter);
-  icon(IcPaw, 86, 104, 30, faint, card);
-  textCenter(86, 176, t("No pet"), dim, bold);
+  icon(IcPaw, 86, 104, 30, iconSubtle, surfaceCard);
+  textCenter(86, 176, t("No pet"), textMuted, bold);
   int x = 172, w = 138;
-  text(x, 45, t("Pet"), ink, big);
+  text(x, 45, t("Pet"), textPrimary, big);
   String rows[8];
   unsigned n = wrap(t("A pixel creature that feeds on the radio: packets, messages and ACKs. It grows, talks and needs care. It is optional."), rows, 8, w, small);
-  for(unsigned i = 0; i < n; i++) text(x, 66 + i * 12, rows[i], dim, small);
+  for(unsigned i = 0; i < n; i++) text(x, 66 + i * 12, rows[i], textMuted, small);
   if(s.graveCount) {
-    text(x, 172, t("In memory"), faint, small);
+    text(x, 172, t("In memory"), textSubtle, small);
     for(unsigned i = 0; i < s.graveCount && i < 2; i++) {
       const auto& gr = s.graves[i];
       int y = 186 + i * 13;
       g().fillCircle(x + 4, y - 3, 3, rgb(pet::bodies[gr.species % pet::Species]));
-      text(x + 12, y, fit(String(gr.name) + " · " + t("Lv ") + String(gr.level), w - 12, small), dim, small);
+      text(x + 12, y, fit(String(gr.name) + " · " + t("Lv ") + String(gr.level), w - 12, small), textMuted, small);
     }
   }
   footer({{"OK", t("Start a pet")}, {"BACK", t("Menu")}});
@@ -122,7 +122,7 @@ void drawPet() {
   uint32_t now = millis();
   const auto& s = creature.s;
   bool dead = !creature.alive(), egg = s.stage == pet::Egg;
-  panel(8, 26, 156, 188, card, 10);
+  panel(8, 26, 156, 188, surfaceCard, 10);
   target(8, 26, 156, 188, -Enter);
   d.fillRoundRect(28, 192, 116, 8, 4, rgb(0x0b1016)); // its shadow on the floor
   petSprite(22, 66, 8, now);
@@ -131,36 +131,36 @@ void drawPet() {
     String rows[2];
     unsigned n = wrap(creature.speech, rows, 2, 128, small);
     int h = 10 + n * 11;
-    panel(14, 30, 144, h, ink, 7);
-    d.fillTriangle(78, 30 + h - 1, 92, 30 + h - 1, 84, 30 + h + 6, ink);
-    for(unsigned i = 0; i < n; i++) textCenter(86, 40 + i * 11, rows[i], bg, small);
+    panel(14, 30, 144, h, graphicPrimary, 7);
+    d.fillTriangle(78, 30 + h - 1, 92, 30 + h - 1, 84, 30 + h + 6, graphicPrimary);
+    for(unsigned i = 0; i < n; i++) textCenter(86, 40 + i * 11, rows[i], onFill, small);
   }
   int x = 172, w = 138;
-  text(x, 45, fit(s.name, w, big), ink, big);
+  text(x, 45, fit(s.name, w, big), textPrimary, big);
   String stage = (dead || egg ? String() : String(creature.kind().name) + " · ") + creature.stageName(s.stage);
-  text(x, 61, fit(stage, w, small), dim, small);
+  text(x, 61, fit(stage, w, small), textMuted, small);
   if(egg) {
     uint32_t left = creature.hatchLeft();
-    text(x, 80, t("Hatches in "), dim, small);
-    text(x, 96, creature.ageText(left), ink, bold);
-    d.fillRoundRect(x, 102, w, 7, 3, line);
+    text(x, 80, t("Hatches in "), textMuted, small);
+    text(x, 96, creature.ageText(left), textPrimary, bold);
+    d.fillRoundRect(x, 102, w, 7, 3, border);
     d.fillRoundRect(x, 102, max(4, int(w * (900 - left) / 900)), 7, 3, accent);
     String rows[6];
     unsigned n = wrap(t("It will feed on the radio: packets, messages and ACKs. Pet it, feed it snacks, keep it company."), rows, 6, w, small);
-    for(unsigned i = 0; i < n; i++) text(x, 126 + i * 12, rows[i], faint, small);
+    for(unsigned i = 0; i < n; i++) text(x, 126 + i * 12, rows[i], textSubtle, small);
     footer({{"OK", t("Knock")}, {"N", t("Name")}, {"BACK", t("Menu")}});
     return;
   }
   if(dead) {
-    text(x, 82, fit(t("Lived ") + creature.ageText(s.age), w), ink);
+    text(x, 82, fit(t("Lived ") + creature.ageText(s.age), w), textPrimary);
     text(x, 98, fit(creature.causeText(s.cause), w, small), bad, small);
-    text(x, 124, t("In memory"), dim, small);
+    text(x, 124, t("In memory"), textMuted, small);
     for(unsigned i = 0; i < s.graveCount && i < 3; i++) {
       const auto& gr = s.graves[i];
       int y = 140 + i * 22;
       d.fillCircle(x + 5, y - 4, 4, rgb(pet::bodies[gr.species % pet::Species]));
-      text(x + 14, y, fit(String(gr.name) + " · " + t("Lv ") + String(gr.level), w - 14, small), ink, small);
-      text(x + 14, y + 10, fit(creature.ageText(gr.age), w - 14, small), faint, small);
+      text(x + 14, y, fit(String(gr.name) + " · " + t("Lv ") + String(gr.level), w - 14, small), textPrimary, small);
+      text(x + 14, y + 10, fit(creature.ageText(gr.age), w - 14, small), textSubtle, small);
     }
     footer({{"OK", t("New egg")}, {"D", s.mortal ? t("Death: on") : t("Death: off")}, {"BACK", t("Menu")}});
     return;
@@ -168,26 +168,26 @@ void drawPet() {
   pet::Mood m = creature.mood();
   uint16_t mc = m == pet::Happy ? ok : m == pet::Hungry || m == pet::Lonely ? warn
                                      : m == pet::Sick                       ? bad
-                                                                            : dim;
+                                                                            : textMuted;
   text(x, 76, creature.moodName(), mc, bold);
   uint32_t from = creature.levelXp(creature.level()), to = creature.levelXp(creature.level() + 1);
-  textRight(x + w, 76, t("Lv ") + String(creature.level()) + " · " + String(s.xp - from) + "/" + String(to - from), faint, small);
-  d.fillRoundRect(x, 81, w, 3, 1, line);
-  d.fillRoundRect(x, 81, max(2, int(w * (s.xp - from) / max<uint32_t>(1, to - from))), 3, 1, violet);
+  textRight(x + w, 76, t("Lv ") + String(creature.level()) + " · " + String(s.xp - from) + "/" + String(to - from), textSubtle, small);
+  d.fillRoundRect(x, 81, w, 3, 1, border);
+  d.fillRoundRect(x, 81, max(2, int(w * (s.xp - from) / max<uint32_t>(1, to - from))), 3, 1, secondary);
   petBar(x, 100, w, t("Food"), s.food);
   petBar(x, 124, w, t("Joy"), s.joy);
   petBar(x, 148, w, t("Health"), s.health);
-  text(x, 175, fit(t("Snacks ") + String(s.snacks) + " · " + count(s.friends, "friend", "friends"), w, small), ink, small);
-  text(x, 189, fit(t("Age ") + creature.ageText(s.age), w, small), dim, small);
-  text(x, 203, s.mortal ? t("D: death on") : t("D: death off"), faint, small);
-  textRight(x + w, 203, t("R: let go"), faint, small);
+  text(x, 175, fit(t("Snacks ") + String(s.snacks) + " · " + count(s.friends, "friend", "friends"), w, small), textPrimary, small);
+  text(x, 189, fit(t("Age ") + creature.ageText(s.age), w, small), textMuted, small);
+  text(x, 203, s.mortal ? t("D: death on") : t("D: death off"), textSubtle, small);
+  textRight(x + w, 203, t("R: let go"), textSubtle, small);
   footer({{"OK", t("Pet")}, {"F", t("Feed")}, {"H", t("Heal")}, {"N", t("Name")}});
 }
 // A small pet on the locked screen when no game or message takes the place.
 void drawLockPet(int y) {
   uint32_t now = millis();
   petSprite(136, y, 3, now);
-  if(creature.mood() == pet::Sleepy) text(188, y + 14, "z", dim, small);
+  if(creature.mood() == pet::Sleepy) text(188, y + 14, "z", textMuted, small);
   if(creature.needsCare()) text(194, y + 30, fit(creature.moodName(), 110, small), warn, small);
 }
 // The pet answers in its bubble; only the death switch takes a notice.
@@ -205,7 +205,7 @@ bool petKey(int key) {
       return true;
     }
     releaseArmed = 0;
-    notice(creature.release(), dim);
+    notice(creature.release(), graphicMuted);
     return true;
   }
   if(key == 'f' || key == 'F') {

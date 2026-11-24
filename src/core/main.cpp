@@ -3,7 +3,6 @@
 #include "core/App.h"
 #include "core/Config.h"
 #include "hw/Hardware.h"
-#include "ui/Palette.h"
 #include "mesh/MeshRadio.h"
 #include "net/BleDiagnostics.h"
 #include "apps/Maps.h"

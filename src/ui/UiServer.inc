@@ -27,31 +27,31 @@ void drawRolePick() {
     int y = 24 + r * 58;
     bool focus = selected == r, current = config.role == r;
     target(8, y, 304, 54, r);
-    panel(8, y, 304, 54, focus ? cardHi : card, 8);
+    panel(8, y, 304, 54, focus ? surfaceFocus : surfaceCard, 8);
     if(focus) ring(8, y, 304, 54, 8);
     Icon ic = r == RoleRepeater ? IcTower : r == RoleRoom ? IcRoom
                                                           : IcChat;
-    uint16_t hue = r == RoleRepeater ? violet : r == RoleRoom ? warn
-                                                              : accent;
-    g().fillRoundRect(16, y + 8, 28, 28, 7, bg);
-    icon(ic, 30, y + 22, 8, hue, bg);
-    text(54, y + 19, roleTitle(r), ink, bold);
+    uint16_t hue = r == RoleRepeater ? secondary : r == RoleRoom ? warn
+                                                                 : accent;
+    g().fillRoundRect(16, y + 8, 28, 28, 7, surfaceWell);
+    icon(ic, 30, y + 22, 8, hue, surfaceWell);
+    text(54, y + 19, roleTitle(r), textPrimary, bold);
     if(current) {
       String now = t("running");
       int w = measure(now, small) + 10;
-      g().fillRoundRect(302 - w, y + 8, w, 14, 7, rgb(0x14524b));
+      g().fillRoundRect(302 - w, y + 8, w, 14, 7, accentDeep);
       textCenter(302 - w / 2, y + 18, now, accent, small);
     }
     const char* about[][2] = {{tr("Screen, chats, maps, radar and games"), tr("A MeshCore chat node; relays as set")},
                               {tr("Relays the network's packets; no chats"), tr("Login and settings from the MeshCore app")},
                               {tr("Keeps posts and hands them to members"), tr("Room password and settings from the MeshCore app")}};
-    for(int i = 0; i < 2; i++) text(54, y + 33 + i * 12, fit(about[r][i], 250, small), dim, small);
+    for(int i = 0; i < 2; i++) text(54, y + 33 + i * 12, fit(about[r][i], 250, small), textMuted, small);
   }
   if(bootPick) {
     uint32_t gone = millis() - bootPickAt;
     unsigned left = gone >= bootPickMs ? 0 : (bootPickMs - gone + 999) / 1000;
     textCenter(160, 212, t("Continues as now in ") + String(left) + t(" s"), warn);
-  } else textCenter(160, 212, t("A change restarts; data and settings stay"), faint, small);
+  } else textCenter(160, 212, t("A change restarts; data and settings stay"), textSubtle, small);
   footer({{"OK", t("Choose")}, {"^v", t("Select")}, {"BACK", bootPick ? t("Continue") : t("Cancel")}});
 }
 bool rolePickKey(int key) {
@@ -130,20 +130,20 @@ void drawServer() {
   ServerView v = meshServer.view();
   auto& d = g();
   bool room = config.role == RoleRoom;
-  panel(8, 25, 304, 58, card, 8);
-  d.fillRoundRect(16, 33, 26, 26, 6, bg);
+  panel(8, 25, 304, 58, surfaceCard, 8);
+  d.fillRoundRect(16, 33, 26, 26, 6, surfaceWell);
   icon(room ? IcRoom : IcTower, 29, 46, 8, !meshRadio.ready ? bad : room         ? warn
-                                                                  : v.forwarding ? violet
+                                                                  : v.forwarding ? secondary
                                                                                  : bad,
-       bg);
-  text(50, 40, fit(String(config.name), 150, bold), ink, bold);
-  text(50, 54, fit(meshRadio.ready ? String(config.frequency, 3) + t(" MHz · SF") + String(config.sf) + " · " + String(config.power) + " dBm" : t("Radio error ") + String(meshRadio.radioError), 170, small), meshRadio.ready ? dim : bad, small);
-  textRight(302, 40, String(meshRadio.txCount), ink, small);
+       surfaceWell);
+  text(50, 40, fit(String(config.name), 150, bold), textPrimary, bold);
+  text(50, 54, fit(meshRadio.ready ? String(config.frequency, 3) + t(" MHz · SF") + String(config.sf) + " · " + String(config.power) + " dBm" : t("Radio error ") + String(meshRadio.radioError), 170, small), meshRadio.ready ? textMuted : bad, small);
+  textRight(302, 40, String(meshRadio.txCount), textPrimary, small);
   tri(302 - measure(String(meshRadio.txCount), small) - 7, 37, 0, 3, accent);
-  textRight(302, 54, String(meshRadio.rxCount), ink, small);
+  textRight(302, 54, String(meshRadio.rxCount), textPrimary, small);
   tri(302 - measure(String(meshRadio.rxCount), small) - 7, 51, 2, 3, ok);
   String line = room ? t("Posts ") + String(v.posts) + t(" · members ") + String(v.clients) : t("Relayed ") + String(meshRadio.relayed) + t(" · neighbours ") + String(v.neighbours) + t(" · logged in ") + String(v.clients);
-  text(16, 76, fit(line + " · " + uptimeText(v.uptime), 288, small), dim, small);
+  text(16, 76, fit(line + " · " + uptimeText(v.uptime), 288, small), textMuted, small);
   int rows = serverRowCount(), first = max(0, selected - 4);
   for(int i = first; i < rows && i < first + 5; i++) {
     int y = 87 + (i - first) * 22;
@@ -151,12 +151,12 @@ void drawServer() {
     ServerRow r = serverRow(i);
     target(8, y, 304, 21, i);
     if(r == RowAnnounce || r == RowPost) {
-      panel(8, y, 304, 21, focus ? accent : card, 6);
-      textCenter(160, y + 15, serverName(r), focus ? bg : ink, bold);
+      panel(8, y, 304, 21, focus ? accent : surfaceCard, 6);
+      textCenter(160, y + 15, serverName(r), focus ? onFill : textPrimary, bold);
       continue;
     }
     listRow(y, 21, focus);
-    text(24, y + 15, serverName(r), focus ? ink : dim);
+    text(24, y + 15, serverName(r), focus ? textPrimary : textMuted);
     if(r == RowForward || r == RowReadOnly) {
       toggle(274, y + 3, r == RowForward ? v.forwarding : v.readOnlyLogin);
       continue;
@@ -169,12 +169,12 @@ void drawServer() {
       text(292 - w, y + 15, value, accent, bold);
       tri(284 - w, y + 10, 3, 4, accent);
     } else {
-      textRight(opens ? 292 : 300, y + 15, fit(value, 140), focus ? accent : ink, focus ? bold : body);
-      if(opens) tri(302, y + 10, 1, 4, focus ? accent : faint);
+      textRight(opens ? 292 : 300, y + 15, fit(value, 140), focus ? accent : textPrimary, focus ? bold : body);
+      if(opens) tri(302, y + 10, 1, 4, focus ? accent : iconSubtle);
     }
   }
   scrollbar(first, 5, rows, 87, 108);
-  text(10, 210, fit(serverHint(serverRow(selected)), 300, small), faint, small);
+  text(10, 210, fit(serverHint(serverRow(selected)), 300, small), textSubtle, small);
   ServerRow r = serverRow(selected);
   if(r == RowAdvert || r == RowFlood) footer({{"<>", t("Change")}, {"^v", t("Select")}, {"ADV", t("Advertise")}, {"P", t("Pet")}});
   else footer({{"OK", r == RowForward || r == RowReadOnly ? t("Switch") : t("Open")}, {"^v", t("Select")}, {"ADV", t("Advertise")}, {"P", t("Pet")}});

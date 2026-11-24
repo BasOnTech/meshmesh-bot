@@ -1,0 +1,44 @@
+#pragma once
+// Midnight, the default: neutral dark surfaces, colour reserved for focus and state.
+namespace midnight {
+constexpr uint32_t night = 0x080c11, light = 0xe4e9ee, grey = 0x8d99a6, greyDark = 0x56626e;
+constexpr uint32_t teal = 0x1fc2ae, tealDeep = 0x14524b, blue = 0x4f9df7, green = 0x4cc26b, greenDeep = 0x1d3b26;
+constexpr uint32_t amber = 0xe9b13b, amberDeep = 0x3b3016, orange = 0xf08a4b, red = 0xe5564d, redDeep = 0x521a1a;
+constexpr uint32_t violet = 0xa78bfa, violetDeep = 0x2e2450, pink = 0xf472b6;
+} // namespace midnight
+constexpr Theme themeMidnight{
+  .name = "Midnight",
+  .surfacePage = midnight::night,
+  .surfaceBar = 0x000000,
+  .surfaceCard = 0x131a22,
+  .surfaceFocus = 0x1c2835,
+  .surfaceWell = midnight::night,
+  .border = 0x2a3542,
+  .gridLine = 0x223040,
+  .textPrimary = midnight::light,
+  .textMuted = midnight::grey,
+  .textSubtle = midnight::greyDark,
+  .iconPrimary = midnight::light,
+  .iconMuted = midnight::grey,
+  .iconSubtle = midnight::greyDark,
+  .graphicPrimary = midnight::light,
+  .graphicMuted = midnight::grey,
+  .graphicSubtle = midnight::greyDark,
+  .onFill = midnight::night,
+  .accent = midnight::teal,
+  .accentDeep = midnight::tealDeep,
+  .secondary = midnight::violet,
+  .secondaryDeep = midnight::violetDeep,
+  .tertiary = midnight::pink,
+  .info = midnight::blue,
+  .ok = midnight::green,
+  .okDeep = midnight::greenDeep,
+  .warn = midnight::amber,
+  .warnDeep = midnight::amberDeep,
+  .alert = midnight::orange,
+  .bad = midnight::red,
+  .badDeep = midnight::redDeep,
+  .outBubble = 0x103a35,
+  .inBubble = 0x1a232d,
+  .avatarHues = {0x2f7d6f, 0x3f6fb5, 0x8a5cc2, 0xb5693f, 0x4f8a3a, 0xa8466a, 0x3a8aa0, 0x8f7a2e},
+};

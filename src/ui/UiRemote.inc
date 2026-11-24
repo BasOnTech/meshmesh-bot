@@ -38,22 +38,22 @@ String loginText(const Peer& p) {
 void drawRemote() {
   Peer* p = focusedPeer();
   if(!p) {
-    textCenter(160, 110, t("Node was removed"), dim);
+    textCenter(160, 110, t("Node was removed"), textMuted);
     footer({{"BACK", t("Nodes")}});
     return;
   }
   bool server = p->type == 2 || p->type == 3;
   remote::Session* s = remote::find(p->id);
   avatar(30, 44, 16, p->id, p->name, p->type);
-  text(54, 42, fit(p->name, 256, big), ink, big);
-  text(54, 58, fit(typeText(p->type) + (server ? " · " + loginText(*p) : String()), 256, small), s && s->login == remote::Done ? ok : dim, small);
+  text(54, 42, fit(p->name, 256, big), textPrimary, big);
+  text(54, 58, fit(typeText(p->type) + (server ? " · " + loginText(*p) : String()), 256, small), s && s->login == remote::Done ? ok : textMuted, small);
   int y = 80;
   if(server) {
-    if(!s || s->status == remote::Idle || (s->status != remote::Done && !s->statusAt)) text(14, y, s && s->status != remote::Idle ? t("Status: ") + remoteState(s->status, "") : t("Status: not asked yet"), dim, small);
+    if(!s || s->status == remote::Idle || (s->status != remote::Done && !s->statusAt)) text(14, y, s && s->status != remote::Idle ? t("Status: ") + remoteState(s->status, "") : t("Status: not asked yet"), textMuted, small);
     else {
       String cells[6] = {t("Battery ") + String(s->battery / 1000.0f, 2) + t(" V"), t("Up ") + uptimeText(s->uptime), t("Rx/tx ") + String(s->received) + "/" + String(s->sent),
                          t("Noise ") + String(s->noise) + " dBm", String("RSSI ") + String(s->rssi) + " · SNR " + String(s->snr / 4.0f, 1), s->room ? t("Posts ") + String(s->posted) : t("Air ") + uptimeText(s->airtime)};
-      for(int i = 0; i < 6; i++) text(14 + (i % 2) * 150, y + (i / 2) * 13, fit(cells[i], 146, small), ink, small);
+      for(int i = 0; i < 6; i++) text(14 + (i % 2) * 150, y + (i / 2) * 13, fit(cells[i], 146, small), textPrimary, small);
       if(s->status != remote::Done) textRight(306, y + 39, remoteState(s->status, ""), warn, small);
     }
     y += 44;
@@ -72,17 +72,17 @@ void drawRemote() {
     }
     String rows[2];
     unsigned n = wrap(line, rows, 2, 292, small);
-    for(unsigned i = 0; i < n; i++) text(14, y + i * 12, rows[i], tr.state == remote::Done ? ink : dim, small);
+    for(unsigned i = 0; i < n; i++) text(14, y + i * 12, rows[i], tr.state == remote::Done ? textPrimary : textMuted, small);
     y += n * 12 + 6;
   } else if(!server) {
-    text(14, y, remote::traceable(p->id) ? t("Trace shows the SNR at every repeater of the route") : t("No route through repeaters to trace"), dim, small);
+    text(14, y, remote::traceable(p->id) ? t("Trace shows the SNR at every repeater of the route") : t("No route through repeaters to trace"), textMuted, small);
     y += 18;
   }
   if(s && s->replies) {
-    text(14, y, t("Replies:"), dim, small);
+    text(14, y, t("Replies:"), textMuted, small);
     y += 12;
-    for(unsigned i = 0; i < s->replies && y < 178; i++, y += 12) text(14, y, fit(s->reply[i], 292, small), ink, small);
-  } else if(s && s->command != remote::Idle) text(14, y, t("Command: ") + remoteState(s->command, ""), dim, small);
+    for(unsigned i = 0; i < s->replies && y < 178; i++, y += 12) text(14, y, fit(s->reply[i], 292, small), textPrimary, small);
+  } else if(s && s->command != remote::Idle) text(14, y, t("Command: ") + remoteState(s->command, ""), textMuted, small);
   RemoteAct acts[4];
   unsigned n = remoteActs(*p, acts);
   if(!n) {
@@ -96,9 +96,9 @@ void drawRemote() {
     int x = 8 + i * (w + 6);
     bool focus = remoteAction == int(i);
     target(x, 184, w, 28, i);
-    panel(x, 184, w, 28, focus ? cardHi : card, 7);
+    panel(x, 184, w, 28, focus ? surfaceFocus : surfaceCard, 7);
     if(focus) ring(x, 184, w, 28, 7);
-    textCenter(x + w / 2, 202, fit(names[acts[i]], w - 8), ink);
+    textCenter(x + w / 2, 202, fit(names[acts[i]], w - 8), textPrimary);
   }
   footer({{"<>", t("Action")}, {"OK", t("Run")}, {"BACK", t("Node")}});
 }
@@ -121,12 +121,12 @@ void remoteRun() {
     break;
   case RemStatus: {
     bool sent = remote::status(p->id);
-    notice(sent ? t("Status requested") : t("Not sent: radio or contact"), sent ? dim : bad);
+    notice(sent ? t("Status requested") : t("Not sent: radio or contact"), sent ? graphicMuted : bad);
     break;
   }
   case RemTrace: {
     bool sent = remote::traceTo(p->id);
-    notice(sent ? t("Trace sent") : t("Not sent: radio or route"), sent ? dim : bad);
+    notice(sent ? t("Trace sent") : t("Not sent: radio or route"), sent ? graphicMuted : bad);
     break;
   }
   }
@@ -164,5 +164,5 @@ void remoteSaveEdit() {
   }
   editing = false;
   edit = "";
-  notice(sent ? (remoteEdit == EditPassword ? t("Login sent") : t("Command sent")) : t("Not sent: radio or contact"), sent ? dim : bad);
+  notice(sent ? (remoteEdit == EditPassword ? t("Login sent") : t("Command sent")) : t("Not sent: radio or contact"), sent ? graphicMuted : bad);
 }

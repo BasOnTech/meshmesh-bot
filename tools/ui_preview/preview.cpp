@@ -10,7 +10,6 @@
 #include "core/BlobStore.h"
 #include "hw/Hardware.h"
 #include "hw/FastCanvas.h"
-#include "ui/Palette.h"
 #include "mesh/MeshRadio.h"
 #include "apps/Wardrive.h"
 #include "mesh/Remote.h"

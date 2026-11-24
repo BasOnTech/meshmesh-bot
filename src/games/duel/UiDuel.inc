@@ -59,8 +59,8 @@ String duelState(const Duel& g, bool board = false) {
 uint16_t duelStateColor(const Duel& g) {
   if(duelNeeds(g)) return accent;
   if(g.state == Duel::Over) return g.result == Duel::Won ? ok : g.result == Duel::Lost ? bad
-                                                                                       : dim;
-  return dim;
+                                                                                       : textMuted;
+  return textMuted;
 }
 String duelDelivery(const Duel& g) {
   switch(g.link()) {
@@ -122,13 +122,13 @@ void drawDuelList() {
     Peer* p = peerOf(m.peer);
     avatar(32, y + 22, 15, m.peer, m.name, p ? p->type : -1);
     if(sea) {
-      g().fillCircle(45, y + 34, 7, bg);
-      icon(IcShip, 45, y + 34, 5, info, bg);
+      g().fillCircle(45, y + 34, 7, surfaceWell);
+      icon(IcShip, 45, y + 34, 5, info, surfaceWell);
     } else colorDisc(45, y + 34, m.mine);
     String right = m.updated ? timeText(m.updated) : String();
     int rw = measure(right, small);
-    text(58, y + 18, fit(m.name, 232 - rw, bold), ink, bold);
-    textRight(304, y + 17, right, faint, small);
+    text(58, y + 18, fit(m.name, 232 - rw, bold), textPrimary, bold);
+    textRight(304, y + 17, right, textSubtle, small);
     String detail = duelState(m);
     if(m.state == Duel::Playing || m.state == Duel::Over) {
       if(sea) {
@@ -144,7 +144,7 @@ void drawDuelList() {
   if(!duelRowCount) {
     String rows[4];
     unsigned n = wrap(sea ? t("Shots travel as direct MeshCore messages with delivery confirmation. Ten ships each, placed at random; a hit shoots again. The other player needs MeshMesh with sea battle.") : t("Moves travel as direct MeshCore messages with delivery confirmation. Russian draughts: capturing is compulsory, kings fly. The other player needs MeshMesh with checkers."), rows, 4, 296);
-    for(unsigned k = 0; k < n; k++) textCenter(160, 100 + k * 16, rows[k], faint);
+    for(unsigned k = 0; k < n; k++) textCenter(160, 100 + k * 16, rows[k], textSubtle);
   }
   bool over = selected > 0 && duelRows[selected - 1]->state == Duel::Over;
   if(over) footer({{"OK", t("Open")}, {"DEL", duelRemoveArmed ? t("Sure?") : t("Remove")}, {"BACK", t("Menu")}});
@@ -154,24 +154,24 @@ void drawDuelList() {
 void drawDuelPick() {
   chessSortPeers();
   bool sea = duelKind == Duel::Sea;
-  panel(8, 24, 304, 30, card, 7);
+  panel(8, 24, 304, 30, surfaceCard, 7);
   if(sea) {
-    icon(IcShip, 24, 39, 7, info, card);
-    text(38, 43, fit(t("Your fleet is placed at random; S reshuffles it before the first shot"), 268, small), dim, small);
+    icon(IcShip, 24, 39, 7, info, surfaceCard);
+    text(38, 43, fit(t("Your fleet is placed at random; S reshuffles it before the first shot"), 268, small), textMuted, small);
   } else {
-    text(18, 43, t("You play"), dim);
+    text(18, 43, t("You play"), textMuted);
     String colors[] = {t("White"), t("Black"), t("Random")};
     int cx = 222;
     tri(cx - 58, 39, 3, 4, accent);
     tri(cx + 58, 39, 1, 4, accent);
     if(duelPickColor < 2) colorDisc(cx - 42, 39, duelPickColor);
-    textCenter(cx + (duelPickColor < 2 ? 6 : 0), 44, colors[duelPickColor], ink, bold);
+    textCenter(cx + (duelPickColor < 2 ? 6 : 0), 44, colors[duelPickColor], textPrimary, bold);
     target(8, 24, 304, 30, -KeyRight);
   }
   if(!chessPeerCount) {
-    textCenter(160, 110, t("No chat contacts yet"), ink, bold);
-    textCenter(160, 132, t("Press ADV to announce this node and wait"), dim);
-    textCenter(160, 148, t("for the other player's announcement"), dim);
+    textCenter(160, 110, t("No chat contacts yet"), textPrimary, bold);
+    textCenter(160, 132, t("Press ADV to announce this node and wait"), textMuted);
+    textCenter(160, 148, t("for the other player's announcement"), textMuted);
     footer({{"ADV", t("Announce")}, {"BACK", t("Back")}});
     return;
   }
@@ -184,12 +184,12 @@ void drawDuelPick() {
     listRow(y, 45, focus);
     target(8, y, 304, 45, i);
     avatar(32, y + 22, 15, p.id, p.name, p.type);
-    text(56, y + 18, fit(p.name, 244, bold), ink, bold);
+    text(56, y + 18, fit(p.name, 244, bold), textPrimary, bold);
     String info = (p.heard ? (millis() - p.seen < 60000 ? ago(0) : ago(millis() - p.seen) + t(" ago")) + " · " : String()) + pathText(p);
     bool busy = false;
     for(auto& g : duels.games) busy |= g.active() && g.peer == p.id && g.kind == duelKind;
     if(busy) info = t("A game with them is on · ") + info;
-    text(56, y + 36, fit(info, 244, small), p.heard && millis() - p.seen < 1800000 ? ok : dim, small);
+    text(56, y + 36, fit(info, 244, small), p.heard && millis() - p.seen < 1800000 ? ok : textMuted, small);
   }
   scrollbar(first, 3, chessPeerCount, 60, 154);
   if(sea) footer({{"OK", t("Invite")}, {"^v", t("Select")}, {"BACK", t("Back")}});
@@ -298,47 +298,47 @@ void drawCheckersSide() {
   const Duel& m = *duelOpen;
   int x = 204, w = 110;
   // The opponent on top, the player at the bottom, as on the board.
-  panel(x, 24, w, 38, card, 6);
+  panel(x, 24, w, 38, surfaceCard, 6);
   colorDisc(x + 10, 36, m.mine ^ 1);
-  text(x + 20, 40, fit(m.name, w - 24, bold), ink, bold);
-  text(x + 6, 55, fit(ckPieces(m, m.mine ^ 1), w - 10, small), dim, small);
-  text(x + 2, 76, t("Last move"), faint, small);
+  text(x + 20, 40, fit(m.name, w - 24, bold), textPrimary, bold);
+  text(x + 6, 55, fit(ckPieces(m, m.mine ^ 1), w - 10, small), textMuted, small);
+  text(x + 2, 76, t("Last move"), textSubtle, small);
   if(m.game.plies) {
     colorDisc(x + 7, 88, m.game.pos.side ^ 1);
     String rows[3];
     unsigned n = wrap(ckLast(m), rows, 3, w - 20);
-    for(unsigned i = 0; i < n; i++) text(x + 16, 92 + i * 14, rows[i], ink);
+    for(unsigned i = 0; i < n; i++) text(x + 16, 92 + i * 14, rows[i], textPrimary);
   } else text(x + 2, 92, fit(m.state == Duel::Inviting ? t("Waiting for reply") : m.state == Duel::Invited ? t("OK accepts")
                                                                                                            : t("No moves yet"),
                              w - 4, small),
-              faint, small);
+              textSubtle, small);
   if(m.state == Duel::Playing) {
     if(m.drawOffer == Duel::OfferedToMe) {
-      panel(x, 150, w, 22, rgb(0x14524b), 6);
-      textCenter(x + w / 2, 164, t("Draw? D accepts"), ink, small);
+      panel(x, 150, w, 22, accentDeep, 6);
+      textCenter(x + w / 2, 164, t("Draw? D accepts"), textPrimary, small);
     } else if(m.drawOffer == Duel::OfferedByMe) {
-      panel(x, 150, w, 22, card, 6);
-      textCenter(x + w / 2, 164, fit(t("You offered a draw"), w - 8, small), dim, small);
+      panel(x, 150, w, 22, surfaceCard, 6);
+      textCenter(x + w / 2, 164, fit(t("You offered a draw"), w - 8, small), textMuted, small);
     } else if(m.myTurn()) {
       ck::Move list[ck::MaxMoves];
       unsigned n = ckMoves(list);
       if(n && list[0].capture) {
-        panel(x, 150, w, 22, rgb(0x4a3410), 6);
+        panel(x, 150, w, 22, warnDeep, 6);
         textCenter(x + w / 2, 164, fit(t("You must capture"), w - 8, small), warn, small);
       }
     }
   }
-  panel(x, 176, w, 42, card, 6);
+  panel(x, 176, w, 42, surfaceCard, 6);
   colorDisc(x + 10, 188, m.mine);
-  text(x + 20, 192, t("You"), ink, bold);
-  textRight(x + w - 6, 191, String(m.game.pos.count(m.mine)), dim, small);
+  text(x + 20, 192, t("You"), textPrimary, bold);
+  textRight(x + w - 6, 191, String(m.game.pos.count(m.mine)), textMuted, small);
   String rows[2];
   unsigned n = wrap(duelState(m, true), rows, 2, w - 10, small);
   String deliver = duelDelivery(m);
   bool failed = m.link() == ChatMessage::Failed;
   if(n == 1 && deliver.length() && (failed || !m.myTurn())) {
     text(x + 6, 204, rows[0], duelStateColor(m), small);
-    text(x + 6, 214, fit(deliver, w - 10, small), failed ? bad : faint, small);
+    text(x + 6, 214, fit(deliver, w - 10, small), failed ? bad : textSubtle, small);
   } else
     for(unsigned i = 0; i < n; i++) text(x + 6, 204 + i * 10, rows[i], duelStateColor(m), small);
 }
@@ -348,8 +348,8 @@ void drawSeaTarget() {
   auto& d = g();
   const Duel& m = *duelOpen;
   bool aiming = m.state == Duel::Playing;
-  for(int c = 0; c < sea::Size; c++) textCenter(SeaX + c * SeaCell + SeaCell / 2, SeaY - 3, String(char('a' + c)), aiming && c == seaCursor % sea::Size ? accent : dim, small);
-  for(int r = 0; r < sea::Size; r++) textRight(SeaX - 3, SeaY + r * SeaCell + 12, String(r + 1), aiming && r == seaCursor / sea::Size ? accent : dim, small);
+  for(int c = 0; c < sea::Size; c++) textCenter(SeaX + c * SeaCell + SeaCell / 2, SeaY - 3, String(char('a' + c)), aiming && c == seaCursor % sea::Size ? accent : textMuted, small);
+  for(int r = 0; r < sea::Size; r++) textRight(SeaX - 3, SeaY + r * SeaCell + 12, String(r + 1), aiming && r == seaCursor / sea::Size ? accent : textMuted, small);
   d.fillRect(SeaX, SeaY, SeaCell * sea::Size + 1, SeaCell * sea::Size + 1, seaGrid);
   for(int c = 0; c < sea::Cells; c++) {
     int x = SeaX + (c % sea::Size) * SeaCell + 1, y = SeaY + (c / sea::Size) * SeaCell + 1, s = SeaCell - 1, cx = x + s / 2, cy = y + s / 2;
@@ -359,18 +359,18 @@ void drawSeaTarget() {
                                                      : shown || lie       ? seaShown
                                                      : m.target.around(c) ? seaKnown
                                                                           : seaWater);
-    if(mark == sea::Miss) d.fillCircle(cx, cy, 2, lie ? bad : dim);
+    if(mark == sea::Miss) d.fillCircle(cx, cy, 2, lie ? bad : graphicMuted);
     if(lie) d.drawRect(x, y, s, s, bad);
     else if(mark == sea::Hit || mark == sea::Sunk) {
-      thickLine(x + 3, y + 3, x + s - 5, y + s - 4, ink);
-      thickLine(x + s - 5, y + 3, x + 3, y + s - 4, ink);
+      thickLine(x + 3, y + 3, x + s - 5, y + s - 4, graphicPrimary);
+      thickLine(x + s - 5, y + 3, x + 3, y + s - 4, graphicPrimary);
     } else if(c == m.aim) {
       d.drawCircle(cx, cy, 5, warn);
       d.drawCircle(cx, cy, 4, warn);
       d.drawFastHLine(cx - 7, cy, 15, warn);
       d.drawFastVLine(cx, cy - 7, 15, warn);
     } // my shot waits for the answer
-    if(c == m.lastOut && c != m.aim) d.drawRect(x - 1, y - 1, s + 2, s + 2, ink);
+    if(c == m.lastOut && c != m.aim) d.drawRect(x - 1, y - 1, s + 2, s + 2, graphicPrimary);
   }
   if(aiming) {
     int x = SeaX + (seaCursor % sea::Size) * SeaCell, y = SeaY + (seaCursor / sea::Size) * SeaCell;
@@ -389,14 +389,14 @@ void drawSeaHome() {
     d.fillRect(x, y, s, s, ship < 0 ? seaWater : !shot             ? seaShip
                                                : m.home.sunk(ship) ? seaSunk
                                                                    : seaHit);
-    if(shot && ship < 0) d.fillRect(x + s / 2 - 1, y + s / 2 - 1, 2, 2, dim);
+    if(shot && ship < 0) d.fillRect(x + s / 2 - 1, y + s / 2 - 1, 2, 2, graphicMuted);
     if(c == m.lastIn) d.drawRect(x - 1, y - 1, s + 2, s + 2, warn);
   }
 }
 void drawSeaSide() {
   const Duel& m = *duelOpen;
   int x = 198, w = 116;
-  text(x, 31, t("Your fleet"), dim, small);
+  text(x, 31, t("Your fleet"), textMuted, small);
   unsigned left = m.home.shipsLeft();
   textRight(314, 31, String(left) + "/" + String(sea::Ships), left < sea::Ships ? warn : ok, small);
   drawSeaHome();
@@ -405,7 +405,7 @@ void drawSeaSide() {
   for(unsigned i = 0; i < n; i++) text(x, 145 + i * 14, rows[i], duelStateColor(m), bold);
   int y = n > 1 ? 178 : 166;
   if(m.state == Duel::Playing || m.state == Duel::Over) {
-    text(x, y, fit(t("Sunk: ") + String(m.target.sunkShips()) + t(" of ") + String(sea::Ships), w, small), ink, small);
+    text(x, y, fit(t("Sunk: ") + String(m.target.sunkShips()) + t(" of ") + String(sea::Ships), w, small), textPrimary, small);
     y += 11;
     if(m.lastOut >= 0) {
       char c[4];
@@ -414,47 +414,47 @@ void drawSeaSide() {
       text(x, y, fit(t("You: ") + c + " " + seaWord(mk == sea::Miss ? sea::AnswerMiss : mk == sea::Hit ? sea::AnswerHit
                                                                                                        : sea::AnswerSunk),
                      w, small),
-           mk == sea::Miss ? dim : ok, small);
+           mk == sea::Miss ? textMuted : ok, small);
       y += 11;
     }
     if(m.lastIn >= 0) {
       char c[4];
       sea::cellName(m.lastIn, c);
-      text(x, y, fit(t("They: ") + c + " " + seaWord(m.lastAnswer), w, small), m.lastAnswer == sea::AnswerMiss ? dim : bad, small);
+      text(x, y, fit(t("They: ") + c + " " + seaWord(m.lastAnswer), w, small), m.lastAnswer == sea::AnswerMiss ? textMuted : bad, small);
       y += 11;
     }
   } else {
-    text(x, y, fit(t("S reshuffles your fleet"), w, small), faint, small);
+    text(x, y, fit(t("S reshuffles your fleet"), w, small), textSubtle, small);
     y += 11;
   }
   String deliver = duelDelivery(m);
   bool failed = m.link() == ChatMessage::Failed;
   if(m.state == Duel::Over && m.revealed && !m.fair) text(x, 214, fit(t("Answers do not match the fleet!"), w, small), bad, small);
-  else if(m.state == Duel::Over && m.result == Duel::Lost && !m.revealed && m.reason == Duel::Rules) text(x, 214, fit(t("Waiting for their fleet"), w, small), faint, small);
-  else if(deliver.length() && y <= 214) text(x, 214, fit(deliver, w, small), failed ? bad : faint, small);
+  else if(m.state == Duel::Over && m.result == Duel::Lost && !m.revealed && m.reason == Duel::Rules) text(x, 214, fit(t("Waiting for their fleet"), w, small), textSubtle, small);
+  else if(deliver.length() && y <= 214) text(x, 214, fit(deliver, w, small), failed ? bad : textSubtle, small);
 }
 void drawDuelHelp() {
   uint16_t* px = g().getBuffer();
   for(int i = 0; i < 320 * 240; i++) px[i] = (px[i] >> 1) & 0x7bef;
   bool sea = duelOpen && duelOpen->kind == Duel::Sea;
-  panel(6, 24, 308, 194, cardHi, 10);
-  g().drawRoundRect(6, 24, 308, 194, 10, line);
-  text(16, 42, sea ? t("Sea battle keys") : t("Checkers keys"), ink, bold);
+  panel(6, 24, 308, 194, surfaceFocus, 10);
+  g().drawRoundRect(6, 24, 308, 194, 10, border);
+  text(16, 42, sea ? t("Sea battle keys") : t("Checkers keys"), textPrimary, bold);
   Hint keys[] = {{"<>", sea ? t("Aim at their field (also ^v)") : t("Move the cursor (also ^v)")}, {"OK", sea ? t("Fire; a hit shoots again") : t("Take a man / put it")}, {"BACK", sea ? t("To the games") : t("Put back / to the games")}, {sea ? "S" : "D", sea ? t("Reshuffle the fleet before the first shot") : t("Offer a draw / accept one")}, {"X", t("Resign (press twice)")}, {"R", t("Resend what was not delivered")}, {"N", t("Play again after the game")}, {"DEL", t("Decline, cancel, remove")}};
   for(int i = 0; i < 8; i++) {
     int y = 52 + i * 17;
-    g().fillRoundRect(16, y, 30, 13, 3, line);
+    g().fillRoundRect(16, y, 30, 13, 3, border);
     if(!strcmp(keys[i].key, "<>")) {
-      tri(26, y + 6, 3, 3, ink);
-      tri(35, y + 6, 1, 3, ink);
-    } else textCenter(31, y + 10, keys[i].key, ink, small);
-    text(54, y + 11, fit(keys[i].action, 252), i % 2 ? dim : ink);
+      tri(26, y + 6, 3, 3, iconPrimary);
+      tri(35, y + 6, 1, 3, iconPrimary);
+    } else textCenter(31, y + 10, keys[i].key, textPrimary, small);
+    text(54, y + 11, fit(keys[i].action, 252), i % 2 ? textMuted : textPrimary);
   }
-  text(16, 202, fit(sea ? t("Shots are sent as direct messages with ACK.") : t("Moves are sent as direct messages with ACK."), 290, small), faint, small);
+  text(16, 202, fit(sea ? t("Shots are sent as direct messages with ACK.") : t("Moves are sent as direct messages with ACK."), 290, small), textSubtle, small);
 }
 void drawDuelGame() {
   if(!duelOpen || duelOpen->state == Duel::Free) {
-    textCenter(160, 110, t("The game was removed"), dim);
+    textCenter(160, 110, t("The game was removed"), textMuted);
     footer({{"BACK", t("Games")}});
     return;
   }
@@ -543,12 +543,12 @@ void ckAct() {
   if(!m.myTurn()) {
     notice(m.state == Duel::Playing ? t("Wait for their move") : m.state == Duel::Inviting ? t("Waiting for the reply")
                                                                                            : t("The game is over"),
-           dim);
+           graphicMuted);
     return;
   }
   int s = ckSquare();
   if(s < 0) {
-    notice(t("Men stand on the dark squares"), dim);
+    notice(t("Men stand on the dark squares"), graphicMuted);
     return;
   }
   if(s == duelHeld) {
@@ -584,7 +584,7 @@ void seaAct() {
   if(!m.myTurn()) {
     notice(m.state != Duel::Playing ? (m.state == Duel::Inviting ? t("Waiting for the reply") : t("The game is over")) : m.aim >= 0 ? t("Waiting for the answer to your shot")
                                                                                                                                     : t("Wait for their shot"),
-           dim);
+           graphicMuted);
     return;
   }
   if(!m.target.open(seaCursor)) {
@@ -625,7 +625,7 @@ bool duelKey(int key) {
       duelSortRows();
       Duel& m = *duelRows[selected - 1];
       if(m.state != Duel::Over) {
-        notice(t("Only finished games can be removed"), dim);
+        notice(t("Only finished games can be removed"), graphicMuted);
         return true;
       }
       if(!duelRemoveArmed) {
@@ -718,25 +718,25 @@ bool duelKey(int key) {
     if(duels.resend(m)) notice(t("Sent again"), ok);
     else notice(m.sending() ? t("Already sending") : m.link() == ChatMessage::Failed ? t("Radio busy, will resend")
                                                                                      : t("Nothing to resend"),
-                dim);
+                graphicMuted);
     return true;
   }
   if(key == 's' && sea) {
     if(duels.shuffle(m)) {
       hardware.ping(1100, 20);
       notice(t("Fleet reshuffled"), ok);
-    } else notice(t("Too late: they have shot at it"), dim);
+    } else notice(t("Too late: they have shot at it"), graphicMuted);
     return true;
   }
   if(key == 'd' && !sea) {
     bool theirs = m.drawOffer == Duel::OfferedToMe;
     if(duels.draw(m)) notice(theirs ? t("Draw accepted") : t("Draw offered"), theirs ? ok : info);
-    else notice(m.drawOffer == Duel::OfferedByMe ? t("Draw already offered") : t("No game in progress"), dim);
+    else notice(m.drawOffer == Duel::OfferedByMe ? t("Draw already offered") : t("No game in progress"), graphicMuted);
     return true;
   }
   if(key == 'x') {
     if(m.state != Duel::Playing) {
-      notice(t("No game in progress"), dim);
+      notice(t("No game in progress"), graphicMuted);
       return true;
     }
     if(!duelResignArmed) {
@@ -748,12 +748,12 @@ bool duelKey(int key) {
     duelHeld = -1;
     duels.resign(m);
     hardware.ping(600, 200);
-    notice(t("You resigned"), dim);
+    notice(t("You resigned"), graphicMuted);
     return true;
   }
   if(key == 'n') {
     if(m.state != Duel::Over) {
-      notice(t("Finish this game first"), dim);
+      notice(t("Finish this game first"), graphicMuted);
       return true;
     }
     duelKind = m.kind;
@@ -765,7 +765,7 @@ bool duelKey(int key) {
     bool fresh = m.state == Duel::Playing && (sea ? !m.shots && m.aim < 0 : !m.game.plies);
     if(m.state == Duel::Invited || m.state == Duel::Inviting || fresh) {
       bool mineInvite = m.state != Duel::Invited;
-      if(duels.decline(m)) notice(mineInvite ? t("Game cancelled") : t("Invitation declined"), dim);
+      if(duels.decline(m)) notice(mineInvite ? t("Game cancelled") : t("Invitation declined"), graphicMuted);
       return true;
     }
     if(m.state == Duel::Over) {
@@ -782,7 +782,7 @@ bool duelKey(int key) {
       notice(t("Game removed"), ok);
       return true;
     }
-    notice(t("Resign with X"), dim);
+    notice(t("Resign with X"), graphicMuted);
     return true;
   }
   return false;
@@ -834,9 +834,9 @@ void drawLockDuel(int y) {
   const Duel& m = *lockDuel();
   bool sea = m.kind == Duel::Sea;
   String head, sub;
-  panel(40, y, 240, 40, card, 8);
-  ring(40, y, 240, 40, 8, rgb(0x14524b));
-  icon(sea ? IcShip : IcCheckers, 62, y + 20, 9, accent, card);
+  panel(40, y, 240, 40, surfaceCard, 8);
+  ring(40, y, 240, 40, 8, accentDeep);
+  icon(sea ? IcShip : IcCheckers, 62, y + 20, 9, accent, surfaceCard);
   if(config.lockDetails) {
     head = String(m.name);
     if(!sea && m.game.plies && (m.myTurn() || m.state == Duel::Over)) head += ": " + ckLast(m);
@@ -845,7 +845,7 @@ void drawLockDuel(int y) {
     head = sea ? t("Sea battle") : t("Checkers");
     sub = duelTileDetail(m.kind);
   }
-  text(80, y + 16, fit(head, 192, bold), ink, bold);
+  text(80, y + 16, fit(head, 192, bold), textPrimary, bold);
   text(80, y + 32, fit(sub, 192, small), duelStateColor(m), small);
 }
 void duelTick() {

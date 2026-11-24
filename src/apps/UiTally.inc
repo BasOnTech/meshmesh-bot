@@ -14,8 +14,8 @@ void drawTally() {
   bool adding = tallyAdding();
   int total = n + (n < people::Counters), pos = adding ? n : c.current;
   if(total > 1) {
-    panel(8, 36, 13, 134, card, 5);
-    panel(299, 36, 13, 134, card, 5);
+    panel(8, 36, 13, 134, surfaceCard, 5);
+    panel(299, 36, 13, 134, surfaceCard, 5);
     target(0, 24, 26, 160, -KeyLeft);
     target(294, 24, 26, 160, -KeyRight);
     int before = (pos + total - 1) % total, after = (pos + 1) % total;
@@ -23,48 +23,48 @@ void drawTally() {
     if(after < int(n)) d.fillRoundRect(309, 36, 3, 134, 1, tallyHue(after));
   }
   if(adding) {
-    ring(26, 26, 268, 154, 10, line);
+    ring(26, 26, 268, 154, 10, border);
     d.fillRoundRect(146, 82, 28, 5, 2, accent);
     d.fillRoundRect(158, 70, 5, 29, 2, accent);
-    textCenter(160, 124, t("New counter"), ink, bold);
-    textCenter(160, 144, t("OK: add"), dim, small);
+    textCenter(160, 124, t("New counter"), textPrimary, bold);
+    textCenter(160, 144, t("OK: add"), textMuted, small);
     target(26, 26, 268, 154, -Enter);
   } else {
     uint16_t hue = tallyHue(c.current);
-    panel(26, 26, 268, 154, card, 10);
+    panel(26, 26, 268, 154, surfaceCard, 10);
     d.fillRoundRect(26, 26, 268, 6, 3, hue);
     target(40, 124, 104, 32, -KeyDown);
     target(176, 124, 104, 32, -Enter);
     target(26, 26, 268, 96, -Enter);
     String index = String(c.current + 1) + "/" + String(n);
-    textRight(282, 52, index, dim, small);
-    text(40, 52, fit(people::name(c.current), 230 - measure(index, small), bold), ink, bold);
+    textRight(282, 52, index, textMuted, small);
+    text(40, 52, fit(people::name(c.current), 230 - measure(index, small), bold), textPrimary, bold);
     String v = String(people::value());
     bool large = measure(v, digits) <= 240;
-    textCenter(160, large ? 112 : 100, v, ink, large ? digits : big);
-    panel(40, 124, 104, 32, bg, 8);
-    textCenter(92, 145, "-1", people::value() ? ink : faint, bold);
-    panel(176, 124, 104, 32, mix(dice::colors[people::current().color % dice::Colors], 0x131a22, .6f), 8);
-    textCenter(228, 145, "+1", ink, bold);
+    textCenter(160, large ? 112 : 100, v, textPrimary, large ? digits : big);
+    panel(40, 124, 104, 32, surfaceWell, 8);
+    textCenter(92, 145, "-1", people::value() ? textPrimary : textSubtle, bold);
+    panel(176, 124, 104, 32, mix(dice::colors[people::current().color % dice::Colors], theme->surfaceCard, .6f), 8);
+    textCenter(228, 145, "+1", textPrimary, bold);
     if(people::settings.ble || people::settings.wifi) {
       String near = t("Nearby: ");
       if(people::settings.ble) near += "BLE " + String(people::count(false)) + (people::saturated(false) ? "+" : "");
       if(people::settings.wifi) near += String(people::settings.ble ? " · " : "") + "Wi-Fi " + String(people::count(true)) + (people::saturated(true) ? "+" : "");
-      textCenter(160, 172, near, dim, small);
+      textCenter(160, 172, near, textMuted, small);
     }
   }
   // A dot for every card, the open one larger, and a "+" for a new one.
   int x = 160 - (total - 1) * 7;
   for(int i = 0; i < total; i++, x += 14) {
     bool on = i == pos;
-    if(i < int(n)) d.fillCircle(x, 193, on ? 4 : 2, on ? tallyHue(i) : faint);
+    if(i < int(n)) d.fillCircle(x, 193, on ? 4 : 2, on ? tallyHue(i) : graphicSubtle);
     else {
-      uint16_t k = on ? accent : faint;
+      uint16_t k = on ? accent : graphicSubtle;
       d.drawFastHLine(x - 3, 193, 7, k);
       d.drawFastVLine(x, 190, 7, k);
     }
   }
-  textCenter(160, 211, t("N: name  C: colour  R: reset  DEL: delete  B: BLE"), faint, small);
+  textCenter(160, 211, t("N: name  C: colour  R: reset  DEL: delete  B: BLE"), textSubtle, small);
   if(adding) footer({{"OK", t("Add")}, {"<>", t("Cards")}, {"BACK", t("Exit")}});
   else footer({{"OK", "+1"}, {"^v", "-1"}, {"<>", t("Cards")}, {"N", t("Name")}});
 }
@@ -123,7 +123,7 @@ bool tallyKey(int key) {
   if(key == 'r') {
     if(tallyConfirm('r')) {
       people::set(c.current, 0);
-      notice(t("Counter reset"), dim);
+      notice(t("Counter reset"), graphicMuted);
     }
     return true;
   }
@@ -131,7 +131,7 @@ bool tallyKey(int key) {
     if(n < 2) notice(t("The last counter stays"), warn);
     else if(tallyConfirm(Erase)) {
       people::remove(c.current);
-      notice(t("Counter deleted"), dim);
+      notice(t("Counter deleted"), graphicMuted);
     }
     return true;
   }

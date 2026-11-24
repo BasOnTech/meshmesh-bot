@@ -68,11 +68,11 @@ String diceRetText(const dice::Result& r) {
 void drawDie(int cx, int cy, uint8_t shape, unsigned value, const String& label, bool negative, int s = 13) {
   unsigned top = shape < dice::D66 ? dice::faces(shape) : 0;
   bool high = top && value == top, one = top >= 4 && value == 1;
-  uint32_t fill = negative ? 0x8d99a6 : shape == dice::D66 || shape == dice::DPercent ? 0x1fc2ae
-                                      : high                                          ? 0x4cc26b
-                                      : one                                           ? 0xe5564d
-                                                                                      : 0xe4e9ee;
-  uint16_t face = one ? ink : bg;
+  uint32_t fill = negative ? theme->graphicMuted : shape == dice::D66 || shape == dice::DPercent ? theme->accent
+                                                 : high                                          ? theme->ok
+                                                 : one                                           ? theme->bad
+                                                                                                 : theme->graphicPrimary;
+  uint16_t face = one ? graphicPrimary : onFill;
   drawDieShape(g(), shape, cx, cy, s, rgb(fill), mix(fill, 0x000000, .25f), face, shape == dice::D6 && s >= 10 ? value : 0);
   if(shape == dice::D6 && value >= 1 && value <= 6 && s >= 10) return;
   bool tiny = label.length() > 2 || s < 10;
@@ -88,17 +88,17 @@ void diceTabs() {
     String n = diceModeName(m);
     int w = measure(n) + 16;
     bool on = dicer.s.mode == m;
-    panel(x, 25, w, 18, on ? cardHi : card, 5);
-    text(x + 8, 38, n, on ? ink : dim);
+    panel(x, 25, w, 18, on ? surfaceFocus : surfaceCard, 5);
+    text(x + 8, 38, n, on ? textPrimary : textMuted);
     if(on) g().fillRoundRect(x + 6, 40, w - 12, 2, 1, accent);
     diceSpot(x, 23, w, 22, TapTab, m);
     x += w + 4;
   }
   String who = fit(dicer.heroName(dicer.s.character), 306 - x - 24, small);
   int w = measure(who, small);
-  icon(IcPerson, 306 - w - 8, 33, 5, dicer.offered ? warn : dicer.s.character ? violet
-                                                                              : faint);
-  textRight(310, 37, who, dicer.s.character ? ink : dim, small);
+  icon(IcPerson, 306 - w - 8, 33, 5, dicer.offered ? warn : dicer.s.character ? secondary
+                                                                              : iconSubtle);
+  textRight(310, 37, who, dicer.s.character ? textPrimary : textMuted, small);
   diceSpot(306 - w - 16, 23, w + 20, 22, TapHero, 0);
   if(dicer.offered) g().fillCircle(306 - w - 3, 28, 3, warn);
 }
@@ -106,15 +106,15 @@ void diceTabs() {
 void drawDiceRpg() {
   const dice::Result* r = dicer.last();
   bool spin = diceSpinning();
-  panel(8, 48, 200, 148, card, 10);
+  panel(8, 48, 200, 148, surfaceCard, 10);
   diceSpot(8, 48, 200, 148, TapRoll, 0);
   if(!r) {
-    icon(IcDice, 108, 104, 20, faint, card);
-    textCenter(108, 152, t("OK: roll ") + dicer.poolText(), dim);
-    textCenter(108, 168, t("E: any formula, 3d8+2"), faint, small);
+    icon(IcDice, 108, 104, 20, iconSubtle, surfaceCard);
+    textCenter(108, 152, t("OK: roll ") + dicer.poolText(), textMuted);
+    textCenter(108, 168, t("E: any formula, 3d8+2"), textSubtle, small);
   } else {
     String head = r->label[0] ? String(r->label) + " · " + dice::readable(r->formula) : dice::readable(r->formula);
-    text(16, 62, fit(head, 184, small), r->label[0] ? violet : dim, small);
+    text(16, 62, fit(head, 184, small), r->label[0] ? secondary : textMuted, small);
     // Dice and numbers flow in rows of 30 px; more than two rows: the values as text.
     auto partLabel = [&](unsigned i) {unsigned v=r->value[i];return r->kind[i]==dice::PartNumber?String(r->negative[i]?"-":"+")+String(v):r->kind[i]==dice::PartPercent?dice::valueText(dice::DPercent,v):String(v); };
     auto partWidth = [&](unsigned i) { return r->kind[i] == dice::PartNumber ? measure(partLabel(i), bold) + 10 : r->shape[i] >= dice::D66 ? 33
@@ -133,7 +133,7 @@ void drawDiceRpg() {
     if(many) {
       String rows[6];
       unsigned n = wrap(dicer.resultText(*r, false), rows, r->special ? 6 : 4, 184);
-      for(unsigned i = 0; i < n; i++) text(16, 84 + i * 15, rows[i], ink);
+      for(unsigned i = 0; i < n; i++) text(16, 84 + i * 15, rows[i], textPrimary);
     } else {
       x = 16;
       row = 0;
@@ -170,32 +170,32 @@ void drawDiceRpg() {
       String total = String(r->total);
       int tw = measure(total, digits);
       textRight(198, 190, total, warn, digits);
-      text(198 - tw - 16, 180, "=", dim, big);
+      text(198 - tw - 16, 180, "=", textMuted, big);
       if(r->parts > 1 && !many) {
         String rows[2];
         unsigned n = wrap(dicer.resultText(*r, false), rows, 2, max(40, 198 - tw - 34), small);
-        for(unsigned i = 0; i < n; i++) text(16, 178 + i * 10, rows[i], dim, small);
+        for(unsigned i = 0; i < n; i++) text(16, 178 + i * 10, rows[i], textMuted, small);
       }
-    } else if(r->special && !spin) text(16, 188, t("d66 and d%: each die on its own"), faint, small);
+    } else if(r->special && !spin) text(16, 188, t("d66 and d%: each die on its own"), textSubtle, small);
   }
   // The pool: count and die, the modifier; the eight dice below.
-  panel(214, 48, 98, 40, cardHi, 8);
+  panel(214, 48, 98, 40, surfaceFocus, 8);
   diceSpot(214, 48, 98, 40, TapRoll, 0);
   String pool = dicer.poolText();
   const Face& pf = measure(pool, big) <= 90 ? big : bold;
-  textCenter(263, pf.main == big.main ? 75 : 72, pool, ink, pf);
+  textCenter(263, pf.main == big.main ? 75 : 72, pool, textPrimary, pf);
   for(int i = 0; i < dice::TypeCount; i++) {
     int x = 214 + (i % 2) * 50, y = 93 + (i / 2) * 22;
     bool on = dicer.s.type == i;
-    panel(x, y, 48, 19, on ? accent : card, 5);
-    textCenter(x + 24, y + 14, dice::typeNames[i], on ? bg : ink);
+    panel(x, y, 48, 19, on ? accent : surfaceCard, 5);
+    textCenter(x + 24, y + 14, dice::typeNames[i], on ? onFill : textPrimary);
     diceSpot(x, y, 48, 19, TapType, i);
   }
-  text(214, 193, "^v N  <> dX  +/- MOD", faint, small);
+  text(214, 193, "^v N  <> dX  +/- MOD", textSubtle, small);
   // The rolls before this one, newest first.
   int x = 8;
   if(dicer.resultCount > 1) {
-    text(x, 212, t("Before:"), faint, small);
+    text(x, 212, t("Before:"), textSubtle, small);
     x += measure(t("Before:"), small) + 6;
   }
   for(int i = int(dicer.resultCount) - 2; i >= 0 && x < 300; i--) {
@@ -203,11 +203,11 @@ void drawDiceRpg() {
     String v = p.special ? String(p.formula) : String(p.total);
     int w = measure(v, small);
     if(x + w > 304) break;
-    text(x, 212, v, dim, small);
+    text(x, 212, v, textMuted, small);
     x += w + 10;
   }
   unsigned saved = dicer.savedCount();
-  textRight(312, 212, t("S: saved ") + String(saved), saved ? accent : faint, small);
+  textRight(312, 212, t("S: saved ") + String(saved), saved ? accent : textSubtle, small);
 }
 // Warhammer: ten dice a row; chosen blue, rolled green, under the threshold red.
 void drawDiceGrid() {
@@ -221,25 +221,25 @@ void drawDiceGrid() {
     unsigned v = dicer.grid[i];
     if(spin && chosen) v = s.gridType == dice::D66 ? (1 + rand() % 6) * 10 + 1 + rand() % 6 : 1 + rand() % top;
     bool pass = !s.thresholdOn || v >= s.threshold;
-    uint16_t fill = rolled   ? (spin ? cardHi : pass ? rgb(0x2f8f4e)
-                                                     : rgb(0xa8322c))
+    uint16_t fill = rolled   ? (spin ? surfaceFocus : pass ? rgb(0x2f8f4e)
+                                                           : rgb(0xa8322c))
                     : chosen ? rgb(0x2f5f9e)
-                             : card;
+                             : surfaceCard;
     d.fillRoundRect(x, y, 27, 24, 5, fill);
-    if(int(i) == int(s.gridChosen) - 1) ring(x - 1, y - 1, 29, 26, 6, ink);
-    if(chosen) textCenter(x + 13, y + 16, dice::valueText(s.gridType, v), ink, rolled ? bold : body);
+    if(int(i) == int(s.gridChosen) - 1) ring(x - 1, y - 1, 29, 26, 6, graphicPrimary);
+    if(chosen) textCenter(x + 13, y + 16, dice::valueText(s.gridType, v), textPrimary, rolled ? bold : body);
     diceSpot(x, y, 27, 24, TapCell, i);
   }
   if(s.gridSize < dice::GridMax) {
     unsigned i = s.gridSize;
     int x = 11 + (i % 10) * 30, y = 49 + (i / 10) * 27;
-    d.drawRoundRect(x, y, 27, 24, 5, line);
-    textCenter(x + 13, y + 17, "+", dim, bold);
+    d.drawRoundRect(x, y, 27, 24, 5, border);
+    textCenter(x + 13, y + 17, "+", textMuted, bold);
     diceSpot(x, y, 27, 24, TapAdd, 0);
   }
   int y = 196;
   String what = s.gridChosen ? String(s.gridChosen) + " × " + dice::typeNames[s.gridType] : t("Choose dice: arrows");
-  text(8, y, what, ink, bold);
+  text(8, y, what, textPrimary, bold);
   int x = 8 + measure(what, bold) + 10;
   if(dicer.gridRolled && s.thresholdOn && !spin) {
     String n = count(dicer.gridSuccesses(), "success", "successes");
@@ -249,12 +249,12 @@ void drawDiceGrid() {
     unsigned sum = 0;
     for(unsigned i = 0; i < s.gridChosen; i++) sum += dicer.grid[i];
     String n = t("sum ") + String(sum);
-    text(x, y, n, dim);
+    text(x, y, n, textMuted);
     x += measure(n) + 8;
   }
   String th = s.thresholdOn ? t("Threshold ") + dice::valueText(s.gridType, s.threshold) + "+" : t("No threshold");
-  textRight(312, y, th, s.thresholdOn ? warn : faint, small);
-  text(8, 212, t("A: +5 dice   R: reset   D: die   T, +/-: threshold"), faint, small);
+  textRight(312, y, th, s.thresholdOn ? warn : textSubtle, small);
+  text(8, 212, t("A: +5 dice   R: reset   D: die   T, +/-: threshold"), textSubtle, small);
 }
 // The sheet: blocks in rows of twelve columns over 304 px, each row as tall as its tallest block.
 struct SheetBox {
@@ -312,11 +312,11 @@ void drawSheetBlock(unsigned i, int x, int y, int w, int h, bool focus) {
   uint32_t hue = dice::colors[b.color % dice::Colors];
   uint16_t c = rgb(hue);
   if(b.kind == dice::Header) {
-    text(x + 2, y + 13, fit(b.name, w - 4, bold), focus ? ink : dim, bold);
-    d.drawFastHLine(x, y + 16, w, focus ? accent : line);
+    text(x + 2, y + 13, fit(b.name, w - 4, bold), focus ? textPrimary : textMuted, bold);
+    d.drawFastHLine(x, y + 16, w, focus ? accent : border);
     return;
   }
-  panel(x, y, w, h, focus ? cardHi : card, 6);
+  panel(x, y, w, h, focus ? surfaceFocus : surfaceCard, 6);
   if(focus) ring(x, y, w, h, 6, b.kind == dice::Stat ? c : accent);
   switch(b.kind) {
   case dice::Stat: {
@@ -326,47 +326,47 @@ void drawSheetBlock(unsigned i, int x, int y, int w, int h, bool focus) {
            badge = dicer.badge(i);
     if(w < 90) {
       int r = min(w / 2 - 6, 17), cy = y + 4 + r;
-      drawStatShape(d, b.shape, x + w / 2, cy, r, mix(hue, 0x131a22, .72f), c);
+      drawStatShape(d, b.shape, x + w / 2, cy, r, mix(hue, theme->surfaceCard, .72f), c);
       const Face& f = measure(v, bold) <= 2 * r - 4 ? bold : small;
       textCenter(x + w / 2, cy + (f.main == bold.main ? 5 : 4), v, bad1 ? bad : derived ? info
-                                                                                        : ink,
+                                                                                        : textPrimary,
                  f);
-      textCenter(x + w / 2, y + 47, fit(b.name, w - 4, small), focus ? ink : dim, small);
-      if(badge.length() && !bad1) textCenter(x + w / 2, y + 57, badge, b.rule == dice::Ret ? violet : accent, small);
+      textCenter(x + w / 2, y + 47, fit(b.name, w - 4, small), focus ? textPrimary : textMuted, small);
+      if(badge.length() && !bad1) textCenter(x + w / 2, y + 57, badge, b.rule == dice::Ret ? secondary : accent, small);
     } else {
       int r = min(h / 2 - 4, 15), cx = x + 6 + r, cy = y + h / 2;
-      drawStatShape(d, b.shape, cx, cy, r, mix(hue, 0x131a22, .72f), c);
+      drawStatShape(d, b.shape, cx, cy, r, mix(hue, theme->surfaceCard, .72f), c);
       const Face& f = measure(v, bold) <= 2 * r - 2 ? bold : small;
       textCenter(cx, cy + (f.main == bold.main ? 5 : 4), v, bad1 ? bad : derived ? info
-                                                                                 : ink,
+                                                                                 : textPrimary,
                  f);
       int tx = cx + r + 8;
-      text(tx, y + 16, fit(b.name, x + w - tx - 4, small), focus ? ink : dim, small);
-      if(badge.length() && !bad1) text(tx, y + 31, badge, b.rule == dice::Ret ? violet : accent, bold);
+      text(tx, y + 16, fit(b.name, x + w - tx - 4, small), focus ? textPrimary : textMuted, small);
+      if(badge.length() && !bad1) text(tx, y + 31, badge, b.rule == dice::Ret ? secondary : accent, bold);
     }
     break;
   }
   case dice::Track: {
     int v = dicer.value(i), m = dicer.maxOf(i);
     d.fillRoundRect(x, y, 4, h, 2, c);
-    text(x + 9, y + 13, fit(b.name, w - 70, small), focus ? ink : dim, small);
+    text(x + 9, y + 13, fit(b.name, w - 70, small), focus ? textPrimary : textMuted, small);
     if(m > 0) {
       String val = String(v) + "/" + String(m);
-      textRight(x + w - 6, y + 14, val, v <= 0 ? bad : ink, bold);
+      textRight(x + w - 6, y + 14, val, v <= 0 ? bad : textPrimary, bold);
       int bw = w - 16, fillW = constrain(v, 0, m) * bw / m;
-      d.fillRoundRect(x + 9, y + 20, bw, 8, 3, line);
+      d.fillRoundRect(x + 9, y + 20, bw, 8, 3, border);
       if(fillW) d.fillRoundRect(x + 9, y + 20, fillW, 8, 3, v * 4 <= m ? bad : c);
-    } else textCenter(x + w / 2, y + h - 7, String(v), ink, big);
+    } else textCenter(x + w / 2, y + h - 7, String(v), textPrimary, big);
     break;
   }
   case dice::Pips: {
     int m = dicer.maxOf(i), v = dicer.value(i);
-    text(x + 6, y + 12, fit(b.name, w - 12, small), focus ? ink : dim, small);
+    text(x + 6, y + 12, fit(b.name, w - 12, small), focus ? textPrimary : textMuted, small);
     int step = min(14, (w - 12) / max(1, m)), r = min(5, step / 2 - 1);
     for(int k = 0; k < m; k++) {
       int cx = x + 6 + r + k * step, cy = y + 23;
       if(k < v) d.fillCircle(cx, cy, r, c);
-      else { d.drawCircle(cx, cy, r, faint); }
+      else { d.drawCircle(cx, cy, r, graphicSubtle); }
     }
     break;
   }
@@ -378,19 +378,19 @@ void drawSheetBlock(unsigned i, int x, int y, int w, int h, bool focus) {
                                        : b.use[0] && b.spend ? String("-") + String(b.spend) + " " + b.use
                                                              : String();
     int sw = side.length() ? measure(side, small) + 6 : 0;
-    text(x + 17, y + 15, fit(b.name, w - 24 - sw, focus ? bold : body), focus ? ink : dim, focus ? bold : body);
+    text(x + 17, y + 15, fit(b.name, w - 24 - sw, focus ? bold : body), focus ? textPrimary : textMuted, focus ? bold : body);
     if(sw) textRight(x + w - 5, y + 15, side, broken ? bad : focus ? accent
-                                                                   : faint,
+                                                                   : textSubtle,
                      small);
-    if(b.noteLen) d.fillCircle(x + w - sw - 8, y + 11, 1, faint);
+    if(b.noteLen) d.fillCircle(x + w - sw - 8, y + 11, 1, graphicSubtle);
     break;
   }
   default: { // a note
-    text(x + 6, y + 12, fit(b.name, w - 12, small), faint, small);
+    text(x + 6, y + 12, fit(b.name, w - 12, small), textSubtle, small);
     String rows[3];
     unsigned n = wrap(dicer.noteText(i), rows, 3, w - 12, small);
-    for(unsigned k = 0; k < n; k++) text(x + 6, y + 24 + k * 10, rows[k], focus ? ink : dim, small);
-    if(!n) text(x + 6, y + 24, t("Empty: write on the web page"), faint, small);
+    for(unsigned k = 0; k < n; k++) text(x + 6, y + 24 + k * 10, rows[k], focus ? textPrimary : textMuted, small);
+    if(!n) text(x + 6, y + 24, t("Empty: write on the web page"), textSubtle, small);
     break;
   }
   }
@@ -400,9 +400,9 @@ void drawSheetRoll() {
   const dice::Result* r = dicer.last();
   if(!r || millis() - sheetRollAt > SheetRollShow) return;
   bool spin = diceSpinning();
-  panel(8, 150, 304, 54, cardHi, 10);
-  g().drawRoundRect(8, 150, 304, 54, 10, line);
-  text(16, 164, fit(String(r->label[0] ? r->label : r->formula) + " · " + dice::readable(r->formula), 200, small), violet, small);
+  panel(8, 150, 304, 54, surfaceFocus, 10);
+  g().drawRoundRect(8, 150, 304, 54, 10, border);
+  text(16, 164, fit(String(r->label[0] ? r->label : r->formula) + " · " + dice::readable(r->formula), 200, small), secondary, small);
   int x = 24;
   for(unsigned k = 0; k < r->parts && x < 230; k++) {
     unsigned v = r->value[k];
@@ -435,10 +435,10 @@ void drawDiceSheet() {
   sheetLayout();
   unsigned n = dicer.sheet.count;
   if(!n) {
-    icon(IcDice, 160, 96, 18, faint);
-    textCenter(160, 136, t("The sheet is empty"), dim);
-    textCenter(160, 154, t("A: add a block"), faint, small);
-    textCenter(160, 166, t("P, A: a character from D&D or R.E.T."), faint, small);
+    icon(IcDice, 160, 96, 18, iconSubtle);
+    textCenter(160, 136, t("The sheet is empty"), textMuted);
+    textCenter(160, 154, t("A: add a block"), textSubtle, small);
+    textCenter(160, 166, t("P, A: a character from D&D or R.E.T."), textSubtle, small);
     return;
   }
   sheetKeepVisible();
@@ -451,8 +451,8 @@ void drawDiceSheet() {
   }
   if(sheetHeightAll > SheetH) {
     int th = max(12, SheetH * SheetH / sheetHeightAll), ty = SheetY + (SheetH - th) * sheetTop / max(1, sheetHeightAll - SheetH);
-    d.fillRoundRect(315, SheetY, 3, SheetH, 1, card);
-    d.fillRoundRect(315, ty, 3, th, 1, faint);
+    d.fillRoundRect(315, SheetY, 3, SheetH, 1, surfaceCard);
+    d.fillRoundRect(315, ty, 3, th, 1, graphicSubtle);
   }
   // The chosen block's detail: its note, its formula.
   const dice::Block& b = dicer.sheet.block[sheetSel];
@@ -461,19 +461,19 @@ void drawDiceSheet() {
   else if(b.kind == dice::Track && b.formula[0]) detail = t("max = ") + b.formula;
   else if(b.kind == dice::Ability && b.noteLen) detail = dicer.noteText(sheetSel);
   else if(b.kind == dice::Ability && b.formula[0]) detail = b.formula;
-  if(!detail.length()) text(8, 215, t("V: value   E: edit the block   A: new block"), faint, small);
+  if(!detail.length()) text(8, 215, t("V: value   E: edit the block   A: new block"), textSubtle, small);
   if(detail.length()) {
     detail.replace("\n", " ");
-    text(8, 215, fit(detail, b.kind == dice::Ability && b.noteLen ? 250 : 304, small), faint, small);
+    text(8, 215, fit(detail, b.kind == dice::Ability && b.noteLen ? 250 : 304, small), textSubtle, small);
     if(b.kind == dice::Ability && b.noteLen) textRight(312, 215, t("I: more"), accent, small);
   }
   if(sheetNote) {
-    panel(10, 48, 300, 160, cardHi, 10);
-    d.drawRoundRect(10, 48, 300, 160, 10, line);
-    text(24, 70, fit(b.name, 270, bold), ink, bold);
+    panel(10, 48, 300, 160, surfaceFocus, 10);
+    d.drawRoundRect(10, 48, 300, 160, 10, border);
+    text(24, 70, fit(b.name, 270, bold), textPrimary, bold);
     String rows[9];
     unsigned k = wrap(dicer.noteText(sheetSel), rows, 9, 272, small);
-    for(unsigned j = 0; j < k; j++) text(24, 86 + j * 12, rows[j], dim, small);
+    for(unsigned j = 0; j < k; j++) text(24, 86 + j * 12, rows[j], textMuted, small);
   } else drawSheetRoll();
 }
 // The block builder (E on a block, A for a new one): its fields as rows. Left/right change the kinds, widths,
@@ -613,8 +613,8 @@ uint8_t blockFieldNow() {
 }
 void drawDiceBlock() {
   auto& d = g();
-  panel(8, 48, 304, 168, cardHi, 10);
-  d.drawRoundRect(8, 48, 304, 168, 10, line);
+  panel(8, 48, 304, 168, surfaceFocus, 10);
+  d.drawRoundRect(8, 48, 304, 168, 10, border);
   if(!dicer.sheet.count) {
     diceSheet = DiceMain;
     return;
@@ -623,7 +623,7 @@ void drawDiceBlock() {
   const dice::Block& b = dicer.sheet.block[sheetSel];
   uint16_t hue = diceColor(b.color);
   d.fillCircle(22, 62, 5, hue);
-  text(32, 66, fit(t("Block ") + String(sheetSel + 1) + " · " + b.name, 270, bold), ink, bold);
+  text(32, 66, fit(t("Block ") + String(sheetSel + 1) + " · " + b.name, 270, bold), textPrimary, bold);
   uint8_t fs[FieldCount];
   unsigned n = blockFields(b.kind, fs);
   blockField = constrain(blockField, 0, int(n) - 1);
@@ -635,18 +635,18 @@ void drawDiceBlock() {
     int y = 74 + (k - first) * 19;
     bool focus = k == blockField;
     uint8_t f = fs[k];
-    panel(14, y, 292, 17, focus ? card : cardHi, 5);
+    panel(14, y, 292, 17, focus ? surfaceCard : surfaceFocus, 5);
     String label = fieldLabel(f, b.kind);
-    text(22, y + 12, fit(label, 128, small), focus ? ink : dim, small);
+    text(22, y + 12, fit(label, 128, small), focus ? textPrimary : textMuted, small);
     int vx = 154;
     if(f == FieldColor) {
       d.fillRoundRect(vx, y + 4, 24, 9, 3, hue);
-      text(vx + 30, y + 12, String(b.color + 1) + "/15", faint, small);
+      text(vx + 30, y + 12, String(b.color + 1) + "/15", textSubtle, small);
     } else if(f == FieldShape) {
-      drawStatShape(d, b.shape, vx + 8, y + 8, 6, mix(dice::colors[b.color % dice::Colors], 0x1c2835, .6f), hue);
+      drawStatShape(d, b.shape, vx + 8, y + 8, 6, mix(dice::colors[b.color % dice::Colors], theme->surfaceFocus, .6f), hue);
     } else {
       String v = fieldText(f, sheetSel);
-      text(vx, y + 12, fit(v, fieldCycles(f) ? 124 : 146, small), f == FieldFormula || f == FieldCode || f == FieldUse ? accent : ink, small);
+      text(vx, y + 12, fit(v, fieldCycles(f) ? 124 : 146, small), f == FieldFormula || f == FieldCode || f == FieldUse ? accent : textPrimary, small);
     }
     if(fieldCycles(f) && focus) { textRight(302, y + 12, "< >", accent, small); }
     diceSpot(14, y, 292, 17, TapField, k);
@@ -655,7 +655,7 @@ void drawDiceBlock() {
   uint8_t f = fs[blockField];
   String hint = fieldCycles(f) ? t("< >: change   DEL twice: delete   A: new block") : t("OK: type   DEL twice: delete   A: new block");
   if(!dicer.derivedOk(sheetSel) || (b.kind == dice::Ability && b.formula[0] && !dicer.rollFormula(sheetSel).length())) hint = t("The formula does not compute: check the codes");
-  text(18, 208, fit(hint, 288, small), hint.startsWith("<") || hint.startsWith("OK") ? faint : bad, small);
+  text(18, 208, fit(hint, 288, small), hint.startsWith("<") || hint.startsWith("OK") ? textSubtle : bad, small);
 }
 // A new block after the chosen one (a stat; the kind is the first row).
 void diceNewBlock() {
@@ -745,7 +745,7 @@ bool diceBlockKey(int key) {
       dicer.deleteBlock(sheetSel);
       sheetSel = max(0, sheetSel - 1);
       diceSheet = DiceMain;
-      notice(t("Block deleted"), dim);
+      notice(t("Block deleted"), graphicMuted);
     }
     return true;
   }
@@ -769,13 +769,13 @@ bool diceBlockKey(int key) {
 void drawDiceSaved() {
   auto& d = g();
   unsigned count = dicer.savedCount();
-  panel(8, 48, 304, 168, cardHi, 10);
-  d.drawRoundRect(8, 48, 304, 168, 10, line);
-  text(18, 64, t("Saved rolls · ") + dicer.heroName(dicer.s.character), ink, bold);
+  panel(8, 48, 304, 168, surfaceFocus, 10);
+  d.drawRoundRect(8, 48, 304, 168, 10, border);
+  text(18, 64, t("Saved rolls · ") + dicer.heroName(dicer.s.character), textPrimary, bold);
   if(!count) {
-    icon(IcDice, 160, 112, 14, faint, cardHi);
-    textCenter(160, 146, t("No saved rolls"), dim);
-    textCenter(160, 162, t("A: save a formula with a name"), faint, small);
+    icon(IcDice, 160, 112, 14, iconSubtle, surfaceFocus);
+    textCenter(160, 146, t("No saved rolls"), textMuted);
+    textCenter(160, 162, t("A: save a formula with a name"), textSubtle, small);
   }
   diceSel = count ? constrain(diceSel, 0, int(count) - 1) : 0;
   int first = max(0, min(diceSel - 2, int(count) - 5));
@@ -783,30 +783,30 @@ void drawDiceSaved() {
     int y = 72 + (i - first) * 24;
     bool focus = i == diceSel;
     const dice::Block& r = dicer.sheet.block[dicer.savedBlock(i)];
-    panel(14, y, 292, 22, focus ? card : cardHi, 6);
+    panel(14, y, 292, 22, focus ? surfaceCard : surfaceFocus, 6);
     d.fillCircle(28, y + 11, 5, diceColor(r.color));
     String f = dice::readable(dicer.rollFormula(dicer.savedBlock(i)).c_str());
     if(!f.length()) f = "?";
     int fw = measure(f, small);
-    text(40, y + 15, fit(r.name, 250 - fw), focus ? ink : dim, focus ? bold : body);
-    textRight(300, y + 15, f, focus ? accent : faint, small);
+    text(40, y + 15, fit(r.name, 250 - fw), focus ? textPrimary : textMuted, focus ? bold : body);
+    textRight(300, y + 15, f, focus ? accent : textSubtle, small);
     diceSpot(14, y, 292, 22, TapSaved, i);
   }
   scrollbar(first, 5, count, 72, 118);
-  text(18, 208, t("F: formula  N: name  C: colour  DEL: delete"), faint, small);
+  text(18, 208, t("F: formula  N: name  C: colour  DEL: delete"), textSubtle, small);
 }
 // Characters: the general set first, each with its sheet; a sheet a contact sent waits on top.
 void drawDiceHeroes() {
   auto& d = g();
   auto& s = dicer.s;
-  panel(8, 48, 304, 168, cardHi, 10);
-  d.drawRoundRect(8, 48, 304, 168, 10, line);
-  text(18, 64, t("Characters"), ink, bold);
-  textRight(302, 64, String(s.characters) + "/" + String(dice::Characters), faint, small);
+  panel(8, 48, 304, 168, surfaceFocus, 10);
+  d.drawRoundRect(8, 48, 304, 168, 10, border);
+  text(18, 64, t("Characters"), textPrimary, bold);
+  textRight(302, 64, String(s.characters) + "/" + String(dice::Characters), textSubtle, small);
   diceSel = constrain(diceSel, 0, int(s.characters) - 1);
   int y0 = 72;
   if(dicer.offered) {
-    panel(14, y0, 292, 20, rgb(0x3a2f12), 6);
+    panel(14, y0, 292, 20, warnDeep, 6);
     text(22, y0 + 14, fit(t("O: sheet from ") + dicer.offer.from + ": " + dicer.offer.name, 276, small), warn, small);
     y0 += 22;
   }
@@ -814,38 +814,38 @@ void drawDiceHeroes() {
     int y = y0 + i * 22;
     bool focus = int(i) == diceSel;
     const dice::Character& c = s.list[i];
-    panel(14, y, 292, 20, focus ? card : cardHi, 6);
+    panel(14, y, 292, 20, focus ? surfaceCard : surfaceFocus, 6);
     if(i) {
       d.fillCircle(28, y + 10, 7, avatarHues[i % 8]);
-      textCenter(28, y + 14, initial(c.name), ink, small);
+      textCenter(28, y + 14, initial(c.name), textPrimary, small);
     } else {
-      d.fillCircle(28, y + 10, 7, line);
-      icon(IcPerson, 28, y + 10, 4, dim, line);
+      d.fillCircle(28, y + 10, 7, border);
+      icon(IcPerson, 28, y + 10, 4, iconMuted, border);
     }
-    text(42, y + 14, fit(dicer.heroName(i), 170, focus ? bold : body), focus ? ink : dim, focus ? bold : body);
+    text(42, y + 14, fit(dicer.heroName(i), 170, focus ? bold : body), focus ? textPrimary : textMuted, focus ? bold : body);
     if(i == s.character) textRight(300, y + 14, count(dicer.sheet.count, "block", "blocks") + " · " + t("now"), ok, small);
     diceSpot(14, y, 292, 20, TapHeroRow, i);
   }
-  text(18, 208, t("A: new  N: name  S: send  DEL: delete"), faint, small);
+  text(18, 208, t("A: new  N: name  S: send  DEL: delete"), textSubtle, small);
 }
 // A new character: an empty sheet or a template.
 String diceTemplateName(int i) { return i == dice::DndTemplate ? String("D&D 5e") : i == dice::RetTemplate ? t("R.E.T. (Mind, Emotions, Body)")
                                                                                                            : t("Empty sheet"); }
 void drawDiceTemplates() {
   auto& d = g();
-  panel(8, 48, 304, 168, cardHi, 10);
-  d.drawRoundRect(8, 48, 304, 168, 10, line);
-  text(18, 64, t("Sheet of ") + diceDraft, ink, bold);
+  panel(8, 48, 304, 168, surfaceFocus, 10);
+  d.drawRoundRect(8, 48, 304, 168, 10, border);
+  text(18, 64, t("Sheet of ") + diceDraft, textPrimary, bold);
   diceSel = constrain(diceSel, 0, int(dice::TemplateCount) - 1);
   for(int i = 0; i < dice::TemplateCount; i++) {
     int y = 74 + i * 34;
     bool focus = i == diceSel;
-    panel(14, y, 292, 30, focus ? card : cardHi, 6);
+    panel(14, y, 292, 30, focus ? surfaceCard : surfaceFocus, 6);
     if(focus) ring(14, y, 292, 30, 6, accent);
-    text(24, y + 14, diceTemplateName(i), focus ? ink : dim, focus ? bold : body);
+    text(24, y + 14, diceTemplateName(i), focus ? textPrimary : textMuted, focus ? bold : body);
     String detail = i == dice::DndTemplate ? t("6 stats, AC, hit points, 18 skills, slots") : i == dice::RetTemplate ? t("Stat tree, dice by level, health, sanity, luck")
                                                                                                                      : t("One counter; blocks from the web page");
-    text(24, y + 26, fit(detail, 276, small), faint, small);
+    text(24, y + 26, fit(detail, 276, small), textSubtle, small);
     diceSpot(14, y, 292, 30, TapPick, i);
   }
 }
@@ -858,13 +858,13 @@ unsigned diceContacts(uint64_t* out, unsigned most) {
 }
 void drawDiceSend() {
   auto& d = g();
-  panel(8, 48, 304, 168, cardHi, 10);
-  d.drawRoundRect(8, 48, 304, 168, 10, line);
-  text(18, 64, fit(t("Send the sheet: ") + dicer.heroName(dicer.s.character), 284, bold), ink, bold);
+  panel(8, 48, 304, 168, surfaceFocus, 10);
+  d.drawRoundRect(8, 48, 304, 168, 10, border);
+  text(18, 64, fit(t("Send the sheet: ") + dicer.heroName(dicer.s.character), 284, bold), textPrimary, bold);
   uint64_t ids[24];
   unsigned n = diceContacts(ids, 24);
   if(!n) {
-    textCenter(160, 130, t("No chat contacts yet"), dim);
+    textCenter(160, 130, t("No chat contacts yet"), textMuted);
     return;
   }
   diceSel = constrain(diceSel, 0, int(n) - 1);
@@ -873,9 +873,9 @@ void drawDiceSend() {
     int y = 72 + (i - first) * 24;
     bool focus = i == diceSel;
     const Peer* p = meshRadio.findContact(ids[i]);
-    panel(14, y, 292, 22, focus ? card : cardHi, 6);
-    text(24, y + 15, fit(p ? p->name : "", 200, focus ? bold : body), focus ? ink : dim, focus ? bold : body);
-    if(p && p->heard) textRight(300, y + 15, p->hops ? String(p->hops) + t(" hops") : t("direct"), faint, small);
+    panel(14, y, 292, 22, focus ? surfaceCard : surfaceFocus, 6);
+    text(24, y + 15, fit(p ? p->name : "", 200, focus ? bold : body), focus ? textPrimary : textMuted, focus ? bold : body);
+    if(p && p->heard) textRight(300, y + 15, p->hops ? String(p->hops) + t(" hops") : t("direct"), textSubtle, small);
     diceSpot(14, y, 292, 22, TapPick, i);
   }
   scrollbar(first, 5, n, 72, 118);
@@ -886,22 +886,22 @@ void drawDiceSend() {
     text(18, 208, fit(st, 284, small), o.failed ? bad : o.done ? ok
                                                                : accent,
          small);
-  } else text(18, 208, t("Parts go one by one, each with its ACK"), faint, small);
+  } else text(18, 208, t("Parts go one by one, each with its ACK"), textSubtle, small);
 }
 void drawDiceOffer() {
   auto& d = g();
-  panel(8, 48, 304, 168, cardHi, 10);
-  d.drawRoundRect(8, 48, 304, 168, 10, line);
+  panel(8, 48, 304, 168, surfaceFocus, 10);
+  d.drawRoundRect(8, 48, 304, 168, 10, border);
   if(!dicer.offered) {
-    textCenter(160, 130, t("No sheets sent to you"), dim);
+    textCenter(160, 130, t("No sheets sent to you"), textMuted);
     return;
   }
-  icon(IcPerson, 40, 92, 14, warn, cardHi);
-  text(66, 84, fit(dicer.offer.name, 236, bold), ink, bold);
-  text(66, 100, fit(t("from ") + dicer.offer.from, 236, small), dim, small);
+  icon(IcPerson, 40, 92, 14, warn, surfaceFocus);
+  text(66, 84, fit(dicer.offer.name, 236, bold), textPrimary, bold);
+  text(66, 100, fit(t("from ") + dicer.offer.from, 236, small), textMuted, small);
   String rows[4];
   unsigned n = wrap(t("A character sheet came over the mesh. Accept it as a new character?"), rows, 4, 280);
-  for(unsigned i = 0; i < n; i++) text(20, 134 + i * 15, rows[i], dim);
+  for(unsigned i = 0; i < n; i++) text(20, 134 + i * 15, rows[i], textMuted);
   if(dicer.s.characters >= dice::Characters) text(20, 200, t("6 characters at most: delete one first"), bad, small);
 }
 void drawDice() {
@@ -1296,7 +1296,7 @@ bool diceSavedKey(int key) {
     if(diceConfirm()) {
       dicer.deleteRoll(diceSel);
       diceSel = max(0, diceSel - 1);
-      notice(t("Roll deleted"), dim);
+      notice(t("Roll deleted"), graphicMuted);
     }
     return true;
   }
@@ -1348,7 +1348,7 @@ bool diceHeroKey(int key) {
       dicer.useCharacter(diceSel);
       dicer.deleteCharacter();
       diceSel = 0;
-      notice(t("Character deleted"), dim);
+      notice(t("Character deleted"), graphicMuted);
     }
     return true;
   }
@@ -1412,7 +1412,7 @@ bool diceOfferKey(int key) {
   if(key == Erase) {
     dicer.declineOffer();
     diceSheet = DiceMain;
-    notice(t("Sheet declined"), dim);
+    notice(t("Sheet declined"), graphicMuted);
     return true;
   }
   return true;

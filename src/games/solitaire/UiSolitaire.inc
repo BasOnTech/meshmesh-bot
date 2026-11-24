@@ -412,12 +412,12 @@ void gameAct(bool automatic) {
     if(game.turnStock()) {
       hardware.ping(900, 8);
       gameAfter(was);
-    } else notice(t("Stock is empty"), dim);
+    } else notice(t("Stock is empty"), graphicMuted);
     return;
   }
   uint8_t n = gamePick();
   if(!n) {
-    notice(t("No cards to take here"), dim);
+    notice(t("No cards to take here"), graphicMuted);
     return;
   }
   if(!automatic) {
@@ -477,7 +477,7 @@ bool gameKey(int key) {
       gameDepth = 1;
       gameUnsaved = true;
       gameChangedAt = millis();
-    } else notice(t("Nothing to undo"), dim);
+    } else notice(t("Nothing to undo"), graphicMuted);
     return true;
   }
   if(key == 'p') {
@@ -559,23 +559,23 @@ void gameStatus(JsonDocument& d) {
 void drawGameHelp() {
   uint16_t* px = g().getBuffer();
   for(int i = 0; i < 320 * 240; i++) px[i] = (px[i] >> 1) & 0x7bef;
-  panel(6, 24, 308, 194, cardHi, 10);
-  g().drawRoundRect(6, 24, 308, 194, 10, line);
-  text(16, 42, t("Solitaire keys"), ink, bold);
+  panel(6, 24, 308, 194, surfaceFocus, 10);
+  g().drawRoundRect(6, 24, 308, 194, 10, border);
+  text(16, 42, t("Solitaire keys"), textPrimary, bold);
   Hint keys[] = {{"<>", t("Choose a pile")}, {"^v", t("In a column: how many cards")}, {"OK", t("Take / put; on the stock: turn")}, {"SPC", t("Move automatically (or hold OK)")}, {"DEL", t("Undo (also U)")}, {"P", t("Hint")}, {"A", t("Collect to foundations")}, {"N", t("New game")}, {"D", game.draw == 3 || gameNextDraw == 3 ? t("Draw 1 / 3 (now: 3)") : t("Draw 1 / 3 (now: 1)")}};
   for(int i = 0; i < 9; i++) {
     int y = 50 + i * 16;
-    g().fillRoundRect(16, y, 26, 13, 3, line);
+    g().fillRoundRect(16, y, 26, 13, 3, border);
     if(!strcmp(keys[i].key, "<>")) {
-      tri(24, y + 6, 3, 3, ink);
-      tri(33, y + 6, 1, 3, ink);
+      tri(24, y + 6, 3, 3, iconPrimary);
+      tri(33, y + 6, 1, 3, iconPrimary);
     } else if(!strcmp(keys[i].key, "^v")) {
-      tri(24, y + 7, 0, 3, ink);
-      tri(33, y + 5, 2, 3, ink);
-    } else textCenter(29, y + 10, keys[i].key, ink, small);
-    text(50, y + 11, keys[i].action, i % 2 ? dim : ink);
+      tri(24, y + 7, 0, 3, iconPrimary);
+      tri(33, y + 5, 2, 3, iconPrimary);
+    } else textCenter(29, y + 10, keys[i].key, textPrimary, small);
+    text(50, y + 11, keys[i].action, i % 2 ? textMuted : textPrimary);
   }
-  text(16, 207, fit(t("Played ") + String(gamePlayed) + t(" · won ") + String(gameWins) + (gameBest ? t(" · best ") + playTime(gameBest) : String()) + t(" · score ") + String(game.score), 290, small), faint, small);
+  text(16, 207, fit(t("Played ") + String(gamePlayed) + t(" · won ") + String(gameWins) + (gameBest ? t(" · best ") + playTime(gameBest) : String()) + t(" · score ") + String(game.score), 290, small), textSubtle, small);
 }
 void drawGame() {
   auto& d = g();
@@ -587,8 +587,8 @@ void drawGame() {
     cardBack(pileX(sol::Stock), TopY);
     String n = String(stock.n);
     int w = measure(n, small) + 6;
-    d.fillRoundRect(pileX(sol::Stock) + CardW / 2 - w / 2, TopY + CardH - 13, w, 10, 3, bar);
-    textCenter(pileX(sol::Stock) + CardW / 2, TopY + CardH - 5, n, ink, small);
+    d.fillRoundRect(pileX(sol::Stock) + CardW / 2 - w / 2, TopY + CardH - 13, w, 10, 3, surfaceBar);
+    textCenter(pileX(sol::Stock) + CardW / 2, TopY + CardH - 5, n, textPrimary, small);
   } else {
     int x = pileX(sol::Stock);
     slot(x, TopY, "");
@@ -622,12 +622,12 @@ void drawGame() {
   if(gameWonAt) {
     uint32_t age = millis() - gameWonAt;
     if(age < 16000) drawCascade(age);
-    panel(40, 88, 240, 92, cardHi, 10);
+    panel(40, 88, 240, 92, surfaceFocus, 10);
     d.drawRoundRect(40, 88, 240, 92, 10, ok);
     textCenter(160, 114, t("You won!"), ok, big);
-    textCenter(160, 134, playTime(game.seconds) + " · " + count(game.moves, "move", "moves") + " · " + count(game.score, "point", "points"), ink);
-    textCenter(160, 152, t("Won ") + String(gameWins) + t(" of ") + String(gamePlayed) + (gameBest ? t(" · best ") + playTime(gameBest) : String()), dim, small);
-    textCenter(160, 170, t("N: new game   BACK: menu"), dim, small);
+    textCenter(160, 134, playTime(game.seconds) + " · " + count(game.moves, "move", "moves") + " · " + count(game.score, "point", "points"), textPrimary);
+    textCenter(160, 152, t("Won ") + String(gameWins) + t(" of ") + String(gamePlayed) + (gameBest ? t(" · best ") + playTime(gameBest) : String()), textMuted, small);
+    textCenter(160, 170, t("N: new game   BACK: menu"), textMuted, small);
     footer({{"N", t("New game")}, {"DEL", t("Undo")}, {"BACK", t("Menu")}});
     return;
   }
@@ -646,7 +646,7 @@ void drawGame() {
   String stats = count(game.moves, "move", "moves") + " · " + playTime(game.seconds);
   if(gameHeld >= 0) footer({{"OK", t("Put")}, {"SPC", t("Auto")}, {"BACK", t("Cancel")}});
   else footer({{"OK", gameCursor == sol::Stock ? t("Turn") : t("Take")}, {"SPC", t("Auto")}, {"H", t("Keys")}});
-  d.fillRect(314 - measure(stats, small) - 8, 222, measure(stats, small) + 10, 18, bar);
-  textRight(314, 234, stats, dim, small);
+  d.fillRect(314 - measure(stats, small) - 8, 222, measure(stats, small) + 10, 18, surfaceBar);
+  textRight(314, 234, stats, textMuted, small);
   if(gameHelp) drawGameHelp();
 }

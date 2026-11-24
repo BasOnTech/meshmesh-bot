@@ -117,8 +117,8 @@ String chessState(const ChessMatch& m, bool board = false) {
 uint16_t chessStateColor(const ChessMatch& m) {
   if(m.state == ChessMatch::Invited || m.myTurn() || m.drawOffer == ChessMatch::OfferedToMe) return accent;
   if(m.state == ChessMatch::Over) return m.won() ? ok : m.lost() ? bad
-                                                                 : dim;
-  return dim;
+                                                                 : textMuted;
+  return textMuted;
 }
 String deliveryText(const ChessMatch& m) {
   switch(m.link()) {
@@ -184,7 +184,7 @@ void chessSortPeers() {
 }
 void colorDisc(int cx, int cy, uint8_t c) {
   g().fillCircle(cx, cy, 5, c == ch::White ? pieceWhite : pieceBlack);
-  g().drawCircle(cx, cy, 5, c == ch::White ? faint : dim);
+  g().drawCircle(cx, cy, 5, c == ch::White ? graphicSubtle : graphicMuted);
 }
 // Three tabs: games, tournaments, rating (<> or a tap; 1-3 on the keyboard).
 void drawChessTabs() {
@@ -193,14 +193,14 @@ void drawChessTabs() {
   for(int i = 0; i < 3; i++) {
     int x = 8 + i * 101, w = 98;
     bool on = i == chessTab;
-    if(on) panel(x, 23, w, 20, cardHi, 6);
+    if(on) panel(x, 23, w, 20, surfaceFocus, 6);
     int tw = measure(names[i], on ? bold : body);
-    textCenter(x + w / 2, 37, names[i], on ? ink : dim, on ? bold : body);
+    textCenter(x + w / 2, 37, names[i], on ? textPrimary : textMuted, on ? bold : body);
     if(on) g().fillRoundRect(x + w / 2 - tw / 2, 40, tw, 2, 1, accent);
     target(x, 23, w, 20, -('1' + i));
     if(badges[i]) {
       g().fillCircle(x + w / 2 + tw / 2 + 8, 31, 6, accent);
-      textCenter(x + w / 2 + tw / 2 + 8, 34, String(badges[i]), bg, small);
+      textCenter(x + w / 2 + tw / 2 + 8, 34, String(badges[i]), onFill, small);
     }
   }
 }
@@ -240,8 +240,8 @@ void drawChessList() {
     if(m.updated) right = timeText(m.updated);
     if(m.tour) right = t("R") + String(m.round) + " · " + right;
     int rw = measure(right, small);
-    text(56, y + 17, fit(m.name, 232 - rw, bold), ink, bold);
-    textRight(304, y + 16, right, faint, small);
+    text(56, y + 17, fit(m.name, 232 - rw, bold), textPrimary, bold);
+    textRight(304, y + 16, right, textSubtle, small);
     String detail = chessState(m);
     if(m.game.plies && m.state != ChessMatch::Invited) detail += " · " + lastSan(m);
     if(m.state == ChessMatch::Playing && m.link() == ChatMessage::Failed) detail = deliveryText(m);
@@ -258,7 +258,7 @@ void drawChessList() {
   if(!chessRowCount) {
     String rows[3];
     unsigned n = wrap(t("Moves travel as direct MeshCore messages with delivery confirmation. Both players need a MeshMesh M9 with chess."), rows, 3, 300);
-    for(unsigned k = 0; k < n; k++) textCenter(160, 116 + k * 16, rows[k], faint);
+    for(unsigned k = 0; k < n; k++) textCenter(160, 116 + k * 16, rows[k], textSubtle);
   }
   bool over = selected > 0 && chessRows[selected - 1]->state == ChessMatch::Over;
   if(over) footer({{"OK", t("Open")}, {"DEL", chessRemoveArmed ? t("Sure?") : t("Remove")}, {"<>", t("Tabs")}, {"BACK", t("Menu")}});
@@ -268,9 +268,9 @@ void drawChessList() {
 void drawChessRating() {
   const rating::Player& me = rating::book.players[0];
   bool ready = rating::book.ready;
-  panel(8, 46, 304, 74, card, 7);
-  text(18, 62, t("Your rating"), dim, small);
-  text(18, 88, String(rating::book.myElo()), ink, big);
+  panel(8, 46, 304, 74, surfaceCard, 7);
+  text(18, 62, t("Your rating"), textMuted, small);
+  text(18, 88, String(rating::book.myElo()), textPrimary, big);
   unsigned h = rating::book.historyCount;
   if(h >= 2) {
     int diff = rating::book.history[h - 1] - rating::book.history[0];
@@ -278,13 +278,13 @@ void drawChessRating() {
   }
   int x = 18, y = 106;
   if(ready && me.wins + me.draws + me.losses) {
-    x = text(x, y, count(me.wins + me.draws + me.losses, "game", "games") + ": ", dim, small);
+    x = text(x, y, count(me.wins + me.draws + me.losses, "game", "games") + ": ", textMuted, small);
     x = text(x, y, "+" + String(me.wins), ok, small);
-    x = text(x, y, " =" + String(me.draws), dim, small);
+    x = text(x, y, " =" + String(me.draws), textMuted, small);
     text(x, y, " -" + String(me.losses), bad, small);
-  } else text(x, y, t("No rated games yet"), faint, small);
+  } else text(x, y, t("No rated games yet"), textSubtle, small);
   int gx = 180, gy = 56, gw = 124, gh = 48;
-  g().drawFastHLine(gx, gy + gh, gw, line);
+  g().drawFastHLine(gx, gy + gh, gw, border);
   if(h >= 2) {
     int lo = rating::book.history[0], hi = lo;
     for(unsigned i = 0; i < h; i++) {
@@ -296,13 +296,13 @@ void drawChessRating() {
       hi += 5;
     }
     for(int k = 0; k < 3; k++)
-      for(int px = gx; px < gx + gw; px += 4) g().drawPixel(px, gy + k * gh / 3, line);
+      for(int px = gx; px < gx + gw; px += 4) g().drawPixel(px, gy + k * gh / 3, border);
     auto py = [&](int v) { return gy + gh - (v - lo) * gh / (hi - lo); };
     for(unsigned i = 1; i < h; i++) thickLine(gx + (i - 1) * gw / (h - 1), py(rating::book.history[i - 1]), gx + i * gw / (h - 1), py(rating::book.history[i]), accent);
     g().fillCircle(gx + gw, py(rating::book.history[h - 1]), 3, accent);
-  } else textCenter(gx + gw / 2, gy + gh / 2 + 4, t("history after 2 games"), faint, small);
+  } else textCenter(gx + gw / 2, gy + gh / 2 + 4, t("history after 2 games"), textSubtle, small);
   // The ledger: records kept here and nodes compared with (S compares now).
-  textRight(gx + gw, gy + gh + 10, t("ledger ") + String(rating::book.records) + " · " + t("synced ") + String(ledger::exchange.synced()), faint, small);
+  textRight(gx + gw, gy + gh + 10, t("ledger ") + String(rating::book.records) + " · " + t("synced ") + String(ledger::exchange.synced()), textSubtle, small);
   // Players: everyone in the book except me, the highest rating first.
   unsigned order[rating::MaxPlayers], n = 0;
   for(unsigned i = 1; i < rating::book.playerCount; i++) {
@@ -311,9 +311,9 @@ void drawChessRating() {
   }
   for(unsigned i = 1; i < n; i++)
     for(unsigned j = i; j > 0 && rating::book.players[order[j]].elo > rating::book.players[order[j - 1]].elo; j--) std::swap(order[j], order[j - 1]);
-  text(16, 134, t("Players"), faint, small);
-  textRight(304, 134, t("your score"), faint, small);
-  if(!n) text(16, 154, fit(t("Rated games against contacts appear here"), 290, small), faint, small);
+  text(16, 134, t("Players"), textSubtle, small);
+  textRight(304, 134, t("your score"), textSubtle, small);
+  if(!n) text(16, 154, fit(t("Rated games against contacts appear here"), 290, small), textSubtle, small);
   if(chessRatingSel >= int(n)) chessRatingSel = max(0, int(n) - 1);
   int first = max(0, chessRatingSel - 2);
   for(int i = first; i < int(n) && i < first + 3; i++) {
@@ -323,36 +323,36 @@ void drawChessRating() {
     uint64_t id = rating::idOf(p.key);
     Peer* peer = peerOf(id);
     String name = peer ? String(peer->name) : String(p.name[0] ? p.name : meshRadio.idText(id).c_str());
-    text(18, ry + 16, String(i + 1), faint, small);
+    text(18, ry + 16, String(i + 1), textSubtle, small);
     avatar(40, ry + 12, 9, id, name, 1);
-    text(56, ry + 17, fit(name, 130, bold), ink, bold);
-    textRight(222, ry + 17, String(int(lroundf(p.elo))), ink, bold);
-    textRight(304, ry + 16, "+" + String(p.wins) + " =" + String(p.draws) + " -" + String(p.losses), dim, small);
+    text(56, ry + 17, fit(name, 130, bold), textPrimary, bold);
+    textRight(222, ry + 17, String(int(lroundf(p.elo))), textPrimary, bold);
+    textRight(304, ry + 16, "+" + String(p.wins) + " =" + String(p.draws) + " -" + String(p.losses), textMuted, small);
   }
   scrollbar(first, 3, n, 138, 78);
   footer({{"<>", t("Tabs")}, {"^v", t("Players")}, {"S", t("Sync")}, {"BACK", t("Menu")}});
 }
 void drawChessPick() {
   chessSortPeers();
-  panel(8, 24, 304, 30, card, 7);
-  text(18, 43, t("You play"), dim);
+  panel(8, 24, 304, 30, surfaceCard, 7);
+  text(18, 43, t("You play"), textMuted);
   String colors[] = {t("White"), t("Black"), t("Random")};
   int cx = 222;
   tri(cx - 58, 39, 3, 4, accent);
   tri(cx + 58, 39, 1, 4, accent);
   if(chessPickColor < 2) colorDisc(cx - 42, 39, chessPickColor);
-  textCenter(cx + (chessPickColor < 2 ? 6 : 0), 44, colors[chessPickColor], ink, bold);
+  textCenter(cx + (chessPickColor < 2 ? 6 : 0), 44, colors[chessPickColor], textPrimary, bold);
   target(8, 24, 304, 30, -KeyRight); // the colour
  // Rated or friendly (F): a rated game changes both players' ELO once both sign the result.
-  panel(8, 57, 304, 28, card, 7);
-  text(18, 75, t("Game"), dim);
-  text(18 + measure(t("Game")) + 10, 75, chessPickRated ? t("ELO changes for both") : t("ELO stays"), faint, small);
-  textRight(300, 76, chessPickRated ? t("Rated") : t("Friendly"), chessPickRated ? accent : ink, bold);
+  panel(8, 57, 304, 28, surfaceCard, 7);
+  text(18, 75, t("Game"), textMuted);
+  text(18 + measure(t("Game")) + 10, 75, chessPickRated ? t("ELO changes for both") : t("ELO stays"), textSubtle, small);
+  textRight(300, 76, chessPickRated ? t("Rated") : t("Friendly"), chessPickRated ? accent : textPrimary, bold);
   target(8, 57, 304, 28, -'f');
   if(!chessPeerCount) {
-    textCenter(160, 120, t("No chat contacts yet"), ink, bold);
-    textCenter(160, 142, t("Press ADV to announce this node and wait"), dim);
-    textCenter(160, 158, t("for the other player's announcement"), dim);
+    textCenter(160, 120, t("No chat contacts yet"), textPrimary, bold);
+    textCenter(160, 142, t("Press ADV to announce this node and wait"), textMuted);
+    textCenter(160, 158, t("for the other player's announcement"), textMuted);
     footer({{"ADV", t("Announce")}, {"BACK", t("Games")}});
     return;
   }
@@ -374,10 +374,10 @@ void drawChessPick() {
       textRight(304, y + 17, w, ok, bold);
       textRight(304, y + 32, l, bad, bold);
     }
-    text(56, y + 17, fit(p.name, 240 - rw, bold), ink, bold);
+    text(56, y + 17, fit(p.name, 240 - rw, bold), textPrimary, bold);
     String info = (p.heard ? (millis() - p.seen < 60000 ? ago(0) : ago(millis() - p.seen) + t(" ago")) + " · " : String()) + pathText(p);
     if(chessPickRated) info = "ELO " + String(rating::book.elo(p.id)) + " · " + info;
-    text(56, y + 32, fit(info, 240 - rw, small), p.heard && millis() - p.seen < 1800000 ? ok : dim, small);
+    text(56, y + 32, fit(info, 240 - rw, small), p.heard && millis() - p.seen < 1800000 ? ok : textMuted, small);
   }
   scrollbar(first, 3, chessPeerCount, 88, 130);
   footer({{"OK", t("Challenge")}, {"<>", t("Colour")}, {"F", chessPickRated ? t("Friendly") : t("Rated")}, {"BACK", t("Back")}});
@@ -469,29 +469,29 @@ void drawChessSide() {
   const ChessMatch& m = *chessOpen;
   int x = 204, w = 110;
   // Opponent on top, the player at the bottom, as on the board.
-  panel(x, 24, w, 24, card, 6);
+  panel(x, 24, w, 24, surfaceCard, 6);
   colorDisc(x + 10, 36, m.mine ^ 1);
-  text(x + 20, 40, fit(m.name, w - 24, bold), ink, bold);
+  text(x + 20, 40, fit(m.name, w - 24, bold), textPrimary, bold);
   updateSanRows(m);
   int rows = (m.game.plies - sanRows.first + 1) / 2;
   for(int r = 0; r < rows && r < 8; r++) {
     int ply = sanRows.first + r * 2, y = 64 + r * 14;
     String no = String(ply / 2 + 1) + ".";
-    text(x + 2, y, no, faint, small);
+    text(x + 2, y, no, textSubtle, small);
     for(int k = 0; k < 2 && ply + k < m.game.plies; k++) {
       bool latest = ply + k == m.game.plies - 1;
       String s = localSan(sanRows.san[ply + k - sanRows.first]);
-      text(x + 22 + k * 44, y, fit(s, 44), latest ? accent : ink);
+      text(x + 22 + k * 44, y, fit(s, 44), latest ? accent : textPrimary);
     }
   }
   if(!m.game.plies) text(x + 2, 64, fit(m.state == ChessMatch::Inviting ? t("Waiting for reply") : m.state == ChessMatch::Invited ? t("OK accepts")
                                                                                                                                   : t("No moves yet"),
                                         w, small),
-                         faint, small);
+                         textSubtle, small);
   int diff = m.game.material(m.mine) - m.game.material(m.mine ^ 1);
-  panel(x, 176, w, 42, card, 6);
+  panel(x, 176, w, 42, surfaceCard, 6);
   colorDisc(x + 10, 188, m.mine);
-  text(x + 20, 192, t("You"), ink, bold);
+  text(x + 20, 192, t("You"), textPrimary, bold);
   if(diff) textRight(x + w - 6, 191, (diff > 0 ? "+" : "") + String(diff), diff > 0 ? ok : bad, small);
   String state = chessState(m, true), rowsText[2];
   unsigned n = wrap(state, rowsText, 2, w - 10, small);
@@ -500,24 +500,24 @@ void drawChessSide() {
   if(m.drawOffer == ChessMatch::OfferedByMe && m.state == ChessMatch::Playing) deliver = t("You offered a draw");
   if(n == 1 && deliver.length()) {
     text(x + 6, 204, rowsText[0], chessStateColor(m), small);
-    text(x + 6, 214, fit(deliver, w - 10, small), m.link() == ChatMessage::Failed ? bad : faint, small);
+    text(x + 6, 214, fit(deliver, w - 10, small), m.link() == ChatMessage::Failed ? bad : textSubtle, small);
   } else
     for(unsigned i = 0; i < n; i++) text(x + 6, 204 + i * 10, rowsText[i], chessStateColor(m), small);
   if(m.drawOffer == ChessMatch::OfferedToMe && m.state == ChessMatch::Playing) {
-    panel(x, 150, w, 22, rgb(0x14524b), 6);
-    textCenter(x + w / 2, 164, t("Draw? D accepts"), ink, small);
+    panel(x, 150, w, 22, accentDeep, 6);
+    textCenter(x + w / 2, 164, t("Draw? D accepts"), textPrimary, small);
   } else if(m.tour) {
     const tour::Tour* T = tour::net.find(m.tour);
-    panel(x, 150, w, 22, rgb(0x2e2450), 6);
-    text(x + 6, 165, fit((T ? String(T->name) : String(t("Tournament"))) + " · " + t("R") + String(m.round), w - 10, small), violet, small);
+    panel(x, 150, w, 22, secondaryDeep, 6);
+    text(x + 6, 165, fit((T ? String(T->name) : String(t("Tournament"))) + " · " + t("R") + String(m.round), w - 10, small), secondary, small);
   }
 }
 void drawPromotion() {
   auto& d = g();
   int x = BoardX + Cell * 2 - 10, y = BoardY + Cell * 3 - 16;
-  panel(x, y, Cell * 4 + 20, 72, cardHi, 8);
-  d.drawRoundRect(x, y, Cell * 4 + 20, 72, 8, line);
-  textCenter(x + (Cell * 4 + 20) / 2, y + 14, t("Promote to"), ink, small);
+  panel(x, y, Cell * 4 + 20, 72, surfaceFocus, 8);
+  d.drawRoundRect(x, y, Cell * 4 + 20, 72, 8, border);
+  textCenter(x + (Cell * 4 + 20) / 2, y + 14, t("Promote to"), textPrimary, small);
   const int8_t kinds[] = {ch::Queen, ch::Rook, ch::Bishop, ch::Knight};
   int8_t sign = chessOpen->mine == ch::White ? 1 : -1;
   for(int i = 0; i < 4; i++) {
@@ -529,29 +529,29 @@ void drawPromotion() {
     }
     drawPiece(kinds[i] * sign, bx + 2, by + 6);
   }
-  textCenter(x + (Cell * 4 + 20) / 2, y + 66, t("<> choose  OK put"), dim, small);
+  textCenter(x + (Cell * 4 + 20) / 2, y + 66, t("<> choose  OK put"), textMuted, small);
 }
 void drawChessHelp() {
   uint16_t* px = g().getBuffer();
   for(int i = 0; i < 320 * 240; i++) px[i] = (px[i] >> 1) & 0x7bef;
-  panel(6, 24, 308, 194, cardHi, 10);
-  g().drawRoundRect(6, 24, 308, 194, 10, line);
-  text(16, 42, t("Chess keys"), ink, bold);
+  panel(6, 24, 308, 194, surfaceFocus, 10);
+  g().drawRoundRect(6, 24, 308, 194, 10, border);
+  text(16, 42, t("Chess keys"), textPrimary, bold);
   Hint keys[] = {{"<>", t("Move the cursor (also ^v)")}, {"OK", t("Take a piece / put it")}, {"BACK", t("Put back / to the games")}, {"D", t("Offer a draw / accept one")}, {"X", t("Resign (press twice)")}, {"R", t("Resend what was not delivered")}, {"N", t("Rematch after the game")}, {"DEL", t("Decline, cancel, remove")}};
   for(int i = 0; i < 8; i++) {
     int y = 52 + i * 17;
-    g().fillRoundRect(16, y, 30, 13, 3, line);
+    g().fillRoundRect(16, y, 30, 13, 3, border);
     if(!strcmp(keys[i].key, "<>")) {
-      tri(26, y + 6, 3, 3, ink);
-      tri(35, y + 6, 1, 3, ink);
-    } else textCenter(31, y + 10, keys[i].key, ink, small);
-    text(54, y + 11, keys[i].action, i % 2 ? dim : ink);
+      tri(26, y + 6, 3, 3, iconPrimary);
+      tri(35, y + 6, 1, 3, iconPrimary);
+    } else textCenter(31, y + 10, keys[i].key, textPrimary, small);
+    text(54, y + 11, keys[i].action, i % 2 ? textMuted : textPrimary);
   }
-  text(16, 202, fit(t("Moves are sent as direct messages with ACK."), 290, small), faint, small);
+  text(16, 202, fit(t("Moves are sent as direct messages with ACK."), 290, small), textSubtle, small);
 }
 void drawChessBoard() {
   if(!chessOpen || chessOpen->state == ChessMatch::Free) {
-    textCenter(160, 110, t("The game was removed"), dim);
+    textCenter(160, 110, t("The game was removed"), textMuted);
     footer({{"BACK", t("Games")}});
     return;
   }
@@ -623,7 +623,7 @@ void chessAct() {
   if(!m.myTurn()) {
     notice(m.state == ChessMatch::Playing ? t("Wait for their move") : m.state == ChessMatch::Inviting ? t("Waiting for the reply")
                                                                                                        : t("The game is over"),
-           dim);
+           graphicMuted);
     return;
   }
   if(chessHeld < 0 || chessCursor == chessHeld) {
@@ -632,7 +632,7 @@ void chessAct() {
       return;
     }
     if(canTake(chessCursor)) chessHeld = chessCursor;
-    else notice(m.game.pos.board[chessCursor] ? t("This piece cannot move") : t("Choose one of your pieces"), dim);
+    else notice(m.game.pos.board[chessCursor] ? t("This piece cannot move") : t("Choose one of your pieces"), graphicMuted);
     return;
   }
   ch::Move mv;
@@ -675,7 +675,7 @@ bool chessKey(int key) {
       }
       if(key == 's') {
         unsigned n = ledger::exchange.startAll();
-        notice(n ? t("Comparing ledgers with ") + String(n) : String(t("No rated players heard in a day")), n ? ok : dim);
+        notice(n ? t("Comparing ledgers with ") + String(n) : String(t("No rated players heard in a day")), n ? ok : graphicMuted);
         return true;
       }
       if(key == KeyBack) {
@@ -706,7 +706,7 @@ bool chessKey(int key) {
       chessSortRows();
       ChessMatch& m = *chessRows[selected - 1];
       if(m.state != ChessMatch::Over) {
-        notice(t("Only finished games can be removed"), dim);
+        notice(t("Only finished games can be removed"), graphicMuted);
         return true;
       }
       if(!chessRemoveArmed) {
@@ -803,7 +803,7 @@ bool chessKey(int key) {
     if(chessNet.resend(m)) notice(t("Sent again"), ok);
     else notice(m.sending() ? t("Already sending") : m.link() == ChatMessage::Failed ? t("Radio busy, will resend")
                                                                                      : t("Nothing to resend"),
-                dim);
+                graphicMuted);
     return true;
   }
   if(key == 'd') {
@@ -812,12 +812,12 @@ bool chessKey(int key) {
       return true;
     }
     if(chessNet.offerDraw(m)) notice(t("Draw offered"), info);
-    else notice(m.drawOffer == ChessMatch::OfferedByMe ? t("Draw already offered") : t("No game in progress"), dim);
+    else notice(m.drawOffer == ChessMatch::OfferedByMe ? t("Draw already offered") : t("No game in progress"), graphicMuted);
     return true;
   }
   if(key == 'x') {
     if(m.state != ChessMatch::Playing) {
-      notice(t("No game in progress"), dim);
+      notice(t("No game in progress"), graphicMuted);
       return true;
     }
     if(!chessResignArmed) {
@@ -829,12 +829,12 @@ bool chessKey(int key) {
     chessHeld = -1;
     chessNet.resign(m);
     hardware.ping(600, 200);
-    notice(t("You resigned"), dim);
+    notice(t("You resigned"), graphicMuted);
     return true;
   }
   if(key == 'n') {
     if(m.state != ChessMatch::Over) {
-      notice(t("Finish this game first"), dim);
+      notice(t("Finish this game first"), graphicMuted);
       return true;
     }
     ChessMatch* next = chessNet.invite(m.peer, m.mine ^ 1, m.rated);
@@ -850,7 +850,7 @@ bool chessKey(int key) {
   if(key == Erase) {
     if(m.state == ChessMatch::Invited || m.state == ChessMatch::Inviting || (m.state == ChessMatch::Playing && !m.game.plies)) {
       bool mineInvite = m.state != ChessMatch::Invited;
-      if(chessNet.decline(m)) notice(mineInvite ? t("Challenge cancelled") : t("Challenge declined"), dim);
+      if(chessNet.decline(m)) notice(mineInvite ? t("Challenge cancelled") : t("Challenge declined"), graphicMuted);
       return true;
     }
     if(m.state == ChessMatch::Over) {
@@ -866,7 +866,7 @@ bool chessKey(int key) {
       notice(t("Game removed"), ok);
       return true;
     }
-    notice(t("Resign with X"), dim);
+    notice(t("Resign with X"), graphicMuted);
     return true;
   }
   return false;
@@ -886,9 +886,9 @@ void drawLockChess(int y) {
   const ChessMatch& m = *lockChess();
   unsigned waiting = chessNet.waiting();
   String head, sub;
-  panel(40, y, 240, 40, card, 8);
-  ring(40, y, 240, 40, 8, rgb(0x14524b));
-  icon(IcChess, 62, y + 20, 9, accent, card);
+  panel(40, y, 240, 40, surfaceCard, 8);
+  ring(40, y, 240, 40, 8, accentDeep);
+  icon(IcChess, 62, y + 20, 9, accent, surfaceCard);
   if(config.lockDetails) {
     bool theirs = m.game.plies && (m.myTurn() || m.state == ChessMatch::Over);
     head = String(m.name) + (theirs ? ": " + lastSan(m) : String());
@@ -900,8 +900,8 @@ void drawLockChess(int y) {
   // Other games waiting, on the right of the first line.
   String more = config.lockDetails && waiting > (lockNeeds(m) ? 1u : 0u) ? t("more: ") + String(waiting - (lockNeeds(m) ? 1 : 0)) : String();
   int mw = more.length() ? measure(more, small) + 8 : 0;
-  if(mw) textRight(272, y + 15, more, faint, small);
-  text(80, y + 16, fit(head, 192 - mw, bold), ink, bold);
+  if(mw) textRight(272, y + 15, more, textSubtle, small);
+  text(80, y + 16, fit(head, 192 - mw, bold), textPrimary, bold);
   text(80, y + 32, fit(sub, 192, small), chessStateColor(m), small);
 }
 void chessTick() {
