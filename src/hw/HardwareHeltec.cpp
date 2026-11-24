@@ -1,4 +1,5 @@
 #include "hw/Hardware.h"
+#include "hw/FastCanvas.h"
 #include "core/Config.h"
 #include "hw/OledLevel.h"
 #include <LittleFS.h>
@@ -54,7 +55,7 @@ void Hardware::begin() {
   display.clearDisplay();
   display.setRotation(0);
   brightness(config.brightness);
-  canvas = new GFXcanvas16(128, 64);
+  canvas = new FastCanvas16(128, 64);
   if(!canvas || !canvas->getBuffer()) {
     Serial.println("FATAL framebuffer");
     while(true) delay(1000);

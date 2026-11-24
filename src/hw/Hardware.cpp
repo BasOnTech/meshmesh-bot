@@ -1,6 +1,7 @@
 #include "core/Version.h"
 #include "hw/Hardware.h"
 #include "hw/BoardPins.h"
+#include "hw/FastCanvas.h"
 #include "core/Config.h"
 #include <Wire.h>
 #include <SD.h>
@@ -117,7 +118,7 @@ void Hardware::begin() {
   ledcSetup(7, 5000, 8);
   ledcAttachPin(pins::backlight, 7);
   brightness(config.brightness);
-  canvas = new GFXcanvas16(320, 240); // Arduino ESP32 allocates this large buffer from PSRAM when available.
+  canvas = new FastCanvas16(320, 240); // Arduino ESP32 allocates this large buffer from PSRAM when available.
   if(!canvas || !canvas->getBuffer()) {
     Serial.println("FATAL framebuffer allocation");
     while(true) delay(1000);

@@ -9,6 +9,7 @@
 #include "apps/People.h"
 #include "core/BlobStore.h"
 #include "hw/Hardware.h"
+#include "hw/FastCanvas.h"
 #include "ui/Palette.h"
 #include "mesh/MeshRadio.h"
 #include "apps/Wardrive.h"
@@ -121,9 +122,9 @@ int main(int argc,char** argv){
  outDir=argc>1?argv[1]:".";
  config.lang=argc>2?max(0,langFromCode(argv[2])):LangEn; // a language code, English by default
 #if   defined(MM_HELTEC_V4)
- hardware.canvas=new GFXcanvas16(128,64);strcpy(config.name,"Heltec V4");
+ hardware.canvas=new FastCanvas16(128,64);strcpy(config.name,"Heltec V4");
 #else
- hardware.canvas=new GFXcanvas16(320,240);strcpy(config.name,"M9");
+ hardware.canvas=new FastCanvas16(320,240);strcpy(config.name,"M9");
 #endif
  hardware.font.begin(*hardware.canvas);hardware.font.setFont(u8g2_font_6x13_t_cyrillic);hardware.font.setFontMode(1);
  hardware.keyboardOk=hardware.sdOk=hardware.fsOk=hardware.rtcOk=hardware.rtcValid=hardware.compassOk=hardware.imuOk=hardware.compassSample=hardware.imuSample=true;
