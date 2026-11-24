@@ -229,11 +229,7 @@ void drawChessList() {
     listRow(y, 42, focus);
     target(8, y, 304, 42, i);
     if(i == 0) {
-      g().fillCircle(32, y + 21, 14, rgb(0x14524b));
-      g().fillRect(31, y + 13, 3, 17, accent);
-      g().fillRect(24, y + 20, 17, 3, accent);
-      text(56, y + 17, t("New game"), ink, bold);
-      text(56, y + 32, fit(!chessNet.room() ? t("Six games in progress: finish one") : t("Challenge a chat contact"), 240, small), dim, small);
+      newGameRow(y + 21, 14, y + 32, !chessNet.room() ? t("Six games in progress: finish one") : t("Challenge a chat contact"), 240);
       continue;
     }
     const ChessMatch& m = *chessRows[i - 1];

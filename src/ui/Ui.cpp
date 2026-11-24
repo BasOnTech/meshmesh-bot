@@ -953,6 +953,14 @@ void scrollbar(int first, int visible, int total, int y, int h) {
   g().fillRoundRect(315, ty, 3, th, 1, faint);
 }
 void listRow(int y, int h, bool focus) { panel(8, y, 304, h, focus ? cardHi : bg, 7); } // the highlight alone marks the selection, as on home
+// The first row of a game list (chess, checkers, sea battle): a plus in a disc centred at cy, "New game" and a hint.
+void newGameRow(int cy, int r, int hintY, const String& hint, int hintW) {
+  g().fillCircle(32, cy, r, rgb(0x14524b));
+  g().fillRect(31, cy - 8, 3, 17, accent);
+  g().fillRect(24, cy - 1, 17, 3, accent);
+  text(56, cy - 4, t("New game"), ink, bold);
+  text(56, hintY, fit(hint, hintW, small), dim, small);
+}
 
 // Module health: the same eight modules as the diagnostics page.
 unsigned moduleStates(bool* state) {

@@ -115,11 +115,7 @@ void drawDuelList() {
     listRow(y, 45, focus);
     target(8, y, 304, 45, i);
     if(i == 0) {
-      g().fillCircle(32, y + 22, 15, rgb(0x14524b));
-      g().fillRect(31, y + 14, 3, 17, accent);
-      g().fillRect(24, y + 21, 17, 3, accent);
-      text(56, y + 18, t("New game"), ink, bold);
-      text(56, y + 36, fit(!duels.room() ? t("Six games in progress: finish one") : t("Invite a chat contact"), 244, small), dim, small);
+      newGameRow(y + 22, 15, y + 36, !duels.room() ? t("Six games in progress: finish one") : t("Invite a chat contact"), 244);
       continue;
     }
     const Duel& m = *duelRows[i - 1];
