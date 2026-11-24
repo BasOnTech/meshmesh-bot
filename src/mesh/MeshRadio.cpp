@@ -963,11 +963,6 @@ bool MeshRadio::removeContact(uint64_t id) {
   dirty = true;
   return true;
 }
-Peer* MeshRadio::contact(uint64_t id) {
-  for(unsigned i = 0; i < peerCount; i++)
-    if(peers[i].id == id) return &peers[i];
-  return nullptr;
-}
 void MeshRadio::begin() {
   nodeId = ESP.getEfuseMac();
   loadChannels();

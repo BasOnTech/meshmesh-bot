@@ -295,9 +295,7 @@ bool Radar::track(unsigned index) {
   reset();
   tracking = true;
   if(focus.kind == RadarTarget::Lora) {
-    const Peer* p = nullptr;
-    for(unsigned i = 0; i < meshRadio.peerCount; i++)
-      if(meshRadio.peers[i].id == focus.id) p = &meshRadio.peers[i];
+    const Peer* p = meshRadio.findContact(focus.id);
     loraSeen = p ? p->seen : 0;
   }
   addSample(focus.rssi, focus.seen); // the sweep reading, with its real age

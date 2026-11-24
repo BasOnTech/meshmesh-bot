@@ -67,7 +67,6 @@ unsigned MeshRadio::messageLimit(uint64_t d) const{return d==meshmesh::Broadcast
 void MeshRadio::tick(){compactHistoryTick();}
 void MeshRadio::pathJson(JsonObject,const ChatMessage&){}
 void MeshRadio::pathRead(JsonObjectConst,ChatMessage&){}
-Peer* MeshRadio::contact(uint64_t id){for(unsigned i=0;i<peerCount;i++)if(peers[i].id==id)return &peers[i];return nullptr;}
 #include "preview_hooks.inc"
 // Maps: a synthetic street grid instead of SD tiles.
 void Maps::begin(){}void Maps::tick(){}

@@ -503,9 +503,7 @@ void threads() {
   }
 }
 Peer* peerOf(uint64_t id) {
-  for(unsigned i = 0; i < meshRadio.peerCount; i++)
-    if(meshRadio.peers[i].id == id) return &meshRadio.peers[i];
-  return nullptr;
+  return meshRadio.contact(id);
 }
 String nameOf(uint64_t id) {
   if(channels::isChannel(id)) {

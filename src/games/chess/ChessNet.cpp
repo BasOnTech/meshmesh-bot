@@ -98,9 +98,7 @@ void ChessNet::tick() {
       dirty = true;
       continue;
     }
-    Peer* p = nullptr;
-    for(unsigned i = 0; i < meshRadio.peerCount; i++)
-      if(meshRadio.peers[i].id == m.peer) p = &meshRadio.peers[i];
+    const Peer* p = meshRadio.findContact(m.peer);
     bool heard = p && p->heard && int32_t(p->seen - m.triedAt) > 0 && now - m.triedAt >= HeardGap; // they are on air again
     if(!m.retryAt && !heard) {
       m.retryAt = now + retryDelay(m.retries);
@@ -394,8 +392,7 @@ bool ChessNet::receive(uint64_t from, const char* name, const char* text) {
     m->started = unixNow();
     m->game.reset();
     m->rated = !strcmp(f, "r");
-    for(unsigned i = 0; i < meshRadio.peerCount; i++)
-      if(meshRadio.peers[i].id == from) memcpy(m->peerKey, meshRadio.peers[i].publicKey, 32);
+    if(const Peer* p = meshRadio.findContact(from)) memcpy(m->peerKey, p->publicKey, 32);
     news(*m, String(name) + tr(" challenges you to chess"));
     hardware.ping(1320, 120);
     changed(*m);
@@ -506,9 +503,7 @@ bool ChessNet::receive(uint64_t from, const char* name, const char* text) {
 
 // The player's actions. Each one changes the game here first and then sends one command.
 ChessMatch* ChessNet::invite(uint64_t peer, int color, bool rated) {
-  Peer* p = nullptr;
-  for(unsigned i = 0; i < meshRadio.peerCount; i++)
-    if(meshRadio.peers[i].id == peer) p = &meshRadio.peers[i];
+  const Peer* p = meshRadio.findContact(peer);
   if(!p || p->type != 1) {
     event = tr("Chess: choose a chat contact");
     events++;

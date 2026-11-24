@@ -115,6 +115,7 @@ class MeshRadio {
       if(peers[i].id == id) return &peers[i];
     return nullptr;
   }
+  Peer* contact(uint64_t id) { return const_cast<Peer*>(findContact(id)); }
   bool sendInvite(uint64_t contact, uint64_t channel); // the channel link as a direct message
   int probeHashtag(const String& raw); // stored packets of unjoined channels this hashtag opens; -1: not a hashtag
   bool setChannelRegion(uint64_t id, const String& region); // "", "*" or a region name (Regions.h); saved
@@ -204,7 +205,6 @@ class MeshRadio {
   void persist(const ChatMessage& m);
   void stampLate();
   unsigned unstamped = 0;
-  Peer* contact(uint64_t id);
   bool historyProtected(const ChatMessage& m) const;
   void historyErase(unsigned index);
   void compactHistoryTick();

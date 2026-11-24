@@ -85,9 +85,7 @@ char resultChar(uint8_t r) { return r == WhiteWon ? 'w' : r == BlackWon ? 'b'
                                                                         : 'd'; }
 bool decided(uint8_t r) { return r == WhiteWon || r == BlackWon || r == Drawn || r == Bye; }
 Peer* peerOf(uint64_t id) {
-  for(unsigned i = 0; i < meshRadio.peerCount; i++)
-    if(meshRadio.peers[i].id == id) return &meshRadio.peers[i];
-  return nullptr;
+  return meshRadio.contact(id);
 }
 // Points of everyone after the rounds that are finished or under way, in half points.
 void score(const Tour& t, uint8_t* half, uint8_t* buch) {
