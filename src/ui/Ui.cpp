@@ -955,7 +955,11 @@ void scrollbar(int first, int visible, int total, int y, int h) {
   g().fillRoundRect(315, y, 3, h, 1, card);
   g().fillRoundRect(315, ty, 3, th, 1, faint);
 }
-void listRow(int y, int h, bool focus) { panel(8, y, 304, h, focus ? cardHi : bg, 7); } // the highlight alone marks the selection, as on home
+// The highlight alone marks the selection, as on home. An unselected row is not painted: it would only write
+// bg over the cleared bg, and on the M9 every filled pixel is a PSRAM write (half of a home frame was fills).
+void listRow(int y, int h, bool focus) {
+  if(focus) panel(8, y, 304, h, cardHi, 7);
+}
 // The first row of a game list (chess, checkers, sea battle): a plus in a disc centred at cy, "New game" and a hint.
 void newGameRow(int cy, int r, int hintY, const String& hint, int hintW) {
   g().fillCircle(32, cy, r, rgb(0x14524b));
@@ -1042,7 +1046,7 @@ void menuRow(int y, int i, Icon ic, uint16_t hue, const String& name, const Stri
   auto& d = g();
   const int h = tileRowH - 1;
   bool focus = selected == i;
-  panel(8, y, 304, h, focus ? cardHi : bg, 7);
+  listRow(y, h, focus);
   target(8, y, 304, h, i);
   icon(ic, 20, y + h / 2, 6, hue, focus ? cardHi : bg);
   int right = 306;
@@ -1738,7 +1742,7 @@ void drawScope() {
     const RadarTarget& r = radar.targets[i];
     int y = 40 + (i - first) * 22;
     bool focus = i == sel;
-    panel(190, y, 124, 20, focus ? cardHi : bg, 5);
+    if(focus) panel(190, y, 124, 20, cardHi, 5);
     d.fillCircle(199, y + 10, 3, rgb(targetHue(r)));
     text(206, y + 14, fit(targetName(r), 76), focus ? ink : dim);
     textRight(310, y + 14, String(int(r.rssi)), focus ? ink : dim, bold);
