@@ -45,7 +45,7 @@ void Config::load() {
   gps = p.getBool("gps", MM_GPS_DEFAULT);
   sound = p.getBool("sound", true);
   batteryVolts = p.getBool("bat_v", false);
-  brightness = p.getUChar("light", 180);
+  brightness = p.getUChar("light", MM_BRIGHTNESS_DEFAULT);
   autoLock = p.getUShort("lock", 90);
   dimAfter = p.getUShort("dim", 30);
   lockDetails = p.getBool("lock_txt", true);

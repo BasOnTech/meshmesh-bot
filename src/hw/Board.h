@@ -6,6 +6,7 @@
 //   MM_BOARD_NAME  shown on the device page and in the USB boot line
 //   MM_NODE_NAME   default node name
 //   MM_MAX_POWER   highest LoRa power the board's front end takes, dBm
+//   MM_BRIGHTNESS_DEFAULT  default screen brightness (contrast on the Heltec), 10..255
 //   MM_ABSENT      diagnostic modules the board does not have, each followed by a comma
 //                  (web page indices: 1 keyboard, 2 SD, 4 RTC, 5 GPS, 6 compass, 7 IMU)
 //   MM_BUTTON      label of the single button on one-button boards
@@ -19,6 +20,7 @@
 #define MM_BOARD_NAME "ThinkNode M9"
 #define MM_NODE_NAME "M9"
 #define MM_GPS_DEFAULT true
+#define MM_BRIGHTNESS_DEFAULT 75
 #define MM_ABSENT
 #endif
 #ifndef MM_BUTTON
@@ -26,6 +28,9 @@
 #endif
 #ifndef MM_GPS_DEFAULT
 #define MM_GPS_DEFAULT false
+#endif
+#ifndef MM_BRIGHTNESS_DEFAULT
+#define MM_BRIGHTNESS_DEFAULT 180
 #endif
 #ifndef MM_MAX_POWER
 #define MM_MAX_POWER 22
