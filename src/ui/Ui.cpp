@@ -132,13 +132,14 @@ uint64_t conversations[65];
 unsigned conversationCount = 1;
 unsigned nodeOrder[24], nodeTotal = 0;
 
-// Palette: the active theme (ui/Theme.h, ui/themes/) as RGB565; theme keeps its 0xRRGGBB values for mix().
+// Palette: the active theme (ui/Theme.h, ui/themes/) as RGB565 and its corner radii; theme keeps its 0xRRGGBB values for mix().
 constexpr uint16_t rgb(uint32_t v) { return ((v >> 8) & 0xf800) | ((v >> 5) & 0x07e0) | ((v >> 3) & 0x1f); }
 const Theme* theme = themes[0];
 uint16_t surfacePage, surfaceBar, surfaceCard, surfaceFocus, surfaceWell, border, gridLine, accent, accentDeep;
 uint16_t textPrimary, textMuted, textSubtle, iconPrimary, iconMuted, iconSubtle, graphicPrimary, graphicMuted, graphicSubtle, onFill;
 uint16_t secondary, secondaryDeep, tertiary, info, ok, okDeep, warn, warnDeep, alert, bad, badDeep, outBubble, inBubble;
 uint16_t avatarHues[8];
+uint8_t radiusDialog, radiusCard, radiusBubble, radiusRow, radiusRowCompact, radiusField, radiusWell, radiusToast, radiusOverlay, radiusKey, radiusPill, radiusBar, radiusStripe;
 void applyTheme(const Theme& t) {
   theme = &t;
   surfacePage = rgb(t.surfacePage), surfaceBar = rgb(t.surfaceBar), surfaceCard = rgb(t.surfaceCard), surfaceFocus = rgb(t.surfaceFocus), surfaceWell = rgb(t.surfaceWell), border = rgb(t.border), gridLine = rgb(t.gridLine);
@@ -151,6 +152,9 @@ void applyTheme(const Theme& t) {
   ok = rgb(t.ok), okDeep = rgb(t.okDeep), warn = rgb(t.warn), warnDeep = rgb(t.warnDeep), alert = rgb(t.alert), bad = rgb(t.bad), badDeep = rgb(t.badDeep);
   outBubble = rgb(t.outBubble), inBubble = rgb(t.inBubble);
   for(unsigned i = 0; i < 8; i++) avatarHues[i] = rgb(t.avatarHues[i]);
+  radiusDialog = t.radiusDialog, radiusCard = t.radiusCard, radiusBubble = t.radiusBubble, radiusRow = t.radiusRow, radiusRowCompact = t.radiusRowCompact;
+  radiusField = t.radiusField, radiusWell = t.radiusWell, radiusToast = t.radiusToast, radiusOverlay = t.radiusOverlay, radiusKey = t.radiusKey;
+  radiusPill = t.radiusPill, radiusBar = t.radiusBar, radiusStripe = t.radiusStripe;
 }
 const bool themeApplied = (applyTheme(*themes[0]), true); // before any drawing, also in the host preview
 
@@ -489,7 +493,7 @@ void footer(std::initializer_list<Hint> hints) {
     if(x + kw + 4 + aw > 316) break;
     if(int key = hintKey(h.key))
       if(hintCount < 6) hintSpots[hintCount++] = {int16_t(x - 3), int16_t(x + kw + 4 + aw + 5), key};
-    d.fillRoundRect(x, 224, kw, 13, 3, border);
+    d.fillRoundRect(x, 224, kw, 13, radiusKey, border);
     if(!strcmp(h.key, "<>")) {
       tri(x + 5, 230, 3, 3, iconPrimary);
       tri(x + 12, 230, 1, 3, iconPrimary);
@@ -961,21 +965,21 @@ void drawToast() {
   if(!toast.length() || millis() - toastAt >= 3500) return;
   String s = fit(toast, 280);
   int w = measure(s) + 26, x = 160 - w / 2;
-  panel(x, 193, w, 23, surfaceFocus, 6);
-  g().drawRoundRect(x, 193, w, 23, 6, border);
-  g().fillRoundRect(x + 5, 198, 3, 13, 1, toastColor);
+  panel(x, 193, w, 23, surfaceFocus, radiusToast);
+  g().drawRoundRect(x, 193, w, 23, radiusToast, border);
+  g().fillRoundRect(x + 5, 198, 3, 13, radiusStripe, toastColor);
   text(x + 15, 209, s, textPrimary);
 }
 void scrollbar(int first, int visible, int total, int y, int h) {
   if(total <= visible) return;
   int th = max(12, h * visible / total), ty = y + (h - th) * first / max(1, total - visible);
-  g().fillRoundRect(315, y, 3, h, 1, surfaceCard);
-  g().fillRoundRect(315, ty, 3, th, 1, graphicSubtle);
+  g().fillRoundRect(315, y, 3, h, radiusStripe, surfaceCard);
+  g().fillRoundRect(315, ty, 3, th, radiusStripe, graphicSubtle);
 }
 // The highlight alone marks the selection, as on home. An unselected row is not painted: it would only write
 // bg over the cleared bg, and on the M9 every filled pixel is a PSRAM write (half of a home frame was fills).
 void listRow(int y, int h, bool focus) {
-  if(focus) panel(8, y, 304, h, surfaceFocus, 7);
+  if(focus) panel(8, y, 304, h, surfaceFocus, radiusRow);
 }
 // The first row of a game list (chess, checkers, sea battle): a plus in a disc centred at cy, "New game" and a hint.
 void newGameRow(int cy, int r, int hintY, const String& hint, int hintW) {
@@ -1070,7 +1074,7 @@ void menuRow(int y, int i, Icon ic, uint16_t hue, const String& name, const Stri
   if(badge) {
     String b = badge > 99 ? "99+" : String(badge);
     int w = max(16, measure(b, small) + 8);
-    d.fillRoundRect(right - w, y + (h - 14) / 2, w, 14, 7, bad);
+    d.fillRoundRect(right - w, y + (h - 14) / 2, w, 14, radiusPill, bad);
     textCenter(right - w / 2, y + (h - 14) / 2 + 11, b, textPrimary, small);
     right -= w + 6;
   }
@@ -1092,7 +1096,7 @@ void drawTiles(const uint8_t* order, int shown, const AppTile* tiles) {
 }
 // The one-line strip above the home and folder rows: icon, name in bold, then the detail.
 void strip(Icon ic, uint16_t hue, const String& name, int nameW) {
-  panel(8, 25, 304, 20, surfaceCard, 6);
+  panel(8, 25, 304, 20, surfaceCard, radiusRowCompact);
   icon(ic, 20, 35, 6, hue, surfaceCard);
   text(33, 39, fit(name, nameW, bold), textPrimary, bold);
 }
@@ -1191,7 +1195,7 @@ void drawThreads() {
     if(n) {
       String b = String(n);
       pillW = max(18, measure(b, small) + 10);
-      g().fillRoundRect(306 - pillW, y + 26, pillW, 14, 7, accent);
+      g().fillRoundRect(306 - pillW, y + 26, pillW, 14, radiusPill, accent);
       textCenter(306 - pillW / 2, y + 36, b, onFill, small);
     }
     text(56, y + 36, fit(preview, 244 - pillW), n ? textPrimary : textMuted);
@@ -1261,7 +1265,7 @@ void drawChat() {
       h = 7 + (named ? 11 : 0) + n * 13 + 10;
     }
     int x = m.outgoing ? 312 - w : 8, y = bottom - h, ty = y + 14;
-    panel(x, y, w, h, m.outgoing ? outBubble : inBubble, 8);
+    panel(x, y, w, h, m.outgoing ? outBubble : inBubble, radiusBubble);
     if(named) {
       text(x + 8, y + 10, fit(m.name, w - 16, small), avatarHues[(m.source ^ m.source >> 17 ^ m.source >> 41) % 8] | 0x4208, small);
       ty += 11;
@@ -1283,12 +1287,12 @@ void drawChat() {
   if(chatOffset) {
     String c = String(chatOffset);
     int w = measure(c, small) + 18;
-    d.fillRoundRect(304 - w, boxY - 19, w, 14, 7, accent);
+    d.fillRoundRect(304 - w, boxY - 19, w, 14, radiusPill, accent);
     tri(304 - w + 7, boxY - 12, 2, 3, onFill);
     text(304 - w + 12, boxY - 8, c, onFill, small);
   }
-  panel(8, boxY, 304, boxH, surfaceCard, 7);
-  d.drawRoundRect(8, boxY, 304, boxH, 7, composer.length() ? accent : border);
+  panel(8, boxY, 304, boxH, surfaceCard, radiusField);
+  d.drawRoundRect(8, boxY, 304, boxH, radiusField, composer.length() ? accent : border);
   if(composer.length()) {
     unsigned firstRow = inputRows > 3 ? inputRows - 3 : 0;
     int cx = 14;
@@ -1311,7 +1315,7 @@ void drawMap() {
   maps.draw(0, 21, 320, 199);
   bool online = internet.online();
   if(!maps.haveCenter || (!maps.available && !online)) {
-    panel(30, 70, 260, 86, surfaceCard, 10);
+    panel(30, 70, 260, 86, surfaceCard, radiusDialog);
     icon(IcPin, 160, 96, 12, iconSubtle, surfaceCard);
     textCenter(160, 128, online ? t("Finding location by IP...") : !maps.available ? t("Needs Wi-Fi internet or an SD card")
                                                                                    : t("Connect Wi-Fi or load a map"),
@@ -1341,7 +1345,7 @@ void drawMap() {
       d.fillCircle(x, y, 4, typeColor(p.type));
       String name = fit(p.name, 80, small);
       int w = measure(name, small) + 6, lx = constrain(x + 8, 2, 316 - w);
-      d.fillRoundRect(lx, y - 6, w, 11, 3, surfaceBar);
+      d.fillRoundRect(lx, y - 6, w, 11, radiusOverlay, surfaceBar);
       text(lx + 3, y + 2, name, textPrimary, small);
     }
     if(hardware.gpsFix()) {
@@ -1363,7 +1367,7 @@ void drawMap() {
       d.drawCircle(160, 120, 5, surfaceBar);
     }
     if(!maps.visibleTiles) {
-      panel(30, 96, 260, 44, surfaceCard, 8);
+      panel(30, 96, 260, 44, surfaceCard, radiusCard);
       textCenter(160, 114, maps.fetching ? t("Downloading map...") : maps.waiting ? t("Reading map from SD...")
                                                                    : online       ? t("Tiles unavailable")
                                                                                   : t("This zoom is not downloaded"),
@@ -1377,12 +1381,12 @@ void drawMap() {
     int px = max(8, int(dist / metresPerPx));
     String scaleText = dist >= 1000 ? String(dist / 1000) + t(" km") : String(dist) + t(" m");
     int sw = max(px, measure(scaleText, small)) + 12;
-    d.fillRoundRect(312 - sw, 196, sw, 19, 4, surfaceBar);
+    d.fillRoundRect(312 - sw, 196, sw, 19, radiusOverlay, surfaceBar);
     d.fillRect(306 - px, 209, px, 2, graphicPrimary);
     d.drawFastVLine(306 - px, 206, 5, graphicPrimary);
     d.drawFastVLine(305, 206, 5, graphicPrimary);
     textRight(306, 204, scaleText, textPrimary, small);
-    d.fillRoundRect(4, 203, 82, 12, 3, surfaceBar);
+    d.fillRoundRect(4, 203, 82, 12, radiusOverlay, surfaceBar);
     text(8, 212, "© OpenStreetMap", textMuted, small);
   }
   String area = fit(maps.available && maps.inArea() ? maps.title : online ? "OpenStreetMap"
@@ -1390,7 +1394,7 @@ void drawMap() {
                     120, small) +
                 "  z" + String(maps.zoom) + (maps.fetching ? t(" · loading") : "");
   int aw = measure(area, small) + 22;
-  d.fillRoundRect(6, 26, aw, 16, 4, surfaceBar);
+  d.fillRoundRect(6, 26, aw, 16, radiusOverlay, surfaceBar);
   icon(IcPin, 14, 34, 5, ok, surfaceBar);
   text(22, 37, area, textPrimary, small);
   bool fix = hardware.gpsFix();
@@ -1398,7 +1402,7 @@ void drawMap() {
                                           : hardware.clockConflict ? t("GPS: old date")
                                                                    : t("GPS: searching");
   int gw = measure(gps, small) + 10;
-  d.fillRoundRect(6, 45, gw, 15, 4, surfaceBar);
+  d.fillRoundRect(6, 45, gw, 15, radiusOverlay, surfaceBar);
   text(11, 56, gps, !config.gps ? textMuted : fix ? ok
                                                   : warn,
        small);
@@ -1410,7 +1414,7 @@ void drawMap() {
     d.fillTriangle(cx + roundf(11 * sinf(a)), cy - roundf(11 * cosf(a)), cx + roundf(4 * cosf(a)), cy + roundf(4 * sinf(a)), cx - roundf(4 * cosf(a)), cy - roundf(4 * sinf(a)), bad);
     d.fillTriangle(cx - roundf(11 * sinf(a)), cy + roundf(11 * cosf(a)), cx + roundf(4 * cosf(a)), cy + roundf(4 * sinf(a)), cx - roundf(4 * cosf(a)), cy - roundf(4 * sinf(a)), graphicMuted);
     String deg = String(int(navigation.heading + .5f) % 360) + "°";
-    d.fillRoundRect(cx - 15, 60, 30, 12, 3, surfaceBar);
+    d.fillRoundRect(cx - 15, 60, 30, 12, radiusOverlay, surfaceBar);
     textCenter(cx, 69, deg, textPrimary, small);
   }
   footer({{"<>", t("Pan")}, {"+/-", t("Zoom")}, {"OK", maps.follow ? t("Following") : t("To GPS")}, {"L", t("Maps")}});
@@ -1428,7 +1432,7 @@ void drawLibrary() {
     bool focus = selected == int(i);
     listRow(y, 45, focus);
     target(8, y, 304, 45, i);
-    g().fillRoundRect(18, y + 8, 30, 30, 7, surfaceCard);
+    g().fillRoundRect(18, y + 8, 30, 30, radiusWell, surfaceCard);
     icon(IcPin, 33, y + 22, 9, ok, surfaceCard);
     String name = library[i]["name"].as<String>();
     text(58, y + 19, fit(name, 200, bold), textPrimary, bold);
@@ -1499,8 +1503,8 @@ void drawPlayMenu(const Peer& p) {
   targetCount = hintCount = 0;
   uint16_t* px = g().getBuffer();
   for(int i = 0; i < 320 * 240; i++) px[i] = (px[i] >> 1) & 0x7bef; // dim the card under the menu
-  panel(40, 46, 240, 142, surfaceFocus, 10);
-  g().drawRoundRect(40, 46, 240, 142, 10, border);
+  panel(40, 46, 240, 142, surfaceFocus, radiusDialog);
+  g().drawRoundRect(40, 46, 240, 142, radiusDialog, border);
   text(54, 66, fit(t("Play with ") + p.name, 212, bold), textPrimary, bold);
   const Icon icons[] = {IcChess, IcCheckers, IcShip};
   const String names[] = {t("Chess"), t("Checkers"), t("Sea battle")};
@@ -1509,9 +1513,9 @@ void drawPlayMenu(const Peer& p) {
     int y = 76 + i * 36;
     bool focus = playSel == i;
     target(48, y, 224, 32, i);
-    panel(48, y, 224, 32, focus ? surfaceCard : surfaceFocus, 7);
-    if(focus) ring(48, y, 224, 32, 7);
-    g().fillRoundRect(54, y + 5, 22, 22, 5, surfaceWell);
+    panel(48, y, 224, 32, focus ? surfaceCard : surfaceFocus, radiusRow);
+    if(focus) ring(48, y, 224, 32, radiusRow);
+    g().fillRoundRect(54, y + 5, 22, 22, radiusWell, surfaceWell);
     icon(icons[i], 65, y + 16, 6, focus ? accent : iconMuted, surfaceWell);
     text(84, y + 14, names[i], textPrimary, bold);
     text(84, y + 26, fit(about[i], 180, small), textMuted, small);
@@ -1554,8 +1558,8 @@ void drawNode() {
     int w = (304 - (inRow - 1) * 6) / inRow, x = 8 + k * (w + 6), h = two ? 25 : 28, y = two ? 160 + row * 29 : 184;
     bool focus = action == int(i), danger = acts[i] == ActForget;
     target(x, y, w, h, i);
-    panel(x, y, w, h, focus ? (danger && deleteArmed ? bad : surfaceFocus) : surfaceCard, 7);
-    if(focus) ring(x, y, w, h, 7, danger ? bad : accent);
+    panel(x, y, w, h, focus ? (danger && deleteArmed ? bad : surfaceFocus) : surfaceCard, radiusRow);
+    if(focus) ring(x, y, w, h, radiusRow, danger ? bad : accent);
     if(acts[i] == ActPlay) {
       int tw = measure(names[ActPlay]) + 16;
       icon(IcChess, x + w / 2 - tw / 2 + 5, y + h / 2, 5, focus ? accent : iconMuted, focus ? surfaceFocus : surfaceCard);
@@ -1601,10 +1605,10 @@ void drawSensors() {
   {
     bool focus = selected == 0;
     target(122, 24, 192, 22, 0);
-    panel(122, 24, 192, 22, focus ? surfaceFocus : surfaceCard, 6);
-    if(focus) ring(122, 24, 192, 22, 6);
+    panel(122, 24, 192, 22, focus ? surfaceFocus : surfaceCard, radiusRowCompact);
+    if(focus) ring(122, 24, 192, 22, radiusRowCompact);
     text(130, y, "GPS", textMuted, small);
-    g().fillRoundRect(280, 28, 26, 14, 7, config.gps ? ok : border);
+    g().fillRoundRect(280, 28, 26, 14, radiusPill, config.gps ? ok : border);
     g().fillCircle(config.gps ? 298 : 287, 35, 5, graphicPrimary);
     textRight(274, y, fit(!config.gps ? t("off") : fix                    ? t("fix")
                                                  : hardware.clockConflict ? t("old date")
@@ -1631,8 +1635,8 @@ void drawSensors() {
     int x = 8 + i * 154;
     bool focus = selected == i + 1;
     target(x, 168, 150, 46, i + 1);
-    panel(x, 168, 150, 46, focus ? surfaceFocus : surfaceCard, 7);
-    if(focus) ring(x, 168, 150, 46, 7);
+    panel(x, 168, 150, 46, focus ? surfaceFocus : surfaceCard, radiusRow);
+    if(focus) ring(x, 168, 150, 46, radiusRow);
     text(x + 10, 186, fit(actions[i], 132, bold), textPrimary, bold);
     text(x + 10, 203, fit(hints[i], 132, small), textMuted, small);
   }
@@ -1759,7 +1763,7 @@ void drawScope() {
     const RadarTarget& r = radar.targets[i];
     int y = 40 + (i - first) * 22;
     bool focus = i == sel;
-    if(focus) panel(190, y, 124, 20, surfaceFocus, 5);
+    if(focus) panel(190, y, 124, 20, surfaceFocus, radiusRowCompact);
     d.fillCircle(199, y + 10, 3, rgb(targetHue(r)));
     text(206, y + 14, fit(targetName(r), 76), focus ? textPrimary : textMuted);
     textRight(310, y + 14, String(int(r.rssi)), focus ? textPrimary : textMuted, bold);
@@ -1777,8 +1781,8 @@ void drawHoming() {
   const RadarTarget& f = radar.focus;
   uint16_t hue = rgb(targetHue(f));
   bool fresh = radarFresh(), lora = f.kind == RadarTarget::Lora, bt = f.kind == RadarTarget::Ble;
-  panel(8, 26, 304, 34, surfaceCard, 8);
-  d.fillRoundRect(14, 31, 24, 24, 6, surfaceWell);
+  panel(8, 26, 304, 34, surfaceCard, radiusCard);
+  d.fillRoundRect(14, 31, 24, 24, radiusWell, surfaceWell);
   icon(lora ? IcTower : bt ? (f.device ? IcPerson : IcBle)
                            : IcWifi,
        26, 43, 7, hue, surfaceWell);
@@ -1792,7 +1796,7 @@ void drawHoming() {
   text(x + 4, 112, "dBm", textMuted, small);
   // Homing indicator: the fast average against the slow one, as in the RSSI tracker.
   int trend = radar.trend();
-  panel(186, 66, 126, 46, surfaceCard, 8);
+  panel(186, 66, 126, 46, surfaceCard, radiusCard);
   if(f.kind == RadarTarget::Wifi && radar.wifi != Radar::WifiReady) text(196, 93, fit(wifiState(), 108, small), warn, small);
   else if(bt && radar.ble != Radar::BleReady) text(196, 93, fit(bleState(), 108, small), warn, small);
   else if(!fresh) text(196, 93, radar.samples > 1 ? t("Lost") : t("No signal"), warn, bold);
@@ -1811,8 +1815,8 @@ void drawHoming() {
   }
   // Strength meter with the peak marker.
   float level = signalLevel(lroundf(radar.fast));
-  d.fillRoundRect(14, 120, 292, 8, 3, border);
-  if(radar.samples) d.fillRoundRect(14, 120, max(3, int(292 * level)), 8, 3, !fresh ? graphicSubtle : level < .3f ? bad
+  d.fillRoundRect(14, 120, 292, 8, radiusBar, border);
+  if(radar.samples) d.fillRoundRect(14, 120, max(3, int(292 * level)), 8, radiusBar, !fresh ? graphicSubtle : level < .3f ? bad
                                                                                                     : level < .6f ? warn
                                                                                                                   : ok);
   if(radar.samples) {
@@ -1823,7 +1827,7 @@ void drawHoming() {
   textRight(306, 142, "-35 dBm", textSubtle, small);
   textCenter(160, 142, t("peak ") + (radar.samples ? String(int(lroundf(radar.peak))) + " dBm (" + String(radar.fast - radar.peak, 0) + ")" : String("-")), textMuted, small);
   // History: the last 120 samples, oldest on the left.
-  panel(8, 148, 304, 58, surfaceCard, 6);
+  panel(8, 148, 304, 58, surfaceCard, radiusCard);
   for(int dbm : {-90, -70, -50}) {
     int y = 202 - int(50 * signalLevel(dbm));
     d.drawFastHLine(12, y, 296, gridLine);
@@ -1855,8 +1859,8 @@ void drawMotion() {
   auto& d = g();
   bool beacon = radar.csi == Radar::CsiBeacon, heard = radar.beaconHeard();
   uint32_t now = millis();
-  panel(8, 26, 304, 34, surfaceCard, 8);
-  d.fillRoundRect(14, 31, 24, 24, 6, surfaceWell);
+  panel(8, 26, 304, 34, surfaceCard, radiusCard);
+  d.fillRoundRect(14, 31, 24, 24, radiusWell, surfaceWell);
   icon(beacon ? IcRadio : IcPulse, 26, 43, 7, beacon ? accent : heard ? ok
                                                                       : warn,
        surfaceWell);
@@ -1896,14 +1900,14 @@ void drawMotion() {
   textCenter(160, 92, state, color, big);
   if(!beacon) {
     float threshold = radar.motionThreshold(), scale = max(threshold * 2.5f, radar.activity * 1.1f);
-    d.fillRoundRect(14, 104, 292, 8, 3, border);
-    if(heard) d.fillRoundRect(14, 104, max(3, int(292 * min(1.f, radar.activity / scale))), 8, 3, radar.moving ? bad : ok);
+    d.fillRoundRect(14, 104, 292, 8, radiusBar, border);
+    if(heard) d.fillRoundRect(14, 104, max(3, int(292 * min(1.f, radar.activity / scale))), 8, radiusBar, radar.moving ? bad : ok);
     int tx = 14 + int(291 * threshold / scale);
     d.fillRect(tx - 1, 100, 3, 16, graphicPrimary);
     text(14, 128, t("activity ") + String(radar.activity * 1000, 1), textMuted, small);
     textRight(306, 128, t("threshold ") + String(threshold * 1000, 1) + (radar.baseline > 0 ? String() : t(" (default)")), radar.baseline > 0 ? textMuted : warn, small);
     // History: one point per 0.5 s, threshold dotted.
-    panel(8, 136, 304, 70, surfaceCard, 6);
+    panel(8, 136, 304, 70, surfaceCard, radiusCard);
     unsigned n = radar.motionCount();
     float top = threshold * 2.5f;
     for(unsigned i = 0; i < n; i++) top = max(top, radar.motion(i));
@@ -1927,7 +1931,7 @@ const int settingsCount = 9;
 String powerOnHint() { return powerOnWay() >= 0 ? t("To turn on, hold the trackball pressed") : t("To turn on: RESET or the power switch"); }
 bool farewell = false; // the board is about to turn off: the last frame
 void drawOff() {
-  panel(30, 62, 260, 116, surfaceCard, 10);
+  panel(30, 62, 260, 116, surfaceCard, radiusDialog);
   icon(IcPower, 160, 96, 14, farewell ? iconMuted : warn, surfaceCard);
   textCenter(160, 138, farewell ? t("Device is off") : t("Turning off..."), textPrimary, bold);
   textCenter(160, 160, powerOnHint(), textMuted, small);
@@ -2074,11 +2078,11 @@ String wardriveMode() {
 void drawWardrive() {
   int32_t lat, lon;
   bool phone, fix = wardrive::position(lat, lon, phone), on = wardrive::running();
-  panel(8, 26, 304, 44, surfaceCard, 8);
+  panel(8, 26, 304, 44, surfaceCard, radiusCard);
   icon(IcTower, 26, 48, 9, on ? ok : iconSubtle, surfaceCard);
   text(44, 44, fit(wardriveMode(), 256, bold), on ? textPrimary : textMuted, bold);
   text(44, 61, fit(fix ? (phone ? t("Phone: ") : "GPS: ") + String(lat / 1e6, 5) + ", " + String(lon / 1e6, 5) : t("No position: GPS fix or phone app"), 256, small), fix ? textMuted : warn, small);
-  panel(8, 74, 304, 42, surfaceCard, 8);
+  panel(8, 74, 304, 42, surfaceCard, radiusCard);
   String counts = count(wardrive::points(), "point", "points");
   if(wardrive::settings.nets || wardrive::nets()) counts += " · Wi-Fi/BLE " + String(wardrive::nets());
   text(18, 90, fit(counts, 288, small), textPrimary, small);
@@ -2157,8 +2161,8 @@ void drawQuick() {
   } else {
     bool focus = selected == 0;
     target(8, 28, 304, 40, 0);
-    panel(8, 28, 304, 40, focus ? surfaceFocus : surfaceCard, 7);
-    if(focus) ring(8, 28, 304, 40, 7);
+    panel(8, 28, 304, 40, focus ? surfaceFocus : surfaceCard, radiusRow);
+    if(focus) ring(8, 28, 304, 40, radiusRow);
     text(18, 42, fit(t("Choose recipient"), 260, small), textMuted, small);
     text(18, 59, fit(quickName(quickReplyTo ? quickReplyTo : quickSend::state.to), 260, bold), accent, bold);
     tri(299, 49, 1, 4, accent);
@@ -2221,8 +2225,8 @@ void drawEditor() {
     bool focus = selected == i;
     target(8, y, 304, 21, i);
     if(i == rows - 1) {
-      panel(8, y, 304, 21, changed ? (focus ? accent : accentDeep) : surfaceCard, 6);
-      if(focus && !changed) ring(8, y, 304, 21, 6, border);
+      panel(8, y, 304, 21, changed ? (focus ? accent : accentDeep) : surfaceCard, radiusRowCompact);
+      if(focus && !changed) ring(8, y, 304, 21, radiusRowCompact, border);
       textCenter(160, y + 15, changed ? t("Save changes") : t("No changes"), changed ? (focus ? onFill : textPrimary) : textMuted, bold);
       continue;
     }
@@ -2247,7 +2251,7 @@ void drawEditor() {
   else footer({{"<>", t("Change")}, {"OK", selected == rows - 1 ? t("Save") : t("Next value")}, {"BACK", t("Cancel")}});
 }
 void toggle(int x, int y, bool on) {
-  panel(x, y, 30, 16, on ? accent : border, 8);
+  panel(x, y, 30, 16, on ? accent : border, radiusPill);
   g().fillCircle(on ? x + 22 : x + 8, y + 8, 6, on ? onFill : graphicMuted);
 }
 // The access point as QR codes, so a phone needs no typing: 0 - joining it (the WIFI: text of camera apps), 1 - the
@@ -2332,7 +2336,7 @@ void drawNetwork() {
   auto& d = g();
   bool wifi = portalActive(), ble = bleActive(), web = internet.enabled;
   int y = 25;
-  auto cardAt = [&](int i, int h, Icon ic, const String& name, const String& state, bool on) {bool focus=selected==i;target(8,y,304,h,i);panel(8,y,304,h,focus?surfaceFocus:surfaceCard,8);if(focus)ring(8,y,304,h,8);d.fillRoundRect(16,y+7,24,24,6,surfaceWell);icon(ic,28,y+19,7,on?info:iconSubtle,surfaceWell);text(48,y+17,name,textPrimary,bold);text(48,y+30,fit(state,220,small),textMuted,small); };
+  auto cardAt = [&](int i, int h, Icon ic, const String& name, const String& state, bool on) {bool focus=selected==i;target(8,y,304,h,i);panel(8,y,304,h,focus?surfaceFocus:surfaceCard,radiusCard);if(focus)ring(8,y,304,h,radiusCard);d.fillRoundRect(16,y+7,24,24,radiusWell,surfaceWell);icon(ic,28,y+19,7,on?info:iconSubtle,surfaceWell);text(48,y+17,name,textPrimary,bold);text(48,y+30,fit(state,220,small),textMuted,small); };
   int wh = wifi ? 56 : 38;
   cardAt(0, wh, IcWifi, t("Wi-Fi access point"), wifi ? "192.168.4.1 · " + String(t("Web chat and map upload")) : t("Off"), wifi);
   toggle(274, y + 11, wifi);
@@ -2439,9 +2443,9 @@ void drawNetList() {
   auto& d = g();
   bool focus = selected == 0;
   target(8, 25, 304, 40, 0);
-  panel(8, 25, 304, 40, focus ? surfaceFocus : surfaceCard, 8);
-  if(focus) ring(8, 25, 304, 40, 8);
-  d.fillRoundRect(16, 33, 24, 24, 6, surfaceWell);
+  panel(8, 25, 304, 40, focus ? surfaceFocus : surfaceCard, radiusCard);
+  if(focus) ring(8, 25, 304, 40, radiusCard);
+  d.fillRoundRect(16, 33, 24, 24, radiusWell, surfaceWell);
   icon(IcWifi, 28, 45, 7, internet.online() ? ok : internet.enabled ? info
                                                                     : iconSubtle,
        surfaceWell);
@@ -2518,12 +2522,12 @@ void drawDiagnostics() {
   moduleStates(state);
   for(int i = 0; i < 8; i++) {
     int x = 8 + (i % 2) * 154, y = 25 + (i / 2) * 22;
-    panel(x, y, 150, 19, surfaceCard, 5);
+    panel(x, y, 150, 19, surfaceCard, radiusRowCompact);
     g().fillCircle(x + 11, y + 9, 4, state[i] ? ok : bad);
     text(x + 21, y + 14, label[i], textPrimary);
     textRight(x + 144, y + 14, state[i] ? "OK" : t("n/a"), state[i] ? ok : bad, small);
   }
-  panel(8, 116, 304, 74, surfaceCard, 8);
+  panel(8, 116, 304, 74, surfaceCard, radiusCard);
   uint32_t up = millis() / 1000;
   char uptime[16];
   snprintf(uptime, sizeof uptime, "%lu:%02lu:%02lu", (unsigned long)(up / 3600), (unsigned long)(up / 60 % 60), (unsigned long)(up % 60));
@@ -2541,7 +2545,7 @@ void drawHelp() {
   for(int i = 0; i < 10; i++) {
     int y = 24 + i * 19;
     int kw = max(30, measure(keys[i].key, small) + 10);
-    g().fillRoundRect(10, y, kw, 15, 3, border);
+    g().fillRoundRect(10, y, kw, 15, radiusKey, border);
     textCenter(10 + kw / 2, y + 11, keys[i].key, textPrimary, small);
     text(max(50, kw + 16), y + 12, fit(keys[i].action, 258), i % 2 ? textMuted : textPrimary);
   }
@@ -2581,7 +2585,7 @@ void drawLocked() {
         last = &meshRadio.history[i];
         break;
       }
-    panel(40, y, 240, 40, surfaceCard, 8);
+    panel(40, y, 240, 40, surfaceCard, radiusCard);
     icon(IcMail, 62, y + 20, 9, warn, surfaceCard);
     text(80, y + 16, count(n, "new message", "new messages"), textPrimary, bold);
     if(!config.lockDetails) text(80, y + 32, t("Unlock to read"), textMuted, small);
@@ -2603,8 +2607,8 @@ void drawEditing() {
   uint16_t* px = g().getBuffer();
   for(int i = 0; i < 320 * 240; i++) px[i] = (px[i] >> 1) & 0x7bef; // dim the page under the dialog
   bool key = page == Network, pass = page == NetList || page == ServerHome;
-  panel(12, 60, 296, 122, surfaceFocus, 10);
-  g().drawRoundRect(12, 60, 296, 122, 10, border);
+  panel(12, 60, 296, 122, surfaceFocus, radiusDialog);
+  g().drawRoundRect(12, 60, 296, 122, radiusDialog, border);
   text(26, 82, key ? t("Network key · 64 hex") : page == ChannelAdd   ? channelEditTitle()
                                                : page == ChessTourNew ? String(t("Tournament name"))
                                                : page == PetView      ? String(t("Pet name"))
@@ -2617,8 +2621,8 @@ void drawEditing() {
                                                : pass                 ? fit(t("Wi-Fi password: ") + pendingSsid, 268, bold)
                                                                       : t("Device name"),
        textPrimary, bold);
-  panel(24, 92, 272, 52, surfaceWell, 6);
-  g().drawRoundRect(24, 92, 272, 52, 6, accent);
+  panel(24, 92, 272, 52, surfaceWell, radiusField);
+  g().drawRoundRect(24, 92, 272, 52, radiusField, accent);
   String rows[10];
   unsigned n = wrap(edit, rows, 10, 258), first = n > 3 ? n - 3 : 0;
   int cx = 32;

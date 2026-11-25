@@ -27,19 +27,19 @@ void drawRolePick() {
     int y = 24 + r * 58;
     bool focus = selected == r, current = config.role == r;
     target(8, y, 304, 54, r);
-    panel(8, y, 304, 54, focus ? surfaceFocus : surfaceCard, 8);
-    if(focus) ring(8, y, 304, 54, 8);
+    panel(8, y, 304, 54, focus ? surfaceFocus : surfaceCard, radiusCard);
+    if(focus) ring(8, y, 304, 54, radiusCard);
     Icon ic = r == RoleRepeater ? IcTower : r == RoleRoom ? IcRoom
                                                           : IcChat;
     uint16_t hue = r == RoleRepeater ? secondary : r == RoleRoom ? warn
                                                                  : accent;
-    g().fillRoundRect(16, y + 8, 28, 28, 7, surfaceWell);
+    g().fillRoundRect(16, y + 8, 28, 28, radiusWell, surfaceWell);
     icon(ic, 30, y + 22, 8, hue, surfaceWell);
     text(54, y + 19, roleTitle(r), textPrimary, bold);
     if(current) {
       String now = t("running");
       int w = measure(now, small) + 10;
-      g().fillRoundRect(302 - w, y + 8, w, 14, 7, accentDeep);
+      g().fillRoundRect(302 - w, y + 8, w, 14, radiusPill, accentDeep);
       textCenter(302 - w / 2, y + 18, now, accent, small);
     }
     const char* about[][2] = {{tr("Screen, chats, maps, radar and games"), tr("A MeshCore chat node; relays as set")},
@@ -130,8 +130,8 @@ void drawServer() {
   ServerView v = meshServer.view();
   auto& d = g();
   bool room = config.role == RoleRoom;
-  panel(8, 25, 304, 58, surfaceCard, 8);
-  d.fillRoundRect(16, 33, 26, 26, 6, surfaceWell);
+  panel(8, 25, 304, 58, surfaceCard, radiusCard);
+  d.fillRoundRect(16, 33, 26, 26, radiusWell, surfaceWell);
   icon(room ? IcRoom : IcTower, 29, 46, 8, !meshRadio.ready ? bad : room         ? warn
                                                                   : v.forwarding ? secondary
                                                                                  : bad,
@@ -151,7 +151,7 @@ void drawServer() {
     ServerRow r = serverRow(i);
     target(8, y, 304, 21, i);
     if(r == RowAnnounce || r == RowPost) {
-      panel(8, y, 304, 21, focus ? accent : surfaceCard, 6);
+      panel(8, y, 304, 21, focus ? accent : surfaceCard, radiusRowCompact);
       textCenter(160, y + 15, serverName(r), focus ? onFill : textPrimary, bold);
       continue;
     }

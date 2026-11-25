@@ -294,8 +294,8 @@ void drawChannelInfo() {
     int ry = 218 - (actions - i) * 26, cx = x - 2 + (w + 2) / 2;
     bool focus = selected == i, danger = i == InfoLeave;
     target(x - 2, ry, w + 2, 24, i);
-    panel(x - 2, ry, w + 2, 24, focus ? (danger && deleteArmed ? bad : surfaceFocus) : surfaceCard, 7);
-    if(focus) ring(x - 2, ry, w + 2, 24, 7, danger ? bad : accent);
+    panel(x - 2, ry, w + 2, 24, focus ? (danger && deleteArmed ? bad : surfaceFocus) : surfaceCard, radiusRow);
+    if(focus) ring(x - 2, ry, w + 2, 24, radiusRow, danger ? bad : accent);
     if(i == InfoRegion || (i == InfoInvite && people)) {
       bool region = i == InfoRegion;
       textCenter(cx, ry + 9, region ? (regionChoice == c->region ? t("Region") : t("Region · OK: save")) : t("Invite"), region && regionChoice != c->region ? accent : textMuted, small);
@@ -479,8 +479,8 @@ void drawChatMenu() {
     listRow(y, 23, focus);
     if(row == MenuErase) {
       unsigned n = chatMessages();
-      panel(8, y, 304, 23, n ? (focus ? bad : badDeep) : surfaceCard, 6);
-      if(focus && !n) ring(8, y, 304, 23, 6, border);
+      panel(8, y, 304, 23, n ? (focus ? bad : badDeep) : surfaceCard, radiusRowCompact);
+      if(focus && !n) ring(8, y, 304, 23, radiusRowCompact, border);
       textCenter(160, y + 16, !n ? t("No messages") : deleteArmed ? t("Sure? OK again")
                                                                   : t("Erase messages") + " (" + String(n) + ")",
                  n ? (focus ? onFill : textPrimary) : textMuted, bold);

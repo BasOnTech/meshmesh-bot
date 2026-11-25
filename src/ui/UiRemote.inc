@@ -96,8 +96,8 @@ void drawRemote() {
     int x = 8 + i * (w + 6);
     bool focus = remoteAction == int(i);
     target(x, 184, w, 28, i);
-    panel(x, 184, w, 28, focus ? surfaceFocus : surfaceCard, 7);
-    if(focus) ring(x, 184, w, 28, 7);
+    panel(x, 184, w, 28, focus ? surfaceFocus : surfaceCard, radiusRow);
+    if(focus) ring(x, 184, w, 28, radiusRow);
     textCenter(x + w / 2, 202, fit(names[acts[i]], w - 8), textPrimary);
   }
   footer({{"<>", t("Action")}, {"OK", t("Run")}, {"BACK", t("Node")}});
