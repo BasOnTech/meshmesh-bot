@@ -3685,8 +3685,8 @@ void uiTick() {
     internet.rescan();
   }
   // A dark screen is not drawn: a key lights it and redraws (and light sleep stays short).
-  bool update = dirty || meshRadio.dirty || maps.dirty || internet.dirty || animate || now - lastDraw >= 1000;// A key or touch draws on the next pass; animations run at up to 20 fps; radio, map and network updates at most every 150 ms.
-  uint32_t gap = keyed && dirty ? 0 : animate ? 50
+  bool update = dirty || meshRadio.dirty || maps.dirty || internet.dirty || animate || now - lastDraw >= 1000;// A key or touch draws on the next pass; the radar sweep runs at up to 30 fps (a frame costs ~32 ms on M9), other animations at 20 fps; radio, map and network updates at most every 150 ms.
+  uint32_t gap = keyed && dirty ? 0 : animate ? (uiRadarPage() ? 33 : 50)
                                               : 150;
   if(update && !wakeOnly && now - lastDraw >= gap) {
     draw();
