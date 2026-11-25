@@ -168,6 +168,7 @@ struct Face {
   const AaFont& aa;
 };
 const Face body{u8g2_font_6x13_t_cyrillic, u8g2_font_6x13_tf, mmAaBody}, bold{u8g2_font_6x13B_t_cyrillic, u8g2_font_6x13B_tf, mmAaBold}, small{u8g2_font_5x8_t_cyrillic, u8g2_font_5x8_tf, mmAaSmall};
+const Face card{u8g2_font_9x15_t_cyrillic, u8g2_font_9x15B_tf, mmAaCard}; // menu row names
 const Face big{u8g2_font_10x20_t_cyrillic, u8g2_font_10x20_tf, mmAaBig}, digits{u8g2_font_logisoso42_tn, nullptr, mmAaDigits};
 const AaGlyph* aaFind(const AaFont& f, uint32_t cp) {
   int lo = 0, hi = int(f.count) - 1;
@@ -1002,7 +1003,7 @@ unsigned moduleStates(bool* state) {
 }
 // Home: identity strip and a list of destinations; six rows are visible, the rest scroll.
 // The tiles follow config.apps: its order and folders, without the hidden ones (Apps.cpp).
-const int tileTop = 48, tileRowH = 24, tileRowsShown = 7;
+const int tileTop = 48, tileRowH = 28, tileRowsShown = 6;
 struct AppTile {
   Icon ic;
   uint16_t hue;
@@ -1069,19 +1070,19 @@ void menuRow(int y, int i, Icon ic, uint16_t hue, const String& name, const Stri
   bool focus = selected == i;
   listRow(y, h, focus);
   target(8, y, 304, h, i);
-  icon(ic, 20, y + h / 2, 6, hue, focus ? surfaceFocus : surfacePage);
+  icon(ic, 20, y + h / 2, 7, hue, focus ? surfaceFocus : surfacePage);
   int right = 306;
   if(badge) {
     String b = badge > 99 ? "99+" : String(badge);
-    int w = max(16, measure(b, small) + 8);
-    d.fillRoundRect(right - w, y + (h - 14) / 2, w, 14, radiusPill, bad);
-    textCenter(right - w / 2, y + (h - 14) / 2 + 11, b, textPrimary, small);
+    int w = max(20, measure(b, bold) + 10);
+    d.fillRoundRect(right - w, y + (h - 19) / 2, w, 19, radiusPill, bad); // odd, so the 9 px digits sit 5 px from both edges
+    textCenter(right - w / 2, y + (h - 19) / 2 + 14, b, textPrimary, bold);
     right -= w + 6;
   }
-  int nameW = min(measure(name, bold), right - 33 - 40);
-  text(33, y + h / 2 + 5, fit(name, nameW, bold), textPrimary, bold);
+  int nameW = min(measure(name, card), right - 33 - 40);
+  text(33, y + h / 2 + 5, fit(name, nameW, card), textPrimary, card);
   int detailW = right - 33 - nameW - 10;
-  if(detailW > 20) textRight(right, y + h / 2 + 4, fit(detail, detailW, small), textMuted, small);
+  if(detailW > 20) textRight(right, y + h / 2 + 5, fit(detail, detailW), textMuted);
 }
 void drawTiles(const uint8_t* order, int shown, const AppTile* tiles) {
   selected = max(0, min(selected, shown - 1));
@@ -1949,7 +1950,7 @@ void drawSettings() {
                       t("What every key does"), maps.title.length() ? maps.title + " · " + count(maps.tileCount, "tile", "tiles") : t("No maps"), config.role == RoleRepeater ? t("MeshCore repeater") : config.role == RoleRoom ? t("MeshCore room server")
                                                                                                                                                                                                                                  : t("Normal: chats, maps, radar"),
                       powerOnHint()};
-  const int shown = 8; // menu rows as on home, from under the status bar
+  const int shown = 7; // menu rows as on home, from under the status bar to the footer
   int first = menuFirst(settingsCount, shown);
   for(int i = first; i < settingsCount && i < first + shown; i++) menuRow(24 + (i - first) * tileRowH, i, icons[i], hues[i], names[i], details[i]);
   scrollbar(first, shown, settingsCount, 24, shown * tileRowH - 1);
