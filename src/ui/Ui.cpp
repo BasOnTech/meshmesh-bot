@@ -3310,14 +3310,19 @@ void uiKey(int key) {
     }
     return;
   }
-  if((page == Home || page == Folder) && (key == KeyLeft || key == KeyRight || key == KeyUp || key == KeyDown)) {
+  if((page == Home || page == Folder) && key == KeyLeft) {
+    if(page == Folder) change(Home, true);
+    return;
+  } // a list: left leaves a folder, right opens the row as OK does
+  if((page == Home || page == Folder) && key == KeyRight) key = Enter;
+  if((page == Home || page == Folder) && (key == KeyUp || key == KeyDown)) {
     uint8_t order[AppEntriesMax];
     int tileCount = page == Folder ? appsShown(order, folderOpen) : appsShown(order);
     if(!tileCount) return;
     selected = constrain(selected, 0, tileCount - 1);
-    selected = (selected + (key == KeyLeft || key == KeyUp ? tileCount - 1 : 1)) % tileCount;
+    selected = (selected + (key == KeyUp ? tileCount - 1 : 1)) % tileCount;
     return;
-  } // a list: up/left the previous row, down/right the next
+  } // up the previous row, down the next
   if(page == Node && (key == KeyLeft || key == KeyRight || key == KeyUp || key == KeyDown)) {
     Peer* p = focusedPeer();
     if(!p) return;
