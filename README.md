@@ -81,6 +81,11 @@ python3 -m venv .venv
 
 The screen UI can be rendered on a computer without a board: `tools/ui_preview/build.sh m9 OUTDIR en`.
 
+Theme colours (`0xRRGGBB` in `src/ui/themes/*.h`) get VS Code's colour swatch and picker with a small
+local extension: `tools/vscode_hex_color/install.sh` (or `install.sh code-insiders`), then reload the
+window. Hover a swatch to pick a colour; it is written back as `0xRRGGBB`. Other files can be enabled
+with the `hex0xColor.include` glob setting.
+
 ## Documentation
 
 Detailed documentation: [channels](docs/channels.md), [regions](docs/regions.md), [backup](docs/backup.md), [MeshCore compatibility](docs/meshcore-migration.md),
