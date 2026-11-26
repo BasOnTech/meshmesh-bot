@@ -152,8 +152,12 @@ found; do not add tests that merely duplicate the implementation.
 - No `rgb(0x…)` for UI chrome: use a role, or add one to `Theme.h`, to every theme file (designated initializers in
   the struct's order) and to `applyTheme()`. Game art (chess board and pieces, cards, dice and pet colours, emoji)
   keeps its own colours.
-- Check a colour refactor on screenshots: render before and after with `tools/site/site_shots.py` to two folders and
-  compare the pixels; only the clock and message times may differ.
+- Check a colour refactor (or any refactor meant to leave the screens unchanged) on screenshots: render before and
+  after with `tools/site/site_shots.py` or `tools/ui_preview/build.sh m9 OUTDIR` to two folders and compare the pixels.
+  Mask out the clock first: the status bar (rows 0–20 of the 320×240 screen) shows the time on every screen, so a
+  plain comparison reports every screen as changed. Even then, screens with message times, the lock-screen clock or
+  game ages (chats, threads, chess list, locked) differ between two runs of the same code: render the "before" twice
+  to see which screens differ by themselves, and check that the "after" differs only in those places.
 
 ## Versions and publishing
 
