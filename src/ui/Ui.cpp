@@ -769,7 +769,7 @@ String clockText() {
   tm v;
   if(!localTime(time(nullptr), v)) return "--:--";
   char b[6];
-  snprintf(b, sizeof b, "%02d:%02d", v.tm_hour, v.tm_min);
+  snprintf(b, sizeof b, "%d:%02d", v.tm_hour, v.tm_min);
   return b;
 }
 String timeText(uint32_t at) {
@@ -777,7 +777,7 @@ String timeText(uint32_t at) {
   if(!localTime(at, v)) return "";
   char b[24];
   if(localTime(time(nullptr), today) && (v.tm_yday != today.tm_yday || v.tm_year != today.tm_year)) snprintf(b, sizeof b, "%02d.%02d", v.tm_mday, v.tm_mon + 1);
-  else snprintf(b, sizeof b, "%02d:%02d", v.tm_hour, v.tm_min);
+  else snprintf(b, sizeof b, "%d:%02d", v.tm_hour, v.tm_min);
   return b;
 }
 String dateText() {

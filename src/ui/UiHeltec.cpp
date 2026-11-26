@@ -215,7 +215,7 @@ String clockText(time_t at) {
   at += config.utcOffset * 60;
   tm* v = gmtime(&at);
   char b[6];
-  snprintf(b, sizeof b, "%02d:%02d", v->tm_hour, v->tm_min);
+  snprintf(b, sizeof b, "%d:%02d", v->tm_hour, v->tm_min);
   return b;
 }
 String ago(uint32_t ms) {
