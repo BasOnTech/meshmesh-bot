@@ -937,13 +937,13 @@ void statusBar() {
   }
   x = bx - 3;
   if(external) {
-    int px = x - 6; // a power plug 6×10: two prongs, the body, the cable
+    int px = x - 4; // a power plug 6×10 1 px left of the battery: two prongs, the body, the cable
     d.fillRect(px + 1, 5, 1, 2, level);
     d.fillRect(px + 4, 5, 1, 2, level);
     d.fillRect(px, 7, 6, 3, level);
     d.fillRect(px + 1, 10, 4, 1, level);
     d.fillRect(px + 2, 11, 2, 4, level);
-    x -= 10;
+    x -= 8;
   }
   bool fresh = meshRadio.lastRxAt && millis() - meshRadio.lastRxAt < 600000;
   bars(x - 15, 15, meshRadio.ready && fresh ? max(1u, snrLevel(meshRadio.lastSnr)) : 0, ok);
