@@ -57,13 +57,13 @@ static void scenario(){
  for(int i=0;i<6;i++)key(0xb6);key(13);shot("chat");
  for(char ch:std::string("Hello! How are you? Anything new @ 5"))key(ch);key(0xb7);shot("compose");key(0x86);key(0x86);
  key(0x85);shot("map");key(0xb7);key(0xb6);shot("map-browse");key('L');shot("library");key(0x86);
- key(0x82);key(0xb7);key(0xb7);key(13);shot("nodes");key(13);shot("node");key(0xb7);key(0xb7);key(0xb7);key(13);shot("node-forget");key(0x86);key(0x86);
+ tile("nodes");key(13);shot("nodes");key(13);shot("node");for(int i=0;i<4;i++)key(0xb7);key(13);shot("node-forget");key(0x86);key(0x86);
  // A repeater's card and its server page: login, status, CLI replies and the trace (fake answers of the preview).
- key(0x82);key(0xb7);key(0xb7);key(13);
+ tile("nodes");key(13);
  {String want=String("\"selected_node\":\"")+meshRadio.idText(peerId(1))+"\"";for(int i=0;i<8&&uiStatus().indexOf(want)<0;i++)key(0xb6);
   if(uiStatus().indexOf(want)<0){printf("FAIL repeater not in the node list: %s\n",uiStatus().c_str());exit(1);}}
  key(13);shot("node-repeater");key(13);if(uiStatus().indexOf("\"page\":\"remote\"")<0){printf("FAIL server page: %s\n",uiStatus().c_str());exit(1);}shot("remote");key(0x86);key(0x86);key(0x86);
- key(0x82);for(int i=0;i<3;i++)key(0xb6);key(13);shot("sensors");
+ tile("nav");key(13);shot("sensors");
  // Navigation: the GPS switch, then BACK returns where the page was opened (the menu tile, the settings row).
  {bool gps=config.gps;key(13);if(config.gps==gps){printf("FAIL GPS switch in navigation\n");exit(1);}shot("sensors-gps");key(13);
   key(0x86);if(uiStatus().indexOf("\"page\":\"home\"")<0||uiStatus().indexOf("\"selected\":3,")<0){printf("FAIL back from navigation to the menu: %s\n",uiStatus().c_str());exit(1);}
@@ -445,7 +445,7 @@ static void scenario(){
   for(int i=0;i<4&&uiStatus().indexOf("\"page\":\"home\"")<0;i++)key(0x86);page("home");shot("heltec-apps-home");key(next);page("settings");key(next);page("gps"); // the apps the setting does not name follow in the default order
   for(int i=0;i<14&&uiStatus().indexOf("\"page\":\"home\"")<0;i++){key(next);if(uiStatus().indexOf("\"page\":\"messages\"")>=0||uiStatus().indexOf("\"page\":\"nodes\"")>=0){printf("FAIL hidden page shown\n");exit(1);}}page("home");
 #else
-  key(0x82);shot("home-apps");key(13);page("settings");key(0x82);key(0xb7);key(13);page("map");key(0x82);
+  key(0x82);shot("home-apps");key(13);page("settings");key(0x82);key(0xb6);key(13);page("map");key(0x82);
 #endif
   config.apps[0]=0;printf("apps order checks passed\n");}
 #if defined(MM_ONE_BUTTON)
@@ -502,7 +502,7 @@ static void scenario(){
   must(meshRadio.historyCount==sent+1&&String(meshRadio.history[sent].text)==quickSend::state.text[0],"first preset still sends its own text");
   key(0xb5);key(0xb5);shot("quick-last");key(13);
   must(meshRadio.historyCount==sent+2&&String(meshRadio.history[sent+1].text)==quickSend::state.text[quickSend::Count-1],"last preset remains reachable and sends its own text");
-  key(0x86);key(0xb7);key(13);int32_t manual=people::value();key(13);must(people::value()==manual+1,"counter +1");key(0xb6);must(people::value()==manual,"counter -1");
+  key(0x86);tile("people");key(13);int32_t manual=people::value();key(13);must(people::value()==manual+1,"counter +1");key(0xb6);must(people::value()==manual,"counter -1");
   people::rename(0,"Guests");people::set(0,27);shot("people");
   key(0xb7);must(uiStatus().indexOf("\"tally_new\":true")>=0,"right of the last card: a new one");shot("people-new");key(13);must(people::tally.count==2&&people::tally.current==1,"OK adds a card");
   key('n');for(char ch:std::string("Coffee"))key(ch);shot("people-name");key(13);key(13);key(13);must(people::value()==2,"the new card counts on its own");

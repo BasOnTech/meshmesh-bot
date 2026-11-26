@@ -13,7 +13,7 @@
   std::stable_sort(v.begin(),v.end(),[&](const Peer* a,const Peer* b){if(a->heard!=b->heard)return a->heard;return a->heard&&now-a->seen<now-b->seen;});
   for(size_t i=0;i<v.size();i++)if(v[i]->id==id)return int(i);return -1;};
  // Nodes: the card of a contact (the list follows the node; down until it is selected).
- auto nodeCard=[&](int i){key(0x82);key(0xb7);key(0xb7);key(13);String want=String("\"selected_node\":\"")+meshRadio.idText(peerId(i))+"\"";for(int k=0;k<12&&!has(want.c_str());k++)key(0xb6);must(has(want.c_str()),"the contact in the node list");key(13);};(void)nodeCard;
+ auto nodeCard=[&](int i){tile("nodes");key(13);String want=String("\"selected_node\":\"")+meshRadio.idText(peerId(i))+"\"";for(int k=0;k<12&&!has(want.c_str());k++)key(0xb6);must(has(want.c_str()),"the contact in the node list");key(13);};(void)nodeCard;
  auto lastSent=[](){return previewSent.empty()?std::string():previewSent.back().text;};
  previewOff=false; // the M9 scenario turned the board off just before
  config.dimAfter=0;config.autoLock=0;config.apps[0]=0;
@@ -36,7 +36,7 @@
  key(13);must(has("\"page\":\"folder\""),"folder opens");shot("m9-folder");
  key(0x86);{char want[24];snprintf(want,sizeof want,"\"selected\":%d,",games);must(has("\"page\":\"home\"")&&has(want),"BACK: the folder's tile");}
  // Checkers: the list from the folder, a new game with Heltec V4 as White.
- key(13);key(0xb7);key(13);must(has("\"page\":\"checkers\"")&&has("\"from_folder\":0"),"checkers from the folder");shot("m9-checkers-empty");
+ key(13);key(0xb6);key(13);must(has("\"page\":\"checkers\"")&&has("\"from_folder\":0"),"checkers from the folder");shot("m9-checkers-empty");
  key(13);must(has("\"page\":\"duel_pick\""),"contact choice");key(0xb7);must(has("\"duel_color\":0"),"White chosen");for(int k=0;k<pickRow(peerId(0));k++)key(0xb6);shot("m9-checkers-pick");
  key(13);Duel* g1=shown();must(g1&&has("\"page\":\"checkers_board\"")&&g1->state==Duel::Inviting&&g1->mine==checkers::White,"invitation");must(lastSent().find(" new w")!=std::string::npos,"the invitation is sent");shot("m9-checkers-inviting");
  say(g1,"yes");tick();must(g1->state==Duel::Playing&&g1->myTurn(),"accepted");
@@ -107,7 +107,7 @@
  // The folder hidden or emptied: its tile goes; a custom folder named on the web page.
  strlcpy(config.apps,"chats {My_games chess checkers sea} -{games pet} nodes",sizeof config.apps);key(0x82);shot("m9-home-folders");
  {uint8_t o[AppEntriesMax];unsigned n=appsShown(o);must(n>=3&&o[1]==(AppFolder|0)&&appsFolderName(0)=="My games","custom folder");}
- key(0xb7);key(13);must(has("\"folder_name\":\"My games\""),"custom folder opens");shot("m9-folder-custom");key(0x82);config.apps[0]=0;
+ key(0xb6);key(13);must(has("\"folder_name\":\"My games\""),"custom folder opens");shot("m9-folder-custom");key(0x82);config.apps[0]=0;
  for(auto& g:duels.games)g=Duel();strcpy(peer(5).name,"Marat");
  printf("games checks passed\n");
 }
