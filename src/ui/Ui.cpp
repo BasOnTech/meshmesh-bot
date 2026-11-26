@@ -436,7 +436,9 @@ void avatar(int cx, int cy, int r, uint64_t id, const String& name, int type = -
     const channels::Channel* c = meshRadio.channel(id);
     bool priv = c && !channels::isPublic(c->secret) && !channels::isHashtag(*c);
     g().fillCircle(cx, cy, r, priv ? secondaryDeep : accentDeep);
-    icon(priv ? IcLock : IcHash, cx, cy, r / 2, priv ? secondary : accent);
+    // The hash is as wide as the "add a channel" plus; the lock needs more size to keep its shackle readable.
+    if(priv) icon(IcLock, cx, cy, r * 3 / 5, secondary);
+    else icon(IcHash, cx, cy, r / 2, accent);
     return;
   }
   if(type > 1) {

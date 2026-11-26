@@ -94,23 +94,27 @@ void drawIcon(Adafruit_GFX& d, Icon id, int cx, int cy, int s, uint16_t c, uint1
     d.fillRoundRect(cx - s * 5 / 8, cy + 1, s * 5 / 4, s, max(2, s / 2), c);
     break;
   case IcLock:
-    arc(d, cx, cy - q, max(2, s * 3 / 8), -90, 90, c);
-    arc(d, cx, cy - q, max(2, s * 3 / 8) - 1, -90, 90, c);
-    d.drawFastVLine(cx - max(2, s * 3 / 8), cy - q, q + 1, c);
-    d.drawFastVLine(cx + max(2, s * 3 / 8), cy - q, q + 1, c);
-    d.fillRoundRect(cx - s * 5 / 8, cy, s * 5 / 4, s * 7 / 8, max(1, s / 5), c);
+  { // a 2 px shackle as tall as the body, centred on cy as a whole; square corners (rounded ones make a kettlebell)
+    int r = max(2, s * 3 / 8), top = cy - s * 3 / 4 + r, body = cy;
+    for(int k : {0, 1}) {
+      arc(d, cx, top, r - k, -90, 90, c);
+      d.drawFastVLine(cx - r + k, top, body - top, c);
+      d.drawFastVLine(cx + r - k, top, body - top, c);
+    }
+    d.fillRect(cx - s * 5 / 8, body, s * 5 / 4, s * 3 / 4, c);
     break;
+  }
   case IcMail:
     d.drawRect(cx - s, cy - s * 5 / 8, 2 * s, s * 5 / 4, c);
     d.drawLine(cx - s, cy - s * 5 / 8, cx, cy + q / 2, c);
     d.drawLine(cx + s - 1, cy - s * 5 / 8, cx, cy + q / 2, c);
     break;
-  case IcHash:
-    thick(d, cx - q, cy - s, cx - h, cy + s, c);
-    thick(d, cx + h, cy - s, cx + q, cy + s, c);
-    d.fillRect(cx - s, cy - q - 1, 2 * s, 2, c);
-    d.fillRect(cx - s, cy + q - 1, 2 * s, 2, c);
+  case IcHash: { // upright strokes on the pixel grid, symmetric around the centre: a slant breaks into steps
+    int o = max(1, s * 3 / 8), t = max(2, (s + 4) / 6);
+    for(int e : {cx - o - t + 1, cx + o}) d.fillRect(e, cy - s, t, 2 * s + 1, c);
+    for(int e : {cy - o - t + 1, cy + o}) d.fillRect(cx - s, e, 2 * s + 1, t, c);
     break;
+  }
   case IcPulse: {
     int p[][2] = {{-s, 0}, {-h, 0}, {-q, -s * 3 / 4}, {q, s * 3 / 4}, {h, 0}, {s, 0}};
     for(int k = 0; k < 5; k++) thick(d, cx + p[k][0], cy + p[k][1], cx + p[k + 1][0], cy + p[k + 1][1], c);
