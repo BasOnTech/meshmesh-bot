@@ -943,10 +943,10 @@ void statusBar() {
     x -= 9;
   }
   if(config.gps) {
-    icon(IcPin, x - 5, 10, 6, hardware.gpsFix() ? ok : hardware.clockConflict ? bad
+    icon(IcPin, x - 4, 9, 5, hardware.gpsFix() ? ok : hardware.clockConflict ? bad
                                                                               : warn,
          surfaceBar);
-    x -= 15;
+    x -= 13;
   }
   if(portalActive()) {
     icon(IcWifi, x - 6, 10, 7, accent, surfaceBar);
@@ -956,8 +956,8 @@ void statusBar() {
     x -= 17;
   }
   if(bleActive()) {
-    icon(IcBle, x - 3, 10, 6, info, surfaceBar);
-    x -= 12;
+    icon(IcBle, x - 3, 9, 5, info, surfaceBar);
+    x -= 10;
   }
   unsigned n = page == Threads || page == Chat ? 0 : unreadTotal();
   if(n) {
