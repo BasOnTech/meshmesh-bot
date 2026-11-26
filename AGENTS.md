@@ -97,6 +97,14 @@ storage, power, clock, version), `i18n/`, `hw/` (boards, pins, displays), `mesh/
 regions, companion, remote, history), `ui/` (screens, icons, navigation, notifications, emoji), `net/` (Wi-Fi, portal,
 diagnostics), `apps/` (maps, radar, wardrive, counter), `games/<game>/` (chess, dice, duel, pet, solitaire: logic and
 its `Ui*.inc` screens together). Includes are written from `src/`: `#include "games/chess/Chess.h"`.
+- The M9 screen: `src/ui/Ui.cpp` keeps what the pages share (theme, text, drawing primitives, footer and touch targets,
+read marks and drafts, `change()`, the status bar) and the dispatch (`draw()`, `uiKey()`, `uiTouch()`, `uiTick()`).
+Each page's drawing and its keys are in `src/ui/Ui<Page>.inc`: `UiHome`, `UiChat`, `UiMap`, `UiNodes`, `UiSensors`,
+`UiRadar`, `UiSettings`, `UiWardrive`, `UiQuick`, `UiNetwork`, `UiSystem` (diagnostics, help, lock screen),
+`UiServer`, `UiChannels`, `UiRemote`; the games' screens are next to the games. Ui.cpp includes them inside its
+anonymous namespace, so they share its state; the order matters (a page can use what comes before it; for later
+code it forward-declares, as `UiNodes.inc` does for `openPick`). `uiKey()` keeps the order in which keys are tried
+and calls the page's handler (`chatKey`, `nodesKey`, `settingsEnter`...): add a page's keys there, not inline.
 `lib/MeshProtocol/` — MM/1.
 - `web/index.html` — the source of the web interface. ESP32 firmware serves it and the dictionaries compressed (gzip):
   `tools/build/pio_web.py` generates `PortalWeb.h` in the build folder at build time; it is not in Git. The page is English; a further language's dictionary is packed with its keys once (`/i18n/keys.js`) and `/i18n/<lang>.js` carrying the translations in order (`MeshMeshWebDict`). Page text —

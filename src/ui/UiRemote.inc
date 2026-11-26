@@ -9,6 +9,11 @@ enum RemoteEdit { EditNone,
                   EditCommand };
 RemoteEdit remoteEdit = EditNone;
 int remoteAction = 0;
+// From the node card (UiNodes.inc): the page with its first action selected.
+void openRemote() {
+  remoteAction = 0;
+  change(Remote);
+}
 unsigned remoteActs(const Peer& p, RemoteAct* out) {
   unsigned n = 0;
   bool server = p.type == 2 || p.type == 3;
