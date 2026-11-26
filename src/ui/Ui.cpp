@@ -842,7 +842,7 @@ String distanceText(float m, float bearing) {
   return (m < 1000 ? String(int(m / 10) * 10) + t(" m") : String(m / 1000, m < 10000 ? 1 : 0) + t(" km")) + " " + dirs[k];
 }
 
-// Status bar (HUD): title on the left; radio, GPS, links, clock and battery on the right.
+// Status bar (HUD): title on the left; radio, GPS, links, battery and clock on the right.
 String title() {
   if(locked) return config.name;
   switch(page) {
@@ -897,29 +897,40 @@ void statusBar() {
   auto& d = g();
   d.fillRect(0, 0, 320, 20, surfaceBar);
   d.drawFastHLine(0, 20, 320, border);
-  int x = 313;
-  uint16_t mv = hardware.batteryMv;
-  bool external = hardware.usbPower >= 0 ? hardware.usbPower > 0 : mv > 4250;
-  unsigned pct = batteryPercent(mv);
-  uint16_t level = !mv ? graphicSubtle : external  ? accent
-                                       : pct <= 15 ? bad
-                                       : pct <= 30 ? warn
-                                                   : ok;
-  d.drawRoundRect(x - 19, 5, 19, 10, 2, graphicMuted);
-  d.fillRect(x, 8, 2, 4, graphicMuted);
-  if(external) {
-    d.fillTriangle(x - 8, 6, x - 13, 11, x - 9, 11, accent);
-    d.fillTriangle(x - 10, 9, x - 6, 9, x - 11, 14, accent);
-  } else if(mv) d.fillRect(x - 17, 7, max(1u, 15 * pct / 100), 6, level);
-  x -= 23;
-  if(mv && (config.batteryVolts || !external)) {
-    String p = config.batteryVolts ? String(mv / 1000.f, 2) + "V" : String(pct) + "%";
-    textRight(x, 14, p, textMuted, small);
-    x -= measure(p, small) + 6;
-  }
+  int x = 315;
   String clock = clockText();
   textRight(x, 15, clock, textPrimary, bold);
   x -= measure(clock, bold) + 8;
+  uint16_t mv = hardware.batteryMv;
+  bool external = hardware.usbPower >= 0 ? hardware.usbPower > 0 : mv > 4250;
+  unsigned pct = batteryPercent(mv);
+  if(mv && (config.batteryVolts || !external)) {
+    String p = config.batteryVolts ? String(mv / 1000.f, 2) + "V" : String(pct) + "%";
+    textRight(x, 14, p, textMuted, small);
+    x -= measure(p, small) + 3;
+  }
+  // A vertical battery in the colour of its state: body 6×8 with the nub on top, filled from the bottom; a plug
+  // on its left on external power.
+  uint16_t level = !mv ? graphicMuted : external || pct > 30 ? ok
+                                      : pct > 15             ? warn
+                                                             : bad;
+  int bx = x - 6;
+  d.drawRect(bx, 7, 6, 8, level);
+  d.fillRect(bx + 2, 5, 2, 2, level);
+  if(mv) {
+    int h = external ? 6 : max(1u, 6 * pct / 100);
+    d.fillRect(bx + 1, 14 - h, 4, h, level);
+  }
+  x = bx - 3;
+  if(external) {
+    int px = x - 6; // a power plug 6×10: two prongs, the body, the cable
+    d.fillRect(px + 1, 5, 1, 2, level);
+    d.fillRect(px + 4, 5, 1, 2, level);
+    d.fillRect(px, 7, 6, 3, level);
+    d.fillRect(px + 1, 10, 4, 1, level);
+    d.fillRect(px + 2, 11, 2, 4, level);
+    x -= 10;
+  }
   bool fresh = meshRadio.lastRxAt && millis() - meshRadio.lastRxAt < 600000;
   bars(x - 15, 15, meshRadio.ready && fresh ? max(1u, snrLevel(meshRadio.lastSnr)) : 0, ok);
   if(!meshRadio.ready) {
