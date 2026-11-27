@@ -72,5 +72,6 @@ struct Config {
   bool setKey(const String& text);
   bool saveRole(uint8_t next); // stored for the next boot; role stays the running one
   void saveBle(bool on);
+  void nameFromKey(const uint8_t* key); // a new install: the default name gets the new key's first 4 hex digits
 };
 extern Config config;

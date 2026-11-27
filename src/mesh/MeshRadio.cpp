@@ -669,6 +669,7 @@ class MeshCoreBackend : public BaseChatMesh {
     announce = created;
     identitySaved = true;
     owner.nodeId = aliasOf(self_id.pub_key);
+    if(created) config.nameFromKey(self_id.pub_key); // before the check below: the new name is announced
     syncChannels();
     ChannelDetails channel;
     getChannel(0, channel);
@@ -978,7 +979,10 @@ void MeshRadio::begin() {
     Preferences p;
     mesh::LocalIdentity self;
     bool created, loaded = p.begin("meshmesh-mc", false) && loadIdentity(p, self, created);
-    if(loaded) restoreClockFloor(p);
+    if(loaded) {
+      restoreClockFloor(p);
+      if(created) config.nameFromKey(self.pub_key);
+    }
     p.end();
     if(!loaded || !meshServer.begin(config.role, coreRadio, coreMillis, coreRandom, coreRtc, corePool, coreTables, self)) {
       ready = false;

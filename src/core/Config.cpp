@@ -206,6 +206,18 @@ void Config::saveBle(bool on) {
     p.end();
   }
 }
+// Every new board would be called MM_NODE_NAME: a new install (its key made at this boot) still on that name takes
+// the first 4 hex digits of the key ("M9 7B8A"), the same digits as in its Bluetooth name, so boards differ in
+// contact lists. Boards with a key keep their name. Saved at once.
+void Config::nameFromKey(const uint8_t* key) {
+  if(strcmp(name, MM_NODE_NAME)) return;
+  snprintf(name, sizeof name, MM_NODE_NAME " %02X%02X", key[0], key[1]);
+  Preferences p;
+  if(p.begin("meshmesh", false)) {
+    p.putString("name", name);
+    p.end();
+  }
+}
 String Config::keyHex() const {
   String s;
   s.reserve(64);

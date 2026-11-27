@@ -147,14 +147,15 @@ void advertise() {
 }
 String bleName() {
   // The scan response holds 29 bytes: the name cut to 15, then 4 hex digits of the node key, so boards
-  // with the same name differ in the list of devices.
-  String name = config.name;
+  // with the same name differ in the list of devices. A name that already ends in them ("M9 7B8A") is not given them twice.
+  String name = config.name, tag = meshRadio.idText(meshRadio.nodeId).substring(0, 4);
+  if(name.endsWith(" " + tag)) name.remove(name.length() - 5);
   while(name.length() > 15) {
     unsigned cut = name.length() - 1;
     while(cut && (uint8_t(name[cut]) & 0xc0) == 0x80) cut--;
     name.remove(cut);
   }
-  return "MeshCore-" + name + " " + meshRadio.idText(meshRadio.nodeId).substring(0, 4);
+  return "MeshCore-" + name + " " + tag;
 }
 bool webRadarActive() { return webRadar; }
 // The page's radar over USB or BLE (the Android app): the same hold, JSON and actions as /api/radar.
