@@ -212,12 +212,17 @@ void chatKey(int key) {
     composer.remove(meshmesh::previousCharacter(composer.c_str(), composer.length()));
     return;
   }
-  if(key == KeyUp) { // a body line at a time; drawChat() stops it at the oldest message
-    chatOffset += 15;
-    return;
-  }
-  if(key == KeyDown) {
-    chatOffset = max(0, chatOffset - 15);
+  // ^v scroll a body line (15 px) per press. The keyboard reports no held key, so presses the same way in quick
+  // succession speed up instead: each adds a line to the step, up to 9 lines, about the height of the view.
+  // drawChat() stops the offset at the oldest message.
+  if(key == KeyUp || key == KeyDown) {
+    static uint32_t lastScroll = 0;
+    static int streak = 0, lastWay = 0;
+    int way = key == KeyUp ? 1 : -1;
+    uint32_t now = millis();
+    streak = way == lastWay && now - lastScroll < 350 ? min(streak + 1, 8) : 0;
+    lastScroll = now, lastWay = way;
+    chatOffset = max(0, chatOffset + way * 15 * (1 + streak));
     return;
   }
   if(key == KeyRight) {
