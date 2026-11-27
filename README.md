@@ -1,6 +1,13 @@
-# MeshMesh
+# BotMesh
 
-This is the Bas on Tech UI mod of the original MeshMesh. It focuses on creating a more compact UI for the ThinkNode M9
+This is the Bas on Tech MeshCore firmware
+
+It is based on MeshMesh. However over time there are so many changes in code and UI that it developed on its own.
+
+Differences between MeshMesh:
+- Only supports ThinkNode M9 and Helltek v4
+- Only in English
+- More refined UI
 
 ---
 
