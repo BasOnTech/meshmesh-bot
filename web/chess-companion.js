@@ -1,7 +1,7 @@
-// MeshMesh Chess through a stock MeshCore companion (docs/chess.md, "With a stock MeshCore companion").
+// BoT Mesh Chess through a stock MeshCore companion (docs/chess.md, "With a stock MeshCore companion").
 // The site's chess page is web/index.html with this file (tools/site/chess_site.py). The rules port
 // src/games/chess/Chess.cpp and the games src/games/chess/ChessNet.cpp: the same text commands, ACKs and resending, so a game
-// with an M9 or a Heltec on MeshMesh goes as between two boards. The radio is the
+// with an M9 or a Heltec on BoT Mesh goes as between two boards. The radio is the
 // companion's: USB (Web Serial) or Bluetooth (Web Bluetooth), frames of the MeshCore companion
 // protocol (MeshCore companion-v1.17.1, examples/companion_radio/MyMesh.cpp). The games are kept in this
 // browser, separately for every companion key.
@@ -252,7 +252,7 @@ class ChessNet{
   const m=this.slot();if(!m){this.note('Chess: all boards are busy, finish a game');return null}
   let id;do id=1+this.env.random(0xffff);while(this.matches.some(x=>x!==m&&x.id===id));
   Object.assign(m,{peer,id,name:p.name,mine:color===2?this.env.random(2):color&1,state:'inviting',started:this.env.unix()});m.game.reset();
-  this.send(m,`${Tag}${hex4(id)} new ${m.mine===White?'w':'b'} · ${(m.mine===White?'MeshMesh chess: you play Black':'MeshMesh chess: you play White')}`);
+  this.send(m,`${Tag}${hex4(id)} new ${m.mine===White?'w':'b'} · ${(m.mine===White?'BoT Mesh chess: you play Black':'BoT Mesh chess: you play White')}`);
   this.changed(m);return m}
  accept(m){if(m.state!=='invited')return false;m.state='playing';m.unseen=false;this.send(m,`${Tag}${hex4(m.id)} yes`);this.changed(m);return true}
  decline(m){
@@ -364,7 +364,7 @@ class Companion{
   this.transport=transport;this.kind=kind;this.connected=true;
   try{
    this.device=await this.command([CMD.deviceQuery,AppVersion],[RESP.deviceInfo]);
-   const app=utf8.encode('MeshMesh Chess');this.self=this.parseSelf(await this.command([CMD.appStart,AppVersion,0,0,0,0,0,0,...app],[RESP.selfInfo]));
+   const app=utf8.encode('BoT Mesh Chess');this.self=this.parseSelf(await this.command([CMD.appStart,AppVersion,0,0,0,0,0,0,...app],[RESP.selfInfo]));
    await this.command([CMD.setTime,...le32(Math.floor(Date.now()/1000))],[RESP.ok,RESP.err]).catch(()=>{}); // as the MeshCore app: only forward
    await this.loadContacts();
   }catch(e){this.detach();throw e}
@@ -483,9 +483,9 @@ const storage={get:k=>{try{return localStorage.getItem(k)}catch{return null}},se
 const link=new Companion(),game=player(link,storage),net=game.net,others=[];
 let lastPort=null,lastDevice=null,busy=false,drawTimer=0;
 const hasSerial=!!navigator.serial,hasBle=!!navigator.bluetooth;
-document.title='MeshMesh Chess';
-// The boards' page names the tab MeshMesh (with the number of games waiting); here it is MeshMesh Chess.
-const boardRefresh=refreshChess;refreshChess=async(...a)=>{await boardRefresh(...a);document.title=document.title.replace(/MeshMesh$/,'MeshMesh Chess')};
+document.title='BoT Mesh Chess';
+// The boards' page names the tab BoT Mesh (with the number of games waiting); here it is BoT Mesh Chess.
+const boardRefresh=refreshChess;refreshChess=async(...a)=>{await boardRefresh(...a);document.title=document.title.replace(/BoT Mesh$/,'BoT Mesh Chess')};
 const style=document.createElement('style');
 style.textContent='.cmp{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;padding:12px;margin-bottom:10px}.cmp .who{flex:1 1 220px;min-width:0}.cmp .acts{display:flex;gap:6px;margin-left:auto}.cmp .who b{display:block}.cmp .who small{color:var(--dim);display:block}.cmp .btn{min-height:34px;padding:6px 10px}.cmpwhy{margin:6px 4px 0}.others .row{min-height:44px;cursor:default}.cmpbtns{display:grid;gap:8px}';
 document.head.appendChild(style);
@@ -493,7 +493,7 @@ document.head.appendChild(style);
 const login=$('login');for(const el of login.querySelectorAll('form,details'))el.hidden=true;
 login.querySelector('.brand small').textContent='Chess through a MeshCore companion';
 const box=document.createElement('div');box.className='card pad';
-box.innerHTML=`<p class="small muted">Connect a device running the stock MeshCore Companion firmware (USB or Bluetooth). Moves go as ordinary MeshCore direct messages; your opponent plays on MeshMesh (M9, Heltec) or on this page.</p>
+box.innerHTML=`<p class="small muted">Connect a device running the stock MeshCore Companion firmware (USB or Bluetooth). Moves go as ordinary MeshCore direct messages; your opponent plays on BoT Mesh (M9, Heltec) or on this page.</p>
 <div class="cmpbtns"><button class="btn primary" id="cmpUsb"${hasSerial?'':' disabled'}>${ic('bolt')}USB (Web Serial)</button><button class="btn soft" id="cmpBle"${hasBle?'':' disabled'}>${ic('ble')}Bluetooth</button></div>
 <p class="small muted cmpwhy" id="cmpWhy">${hasSerial||hasBle?'While this page is connected, do not connect the MeshCore app to the same device: only one of them will get the messages.':'This browser has neither Web Serial nor Web Bluetooth. Open the page in Chrome or Edge on a computer, or in Chrome on Android.'}</p>`;
 login.insertBefore(box,login.querySelector('.foot'));
@@ -501,7 +501,7 @@ login.insertBefore(box,login.querySelector('.foot'));
 const card=document.createElement('div');card.className='card cmp';const other=document.createElement('div');
 $('p-chess').insertBefore(card,$('p-chess').firstChild);$('p-chess').appendChild(other);
 other.dataset.notr=''; // other people's messages are not translated
-const hint=$('p-chess').querySelector('p.faint');if(hint)hint.textContent='Moves go as MeshCore direct messages with delivery receipts and pass through repeaters. Your opponent plays on MeshMesh (M9, Heltec) or on a page like this one. Games are kept in this browser, separately for each companion; moves that arrive while the page is closed wait in the companion\'s queue (up to 16 messages).';
+const hint=$('p-chess').querySelector('p.faint');if(hint)hint.textContent='Moves go as MeshCore direct messages with delivery receipts and pass through repeaters. Your opponent plays on BoT Mesh (M9, Heltec) or on a page like this one. Games are kept in this browser, separately for each companion; moves that arrive while the page is closed wait in the companion\'s queue (up to 16 messages).';
 
 function draw(){clearTimeout(drawTimer);drawTimer=setTimeout(()=>{if(auth)refreshChess(false)},150)}
 function peersNow(){peers=link.peers();fetchedAt=Date.now()}

@@ -37,7 +37,7 @@ def lang_field(code):
 
 # Boards whose packages are installed and checked on real hardware (docs/verification.md).
 VERIFIED = {'m9', 'heltec_v4'}
-README = """MeshMesh {version} — {board}
+README = """BoT Mesh {version} — {board}
 
 Update (keeps key, settings, contacts and history):
   python -m esptool --chip {chip} --port PORT write-flash --flash-mode dio --flash-freq {freq} --flash-size {size} \\
@@ -99,7 +99,7 @@ def main():
         for name, _ in parts:
             shutil.copyfile(package/name, target/name)
         name = board_json['name'].removeprefix('MeshMesh / ')
-        manifest = {'name': f'MeshMesh — {name}', 'version': version, 'new_install_prompt_erase': True,
+        manifest = {'name': f'BoT Mesh — {name}', 'version': version, 'new_install_prompt_erase': True,
                     'builds': [{'chipFamily': 'ESP32-S3',
                                 'parts': [{'path': n, 'offset': o} for n, o in parts]}]}
         (target/'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')

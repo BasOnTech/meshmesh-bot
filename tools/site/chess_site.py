@@ -18,10 +18,10 @@ def build(out):
     target = Path(out)/'chess'
     target.mkdir(parents=True, exist_ok=True)
     page = (ROOT/'web/index.html').read_text()
-    for marker in ('<title>MeshMesh</title>', '</script></body>', 'let companion=null;'):
+    for marker in ('<title>BoT Mesh</title>', '</script></body>', 'let companion=null;'):
         if page.count(marker) != 1:
             raise SystemExit(f'web/index.html: expected one {marker!r}')
-    page = page.replace('<title>MeshMesh</title>', '<title>MeshMesh Chess</title><link rel="icon" href="icon.svg" type="image/svg+xml">')
+    page = page.replace('<title>BoT Mesh</title>', '<title>BoT Mesh Chess</title><link rel="icon" href="icon.svg" type="image/svg+xml">')
     page = page.replace('</script></body>', '</script><script src="companion.js"></script></body>')
     (target/'index.html').write_text(page)
     # The page's own dictionaries (i18n/web), loaded by web/index.html as i18n/<lang>.js.
