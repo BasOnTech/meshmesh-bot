@@ -1,53 +1,39 @@
-# Версии, сборка и публикация
+# Versions, builds and publishing
 
-Единственный источник публичных версий — `versions.properties`: `firmware` для всех плат и
-`android` для приложения. Они независимы, в формате `MAJOR.MINOR.PATCH`: изменение несовместимого
-поведения — major, новая совместимая функция — minor, исправление — patch. Текущие версии исходников: прошивка
-0.20.0, Android 0.13.0. Номер версии протокола MeshCore этим не меняется.
+`versions.properties` is the single source of the public version: `firmware` for all boards, a
+`MAJOR.MINOR.PATCH` value: incompatible behaviour,
+compatible features, then fixes. This does not change
+the MeshCore wire protocol version.
 
-Перед выпуском изменить версию затронутого компонента, затем выполнить:
+Before a release, bump the affected component and run:
 
 ```sh
-python tools/version.py --generate
-python tools/version.py --check
-python tools/version_check.py
+python tools/build/version.py --generate
+python tools/build/version.py --check
 ```
 
-`include/Version.h` генерируется и хранится в Git. PlatformIO проверяет его соответствие источнику.
-`status` прошивки сообщает `version`, `revision` (Git SHA, с `-dirty` для локальных изменений)
-и `build_sha256` конкретного образа. Одинаковая версия не заменяет сверку SHA-256 при установке.
-Пакеты содержат версию и ревизию в `manifest.json`; сайт запрещает смешивать пакеты разных ревизий.
+The generated `src/core/Version.h` is committed and checked by PlatformIO. Firmware `status`
+reports `version`, Git `revision` (with `-dirty` for local changes) and the image's `build_sha256`.
+A matching version never replaces a hash check. Package `manifest.json` includes the version and
+revision; site generation rejects packages from different revisions.
 
-Android показывает `0.12.0+<versionCode>`. Публичный код сборки:
-`1000000 + github.run_number * 100 + github.run_attempt`; повторный запуск получает новый код,
-а следующий запуск всегда выше предыдущего (attempt должен быть меньше 100). Это выше старых
-номеров, равных только `run_number`. Gradle получает код через `MM_VERSION_CODE`. Локально —
-`0.12.0+local`, код 1000000, отладочная подпись без ключа проекта. Такая сборка не заменяет подписанный
-релиз поверх установленного APK. Для локального обновления релиза нужны тот же ключ и больший код.
-`tools/app_release.py` читает фактические версии из Gradle `output-metadata.json`, публикует APK
-с уникальным именем и `app/version.json` с размером, SHA-256 и ревизией. Старый код повторно не публикуется.
+## On every push
 
-## Что происходит при пуше
+A push to `main` or manual `.github/workflows/pages.yml` run:
 
-Пуш в `main` или ручной запуск `.github/workflows/pages.yml` выполняет:
+1. Checks versions, translations of the screens and the page (`tools/gen/web_i18n.cjs check`).
+2. Builds and packages the three targets (`m9`, `heltec_v4`, `heltec_v4_r8`) and the ESP32 installer
+   language markers.
+3. Generates site screenshots in every language; failure now blocks publication.
+4. Assembles the site, chess page, ZIP packages, installer manifests, `release.json`. Checks hashes,
+   the complete board list and consistent revisions.
+5. Deploys the complete artifact to GitHub Pages only after every required job succeeds and while
+   the commit is still the head of `main`. Failure leaves the previously published site available.
 
-1. Проверку версий, тесты их порядка, проверку переводов экранов, страницы и приложения (`tools/web_i18n.cjs check`).
-2. Сборку и упаковку всех 18 целей. Для nRF52 — все языковые варианты, для ESP32 — образы и
-   языковые метки установщика; для плат сообщества — также factory-образы.
-3. Генерацию скриншотов сайта на всех языках; ошибка теперь останавливает выпуск.
-4. Тесты Android, сборку APK с веб-интерфейсом этого коммита и подпись ключом проекта из секретов.
-   Отсутствие секрета останавливает выпуск, отладочный APK на сайт не попадает.
-5. Сборку сайта и шахматной страницы, ZIP-пакетов, манифестов установки, `release.json`, APK
-   и описания его обновления. Проверяются хэши, полный набор плат, общая ревизия и отсутствие
-   понижения Android `versionCode`.
-6. Деплой единого набора на GitHub Pages, только если все обязательные шаги успешны и коммит
-   остаётся текущей вершиной `main`. При ошибке ранее опубликованный сайт остаётся доступным.
+The site's `release.json` ties versions to the source revision and board image hashes. After
+publishing, compare it with the pushed commit. Passing CI is
+not hardware verification; record actual board results separately in `docs/verification.md`.
 
-`release.json` на сайте связывает версии с ревизией и SHA-256 образов всех плат. После публикации
-сверять его ревизию с отправленным коммитом и `app/version.json` с APK. Успешный CI не является
-аппаратной проверкой: результаты на подключённых платах ведутся отдельно в `docs/verification.md`.
-
-Пуш **не перепрошивает устройства и не устанавливает APK на телефон**. Пользователь обновляет
-плату через сайт/приложение/USB, а Android предлагает обновление и открывает системную установку.
-OTA прошивки отсутствует. Документация и `AGENTS.md` обновляются в исходниках перед коммитом;
-CI проверяет и публикует подготовленные материалы, но не пишет отчёты о работе железа самостоятельно.
+A push does not flash boards. Update through the site or USB. Firmware OTA is not implemented.
+Documentation and `AGENTS.md` are edited before the commit. CI validates and publishes prepared
+content; it does not invent hardware reports or update project instructions automatically.

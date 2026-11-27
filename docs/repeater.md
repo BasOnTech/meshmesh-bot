@@ -1,207 +1,206 @@
-# Режим устройства: обычный, репитер и комната MeshCore
+# Device mode: normal, MeshCore repeater and room server
 
-С версии 0.3.3.
+Since version 0.3.3.
 
-Прошивка одна, а режим хранится в NVS (`meshmesh/role`). Режим выбирается при загрузке и
-меняется перезапуском, без перепрошивки и без стирания данных.
+There is one firmware, and the mode is stored in NVS (`meshmesh/role`). The mode is chosen at boot and
+changed by a restart, without reflashing and without erasing data.
 
-- **Обычный режим.** Экран, чаты, карты, радар, игры. Узел-собеседник MeshCore (`ADV_TYPE_CHAT`),
-  пересылка задаётся в «Радио».
-- **Репитер MeshCore** (`ADV_TYPE_REPEATER`). Ведёт себя как штатный `simple_repeater`:
-  - пересылает пакеты по его правилам (flood.max, регионы, защита от петель);
-  - принимает вход администратора и гостя;
-  - отвечает на запросы статуса, телеметрии, соседей и владельца;
-  - выполняет CLI-команды администратора по LoRa.
-- **Комната MeshCore** (room server, `ADV_TYPE_ROOM`). Ведёт себя как штатный `simple_room_server`:
-  - участники входят с паролем комнаты, пишут посты (каждый пост подтверждается ACK);
-  - комната по очереди раздаёт новые посты остальным вошедшим и ждёт их ACK;
-  - вход только для чтения разрешается по настройке;
-  - администратор получает статус, телеметрию, список доступа и CLI.
+- **Normal mode.** Screen, chats, maps, radar, games. A MeshCore chat node (`ADV_TYPE_CHAT`);
+  relaying is set in “Radio”.
+- **MeshCore repeater** (`ADV_TYPE_REPEATER`). Behaves like the stock `simple_repeater`:
+  - relays packets by its rules (flood.max, regions, loop protection);
+  - accepts admin and guest login;
+  - answers status, telemetry, neighbour and owner requests;
+  - runs admin CLI commands over LoRa.
+- **MeshCore room server** (room server, `ADV_TYPE_ROOM`). Behaves like the stock `simple_room_server`:
+  - members log in with the room password and write posts (each post is confirmed with an ACK);
+  - the room delivers new posts in turn to the other logged-in members and waits for their ACKs;
+  - read-only login is allowed by a setting;
+  - the admin gets status, telemetry, the access list and the CLI.
 
-  Отличие от штатной комнаты: последние 32 поста хранятся и на LittleFS (`/room_posts`), поэтому
-  переживают перезапуск.
+  Difference from the stock room server: the last 32 posts are also stored on LittleFS (`/room_posts`), so
+  they survive a restart.
 
-Чатов, шахмат, интернета по Wi-Fi и радара в серверных режимах нет.
+There are no chats, chess, internet over Wi-Fi or radar in the server modes.
 
-Ключ узла общий для всех режимов (`meshmesh-mc/identity`). Контакты, история, партии, карты и
-калибровка в серверных режимах не трогаются, но и не обновляются. Например, если другой узел сменил
-тип, пока устройство было комнатой, это станет видно после его следующего объявления. После возврата
-в обычный режим узел сам объявляет себя собеседником: последним было объявление другого типа
+The node key is shared by all modes (`meshmesh-mc/identity`). Contacts, history, games, maps and
+calibration are not touched in the server modes, but they are not updated either. For example, if another node changed
+its type while the device was a room server, this becomes visible after that node's next advert. After returning
+to normal mode the node advertises itself as a chat node on its own: the last advert was of a different type
 (`meshmesh-mc/adv_type`).
 
-## Выбор режима
+## Choosing the mode
 
-- **M9 и T-Deck (экран).**
-  - Первые 5 секунд после загрузки показывается «Режим работы» с тремя карточками и отсчётом.
-    Если ничего не нажимать, загружается прежний режим.
-  - Выбор другого режима сохраняется, и устройство перезапускается.
-  - Тот же экран открывается из «Настройки → Режим работы» и строкой на странице сервера.
-- **Heltec и однокнопочные платы.**
-  - Первые 5 секунд после загрузки — список режимов: клик листает, удержание выбирает.
-  - Тот же список открывается из меню «Настройки» и из меню главной страницы сервера.
-- **Веб-страница и приложение.** «Настройки → Режим работы». После перезапуска точку доступа нужно
-  включить снова: её пароль меняется при каждой загрузке.
-- **USB или BLE.**
-  - `role` выводит текущий режим.
-  - `role normal`, `role repeater`, `role room` переключают его. Перезапуск происходит через 1,5 с
-    после ответа.
+- **M9 (screen).**
+  - For the first 5 seconds after boot, “Device mode” is shown with three cards and a countdown.
+    If nothing is pressed, the previous mode is loaded.
+  - Choosing a different mode is saved, and the device restarts.
+  - The same screen opens from “Settings → Device mode” and from a row on the server page.
+- **Heltec and single-button boards.**
+  - For the first 5 seconds after boot — a list of modes: a click scrolls, a hold selects.
+  - The same list opens from the “Settings” menu and from the menu of the server's main page.
+- **Web page and app.** “Settings → Device mode”. After the restart the access point has to be
+  turned on again: its password changes on every boot.
+- **USB or BLE.**
+  - `role` prints the current mode.
+  - `role normal`, `role repeater`, `role room` switch it. The restart happens 1.5 s
+    after the reply.
 
-## Настройки
+## Settings
 
-Имя, частота, полоса, SF, CR и мощность общие с MeshMesh (`Config`). Остальное — настройки MeshCore
-в `/prefs.json` на LittleFS. Форматы и имена файлов штатные: `/prefs.json`, `/s_contacts`,
+Name, frequency, bandwidth, SF, CR and power are shared with MeshMesh (`Config`). Everything else is MeshCore settings
+in `/prefs.json` on LittleFS. File formats and names are stock: `/prefs.json`, `/s_contacts`,
 `/regions2`, `/packet_log`.
 
-Файл настроек общий для репитера и комнаты: пароли и администраторы сохраняются при смене режима.
-Пересылка при переходе в другой серверный режим получает его значение по умолчанию (`srv_role` в NVS):
-у репитера она включена, у комнаты выключена.
+The settings file is shared by the repeater and the room server: passwords and admins are kept when the mode changes.
+On switching to another server mode, relaying gets that mode's default value (`srv_role` in NVS):
+on for the repeater, off for the room server.
 
-| Где | Что |
+| Where | What |
 |---|---|
-| Экран M9: страница «Репитер» / «Комната» | пересылка, пароль администратора, гостевой пароль (у комнаты — пароль комнаты), чтение без пароля (комната), «Написать в комнату», объявление рядом (60–240 мин), объявление на сеть (3–168 ч), «Объявить сейчас», режим работы; радио и имя — «Настройки» |
-| Экран Heltec | роль, частота, счётчики, пароли; меню: объявить, пересылка, режим работы |
-| Веб-страница: «Репитер» / «Комната» | статистика, те же настройки, соседние репитеры или посты комнаты с формой поста, консоль CLI |
-| Приложение MeshCore (по LoRa) | вход по паролю, статус, телеметрия, соседи или посты, команды CLI администратора |
-| USB / BLE | `server` (статус без паролей), `server secrets` (пароли), `server cli <команда>`, `server post <текст>` (комната) |
+| M9 screen: “Repeater” / “Room” page | relaying, admin password, guest password (for the room server — the room password), read without password (room server), “Write to room”, local advert (60–240 min), flood advert (3–168 h), “Advertise now”, device mode; radio and name — “Settings” |
+| Heltec screen | role, frequency, counters, passwords; menu: advertise, relaying, device mode |
+| Web page: “Repeater” / “Room” | statistics, the same settings, neighbouring repeaters or room posts with a post form, CLI console |
+| MeshCore app (over LoRa) | password login, status, telemetry, neighbours or posts, admin CLI commands |
+| USB / BLE | `server` (status without passwords), `server secrets` (passwords), `server cli <command>`, `server post <text>` (room server) |
 
-При первом запуске серверного режима создаётся случайный 8-значный пароль администратора вместо
-штатного `password`. Он показан на экране и на веб-странице. Гостевой пароль (пароль комнаты) по
-умолчанию пуст, как в штатной прошивке. У репитера вход с пустым паролем даёт гостевой доступ только
-для чтения. У комнаты с пустым паролем входят участники, которые могут писать.
+On the first start of a server mode, a random 8-digit admin password is created instead of the
+stock `password`. It is shown on the screen and on the web page. The guest password (room password) is
+empty by default, as in the stock firmware. On the repeater, login with an empty password gives read-only guest
+access. On the room server, an empty password lets in members who can write.
 
-Регионы (`region def`, `region put`, `region allowf` и остальные команды MeshCore 1.17) задаются через
-CLI; пример для схемы Московского региона и поиск регионов с обычной платы — `docs/regions.md`.
+Regions (`region def`, `region put`, `region allowf` and the other MeshCore 1.17 commands) are set through the
+CLI; an example for the Moscow region scheme and the region search from a normal board are in `docs/regions.md`.
 
-Изменения через CLI проверяются по пределам платы. Это касается `set radio`, `set freq`, `set tx` и
-`set name`. Пределы: 863–870 МГц, BW 62.5/125/250/500, SF7–12, CR5–8, 0–MAX dBm, имя 1–24 байта.
-Значения вне пределов отклоняются с сообщением `Error: …`. Радио, как в штатной прошивке, применяется
-после перезапуска, мощность — сразу.
+Changes through the CLI are checked against the board's limits. This applies to `set radio`, `set freq`, `set tx` and
+`set name`. Limits: 863–870 MHz, BW 62.5/125/250/500, SF7–12, CR5–8, 0–MAX dBm, name 1–24 bytes.
+Out-of-range values are rejected with an `Error: …` message. Radio settings, as in the stock firmware, take effect
+after a restart; power — immediately.
 
-Отличия от штатных `simple_repeater` и `simple_room_server`:
+Differences from the stock `simple_repeater` and `simple_room_server`:
 
-- Объявление идёт без координат, пока они не заданы: `0,0` не передаётся.
-- Локальное объявление раз в 2 часа вместо 2 минут до первой настройки.
-- `erase` удаляет только файлы сервера, а не всю файловую систему: на ней данные MeshMesh.
-- `set prv.key` меняет общий ключ узла, то есть и ключ обычного режима.
-- Посты комнаты сохраняются на LittleFS.
-- Нет мостов (RS232/ESP-NOW), OTA (`start ota`), энергосбережения и ручного усиления приёма:
-  `set radio.rxgain` отвечает «unsupported», усилением управляет MeshMesh.
+- The advert is sent without coordinates until they are set: `0,0` is not transmitted.
+- A local advert every 2 hours instead of every 2 minutes before the first configuration.
+- `erase` deletes only the server files, not the whole file system: it holds MeshMesh data.
+- `set prv.key` changes the shared node key, i.e. the normal-mode key too.
+- Room posts are saved on LittleFS.
+- No bridges (RS232/ESP-NOW), OTA (`start ota`), power saving or manual receive gain:
+  `set radio.rxgain` replies “unsupported”; gain is controlled by MeshMesh.
 
-Код:
-- `src/MeshServer.cpp`: общий `ServerMesh`, `RepeaterMesh`, `RoomMesh` — перенос examples MeshCore
-  1.17.1 (MIT);
-- `include/MeshServer.h`;
-- `src/UiServer.inc` (экран M9), `src/UiHeltec.cpp` (Heltec);
-- раздел сервера в `web/index.html`;
-- вспомогательные модули MeshCore в `lib/MeshCore/src/helpers/` (см. `lib/MeshCore/UPSTREAM.md`,
+Code:
+- `src/mesh/MeshServer.cpp`: shared `ServerMesh`, `RepeaterMesh`, `RoomMesh` — a port of the MeshCore
+  1.17.1 examples (MIT);
+- `src/mesh/MeshServer.h`;
+- `src/ui/UiServer.inc` (M9 screen), `src/ui/UiHeltec.cpp` (Heltec);
+- the server section in `web/index.html`;
+- MeshCore helper modules in `lib/MeshCore/src/helpers/` (see `lib/MeshCore/UPSTREAM.md`,
   `PATCHES.md`);
-- `lib/CayenneLPP` (кодировщик телеметрии).
+- `lib/CayenneLPP` (telemetry encoder).
 
-## Чужие репитеры и комнаты с экрана (0.13.0)
+## Other repeaters and rooms from the screen (0.13.0)
 
-В обычном режиме MeshMesh сама входит на репитеры и в комнаты сети, штатные и MeshMesh, как приложение MeshCore
-(`include/Remote.h`, `src/Remote.inc`):
+In the normal mode MeshMesh itself logs in to the network's repeaters and rooms, stock and MeshMesh ones, as the
+MeshCore app does (`src/mesh/Remote.h`, `src/mesh/Remote.inc`):
 
-- **M9 и T-Deck:** карточка узла → «Сервер». Страница «Сервер и маршрут»: «Войти» (пароль; пусто — сохранённый или
-  гостевой вход), «Статус» (батарея, время работы, приём и передача, шум, RSSI и SNR, посты комнаты), «Команда»
-  (после входа администратора; команды CLI как в приложении: `ver`, `get name`, `neighbors`…; последние три ответа на
-  странице), «Трасса». У комнаты кнопка «Комната» открывает её чат.
-- **Heltec, GAT562, T114:** в меню узла — «Войти» (сохранённым паролем, без него — гостем), «Статус сервера»,
-  «Трассировка»; ответ — на странице узла. Команды CLI с этих плат не отправляются.
-- **Веб-страница и приложение MeshMesh:** карточка узла — поле пароля, «Войти», «Статус», поле команды для администратора,
-  ответы и трассировка; ответы приходят без обновления страницы.
-- **USB:** `remote` (сеансы и трассировка в JSON), `remote login|status|cli|trace NODE_ID [текст]`.
+- **M9:** the node card → "Server". The "Server and route" page: "Login" (a password; empty takes the
+  saved one or a guest login), "Status" (battery, uptime, received and sent, noise, RSSI and SNR, room posts),
+  "Command" (after an admin login; CLI commands as in the app: `ver`, `get name`, `neighbors`…; the last three
+  replies on the page), "Trace". A room's "Room" button opens its chat.
+- **Heltec V4:** the node menu has "Log in" (with the saved password, else as a guest), "Server status"
+  and "Trace route"; the answer shows on the node page. CLI commands are not sent from these boards.
+- **Web page and the MeshMesh app:** the node card has a password field, "Login", "Status", a command field for the
+  admin, the replies and the trace; answers arrive without reloading the page.
+- **USB:** `remote` (sessions and the trace as JSON), `remote login|status|cli|trace NODE_ID [text]`.
 
-Пароль, с которым вход удался, сохраняется на плате (`/meshmesh/remote.bin`, до шести серверов) и подставляется при
-пустом поле. Посты комнаты приходят в историю как её переписка, с именем автора (контакта или 8 знаков его ключа);
-пост с экрана — обычное сообщение комнате с подтверждением доставки. Комната принимает посты и присылает новые только
-после входа. Трассировка проходит по ретрансляторам маршрута (1-байтовые хэши) и обратно, для репитера — до него
-самого; показывает SNR на каждом участке. Неверный пароль сервер не подтверждает: через тайм-аут — «нет ответа».
-Ответ на запрос статуса, если не пришёл, плата запрашивает ещё раз (с 0.13.1): комната сразу после входа рассылает
-посты и может пропустить запрос.
+A password that logged in is kept on the board (`/meshmesh/remote.bin`, up to six servers) and used when the field
+is empty. A room's posts arrive in the history as its conversation, under the author's name (a contact, else 8 hex
+digits of the key); a post from the screen is an ordinary message to the room with a delivery ACK. A room takes posts
+and sends new ones only after a login. The trace goes through the route's repeaters (1-byte hashes) and back, for a
+repeater up to the repeater itself, and shows the SNR of every hop. A server does not answer a wrong password: after
+the timeout it reads "no answer". A status answer that does not come is asked once more (since 0.13.1): right after a
+login a room pushes posts and may miss the request.
 
-## Энергосбережение
+## Power saving
 
-На платах ESP32 (`src/Power.cpp`, во всех режимах) процессор работает на 80 МГц, пока экран погашен и
-не включены Wi-Fi, радар или датчик CSI; клавиша, USB- или BLE-команда сразу возвращают 240 МГц.
-Частота не меняется, пока запущен драйвер Wi-Fi или контроллер Bluetooth (после первого включения BLE
-контроллер работает до перезагрузки): смена частоты после проверки CSI с ещё живым драйвером Wi-Fi
-заканчивалась паникой M9. Поэтому с включённым BLE экономии частотой и сна нет. В обычном режиме BLE
-включён по умолчанию, в режимах репитера и комнаты — выключен, пока пользователь его не включит.
-В режимах репитера и комнаты плата между пакетами уходит в лёгкий сон (как штатная MeshCore): через
-60 с после загрузки, при погашенном экране, выключенных BLE, Wi-Fi и радаре, пустой очереди передачи
-и через 30 с после последней команды или клавиши. Будят её линия IRQ трансивера (принятый пакет),
-кнопка, байты по USB-UART и таймер каждые 0,5 с (клавиатура M9 опрашивается после пробуждения).
-Байты, которые разбудили плату по USB-UART (M9, Heltec V3 и другие с мостом), теряются, поэтому
-`tools/device.py` и приложение сначала шлют несколько CR (плата их пропускает) и ждут 50 мс.
-С native USB (Heltec V4 и др.) плата не спит, пока USB подключён к компьютеру. Включённый BLE сон
-отключает. `status` показывает `cpu_mhz`, `slow_ms` (время на 80 МГц), `sleeps` и `sleep_ms`.
+On ESP32 boards (`src/core/Power.cpp`, in every mode) the CPU runs at 80 MHz while the screen is dark and
+Wi-Fi, the radar and the CSI sensor are off; a key, a USB or a BLE command brings 240 MHz back at once.
+The clock does not change while the Wi-Fi driver or the Bluetooth controller runs (once BLE has been on,
+the controller runs until reboot): a change after a CSI check with the Wi-Fi driver still up ended in an
+M9 panic. So with BLE on there is no clock saving and no sleep. BLE is on by default in the normal mode
+and off in repeater and room modes until the user turns it on.
+In repeater and room modes the board also enters light sleep between packets (as stock MeshCore does):
+60 s after boot, with the screen dark, BLE, Wi-Fi and the radar off, an empty transmit queue and 30 s
+after the last command or key. The transceiver IRQ line (a received packet), the button, bytes over
+the USB-UART and a 0.5 s timer wake it (the M9 keyboard is polled after each wake). The bytes that
+wake a board over a USB-UART bridge (the M9) are lost, so `tools/hw/device.py` and the
+app first send a few CR (the board skips them) and wait 50 ms. With native USB (Heltec V4)
+the board does not sleep while USB is connected to a computer. Bluetooth turned on prevents sleep.
+`status` shows `cpu_mhz`, `slow_ms` (time at 80 MHz), `sleeps` and `sleep_ms`.
 
-Защита от «оглохшего» приёмника (во всех режимах): если 10 минут не принято ни одного пакета, трансивер
-настраивается заново, как при загрузке (сброс, калибровка, параметры), очередь сообщений сохраняется;
-не чаще раза в 10 минут и не посреди приёма. В режимах сервера то же делает штатный параметр
-`agc.reset.interval` (секунды, кратно 4; 0 — выкл.). USB-команда `recalibrate` выполняет это сразу,
-`status` считает случаи в `radio_recal`.
+Deaf receiver guard (in every mode): after 10 minutes without a received packet the transceiver is set
+up again as at boot (reset, calibration, settings) and the message queue is kept; at most once in
+10 minutes and never in the middle of a packet. In server modes the stock `agc.reset.interval`
+(seconds, a multiple of 4; 0 is off) does the same. The USB command `recalibrate` does it at once,
+and `status` counts it in `radio_recal`.
 
-## Проверка со штатной MeshCore
+## Testing against stock MeshCore
 
-`tools/repeater_check.py` и `tools/room_check.py` проверяют M9 в соответствующем режиме со стороны
-официальной прошивки MeshCore companion_radio_usb v1.17.1, временно установленной на Heltec. Это
-сборка `upstream/meshcore-stock` под разметку flash MeshMesh.
+`tools/hw/repeater_check.py` and `tools/hw/room_check.py` test the M9 in the corresponding mode from the side of
+the official MeshCore companion_radio_usb v1.17.1 firmware, temporarily installed on the Heltec. This is
+MeshCore `companion-v1.17.1` built as `meshmesh_stock_interop` for the MeshMesh flash layout.
 
-Порядок:
-1. Полная копия flash Heltec и `verify-flash`.
-2. Запись штатного `firmware.bin` в 0x10000 и `boot_app0.bin` в 0xe000. После записи Heltec
-   может остаться в загрузчике: выводить `esptool --after watchdog-reset`. Первый запуск
-   форматирует раздел данных примерно за 40 с.
-3. Проверки.
-4. Запись копии обратно и `verify-flash`.
+Procedure:
+1. Full copy of the Heltec flash and `verify-flash`.
+2. Writing the stock `firmware.bin` at 0x10000 and `boot_app0.bin` at 0xe000. After writing, the Heltec
+   may stay in the bootloader: exit with `esptool --after watchdog-reset`. The first start
+   formats the data partition in about 40 s.
+3. Checks.
+4. Writing the copy back and `verify-flash`.
 
-Скрипты выставляют часы companion, как это делает приложение: вход подписан часами companion, а
-сообщения — временем компьютера.
+The scripts set the companion's clock, as the app does: the login is signed with the companion's clock, and
+messages with the computer's time.
 
-## Проверено (1 октября 2026, M9 + Heltec V4)
+## Verified (1 October 2026, M9 + Heltec V4)
 
-- **Выбор режима.**
-  - M9: экран при загрузке (отсчёт, переход в прежний режим), «Настройки → Режим работы» клавишами
-    (USB-события UI), `role …` по USB.
-  - Heltec: список при загрузке, меню «Настройки → Режим работы» (клик/удержание через USB-события).
-    Перезапуск программный (`reset_reason=3`).
-- **Репитер M9 и официальная companion** (`artifacts/repeater-check.json`, ELF M9 `73F44F7F…`,
-  13 из 13):
-  - объявление `type 2` с именем и ключом;
-  - отказ при неверном пароле, гостевой вход с пустым паролем, вход администратора (в одном прогоне
-    со второй попытки: ответ потерялся в эфире);
-  - статус, телеметрия (напряжение, температура), соседи, список доступа;
-  - CLI `get name`; `set advert.interval` виден по USB и возвращён; `set tx 30` отклонён;
-  - M9 не перезапускалась.
-- **Комната M9 и официальная companion** (`artifacts/room-check.json`, тот же ELF, 9 из 9):
-  - объявление `type 3`, отказ при неверном пароле;
-  - вход с паролем комнаты, пост участника с ACK — одна копия с автором;
-  - пост комнаты доставлен участнику (`txt_type` 2) и подтверждён;
-  - вход администратора, статус, CLI, вход только для чтения при `allow.read.only on`.
-  - Посты (8) пережили перезапуск. Комната стартует с выключенной пересылкой.
-- **Пересылка между нашими платами.**
-  - M9-репитер переслал flood-объявление Heltec.
-  - Heltec-репитер переслал объявление M9 (`relayed` 1 → 2).
-  - M9 видела Heltec как `type 2` и `type 3` в соответствующих режимах.
-- **Возврат в обычный режим.**
-  - Тот же ключ; 64 сообщения, 24 узла, карта и настройки (M9 14 dBm, relay выкл.; Heltec 10 dBm)
-    на месте.
-  - Личные сообщения M9 ↔ Heltec с ACK в обе стороны, по одной копии.
-  - После временной штатной прошивки Heltec восстановлен из полной копии, сверен с ней и обновлён:
-    история, узлы, настройки и партии совпали с сохранёнными до проверки.
-- **Итоговые установки:** M9 — ELF `A6C14E7D…`, загрузка 118; Heltec — ELF `429B6B51…`, загрузка 78 (сборка из `cd75575`: для V4 отличается от проверенной `2A9CDCA2…` только проверкой наличия экрана),
-  обе в обычном режиме. Итоговая M9 отличается от проверенной LoRa-сборки только подписью в окне
-  поста.
+- **Mode selection.**
+  - M9: the boot screen (countdown, fallback to the previous mode), “Settings → Device mode” with keys
+    (USB UI events), `role …` over USB.
+  - Heltec: the boot list, the “Settings → Device mode” menu (click/hold via USB events).
+    Software restart (`reset_reason=3`).
+- **M9 repeater and the official companion** (`artifacts/repeater-check.json`, M9 ELF `73F44F7F…`,
+  13 of 13):
+  - `type 2` advert with name and key;
+  - rejection of a wrong password, guest login with an empty password, admin login (in one run
+    on the second attempt: the reply was lost over the air);
+  - status, telemetry (voltage, temperature), neighbours, access list;
+  - CLI `get name`; `set advert.interval` visible over USB and reverted; `set tx 30` rejected;
+  - the M9 did not restart.
+- **M9 room server and the official companion** (`artifacts/room-check.json`, the same ELF, 9 of 9):
+  - `type 3` advert, rejection of a wrong password;
+  - login with the room password, a member's post with ACK — one copy with the author;
+  - a room post delivered to a member (`txt_type` 2) and acknowledged;
+  - admin login, status, CLI, read-only login with `allow.read.only on`.
+  - Posts (8) survived a restart. The room server starts with relaying off.
+- **Relaying between our boards.**
+  - The M9 repeater relayed a flood advert of the Heltec.
+  - The Heltec repeater relayed an advert of the M9 (`relayed` 1 → 2).
+  - The M9 saw the Heltec as `type 2` and `type 3` in the corresponding modes.
+- **Return to normal mode.**
+  - The same key; 64 messages, 24 nodes, the map and settings (M9 14 dBm, relay off; Heltec 10 dBm)
+    in place.
+  - Direct messages M9 ↔ Heltec with ACKs both ways, one copy each.
+  - After the temporary stock firmware, the Heltec was restored from the full copy, verified against it and updated:
+    history, nodes, settings and games matched those saved before the test.
+- **Final installs:** M9 — ELF `A6C14E7D…`, boot 118; Heltec — ELF `429B6B51…`, boot 78 (build from `cd75575`: for the V4 it differs from the verified `2A9CDCA2…` only by the check for a present screen),
+  both in normal mode. The final M9 differs from the verified LoRa build only by a caption in the post
+  window.
 
-**Не проверено:**
-- приложение MeshCore на телефоне (проверялась официальная companion-прошивка через `meshcore` для
+**Not verified:**
+- the MeshCore app on a phone (the official companion firmware was tested through `meshcore` for
   Python);
-- пересылка direct-пакетов через репитер (нужен третий узел);
-- долгая работа рядом с репитерами городской сети;
-- режимы на платах сообщества;
-- полный прогон `finish_on_hardware.py` на этих сборках.
+- relaying of direct packets through the repeater (needs a third node);
+- long-term operation next to the repeaters of a city network;
+- a full run of `finish_on_hardware.py` on these builds.
 
-На обеих платах в комнате остались тестовые посты; `erase` в CLI удаляет их вместе с настройками
-сервера.
+Test posts remain in the room on both boards; `erase` in the CLI deletes them together with the server
+settings.

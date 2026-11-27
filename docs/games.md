@@ -1,167 +1,135 @@
-# Шашки, морской бой и папки приложений
+# Checkers, sea battle and app folders
 
-С 0.33.0 MeshMesh играет с контактами ещё в две игры — **русские шашки** и **морской бой**. Как и шахматы
-(`docs/chess.md`), это игры двух узлов MeshCore через личные сообщения с подтверждением доставки: проходят
-через любые ретрансляторы, видны в штатном приложении MeshCore читаемым текстом. Без рейтинга, очков и
-турниров — просто сыграть с кем-то. Все игры собраны в папку «Игры» главного меню; папки можно создавать,
-переименовывать, скрывать и перекладывать в них приложения.
+Since 0.33.0 MeshMesh plays two more games with your contacts — **Russian draughts** (checkers) and **sea battle**.
+Like chess (`docs/chess.md`) they are games between two MeshCore nodes over acknowledged direct messages: they pass
+any repeaters and read as plain text in a stock MeshCore app. No rating, points or tournaments — just play with
+someone. All games sit in a Games folder of the main menu; folders can be created, renamed, hidden and filled with apps.
 
-Код: `src/Checkers.cpp` (правила шашек), `src/Sea.cpp` (поле, флот, ответы), `src/Duel.cpp` (партии обеих игр,
-команды, повторы, сохранение в `/meshmesh/duels.0|1`), экраны — `src/UiDuel.inc` (M9, T-Deck),
-`src/UiDuelCompact.inc` (128×64 и T114), страница и приложение — разделы «Шашки» и «Морской бой» в
-`web/index.html`; папки — `src/Apps.cpp`. Одновременно идёт до шести игр обоих видов (шахматы — отдельно).
+Code: `src/games/duel/Checkers.cpp` (draughts rules), `src/games/duel/Sea.cpp` (field, fleet, answers), `src/games/duel/Duel.cpp` (games of both kinds,
+commands, resending, storage in `/meshmesh/duels.0|1`), screens — `src/games/duel/UiDuel.inc` (M9),
+`src/games/duel/UiDuelCompact.inc` (Heltec V4, 128×64), the web page and the app — the Checkers and Sea battle sections of
+`web/index.html`; folders — `src/core/Apps.cpp`. Up to six games of both kinds run at once (chess has its own six).
 
-## Шашки
+## Checkers
 
-Правила русских шашек: доска 8×8, тёмные поля, белые ходят первыми с a1–h2 (вызвавший выбирает цвет:
-белые, чёрные или случайно). Простая шашка ходит вперёд, бьёт вперёд и назад; дамка ходит и бьёт на любое
-расстояние по диагонали. Бить обязательно; из нескольких взятий можно выбрать любое (не обязательно самое
-длинное), начатое взятие продолжается до конца. Шашка, дошедшая до последнего ряда во время взятия, сразу
-становится дамкой и продолжает бить как дамка. Побитые шашки снимаются после хода и мешают ему до конца
-(«турецкий удар»: дважды одну шашку не бьют). Дамка, бьющая на расстоянии, встаёт за побитой шашкой на
-любое свободное поле, но если с какого-то из них можно бить дальше — только на такое.
+Russian draughts: an 8×8 board, dark squares, White moves first from a1–h2 (the challenger picks White, Black or
+random). A man moves forward and captures forward and backward; a king moves and captures any distance along a
+diagonal. Capturing is compulsory; among several captures any one may be chosen (not necessarily the longest), and a
+capture once started goes on to the end. A man reaching the last row during a capture becomes a king at once and goes
+on capturing as a king. Captured men leave the board after the move and block it until then (the "Turkish strike": a
+man is never jumped twice). A king capturing at a distance lands on any free square behind the captured man — but only
+on one from which it can capture again, when there is such.
 
-Конец партии: у стороны, чей ход, нет ходов (нет шашек или все заперты) — она проиграла; 15 ходов каждой
-стороны только дамками без взятий — ничья (как в правилах русских шашек); ничья по согласию; сдача.
-Троекратное повторение позиции не отслеживается.
+The game ends when the side to move has no move (no men left or all blocked) — it loses; after 15 moves of each side
+with kings only and no capture — a draw (as in the Russian rules); by an agreed draw; by resignation. Threefold
+repetition is not tracked.
 
-Запись хода: поля через `-` для простого хода (`c3-d4`) и через `:` для взятия со всеми полями остановок
-(`c3:e5:c7`). Для ввода вручную достаточно начала и конца (`c3:c7`), если путь между ними единственный.
+A move is written with `-` between squares for a plain move (`c3-d4`) and `:` for a capture with every stop
+(`c3:e5:c7`). Typed by hand, the start and the end are enough (`c3:c7`) when only one path joins them.
 
-## Морской бой
+## Sea battle
 
-Поле 10×10, столбцы a–j, строки 1–10. Флот: один четырёхпалубный, два трёхпалубных, три двухпалубных,
-четыре однопалубных; корабли не касаются друг друга даже углами. Расстановка случайная; пока по вашему полю
-не стреляли, её можно перемешать сколько угодно (сопернику это не видно и не важно). Первым стреляет
-вызвавший. Попадание и потопленный корабль дают ещё выстрел, промах передаёт ход. Клетки вокруг потопленного
-корабля отмечаются как вода: стрелять туда не нужно.
+A 10×10 field, columns a–j, rows 1–10. The fleet: one four-deck ship, two three-deck, three two-deck and four
+one-deck ships; ships do not touch, not even at a corner. The placement is random; until anyone has fired at your
+field it can be shuffled as often as you like (the other player cannot see it and it does not matter to them). The
+challenger fires first. A hit or a sunk ship gives another shot, a miss passes the turn. The cells around a sunk ship
+are marked as water: no need to fire there.
 
-Ответ на выстрел даёт устройство защищающегося само, по своей расстановке. Когда потоплен последний
-корабль, победитель отправляет свою расстановку — проигравший видит, где стояли не найденные им корабли, и
-устройство сверяет её со всеми полученными ответами: если ответы ей противоречат, на экране и странице
-появляется предупреждение «расстановка не сходится с ответами».
+The defender's device answers each shot itself, from its own placement. When the last ship sinks, the winner sends its
+placement: the loser sees where the ships it did not find stood, and the device checks it against every answer it got;
+if the answers contradict it, the screen and the page warn "the fleet does not match the answers".
 
-## Сообщения
+## Messages
 
-Каждая команда — обычное личное сообщение MeshCore: `🏁` (U+1F3C1, шашки) или `🚢` (U+1F6A2, морской бой),
-четыре шестнадцатеричные цифры номера партии, пробел и команда. Текст после известных полей не читается.
+Each command is an ordinary MeshCore direct message: `🏁` (U+1F3C1, checkers) or `🚢` (U+1F6A2, sea battle), four hex
+digits of the game number, a space and the command. Text after the known fields is not read.
 
-| Текст | Значение |
+| Text | Meaning |
 |---|---|
-| `🏁3F2A new w · шашки MeshMesh: вы играете чёрными` | вызов в шашки; `w`/`b` — цвет вызвавшего |
-| `🚢3F2A new · морской бой MeshMesh` | вызов в морской бой; первым стреляет вызвавший |
-| `🏁3F2A yes` / `🏁3F2A no` | принять / отказаться (или отменить игру до первого хода) |
-| `🏁3F2A 5 c3:e5:c7` | ход: номер полухода и запись хода |
-| `🏁3F2A draw?` / `🏁3F2A draw` / `🏁3F2A resign` | предложить ничью / согласиться / сдаться |
-| `🚢3F2A 7 e5` | выстрел: номер выстрела (общий счёт обеих сторон) и клетка |
-| `🚢3F2A 7 = miss` | ответ на выстрел 7: `miss`, `hit`, `sunk` (корабль потоплен), `win` (потоплен весь флот) |
-| `🚢3F2A fleet a1h c3v e5h …` | расстановка победителя после игры: первая клетка и направление (`h` — вдоль строки, `v` — вниз), однопалубные без буквы |
-| `🚢3F2A resign` | сдаться |
+| `🏁3F2A new w · MeshMesh checkers: you play Black` | checkers challenge; `w`/`b` is the challenger's colour |
+| `🚢3F2A new · MeshMesh sea battle` | sea battle challenge; the challenger fires first |
+| `🏁3F2A yes` / `🏁3F2A no` | accept / decline (or cancel the game before the first move) |
+| `🏁3F2A 5 c3:e5:c7` | a move: the half-move number and the move |
+| `🏁3F2A draw?` / `🏁3F2A draw` / `🏁3F2A resign` | offer a draw / accept it / resign |
+| `🚢3F2A 7 e5` | a shot: the shot number (counted for both sides together) and the cell |
+| `🚢3F2A 7 = miss` | the answer to shot 7: `miss`, `hit`, `sunk` (a ship sunk), `win` (the whole fleet sunk) |
+| `🚢3F2A fleet a1h c3v e5h …` | the winner's placement after the game: the first cell and the direction (`h` along the row, `v` down), one-deck ships without a letter |
+| `🚢3F2A resign` | resign |
 
-Приём — только из личных сообщений контакта этой партии; сообщения каналов ходами не считаются. Ход или выстрел
-принимается, если номер следующий и очередь соперника; повтор последнего хода (потерялся ACK) молча пропускается,
-повтор выстрела получает тот же ответ ещё раз. Следующая команда соперника подтверждает мою предыдущую: его ход —
-мой ход, его ответ — мой выстрел, его следующий выстрел — мой ответ; если ответ на мой выстрел потерялся, а соперник
-уже стреляет сам, значит, я промахнулся. Прошивка без этих игр (образ nRF52 без модуля) показывает такие сообщения
-обычным чатом — человек видит пояснение в тексте вызова.
+Only direct messages from the contact of that game are taken; channel messages never count as moves. A move or a shot
+is accepted when its number is the next one and it is the other player's turn; a repeat of the last move (a lost ACK)
+is skipped silently, a repeated shot gets the same answer again. The other player's next command confirms my previous
+one: their move confirms my move, their answer my shot, their next shot my answer; if the answer to my shot was lost
+and they are already firing themselves, my shot missed. Firmware without these games (an older MeshMesh, stock MeshCore)
+shows such messages as an ordinary chat — the person reads the explanation in the challenge text.
 
-Доставка — как у шахмат: MeshCore делает до трёх попыток; без подтверждения команда повторяется через 2, 5 и
-10 минут, затем каждые 15 минут и сразу, как только соперник снова слышен (не чаще раза в 2 минуты); через 24 часа
-повтор останавливается, «Отправить снова» запускает его опять. Партии и неподтверждённая команда сохраняются;
-после перезапуска повтор начинается через минуту.
+Delivery is as in chess: MeshCore makes up to three attempts; without a confirmation the command is resent after 2, 5
+and 10 minutes, then every 15 minutes, and at once when the other player is heard again (at most every 2 minutes);
+after 24 hours resending stops, "Send again" starts it once more. Games and the unconfirmed command are saved; after a
+restart resending begins in a minute.
 
-## Где играть
+## Where to play
 
-Вызвать: в карточке чат-узла (M9 и T-Deck — «Играть» → шахматы, шашки или морской бой; OLED и T114 — «Шашки:
-вызвать», «Морской бой: вызвать» в меню узла), в списке игры («Новая партия»), на странице и в приложении. Вызов,
-ответ, ход соперника и итог приходят уведомлением, как шахматные; экран просыпается.
+Challenge from a chat node's card (M9: "Play" → chess, checkers or sea battle; Heltec V4: "Checkers:
+invite", "Sea battle: invite" in the node menu), from a game's list ("New game"), on the web page and in the app. A
+challenge, an answer, the other player's move and the result arrive as notifications, like chess news; the screen wakes.
 
-**M9 и T-Deck.** Плитки «Шашки» и «Морской бой» — в папке «Игры». Список: новая игра (контакт и цвет ←/→ — белые,
-чёрные, случайно), затем партии — сначала те, где ждут вас. Шашки: ваша сторона внизу, дамка — с короной, последний
-ход подсвечен; OK берёт шашку, у которой есть ход (обязательное взятие отмечено полосой «Бить обязательно»), её ходы
-отмечены точками, взятия — уголками с путём и остановками; OK на поле — ход, BACK — вернуть шашку или к списку.
-D — предложить или принять ничью, X дважды — сдаться, R — отправить снова, N — сыграть ещё (цвета меняются), DEL —
-отклонить, отменить или удалить оконченную, H — клавиши. Морской бой: поле соперника крупно (стрелки — прицел, OK —
-выстрел), ваш флот мелко; выстрел в пути — жёлтым перекрестием; S — перемешать флот, пока по нему не стреляли; в конце
-— флот победителя, клетки, где ответ «мимо» не сходится с ним, обведены красным. T-Deck: касание поля — курсор и OK;
-в морском бою первое касание целится, второе по той же клетке стреляет.
+**M9.** The Checkers and Sea battle tiles are in the Games folder. The list: a new game (contact, and the
+colour with ←/→: White, Black, random), then the games — those waiting for you first. Checkers: your side at the
+bottom, kings wear a crown, the last move is tinted; OK takes a man that can move (a compulsory capture shows a "You
+must capture" strip), its moves are marked with dots, captures with corners, their path and stops; OK on a square plays,
+BACK puts the man back or returns to the list. D offers or accepts a draw, X twice resigns, R sends again, N plays again
+(colours swapped), DEL declines, cancels or deletes a finished game, H shows the keys. Sea battle: their field large
+(arrows aim, OK fires), your fleet small; a shot in flight is a yellow crosshair; S shuffles your fleet while nobody has
+fired at it; at the end the winner's fleet, with the cells whose "miss" does not match it outlined in red.
 
-**Одна кнопка (Heltec V4/V3, Wireless Tracker, T-Beam, E213 и другие).** Как шахматы: в свой ход клик перебирает
-ваши шашки с ходами, затем «Меню партии»; удержание берёт шашку; клик перебирает её ходы целиком («f2:d4:f6», побитые
-перечёркнуты), затем «Отмена»; удержание ходит. Не в свой ход клик — следующий экран, удержание — меню (принять,
-отказаться, ничья, сдаться, отправить снова, удалить, список). Морской бой без 100 кликов: сначала клетки рядом с
-подбитым, но не потопленным кораблём («e5: добить»), затем столбцы, где ещё можно стрелять; удержание на столбце
-фиксирует его, клик перебирает его клетки, удержание стреляет. В меню — «Мой флот», «Перемешать флот».
+**Heltec V4 (one button).** As in chess: on your move a click steps
+through your men that can move, then "Game menu"; hold takes one; a click then steps through its whole moves ("f2:d4:f6",
+captured men crossed out), then "Cancel"; hold plays. Off your move a click goes to the next screen and hold opens the
+menu (accept, decline, draw, resign, send again, delete, list). Sea battle without 100 clicks: first the cells next to
+a hit ship not yet sunk ("e5: finish"), then the columns where a shot still makes sense; hold on a column fixes it, a
+click steps through its cells, hold fires. The menu has "My fleet" and "Shuffle fleet".
 
-**Джойстик (GAT562).** Шашки — курсор, OK берёт и ходит; если к полю ведут разные пути взятия, ↑/↓ выбирают путь.
-Морской бой — курсор по полю соперника, OK — выстрел. Удержание OK — меню партии.
-
-**T114.** Та же логика одной кнопки, отрисовка в цвете: доска шашек 128 px, поле соперника 120 px и ваш флот мелко
-справа (на T114 игры по умолчанию не входят — раздел «Платы nRF52»).
-
-**Веб-страница и приложение.** Плитка «Игры» на главной открывает раздел со всеми играми платы. Шашки: список
-партий, новая игра (контакт и цвет), доска — нажмите свою шашку, затем поле, куда она пойдёт (подсвечены
-возможные ходы); ничья, сдача, повтор отправки. Морской бой: поле соперника крупно (нажатие — выстрел в свой
-ход), своё поле рядом, «Перемешать флот» до первого выстрела по вам. `GET /api/duel` (список), `GET /api/duel?id=ID`
-(доска), действия — `POST /api/command` с командами `duel …`.
+**Web page and app.** The Games tile on the home page opens all the board's games. Checkers: the list, a new game
+(contact and colour), the board — tap your man, then the square it goes to (its moves are highlighted); draw, resign,
+send again. Sea battle: their field large (a tap fires on your turn), your field beside it, "Shuffle fleet" until the
+first shot at you. `GET /api/duel` (the list), `GET /api/duel?id=ID` (the board), actions — `POST /api/command` with
+`duel …` commands.
 
 **USB.**
 
-| Команда | Действие |
+| Command | Action |
 |---|---|
-| `duel` | список игр (JSON) |
-| `duel invite NODE_ID checkers [w\|b\|r]` / `duel invite NODE_ID sea` | вызвать |
-| `duel accept\|decline\|draw\|resign\|resend\|remove\|seen\|shuffle ID` | действия с партией |
-| `duel move ID c3-d4` / `duel shoot ID e5` | ход / выстрел |
-| `duel show ID` | партия целиком: доска шашек и допустимые ходы, оба поля морского боя |
+| `duel` | the games (JSON) |
+| `duel invite NODE_ID checkers [w\|b\|r]` / `duel invite NODE_ID sea` | challenge |
+| `duel accept\|decline\|draw\|resign\|resend\|remove\|seen\|shuffle ID` | game actions |
+| `duel move ID c3-d4` / `duel shoot ID e5` | move / shot |
+| `duel show ID` | the whole game: the checkers board with its legal moves, both sea battle fields |
 
-## Папки приложений
+## App folders
 
-Порядок приложений главного меню (настройка `apps`, «Настройки → Приложения» на странице и в приложении) теперь
-может содержать папки. По умолчанию все игры платы — шахматы, шашки, морской бой, питомец, кости, косынка — лежат
-в папке «Игры». На странице можно создать папку, переименовать её, удалить (приложения вернутся в главное меню),
-скрыть вместе с содержимым, переставить, переложить приложение в другую папку или обратно. Настройки в папку не
-кладутся и не скрываются. До шести папок, без вложенных.
+The order of the main menu's apps (the `apps` setting, Settings → Apps on the web page and in the app) can now hold
+folders. By default every game of the board — chess, checkers, sea battle, pet, dice, solitaire — is in the Games
+folder. On the page you can create a folder, rename it, delete it (its apps return to the main menu), hide it with
+everything in it, move it, and move an app into another folder or back. Settings never go into a folder and are never
+hidden. Up to six folders, not nested.
 
-Формат: идентификаторы через пробел, `-ID` скрывает приложение, `{ИМЯ id id …}` — папка (пробелы имени — `_`, до
-23 байт), `-{ИМЯ …}` — скрытая папка; папка с именем `games` показывается как «Игры» на языке экрана.
-Например: `set {"apps":"chats quick nodes {games chess checkers sea pet dice} {Карты map nav} radar settings"}`.
-Приложения, которых в тексте нет (появились в новой прошивке), встают на своё место по умолчанию: игры — в папку
-`games`, если она есть, остальные — в конец. При первом запуске 0.33.0 сохранённый ранее порядок один раз переносит
-игры в папку «Игры» там, где стояла первая из них (порядок и скрытые сохраняются).
+Format: IDs separated by spaces, `-ID` hides an app, `{NAME id id …}` is a folder (`_` for a space in the name, up to
+23 bytes), `-{NAME …}` a hidden folder; a folder named `games` is shown as "Games" in the screen language.
+For example: `set {"apps":"chats quick nodes {games chess checkers sea pet dice} {Maps map nav} radar settings"}`.
+Apps the text does not name (new in a firmware) take their default place: games go into the `games` folder when there
+is one, the rest to the end. On the first start of 0.33.0 an order saved before moves the games into the Games folder
+once, where the first of them stood (their order and hidden marks stay).
 
-Как папка выглядит на устройстве:
-- **M9 и T-Deck** — плитка с иконкой папки, именем, первыми приложениями и суммой их значков (ждущие ходы). OK или
-  касание открывает страницу папки с теми же плитками; BACK — на главный экран к плитке папки. Приложение, открытое
-  из папки, по BACK возвращается в папку.
-- **Одна кнопка и T114** — папка — отдельный экран в листании со списком своих приложений. Клик — следующий экран
-  главного меню, удержание — войти (открывается первое приложение папки); внутри клик листает приложения папки,
-  после последнего — снова экран папки; двойной клик (если включён) — к экрану папки.
-- **Джойстик (GAT562)** — ↑/↓ выбирают приложение папки, OK открывает, ←/→ листают приложения папки и её экран,
-  BACK — к экрану папки.
+What a folder looks like on the device:
+- **M9** — a tile with a folder icon, its name, its first apps and the sum of their badges (moves waiting).
+  OK opens the folder's page with the same tiles; BACK returns home to the folder tile. An app opened from a
+  folder returns to it on BACK.
+- **Heltec V4 (one button)** — the folder is a screen of its own in the page cycle with a list of its apps. A click goes
+  to the next screen of the main menu, hold enters (the folder's first app opens); inside, a click steps through the
+  folder's apps and after the last one returns to the folder screen; a double click (when enabled) goes to the folder
+  screen.
 
-Страница и приложение показывают свои разделы иначе: плитка «Игры» на главной открывает все игры платы. Ограничение:
-по BLE команда не длиннее 255 байт, поэтому страница не сохраняет порядок длиннее 240 байт (кириллица — 2 байта на букву).
-
-## Платы nRF52
-
-В 1 МБ flash GAT562, T114, T096 и fakeTec шашки и морской бой пока не помещаются вместе со всеми языками, поэтому их
-образы (с сайта, из приложения и `tools/nrf52.py package ENV`) собираются **без этих двух игр** (`include/Modules.h`:
-на nRF52 `MM_NO_CHECKERS` и `MM_NO_SEA`, если не задан `MM_WITH_GAMES`). Папки, «Игры» с шахматами, питомцем и
-костями там есть; вызов в шашки или морской бой приходит на такую плату обычным сообщением с пояснением в тексте,
-страница и приложение прячут эти игры (`status.modules`). Строки игр в таблицу переводов такого образа не входят
-(`tools/i18n.py`, группа `GAMES`).
-
-Собрать образ с играми для своей платы: `tools/nrf52.py package ENV --with-games` — только английский и русский
-(пакет `…-with-games`, без `lang/`). Размеры 0.33.0 (предел 712704 байта):
-
-| Плата | обычный образ, китайский (самый большой) | `--with-games`, en+ru |
-|---|---|---|
-| GAT562 | 691124 | 697656 |
-| T096 | 689312 | 695188 |
-| fakeTec | 688732 | 694608 |
-| T114 | 710072 (2,6 КБ свободно) | не помещается (на 15,8 КБ больше); `--with-games --without chess` — 676492 |
-
-Чтобы китайский T114 поместился вместе с папками, в 0.33.0 освобождено около 2,5 КБ: начальные значения
-`quickSend::state` и черновика радио больше не хранятся в образе (обнуляемая память, значения ставятся при запуске),
-крупный шрифт T114 в образах без русского — латинский `inr24_mr` с запасным 10×20 для остального.
+The web page and the app arrange their own sections differently: the Games tile of the home page opens every game of the
+board. A limit: over BLE a command is at most 255 bytes, so the page does not save an order longer than 240 bytes
+(a Cyrillic letter takes 2 bytes).

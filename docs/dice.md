@@ -1,184 +1,179 @@
-# Кости (дайсер DIC3R) и лист персонажа
+# Dice (the DIC3R dice roller) and the character sheet
 
-Бросок игральных костей для настольных игр — перенос приложения DIC3R в MeshMesh. Три режима: **RPG** (пул
-костей и формулы), **Warhammer** (сетка костей с порогом успеха) и **лист персонажа** (с 0.25.0 вместо
-отдельных счётчиков). Всё хранит само устройство, поэтому экран, веб-страница и приложение для Android
-показывают одно и то же: бросок с телефона сразу виден на экране платы и наоборот. Кости бросает аппаратный
-генератор случайных чисел, без перекоса по модулю. Броски по радио не передаются; лист можно отправить
-контакту (ниже).
+Dice for tabletop games: the DIC3R app brought into MeshMesh. Three modes: **RPG** (a dice pool and
+formulas), **Warhammer** (a grid of dice with a success threshold) and the **character sheet** (since 0.25.0,
+in place of the separate counters). The device keeps it all, so the screen, the web page and the Android app
+show the same: a roll from the phone appears on the board's screen at once and the other way round. The
+hardware random number generator rolls the dice, without modulo bias. Rolls are not sent over the radio; a
+sheet can be sent to a contact (below).
 
-Есть на всех платах: на M9 и T-Deck это плитка «Кости», на однокнопочных платах, GAT562 и T114 —
-экран после «Питомца». Работает во всех режимах, в том числе репитера и комнаты.
+On both boards: a "Dice" tile on the M9, a screen after "Pet" on the Heltec V4. It works in every role, the repeater and room server included.
 
-Код: `src/Dice.cpp`, `include/Dice.h` (броски, формулы, лист, шаблоны, хранение, передача, команда `dice`),
-`src/UiDice.inc` (экран 320×240), `src/UiDiceCompact.inc` (OLED 128×64 и меню однокнопочных плат), страница в
-`src/UiHires.inc` (T114), фигуры костей и статов — `drawDieShape`, `drawStatShape` в `src/UiIcons.cpp`.
-Состояние — `/meshmesh/dice.bin` в LittleFS (режим, пул, сетка, имена персонажей), лист каждого
-персонажа — свой файл `/meshmesh/sheetN.bin` (только занятые блоки и описания, с контрольной суммой);
-в памяти лежит лист текущего персонажа. Последние восемь бросков и значения сетки — только в памяти.
+Code: `src/games/dice/Dice.cpp`, `src/games/dice/Dice.h` (rolls, formulas, the sheet, templates, storage, sending, the `dice`
+command), `src/games/dice/UiDice.inc` (the 320×240 screen), `src/games/dice/UiDiceCompact.inc` (the 128×64 OLED and the menus of the
+Heltec V4), the shapes of dice and stats — `drawDieShape`,
+`drawStatShape` in `src/ui/UiIcons.cpp`. The state is `/meshmesh/dice.bin` in LittleFS (mode, pool, grid, the
+characters' names); each character's sheet is its own file `/meshmesh/sheetN.bin` (only the blocks in use and
+their descriptions, with a checksum); the current character's sheet is in memory. The last eight rolls and the
+grid values live in memory only.
 
-## Режимы
+## Modes
 
-**RPG.** Пул: число костей (1–99), кость (d4, d6, d8, d10, d12, d20, d66, d%) и модификатор (−99…+99),
-например `2d6+1`. Любая формула: слагаемые через `+` и `−`, каждое — `NdX` (N до 99, X от 2 до 1000),
-`dX`, `d%`, `d66`, `rN` (куб Р.Э.Т. уровня N, ниже) или число, до восьми слагаемых: `3d8+2d4-1`, `d20+5`.
-Русская запись `2к6` (и `д`) тоже понимается. Результат показывает каждую кость своей фигурой (d4 —
-треугольник, d6 — точки, d8 — ромб, d10 — «воздушный змей», d12 — пятиугольник, d20 — шестиугольник),
-максимум зелёным, единицу красным, и сумму. d66 и d% показываются каждая отдельно и без суммы. Хранятся
-последние восемь бросков. Сохранённые броски — это способности листа с формулой (ниже): список «S» на M9,
-кнопки на странице и пункт меню на однокнопочных платах бросают их.
+**RPG.** The pool: the number of dice (1–99), the die (d4, d6, d8, d10, d12, d20, d66, d%) and a modifier
+(−99…+99), for example `2d6+1`. Any formula: terms joined by `+` and `−`, each `NdX` (N up to 99, X from 2 to
+1000), `dX`, `d%`, `d66`, `rN` (the R.E.T. die of level N, below) or a number, up to eight terms: `3d8+2d4-1`,
+`d20+5`. The Russian notation `2к6` (and `д`) works too. The result shows each die in its own shape (d4 a
+triangle, d6 pips, d8 a diamond, d10 a kite, d12 a pentagon, d20 a hexagon), the maximum in green, a one in
+red, and the sum. d66 and d% show each die on its own, without a sum. The last eight rolls are kept. Saved
+rolls are the sheet's abilities with a formula (below): the "S" list on the M9, the buttons of the page and
+the menu item of the Heltec V4 roll them.
 
-**Warhammer.** Сетка из 20 костей (кнопкой «+5» — до 50): выбирается, сколько первых костей бросить, бросок
-выкладывает их от большего к меньшему. С включённым порогом (`4+`) кости на пороге и выше зелёные, ниже —
-красные, и считается число успехов; без порога — сумма.
+**Warhammer.** A grid of 20 dice (up to 50 with "+5"): choose how many of the first dice to roll; the roll lays
+them out from high to low. With the threshold on (`4+`) the dice at or over it are green, the others red, and
+the successes are counted; without it, the sum.
 
-**Персонажи.** «Общий» набор и до пяти персонажей, у каждого свой лист. Новый персонаж создаётся с пустым
-листом (один счётчик, как в DIC3R) или из шаблона D&D 5e либо Р.Э.Т. Общий набор не удаляется. С 0.26.0 плата
-один раз добавляет двух готовых персонажей — «D&D 5e» и «Р.Э.Т.» (если есть место): их можно открыть,
-посмотреть, изменить или удалить; удалённые больше не появляются (флаг в `dice.bin`).
+**Characters.** The "General" set and up to five characters, each with its own sheet. A new character starts
+with an empty sheet (one counter, as in DIC3R) or from the D&D 5e or R.E.T. template. The general set cannot
+be removed. Since 0.26.0 a board adds two ready characters once, "D&D 5e" and "R.E.T." (where there is room):
+open, look at, change or delete them; deleted ones do not come back (a flag in `dice.bin`).
 
-## Лист персонажа
+## The character sheet
 
-Лист — до 64 блоков в строках по 12 колонок. Ширина блока — 1/6, 1/4, 1/3, 1/2 или вся строка; на телефоне
-сетка уже (6 колонок), на OLED блоки показываются по одному. Блоки:
+A sheet holds up to 64 blocks in rows of 12 columns. A block is 1/6, 1/4, 1/3, 1/2 of a row or the whole row
+wide; on a phone the grid is narrower (6 columns), the OLED shows one block at a time. The blocks:
 
-| Блок | Что показывает | Действие |
+| Block | Shows | Action |
 |---|---|---|
-| **Стат** | число в фигуре (круг, квадрат, щит, ромб, шестиугольник) и подпись; под ней модификатор D&D или куб Р.Э.Т. | бросок проверки; ±1 |
-| **Шкала** | текущее значение и максимум (полоса) или просто число — бывший счётчик | ±1, ±5, ввод числа |
-| **Отметки** | ряд кружков (ячейки заклинаний, спасброски от смерти, патроны), до 12 | отметить следующий |
-| **Способность** | название, бросок, цена и описание (до 200 байт) | бросок и списание цены |
-| **Заметка** | текст (снаряжение, предыстория) | — |
-| **Заголовок** | раздел | — |
+| **Stat** | a number in a shape (circle, square, shield, diamond, hexagon) and a label; below it the D&D modifier or the R.E.T. die | roll its check; ±1 |
+| **Track** | the current value and a maximum (a bar) or just a number — the former counter | ±1, ±5, type a value |
+| **Marks** | a row of circles (spell slots, death saves, ammunition), up to 12 | mark the next |
+| **Ability** | a name, a roll, a cost and a description (up to 200 bytes) | roll and pay the cost |
+| **Note** | text (equipment, background) | — |
+| **Header** | a section | — |
 
-**Коды и формулы.** У блока может быть код из латинских букв, цифр и `_` (до 7 знаков: `dex`, `hp`, `mana`).
-Значение стата и максимум шкалы можно вычислять формулой: целые числа, `+ − * /` (деление округляет вниз),
-скобки и ссылки `@код`; например, `10+@dex` (класс доспеха), `(@edu+@wit)/2`, `@body*2`. Бросок
-способности — формула броска со ссылками: `d20+@dex+@pb`, `1d8+@str`, `@cha+3`, `r3+@fine!`. Ссылка
-`@код` даёт то, что блок «приносит»: у стата D&D — модификатор, у стата Р.Э.Т. в броске — куб его уровня
-(в арифметике — уровень), у остальных — значение (у шкалы — текущее, у отметок — сколько отмечено).
-`@код!` — само значение стата (у шкалы и отметок — максимум). Ссылка на несуществующий код или цикл
-ссылок показывается как «?», бросок такой способности не выполняется.
+**Codes and formulas.** A block may have a code of Latin letters, digits and `_` (up to 7: `dex`, `hp`,
+`mana`). A stat's value and a track's maximum can come from a formula: integers, `+ − * /` (division rounds
+down), brackets and references `@code`; for example `10+@dex` (armour class), `(@edu+@wit)/2`, `@body*2`. An
+ability's roll is a roll formula with references: `d20+@dex+@pb`, `1d8+@str`, `@cha+3`, `r3+@fine!`. A
+reference `@code` gives what the block "brings": a D&D stat its modifier, a R.E.T. stat in a roll the die of
+its level (in arithmetic its level), the others their value (a track its current value, marks how many are
+marked). `@code!` is the stat's own value (for tracks and marks, the maximum). A reference to a missing code or
+a loop of references shows as "?", and such an ability does not roll.
 
-**Правила стата.** «Обычное число»; «D&D: модификатор» — под значением `(значение − 10) / 2` с округлением
-вниз, проверка — `d20+модификатор`; «Бонус к d20» — значение со знаком, проверка `d20+значение`
-(инициатива); «Р.Э.Т.: куб уровня» — уровень 0…8 даёт куб d6−3, d6−2, d6−1, d6, d8, d10, d12, d20, d100,
-проверка бросает его.
+**Stat rules.** "Plain number"; "D&D: modifier" — `(value − 10) / 2` rounded down below the value, a check is
+`d20+modifier`; "Bonus to d20" — the value with its sign, a check is `d20+value` (initiative); "R.E.T.: die by
+level" — level 0…8 gives the die d6−3, d6−2, d6−1, d6, d8, d10, d12, d20, d100, and a check rolls it.
 
-**Бросок Р.Э.Т.** (`rN`): максимальная грань — успех, к результату прибавляется куб следующего уровня,
-и так до d100; единица на первом кубе — провал: бросается d4 провала (1 — критический), бонусы броска
-сгорают, итог — сам куб. Экран показывает «Успех ×2», «Провал, d4: 3» или «Критический провал».
+**A R.E.T. roll** (`rN`): the top value of the die is a success and adds the die of the next level, on up to
+d100; a one on the first die is a failure: the d4 of failure is rolled (1 is critical), the roll's bonuses are
+lost and the result is the die alone. The screens show "Success x2", "Failure, d4: 3" or "Critical failure".
 
-**Цена способности.** Способность может тратить из блока с кодом (`use`) указанное число (`spend`): шкалы
-или отметок. Применение бросает формулу (если есть) и уменьшает значение; если не хватает — отказ
-«Не хватает: Мана».
+**An ability's cost.** An ability can take a number (`spend`) from the block with a code (`use`), a track or
+marks. Using it rolls the formula (if any) and lowers that value; when it is short, it refuses: "Not enough:
+Mana".
 
-**Шаблоны.** *D&D 5e*: шесть характеристик (модификаторы), мастерство, класс доспеха `10+@dex`,
-инициатива `@dex`, скорость, хиты, кости хитов, спасброски от смерти, атака и урон, 18 навыков
-(`d20+@характеристика`; владение — добавить `+@pb`), ячейки 1 круга, вдохновение, снаряжение. *Р.Э.Т.*
-(Разум, Эмоции, Тело; система [nri-ret.ru](https://nri-ret.ru/rulebook/)): дерево параметров — 12 параметров
-III уровня (на старте 3), над ними параметры II и I уровня как половина суммы двух нижних; здоровье
-`@body*2`, рассудок `@mind+@emo`, удача `@lvl*2`, уровень `(@mind+@emo+@body)/3`, сила удара `@str/2`,
-скорость, очки развития, примеры навыка (`@cha+3`) и таланта (`r3+@fine!`), памятка о бросках, снаряжение.
-Названия блоков — на языке интерфейса, коды латинские. Шаблон можно применить и к существующему
-персонажу (страница: «Конструктор → Шаблон»), это заменяет все его блоки.
+**Templates.** *D&D 5e*: the six abilities (modifiers), proficiency, armour class `10+@dex`, initiative
+`@dex`, speed, hit points, hit dice, death saves, an attack and its damage, 18 skills (`d20+@ability`; add
+`+@pb` for proficiency), level 1 slots, inspiration, equipment. *R.E.T.* (Mind, Emotions, Body; the system at
+[nri-ret.ru](https://nri-ret.ru/rulebook/)): the stat tree — 12 level III stats (3 at the start) with the level
+II and I stats above them as half the sum of the two below; health `@body*2`, sanity `@mind+@emo`, luck
+`@lvl*2`, level `(@mind+@emo+@body)/3`, strike `@str/2`, speed, growth points, a sample skill (`@cha+3`) and
+talent (`r3+@fine!`), a note on rolls, equipment. Block names follow the interface language; codes are Latin.
+A template can be applied to an existing character too (page: "Builder → Template"); it replaces all its
+blocks.
 
-**Перенос из 0.24.** При первом запуске 0.25.0 `dice.bin` прежнего формата переводится: счётчики каждого
-персонажа становятся шкалами без максимума с тем же значением и цветом, сохранённые броски — способностями.
+**Coming from 0.24.** On the first start of 0.25.0 the old `dice.bin` is converted: each character's counters
+become tracks without a maximum, with the same value and colour; saved rolls become abilities.
 
-## Лист текстом и по сети
+## The sheet as text and over the mesh
 
-Лист записывается одной строкой: `MMS1~N|имя~вид|ширина|фигура|цвет|правило|код|название|значение|макс|формула|трата-из|сколько|описание~…`
-(пустые и нулевые поля пропускаются, `\` экранирует `\`, `|`, `~` и перевод строки). Строку можно
-скопировать на странице («Текст»), переслать в любом чате и добавить на другом устройстве как нового
-персонажа. С телефона длинная строка уходит частями (`dice sheet put K/N …`): запись BLE вмещает 255 байт.
+A sheet is written as one line: `MMS1~N|name~kind|width|shape|colour|rule|code|name|value|max|formula|use|spend|note~…`
+(empty and zero fields are left out; `\` escapes `\`, `|`, `~` and a line break). Copy the line on the page
+("Text"), send it in any chat and add it on another device as a new character. From a phone a long line goes
+in pieces (`dice sheet put K/N …`): a BLE write takes 255 bytes.
 
-**Отправка контакту.** На странице «Отправить» или на M9 `P` → `S` выбирают контакт-собеседника. Лист
-уходит личными сообщениями MeshCore по частям до 120 байт вида `🎲S 3F2A 2/9 …` (в приложении MeshCore
-они видны как текст); следующая часть отправляется после ACK предыдущей, каждая — до трёх попыток. Лист
-D&D — около 13 частей. Получатель с MeshMesh собирает части (10 минут), проверяет лист и показывает
-предложение: «Лист «Арвен» от Heltec V4» — принять (новый персонаж) или отклонить. Части принимаются только
-от контактов и только в личных сообщениях; предложение хранится до перезапуска.
+**Sending to a contact.** "Send" on the page, or `P` → `S` on the M9, chooses a chat contact. The sheet goes as
+MeshCore direct messages in parts of up to 120 bytes like `🎲S 3F2A 2/9 …` (the MeshCore app shows them as
+text); each next part goes after the ACK of the last, each is tried up to three times. A D&D sheet is about 13
+parts. A MeshMesh receiver gathers the parts (for 10 minutes), checks the sheet and offers it: "Sheet
+«Arwen» from Heltec V4" — accept (a new character) or decline. Parts are taken only from contacts and only in
+direct messages; the offer lasts until a restart.
 
-## Управление
+## Controls
 
-**M9 и T-Deck.** Вкладки сверху: `M` (или `1`–`3`, касание вкладки) меняет режим, `P` открывает персонажей.
-RPG: `OK` бросает пул, `<` `>` — кость, `^` `v` — число костей, `+`/`−` — модификатор, `R` — сброс, `E` —
-любая формула, `S` — сохранённые броски (`OK` бросить, `A` добавить, `F` формула, `N` имя, `C` цвет,
-`DEL` дважды — удалить), `X` очищает историю. Warhammer: стрелки выбирают число костей, `OK` бросает,
-`A` — ещё пять костей, `R` — сброс, `D` — кость, `T` и `+`/`−` — порог. Лист: стрелки выбирают блок
-(вверх/вниз — ближайший в соседней строке), `OK` бросает проверку стата или способность (с ценой), отмечает
-отметки, у заметки открывает текст; `+`/`−` — ±1, `V` — ввести значение (`23`, `+5`, `-7`), `I` — описание
-целиком. Последний бросок несколько секунд виден поверх листа. Персонажи: `OK` выбрать, `A` новый (имя,
-затем шаблон), `N` имя, `S` отправить лист контакту, `O` пришедший лист, `DEL` дважды — удалить. На T-Deck
-всё доступно и касанием: касание блока выбирает его, повторное — бросает.
+**M9.** Tabs on top: `M` (or `1`–`3`) changes the mode, `P` opens the characters.
+RPG: `OK` rolls the pool, `<` `>` the die, `^` `v` the number of dice, `+`/`−` the modifier, `R` reset, `E` any
+formula, `S` the saved rolls (`OK` roll, `A` add, `F` formula, `N` name, `C` colour, `DEL` twice — delete), `X`
+clears the history. Warhammer: the arrows choose the number of dice, `OK` rolls, `A` five more dice, `R` reset,
+`D` the die, `T` and `+`/`−` the threshold. Sheet: the arrows choose a block (up/down — the nearest in the next
+row), `OK` rolls a stat's check or an ability (with its cost), marks the marks, opens a note's text; `+`/`−`
+±1, `V` types a value (`23`, `+5`, `-7`), `I` the whole description. The last roll stays over the sheet for a
+few seconds. Characters: `OK` choose, `A` new (a name, then a template), `N` name, `S` send the sheet to a
+contact, `O` the sheet a contact sent, `DEL` twice — delete.
 
-**Конструктор на M9 и T-Deck** (с 0.26.0). На листе `E` открывает выбранный блок, `A` добавляет новый блок
-после него. Поля блока — строки: `^` `v` выбирают поле, `<` `>` сразу меняют тип, ширину, цвет, фигуру,
-правило и место блока в листе, `OK` открывает ввод названия, кода, значения, максимума, формулы, траты и
-описания (формулы и коды — латиница как есть, название и описание — раскладка RU/EN), `DEL` дважды удаляет
-блок, `BACK` возвращает к листу. Новый блок, который ещё не трогали, при смене типа получает настройки
-нового типа. Устройство проверяет поля так же, как для страницы; формула со ссылкой на несуществующий код
-отмечается строкой «Формула не считается». На T-Deck строки выбираются касанием, повторное касание — `OK`.
+**The builder on the M9** (since 0.26.0). On the sheet `E` opens the chosen block, `A` adds a block
+after it. The block's fields are rows: `^` `v` choose a field, `<` `>` change the kind, width, colour, shape,
+rule and the block's place in the sheet at once, `OK` types the name, code, value, maximum, formula, cost and
+description (formulas and codes in Latin as they are, names and descriptions as typed), `DEL` twice
+deletes the block, `BACK` returns to the sheet. A new block not touched yet takes the defaults of the new kind
+when its kind changes. The device checks the fields as for the web page; a formula referring to a missing code
+shows "The formula does not compute".
 
-**Однокнопочные платы, GAT562, T114.** Клик по закрытому экрану костей переходит к следующему экрану,
-удержание открывает кости. В RPG и Warhammer короткое нажатие повторяет бросок, удержание открывает меню.
-На листе клик листает блоки (OLED показывает выбранный блок крупно, T114 — сетку блоков, как M9), в меню —
-действие блока («Бросить: Ловкость», «Отметить», «Применить»), «Считать кнопкой» или ±1 на джойстике, ±5,
-предыдущий и следующий блок, «Добавить счётчик», персонаж, режим; пришедший лист — «Принять лист» и
-«Отклонить лист». Джойстик вверх/вниз меняет число костей, выбранные кости сетки или значение блока.
-Блоки и шаблоны удобнее создавать на веб-странице или в приложении.
+**Heltec V4 (one button).** A click on the closed dice page moves to the next page, a hold opens the
+dice. In RPG and Warhammer a short press repeats the roll, a hold opens the menu. On the sheet a click goes
+through the blocks (the OLED shows the chosen block large); the
+menu has the block's action ("Roll: Dexterity", "Mark", "Use"), "Count with button", ±5,
+the previous and next block, "Add counter", the character, the mode; a sheet sent by a contact adds "Accept
+sheet" and "Decline the sheet". Blocks and templates are easier to make on the web page or in the app.
 
-**Счёт кнопкой** (однокнопочные платы и T114). Пункт открывает счёт значения выбранного блока (шкала,
-стат без формулы, отметки): клик — +1, удержание (0,8 с) — −1, удержание до 5 с — выход (−1 этого
-удержания отменяется). Пока режим открыт, нажатие при погашенном экране сразу считается.
+**Count with button** (Heltec V4). The item counts the chosen block's value (a track, a stat
+without a formula, marks): click +1, hold (0.8 s) −1, holding on to 5 s leaves (that hold's −1 is taken back).
+While counting, a press with the screen off counts at once.
 
-**Веб-страница и приложение.** Раздел «Кости»: вкладки режимов, выбор персонажа («+ Новый персонаж…» —
-имя и шаблон), пул, формула, сохранённые броски, сетка Warhammer. Вкладка «Лист»: последний бросок, блоки
-сеткой (касание стата или способности — бросок, кнопки ±, касание числа шкалы — ввод, кружки отметок),
-«Конструктор» (у каждого блока ↑ ↓ ✎ ✕, форма блока: тип, название, код, ширина, цвет, фигура, правило,
-значение или формула, максимум, бросок, цена, описание; «Добавить блок»; «Шаблон»), «Отправить» (контакты)
-и «Текст» (строка листа и добавление персонажа из строки). Пришедший лист показывается сверху с кнопками
-«Принять» и «Отклонить». Страница опрашивает устройство каждые 2 с (в приложении — 3 с) и запрашивает лист,
-только когда изменился его номер (`sheet.rev`).
+**Web page and app.** The "Dice" section: mode tabs, the character ("+ New character…" — a name and a
+template), the pool, a formula, saved rolls, the Warhammer grid. The "Sheet" tab: the last roll, the blocks as
+a grid (a tap on a stat or an ability rolls, ± buttons, a tap on a track's number types it, the circles of
+marks), "Builder" (↑ ↓ ✎ ✕ on each block; the block form: kind, name, code, width, colour, shape, rule, value
+or formula, maximum, roll, cost, description; "Add a block"; "Template"), "Send" (contacts) and "Text" (the
+sheet's line and adding a character from a line). A sheet sent by a contact shows on top with "Accept" and
+"Decline". The page asks the device every 2 s (3 s in the app) and fetches the sheet only when its number
+(`sheet.rev`) changes.
 
-## Команда `dice`
+## The `dice` command
 
-USB, Bluetooth и `/api/command`; `GET /api/dice` — то же, что `dice`.
+USB, Bluetooth and `/api/command`; `GET /api/dice` is the same as `dice`.
 
-| Команда | Действие |
+| Command | Action |
 |---|---|
-| `dice` | состояние (JSON): режим, персонажи, пул, броски, сохранённые броски, результаты, сетка, `sheet.rev`, `offer`, `send` |
-| `dice roll [ФОРМУЛА]` | бросок формулы или пула |
-| `dice pool N TYPE [MOD]` | пул: `dice pool 3 d8 -2` |
-| `dice mode rpg\|grid\|sheet`, `dice clear` | режим (`counters` — то же, что `sheet`); очистить историю |
-| `dice saved add ФОРМУЛА ИМЯ`, `edit I ФОРМУЛА ИМЯ`, `del I`, `color I C`, `roll I` | сохранённые броски (способности с формулой) |
-| `dice grid choose N\|roll\|row\|reset\|type T\|threshold off\|N` | сетка Warhammer |
-| `dice sheet` | лист текущего персонажа (JSON: блоки с вычисленными значениями, `b` — модификатор или куб, `roll` — бросок с подставленными кодами, `bad` — формула не считается) |
-| `dice sheet act I`, `dice sheet I +N\|-N\|set N` | бросок, применение, отметка; изменить значение |
-| `dice sheet add KIND [AT]`, `set I ПОЛЕ ЗНАЧЕНИЕ`, `move I TO`, `del I` | конструктор: `stat track pips ability note header`; поля `name code width shape color rule kind value max formula use spend note` (`\n` в описании — перевод строки) |
-| `dice sheet template empty\|dnd\|ret` | заменить лист шаблоном |
-| `dice sheet export`, `import ТЕКСТ`, `put K/N ЧАСТЬ` | лист строкой; новый персонаж из строки (целиком или по частям) |
-| `dice sheet send NODE_ID`, `offer accept\|decline` | отправить лист контакту; принять или отклонить пришедший |
-| `dice char add ИМЯ`, `new empty\|dnd\|ret ИМЯ`, `use I`, `name ИМЯ`, `del` | персонажи (`name` и `del` — текущий) |
+| `dice` | the state (JSON): mode, characters, pool, rolls, saved rolls, results, grid, `sheet.rev`, `offer`, `send` |
+| `dice roll [FORMULA]` | roll a formula or the pool |
+| `dice pool N TYPE [MOD]` | the pool: `dice pool 3 d8 -2` |
+| `dice mode rpg\|grid\|sheet`, `dice clear` | the mode (`counters` is `sheet`); clear the history |
+| `dice saved add FORMULA NAME`, `edit I FORMULA NAME`, `del I`, `color I C`, `roll I` | saved rolls (abilities with a formula) |
+| `dice grid choose N\|roll\|row\|reset\|type T\|threshold off\|N` | the Warhammer grid |
+| `dice sheet` | the current character's sheet (JSON: blocks with computed values, `b` the modifier or die, `roll` the roll with the codes put in, `bad` a formula that does not compute) |
+| `dice sheet act I`, `dice sheet I +N\|-N\|set N` | roll, use, mark; change a value |
+| `dice sheet add KIND [AT]`, `set I FIELD VALUE`, `move I TO`, `del I` | the builder: `stat track pips ability note header`; fields `name code width shape color rule kind value max formula use spend note` (`\n` in a note is a line break) |
+| `dice sheet template empty\|dnd\|ret` | replace the sheet with a template |
+| `dice sheet export`, `import TEXT`, `put K/N PIECE` | the sheet as a line; a new character from a line (whole or in pieces) |
+| `dice sheet send NODE_ID`, `offer accept\|decline` | send the sheet to a contact; accept or decline the one that came |
+| `dice char add NAME`, `new empty\|dnd\|ret NAME`, `use I`, `name NAME`, `del` | characters (`name` and `del` act on the current one) |
 
-Действия отвечают `OK … {JSON}`, ошибки — `ERR …`. В JSON каждая часть броска — одно число:
-`значение×4+вид` (0 — кость, 1 — число, 2 — d66, 3 — d%), отрицательное — вычитается; у бросков Р.Э.Т.
-есть `successes`, `fail` и `dice` (фигура каждой кости).
+Actions answer `OK … {JSON}`, errors `ERR …`. In the JSON each part of a roll is one number: `value×4+kind`
+(0 a die, 1 a number, 2 d66, 3 d%), negative when subtracted; R.E.T. rolls carry `successes`, `fail` and
+`dice` (the shape of each die).
 
-## Память и размер
+## Memory and size
 
-Лист — до 64 блоков по 102 байта и 2048 байт описаний; в памяти — только текущий (около 8,6 КБ в куче).
-На nRF52 кости — отключаемый модуль (`--without dice`). Чтобы лист поместился в китайский образ T114
-(1 МБ flash), библиотеки и ядро nRF52 собираются с `-Os` (наш код — с `-O2`, кроме файлов с прагмой `-Os`),
-см. `platformio.ini`.
+A sheet is up to 64 blocks of 102 bytes and 2048 bytes of descriptions; only the current one is in memory
+(about 8.6 KB on the heap).
 
-## Проверено и не проверено
+## Checked and not checked
 
-Проверено на компьютере (`tools/ui_preview`, `dice checks passed`): правила формул, кубы Р.Э.Т. (успехи
-цепочкой, провал, штрафные уровни, d100), модификаторы D&D с округлением вниз, производные значения,
-циклы ссылок, цена способности, шаблоны, строка листа туда и обратно (с экранированием), загрузка
-частями, отправка частями с ACK и сборка у получателя, перенос `dice.bin` 0.24, размер ответов; экраны M9,
-T-Deck (с касаниями), Heltec, GAT562 и T114. Веб-раздел — в браузере с макетом API, который выполняет тот же
-`Dice.cpp` (бросок, конструктор, цена, отправка и приём). Перенос старых счётчиков подтверждён на M9.
-Результаты на устройствах — в [verification.md](verification.md).
+Checked on a computer (`tools/ui_preview`, `dice checks passed`): formula rules, R.E.T. dice (chained
+successes, failure, penalty levels, d100), D&D modifiers rounded down, derived values, reference loops, an
+ability's cost, templates, the sheet line both ways (with escapes), upload in pieces, sending in acknowledged
+parts and gathering them at the receiver, the conversion of a 0.24 `dice.bin`, reply sizes; the M9, T-Deck
+(with touch), Heltec, GAT562 and T114 screens. The web section — in a browser against a mock API that runs the
+same `Dice.cpp` (rolls, the builder, a cost, sending and receiving). The conversion of old counters was
+confirmed on the M9. Results on the devices are in [verification.md](verification.md).

@@ -1,87 +1,87 @@
-# Сравнение с MeshCore и WadaMesh
+# Comparison with MeshCore and WadaMesh
 
-Состояние MeshMesh 0.3.2 по исходникам на 30 сентября 2026 года. Источники:
-`upstream/meshcore-stock` (companion, repeater, room server, secure chat) и
-`upstream/wadamesh` (прошивка с ядром MeshCore и LVGL-интерфейсом для M9).
-«Есть» означает реализацию в коде. Аппаратно подтверждённое перечислено в
+State of MeshMesh 0.3.2 from the sources as of 30 September 2026. Sources:
+MeshCore `companion-v1.17.1` (companion, repeater, room server, secure chat) and
+WadaMesh (firmware with the MeshCore core and an LVGL interface for the M9).
+“Yes” means implemented in code. What is confirmed on hardware is listed in
 [verification.md](verification.md).
 
-## Протокол MeshCore
+## MeshCore protocol
 
-| Функция | MeshMesh | Где |
+| Feature | MeshMesh | Where |
 | --- | --- | --- |
-| Ключ Ed25519, подписанные adverts, приём чужих adverts | Есть | `src/MeshRadio.cpp` |
-| Позиция GPS в advert и кнопка ADV; как у штатного компаньона, без периодических adverts: сам узел объявляется только при новом ключе или новом имени после загрузки | Есть | `MeshCoreBackend::advertise` |
-| Личные сообщения TXT_MSG, ACK, 3 попытки, direct/flood по известному пути | Есть | `startMessage`, `processAck` |
-| Канал Public (GRP_TXT) | Есть | `onChannelMessageRecv` |
-| Ретрансляция с нашим пределом пересылок, подавление повторов | Есть | `allowPacketForward` |
-| Контакты: автодобавление, тип узла, путь, сохранение в NVS | Есть, до 24 | `saveContacts` |
-| Сброс пути и удаление контакта | Есть с 0.3.1 (карточка узла) | `MeshRadio::resetPath/removeContact` |
-| Хештег- и приватные каналы (`#name`, свой ключ) | Нет: `MAX_GROUP_CHANNELS=1` | — |
-| Режимы сервера: репитер и комната, как штатные `simple_repeater` / `simple_room_server` (вход, статус, телеметрия, соседи, ACL, CLI, посты, регионы) | Есть с 0.3.3: отдельные режимы, выбор при загрузке ([repeater.md](repeater.md)) | `src/MeshServer.cpp` |
-| Вход в чужую комнату/ретранслятор из обычного режима (ANON_REQ), посты комнат (SIGNED_PLAIN) | Есть с 0.13.0: экран, веб-страница, USB `remote` ([repeater.md](repeater.md)) | `src/Remote.inc`, `src/UiRemote.inc` |
-| Команды чужому ретранслятору из обычного режима (CLI, TXT_TYPE_CLI_DATA) | Есть с 0.13.0 (M9, T-Deck, веб; без однокнопочных плат) | `src/Remote.inc` |
-| Запросы статуса, телеметрии (CayenneLPP), соседей; ответы на чужие запросы | Нет; `onContactRequest` отвечает 0 | — |
-| Trace path, path discovery, discover neighbours (CONTROL) | Трассировка с экрана и веб-страницы с 0.13.0; поиск пути — в приложении MeshCore; поиск соседей — нет | `src/Remote.inc` |
-| Поделиться контактом (zero-hop), экспорт/импорт, `meshcore://` | Нет | — |
-| Избранные контакты, ручное добавление, настройка автодобавления | Нет | — |
-| Регионы (flood scope): по умолчанию, у канала, поиск у репитеров, команды приложения ([regions.md](regions.md)) | Есть с 0.15.0 | `src/Regions.cpp`, `src/RegionSearch.inc` |
-| Размер хеша пути | Есть с 0.11.0 | `src/MeshRadio.cpp` |
-| Multi-ACK, GRP_DATA, raw | Нет | — |
-| Companion API (официальное приложение по BLE/USB/TCP) | Да по BLE и USB, с 0.10.0 — вход на репитеры и в комнаты, CLI, статус, телеметрия, трассировка и поиск пути; без TCP ([companion.md](companion.md)) | `src/Companion.inc`, `src/Portal.cpp` |
+| Ed25519 key, signed adverts, receiving other nodes' adverts | Yes | `src/mesh/MeshRadio.cpp` |
+| GPS position in the advert and the ADV button; as in the stock companion, no periodic adverts: the node advertises itself only with a new key or a new name after boot | Yes | `MeshCoreBackend::advertise` |
+| Direct messages TXT_MSG, ACK, 3 attempts, direct/flood along the known path | Yes | `startMessage`, `processAck` |
+| Public channel (GRP_TXT) | Yes | `onChannelMessageRecv` |
+| Relaying with our relay limit, duplicate suppression | Yes | `allowPacketForward` |
+| Contacts: auto-add, node type, path, saving in NVS | Yes, up to 24 | `saveContacts` |
+| Path reset and contact deletion | Yes since 0.3.1 (node card) | `MeshRadio::resetPath/removeContact` |
+| Hashtag and private channels (`#name`, own key) | No: `MAX_GROUP_CHANNELS=1` | — |
+| Server modes: repeater and room server, like the stock `simple_repeater` / `simple_room_server` (login, status, telemetry, neighbours, ACL, CLI, posts, regions) | Yes since 0.3.3: separate modes, chosen at boot ([repeater.md](repeater.md)) | `src/mesh/MeshServer.cpp` |
+| Login to another node's room server/repeater from normal mode (ANON_REQ), room posts (SIGNED_PLAIN) | Yes since 0.13.0: screen, web page, USB `remote` ([repeater.md](repeater.md)) | `src/mesh/Remote.inc`, `src/ui/UiRemote.inc` |
+| Commands to another node's repeater from normal mode (CLI, TXT_TYPE_CLI_DATA) | Yes since 0.13.0 (M9, web; not the Heltec V4) | `src/mesh/Remote.inc` |
+| Status, telemetry (CayenneLPP) and neighbour requests; replies to other nodes' requests | No; `onContactRequest` returns 0 | — |
+| Trace path, path discovery, discover neighbours (CONTROL) | Trace from the screen and web page since 0.13.0; path discovery in the MeshCore app; neighbour discovery: no | `src/mesh/Remote.inc` |
+| Share contact (zero-hop), export/import, `meshcore://` | No | — |
+| Favourite contacts, manual add, auto-add settings | No | — |
+| Regions (flood scope): default, per channel, search among repeaters, the app's commands ([regions.md](regions.md)) | Yes since 0.15.0 | `src/mesh/Regions.cpp`, `src/mesh/RegionSearch.inc` |
+| Path hash size | Yes since 0.11.0 | `src/mesh/MeshRadio.cpp` |
+| Multi-ACK, GRP_DATA, raw | No | — |
+| Companion API (the official app over BLE/USB/TCP) | Yes over BLE and USB; since 0.10.0 repeater and room logins, CLI, status, telemetry, trace and path discovery; no TCP ([companion.md](companion.md)) | `src/mesh/Companion.inc`, `src/net/Portal.cpp` |
 
-Следствия для обмена со сторонними узлами: в обычном режиме MeshMesh видит
-ретрансляторы, комнаты и датчики как контакты, но не может войти в комнату, читать
-её посты, запрашивать телеметрию или отвечать на такие запросы. В режиме репитера
-или комнаты официальное приложение MeshCore входит в MeshMesh по паролю и управляет
-им через CLI; в обычном режиме приложение может только переписываться с ним по радио.
+Consequences for exchange with third-party nodes: in normal mode MeshMesh sees
+repeaters, room servers and sensors as contacts, but cannot log in to a room server, read
+its posts, request telemetry or answer such requests. In repeater
+or room server mode, the official MeshCore app logs in to MeshMesh with a password and controls
+it through the CLI; in normal mode the app can only exchange messages with it over the radio.
 
-## Интерфейс WadaMesh на M9
+## WadaMesh interface on the M9
 
-После переработки 0.3.1 у MeshMesh есть: строка состояния с непрочитанными,
-GPS, Wi-Fi/BLE, уровнем сигнала по SNR последнего пакета, часами и батареей;
-аватары с инициалами и значки непрочитанного; отметки ✓ / ✓✓ / ошибка у
-личных сообщений; счётчик байтов; карточка узла (написать, на карте, сброс пути,
-удаление); расстояние и направление до узла при свежем GPS; карта с узлами,
-направлением компаса и масштабной линейкой; экран блокировки с часами, датой и
-сводкой непрочитанного; справка по клавишам; RU/EN-ввод; с 0.3.2 — радар
-сигналов Wi-Fi/LoRa с пеленгом по RSSI (в WadaMesh нет); с 0.16.0 — путь пакета в веб-интерфейсе
-и приложении: нажатие на время под сообщением показывает репитеры, через которые оно пришло (по хешам
-пути, с именами и координатами из контактов), SNR/RSSI, время отправителя и приёма, число услышанных
-копий, а у своих сообщений — репитеры, повторившие их, с SNR. Устройство хранит это для 64 сообщений
-истории и сохраняет после перезапуска; пакет по известному маршруту (direct) приходит без списка
-репитеров, у него видно только число хопов.
+After the 0.3.1 rework MeshMesh has: a status bar with unread messages,
+GPS, Wi-Fi/BLE, signal level from the SNR of the last packet, clock and battery;
+avatars with initials and unread badges; ✓ / ✓✓ / error marks on
+direct messages; a byte counter; a node card (write, on the map, path reset,
+delete); distance and bearing to the node with a fresh GPS fix; a map with nodes,
+compass heading and a scale bar; a lock screen with clock, date and
+an unread summary; key help; since 0.3.2 — a Wi-Fi/LoRa signal
+radar with RSSI-based bearing (WadaMesh has none); since 0.16.0 — the packet path in the web interface
+and the app: tapping the time under a message shows the repeaters it came through (by the path hashes,
+named and placed from the contacts), SNR/RSSI, the sender's and reception time, the number of copies
+heard, and for your own messages the repeaters that repeated them, with SNR. The device keeps this for
+the 64 messages of the history and across restarts; a packet on a known (direct) route arrives without
+the list of repeaters, only its hop count is known.
 
-Нет по сравнению с WadaMesh:
+Missing compared with WadaMesh:
 
-- Сообщения: меню сообщения (повтор отправки, копирование, удаление; путь пакета
-  есть только в веб-интерфейсе и приложении), @-упоминания, быстрые ответы, эмодзи, ссылки/QR.
-- Контакты: поиск, сортировка и фильтры, избранное, блокировка, список
-  обнаруженных отдельно от контактов, групповое удаление.
-- Каналы: создание/вход в хештег- и приватные каналы, отключение звука, поделиться QR.
-- Комнаты и ретрансляторы: вход, консоль администратора, телеметрия с графиками,
-  trace SNR, проверка дальности.
-- Радио: 21 региональный пресет, airtime factor, индикатор duty cycle, анализатор
-  спектра, страница сигнала и трафика.
-- Устройство: мастер первого запуска, дневная/контрастная тема, размер интерфейса,
-  подсветка клавиатуры, «не беспокоить», центр управления, график батареи и сон,
-  OTA, резервное копирование настроек, 14 языков (у нас RU/EN).
-- Прочее: Lua-приложения и магазин, терминал, файловый менеджер, веб-браузер,
-  удалённое управление/VNC, MQTT, консольный режим, онлайн- и топографические карты.
+- Messages: message menu (resend, copy, delete; the packet path is only in
+  the web interface and the app), @-mentions, quick replies, emoji, links/QR.
+- Contacts: search, sorting and filters, favourites, blocking, a list of
+  discovered nodes separate from contacts, bulk deletion.
+- Channels: creating/joining hashtag and private channels, mute, share via QR.
+- Room servers and repeaters: login, admin console, telemetry with charts,
+  trace SNR, range test.
+- Radio: 21 regional presets, airtime factor, duty cycle indicator, spectrum
+  analyser, signal and traffic page.
+- Device: first-run wizard, day/high-contrast theme, interface size,
+  keyboard backlight, “do not disturb”, control centre, battery graph and sleep,
+  OTA, settings backup, 14 languages (we have English).
+- Other: Lua apps and a store, terminal, file manager, web browser,
+  remote control/VNC, MQTT, console mode, online and topographic maps.
 
-## Что добавлять в первую очередь
+## What to add first
 
-1. Хештег- и приватные каналы: самая частая функция сетей MeshCore; нужен
-   идентификатор канала в истории, веб-интерфейсе и хранилище.
-2. Комнаты: вход по паролю и приём SIGNED_PLAIN; затем статус и телеметрия
-   ретрансляторов и ответы на запросы телеметрии.
-3. Действия с сообщением: повтор неподтверждённого, удаление (путь пакета — с 0.16.0 в вебе и приложении).
-4. Контакты: избранное, ручное добавление по ключу, передача контакта,
-   увеличение лимита 24 за счёт PSRAM.
-5. Trace path и проверка связи с выбранным узлом.
-6. Региональные пресеты радио после сверки значений с официальным списком.
-7. Ответы на запросы телеметрии и поиск соседей (CONTROL).
+1. Hashtag and private channels: the most common feature of MeshCore networks; needs
+   a channel identifier in the history, web interface and storage.
+2. Room servers: password login and receiving SIGNED_PLAIN; then status and telemetry
+   of repeaters and replies to telemetry requests.
+3. Message actions: resend an unconfirmed message, delete (the packet path is in the web and app since 0.16.0).
+4. Contacts: favourites, manual add by key, contact sharing,
+   raising the 24 limit using PSRAM.
+5. Trace path and a link check with a selected node.
+6. Regional radio presets after checking the values against the official list.
+7. Answers to telemetry requests and neighbour discovery (CONTROL).
 
-Каждый сетевой пункт проверяется со сторонним узлом MeshCore: объявления в обе
-стороны, адреса, ключи, сообщения и подтверждения. Приём пакета не доказывает
-работоспособность обмена.
+Each network item is tested with a third-party MeshCore node: adverts in both
+directions, addresses, keys, messages and delivery receipts. Receiving a packet does not prove
+that the exchange works.

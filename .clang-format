@@ -1,6 +1,6 @@
-# Close to the existing style of src/ and include/: 2-space indent, " public:", "Type* name", "if(".
-# Not applied to the tree yet. Use it for new or touched code (clang-format -i FILE, or format-on-save),
-# and reformat existing files one at a time in formatting-only commits, so git blame and upstream merges stay usable.
+# Close to the existing style of src/: 2-space indent, " public:", "Type* name", "if(".
+# Applied to src/, tests/ and lib/MeshProtocol (lib/MeshCore and lib/CayenneLPP are vendored and left as is).
+# Keep it applied: clang-format -i FILE, or format-on-save.
 # ColumnLimit 0 keeps the line breaks that are already there; clang-format still adds spaces around operators.
 BasedOnStyle: LLVM
 Language: Cpp
@@ -22,3 +22,5 @@ IndentPPDirectives: None
 SortIncludes: Never
 ReflowComments: false
 FixNamespaceComments: false
+AlignTrailingComments:
+  Kind: Leave

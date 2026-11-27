@@ -1,133 +1,126 @@
-# Питомец сети
+# Mesh pet
 
-Пиксельный зверёк вроде тамагочи, который живёт на устройстве и питается эфиром. Заводить его не
-обязательно: на новой прошивке питомца нет, пока владелец не нажмёт «Завести питомца» (на экране, на
-веб-странице или в приложении, USB `pet adopt`), и его можно отпустить («Отпустить…», `pet release`):
-он уходит без надгробия, память о прежних питомцах остаётся. Питомец, заведённый раньше, сохраняется.
-Живёт он в прошивке устройства; веб-страница и приложение показывают его и управляют им. Есть на всех платах:
-на M9 и T-Deck это плитка «Питомец», на однокнопочных платах и GAT562 — отдельный экран после «Шахмат».
-Heltec V4/V3, Wireless Tracker, T-Beam и другие платы с OLED 128×64 рисуют его контуром, как на
-ЖК-экране брелока, а T114 — в цвете в родном разрешении 240×135. Питомец живёт и в режимах репитера
-и комнаты: там его кормит пересылаемый трафик.
+A Tamagotchi-like pixel creature that lives on the device and feeds on the radio. It is optional: new
+firmware has no pet until the owner presses "Start a pet" (on the screen, the web page or in the app, USB
+`pet adopt`), and the owner can let it go ("Let it go...", `pet release`): it leaves without a grave, the
+memory of earlier pets stays. A pet started before is kept. It lives in the device's firmware; the web
+page and the app show it and control it. It is on both boards:
+the "Pet" tile on the M9, its own screen after "Chess" on the Heltec V4, whose 128×64 OLED draws it in
+outline, like the LCD of a keychain pet. The pet also lives in the
+repeater and room server modes, where the relayed traffic feeds it.
 
-## Виды
+## Species
 
-Пятнадцать видов, у каждого свой рисунок, детский облик (малыш, детёныш) и взрослый (подросток, взрослый) и
-свои цвета тела и акцента: Pinglet (с антенной), Bytecat (кот), Lorafox (лис с хвостом), Hootnode (сова),
-Sparkdrake (дракончик), Bunbit (кролик), Octomesh (осьминог), Boo (призрак), Robo (робот), Ribbit (лягушка),
-Pengu (пингвин), Shroom (гриб), Jelly (слизень), Buzz (пчела), Axolotl (аксолотль). Вид и имя нового яйца
-выбираются случайно (аппаратный генератор), пятна на яйце — цвета будущего вида. Акцент в верхних рядах
-(шарик антенны, уши кролика) вспыхивает при приёме пакета. На OLED вид узнаётся по контуру.
+Fifteen species, each with its own drawing, a young look (baby, kid) and a grown one (teen, adult) and its own
+body and accent colours: Pinglet (with an antenna), Bytecat, Lorafox (a fox with a tail), Hootnode (an owl),
+Sparkdrake (a little dragon), Bunbit (a bunny), Octomesh (an octopus), Boo (a ghost), Robo, Ribbit (a frog),
+Pengu, Shroom (a mushroom), Jelly (a slime), Buzz (a bee), Axolotl. A new egg gets a random species and name
+(hardware generator); the spots on the egg have the colour of the species inside. The accent in the top rows
+(the antenna ball, the bunny's ears) lights up when a packet arrives. On the OLED the outline tells the species.
 
-![Все виды на M9 и T114](pet-species.png)
+![Every species](pet-species.png)
 
-Рисунки — в `tools/pet_sprites.py` (16×16, по два бита на точку, около 2 КБ на все виды); он создаёт
-`include/PetSprites.h`, а с `--sheet OUT.png` рисует все виды. Палитра T114 берёт цвета оттуда же.
+The drawings are in `tools/gen/pet_sprites.py` (16×16, two bits a pixel, about 2 KB for all species); it writes
+`src/games/pet/PetSprites.h`, and with `--sheet OUT.png` draws every species.
 
-Код: `src/Pet.cpp`, `include/Pet.h` (жизнь, еда, сохранение), `src/UiPet.inc` (экран
-320×240), `src/UiPetCompact.inc` (OLED 128×64), страница в `src/UiHires.inc` (T114). Состояние хранится в
-файле `/meshmesh/pet.bin` в LittleFS (около 450 байт, с контрольной суммой), а не в NVS.
+Code: `src/games/pet/Pet.cpp`, `src/games/pet/Pet.h` (life, food, saving), `src/games/pet/UiPet.inc` (320×240
+screen), `src/games/pet/UiPetCompact.inc` (128×64 OLED). The state is the
+file `/meshmesh/pet.bin` in LittleFS (about 450 bytes with a checksum), not NVS.
 
-## Чем он питается
+## What it eats
 
-| Событие | Что даёт |
+| Event | Gives |
 |---|---|
-| Принятый пакет LoRa | сытость +0,2 %, опыт +1; антенна на голове вспыхивает |
-| Пакет, пересланный для других | сытость +0,2 %, радость +0,2 %, опыт +1 |
-| Каждые 25 пакетов (принятых или пересланных) | вкусняшка (не больше 9) |
-| Входящее сообщение (личное или в канале) | сытость +1,5 %, радость +4 %, опыт +5 |
-| Доставленное сообщение (ACK) | вкусняшка, радость +4 %, опыт +10 |
-| Новый узел, впервые услышанный за его жизнь | радость +15 %, опыт +30 («Новый друг: …») |
-| Победа в шахматах (по рейтинговой книге) | радость +20 %, опыт +50 |
-| Прогулка: IMU M9 чувствует, что устройство несут | радость +6 %, опыт +3 |
-| Погладить (не чаще раза в 20 с) | радость +10 %, опыт +1 |
-| Покормить вкусняшкой | сытость +30 % |
-| Лечить (вкусняшка, не чаще раза в 5 мин, при здоровье ниже 80 %) | здоровье +30 % |
-| Каждые 6 часов работы | крошка из эфира: вкусняшка |
+| A received LoRa packet | food +0.2 %, experience +1; the antenna on its head lights up |
+| A packet relayed for others | food +0.2 %, joy +0.2 %, experience +1 |
+| Every 25 packets (received or relayed) | a snack (9 at most) |
+| An incoming message (direct or channel) | food +1.5 %, joy +4 %, experience +5 |
+| A delivered message (ACK) | a snack, joy +4 %, experience +10 |
+| A node heard for the first time in its life | joy +15 %, experience +30 ("New friend: …") |
+| A chess win (by the rating book) | joy +20 %, experience +50 |
+| A walk: the M9's IMU feels the device carried | joy +6 %, experience +3 |
+| Petting (at most every 20 s) | joy +10 %, experience +1 |
+| Feeding a snack | food +30 % |
+| Healing (a snack, at most every 5 min, health below 80 %) | health +30 % |
+| Every 6 hours of running | a crumb from the air: a snack |
 
-Время идёт, только пока устройство включено: выключенный питомец спит и не голодает. Сытость падает
-на 4 % в час, радость на 3 % в час (в режимах сервера на 1,2 % в час: с ним некому играть). Ночью по
-местным часам (23:00–7:00, если часы установлены) он спит, сытость падает на 1,5 % в час, а радость
-не падает.
+Time runs only while the device is on: a switched-off pet sleeps and does not get hungry. Food drops
+4 % an hour, joy 3 % an hour (1.2 % an hour in the server modes, where nobody plays with it). At night
+by the local clock (23:00–7:00, when the clock is set) it sleeps: food drops 1.5 % an hour and joy not at all.
 
-## Рост
+## Growing up
 
-Яйцо вылупляется через 15 минут работы. Дальше стадия идёт по уровню, но не быстрее возраста:
+The egg hatches after 15 minutes of running. Then the stage follows the level, but no faster than the age:
 
-| Стадия | Уровень | Возраст не меньше |
+| Stage | Level | Age at least |
 |---|---|---|
-| Малыш | 1–2 | — |
-| Детёныш | 3–5 | 2 ч |
-| Подросток | 6–9 | 1 сутки |
-| Взрослый | 10+ | 3 суток |
+| Baby | 1–2 | — |
+| Kid | 3–5 | 2 h |
+| Teen | 6–9 | 1 day |
+| Adult | 10+ | 3 days |
 
-Уровень n начинается с опыта 25·n·(n−1): 2-й с 50, 3-й со 150, 10-й с 2250. Имя можно сменить.
+Level n starts at 25·n·(n−1) experience: level 2 at 50, level 3 at 150, level 10 at 2250. The name can be changed.
 
-## Смерть
+## Death
 
-Здоровье растёт на 2,5 % в час, пока сытость и радость выше 30 %. Если сытость или радость упали до
-нуля, здоровье теряет по 1,5 % в час за каждую из них. Тишина в эфире без всякого ухода убивает
-его примерно за 2,5 суток включённой работы (сутки до пустой миски, потом голод и скука вместе), а
-один только голод при хорошем настроении — почти за 4 суток.
+Health grows 2.5 % an hour while food and joy are above 30 %. When food or joy is at zero, health loses
+1.5 % an hour for each of them. Silent air with no care at all kills it in about 2.5 days of running
+(a day until the bowl is empty, then hunger and boredom together); hunger alone with good spirits takes
+almost 4 days.
 
-При нулевом здоровье питомец умирает «от голода» (если сытость на нуле) или «от одиночества». На его
-месте остаётся надгробие с именем, возрастом и причиной; три последних питомца хранятся в памяти.
-OK (удержание на OLED) начинает новое яйцо следующего поколения.
+At zero health the pet dies "of hunger" (food at zero) or "of loneliness". A grave with its name, age and
+cause stays in its place; the last three pets are remembered. OK (hold on the OLED) starts a new egg of
+the next generation.
 
-Смерть можно выключить: «Смерть: выкл.» (клавиша D на M9, пункт меню на OLED, `pet mortal off`).
-Тогда здоровье не опускается ниже 1 %: питомец болеет, грустит, но не умирает.
+Death can be switched off: "Death: off" (key D on the M9, a menu item on the OLED, `pet mortal off`).
+Health then stays at 1 % or more: the pet is ill and sad, but does not die.
 
-В режимах репитера и комнаты хозяина рядом нет, поэтому голодный питомец сам съедает вкусняшку.
+In the repeater and room modes there is no owner nearby, so a hungry pet eats a snack itself.
 
-## Экран
+## Screens
 
-**M9 и T-Deck.** Плитка «Питомец» на главном экране (жёлтая, если ему нужен уход); в режимах репитера
-и комнаты экран открывает клавиша P. Слева зверёк на карточке с «облачком» реплик, справа имя,
-стадия, уровень, опыт и полосы «Сытость», «Радость», «Здоровье». Клавиши: OK — погладить (касание
-карточки на T-Deck; без питомца — завести), F — покормить, H — лечить, N — имя, D — смерть вкл/выкл,
-R дважды — отпустить. На экране блокировки, когда нет
-партии и непрочитанных сообщений, под часами виден маленький питомец.
+**M9.** The "Pet" tile on the home screen (yellow when it needs care); in the repeater and
+room modes the P key opens it. On the left the creature on its card with a speech bubble, on the right
+its name, stage, level, experience and the Food, Joy and Health bars. Keys: OK pets it (without a pet it
+starts one), F feeds it, H heals it, N renames it, D switches death on
+or off, R twice lets it go. The locked
+screen shows a small pet under the clock when no game or unread message takes the place.
 
-**OLED 128×64 (Heltec и другие однокнопочные платы).** Экран после «Шахмат»: зверёк слева, справа
-настроение и три полосы с значками (миска, сердце, крест). Удержание кнопки открывает меню: «Погладить»,
-«Кормить», «Лечить», «Смерть: вкл./выкл.»; у надгробия — «Новое яйцо». На GAT562 то же открывает
-центр джойстика.
+**128×64 OLED (Heltec V4).** The screen after "Chess": the creature on the
+left, its mood and three bars with signs (bowl, heart, cross) on the right. Holding the button opens
+the menu: "Pet", "Feed", "Heal", "Death: on/off"; at a grave, "New egg".
 
-**Веб-страница и приложение для Android.** Плитка «Питомец» на главной и раздел с тем же зверьком в цветах
-его вида (страница рисует рисунок, который присылает прошивка: `/api/pet`, в приложении — команда `pet`
-по USB или BLE), репликой, полосами, опытом, вкусняшками, друзьями и возрастом; кнопки «Погладить»,
-«Покормить», «Лечить», «Имя», «Смерть вкл./выкл.», «Отпустить…» (подтверждается вторым нажатием),
-у надгробия — «Новое яйцо», без питомца — «Завести питомца»; внизу — память. Страница обновляет его раз
-в 1,2 с (в приложении — раз в 2 с).
+**Web page and Android app.** A "Pet" tile on the home page and a section with the same creature in the
+colours of its species (the page draws the picture the firmware sends: `/api/pet`, in the app the `pet`
+command over USB or BLE), its words, bars, experience, snacks, friends and age; buttons "Pet", "Feed",
+"Heal", "Name", "Death on/off", "Let it go..." (confirmed by a second press), "New egg" at a grave and
+"Start a pet" without one; the memory below. The page refreshes it every 1.2 s (2 s in the app).
 
-**T114.** Тот же экран и меню, но в цвете: карточка со зверьком, «облачко» с репликой, полосы с иконками.
-
-Реплики: «Новый друг: …», «Сообщение! Вкусно», «Голодно: эфир пуст», «Напиши кому-нибудь?»; во время
-реплики он шевелит ртом. Настроения: счастлив, спокоен, голоден, скучает, спит, болеет, ест.
+It says things like "New friend: …", "A message, how tasty", "Hungry: the air is empty", "Write to
+someone?", and moves its mouth while talking. Moods: happy, calm, hungry, lonely, asleep, ill, eating.
 
 ## USB
 
 ```
-pet                       состояние в JSON (сытость, радость, здоровье 0–1000, уровень, опыт, счётчики, могилы)
-pet cuddle|feed|heal      погладить, покормить, полечить
-pet adopt                 завести питомца (или новое яйцо после смерти; также pet egg)
-pet release               отпустить питомца (без надгробия)
-pet mortal on|off         смерть вкл/выкл
-pet name ИМЯ              имя, 1–15 байт UTF-8
-pet skip СЕКУНДЫ          прокрутить его время вперёд (до 14 суток) — для проверки роста и смерти
+pet                       the state as JSON (food, joy, health 0–1000, level, experience, counters, graves)
+pet cuddle|feed|heal      pet it, feed it, heal it
+pet adopt                 start a pet (or a new egg after death; also pet egg)
+pet release               let the pet go (no grave)
+pet mortal on|off         death on or off
+pet name NAME             the name, 1–15 UTF-8 bytes
+pet skip SECONDS          run its clock forward (up to 14 days) to check growing up and death
 ```
 
-## Что не сделано
+## Not done yet
 
-- Встречи и обмен между питомцами разных устройств (BLE-«бум», визиты по LoRa, подписанный альбом
-  встреч) и ответы репитера на `!pet` из сети — следующий этап.
-- NFC на платах нет; вместо касания меткой предполагаются BLE и LoRa.
-- В режимах репитера и комнаты «друзья» не считаются: контакты там ведёт сервер MeshCore.
-- Платы без экрана (XIAO, T-Beam без OLED) показывают питомца только на веб-странице, в приложении и по USB.
+- Meetings and exchange between pets of different devices (a BLE "boop", visits over LoRa, a signed
+  album of meetings) and a repeater answering `!pet` from the mesh are the next step.
+- The boards have no NFC; BLE and LoRa are meant to take the place of tapping a tag.
+- In the repeater and room modes "friends" are not counted: the MeshCore server keeps the contacts there.
 
-## Проверка
+## Checks
 
-В эмуляторе экранов (`tools/ui_preview/build.sh m9|heltec|gat562|t114`) сценарий открывает страницу
-питомца, снимает яйцо, счастливого, голодного, больного и надгробие и проверяет: смерть при нулевом
-здоровье, новое яйцо с записью в памяти, вылупление через 15 минут, отсутствие смерти при выключенной
-смерти. Проверки на платах записываются в [verification.md](verification.md).
+In the screen emulator (`tools/ui_preview/build.sh m9|heltec|gat562|t114`) the scenario opens the pet
+page, shoots the egg, a happy, a hungry and an ill pet and the grave, and checks death at zero health,
+a new egg with the old pet remembered, hatching after 15 minutes and no death when death is off.
+Checks on the boards are recorded in [verification.md](verification.md).

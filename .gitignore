@@ -1,6 +1,6 @@
 .venv/
 .pio/
-upstream/
+vendor-cache/
 backups/
 logs/
 artifacts/
@@ -10,5 +10,4 @@ __pycache__/
 .env.*
 
 # Kotlin compiler session cache
-android/.kotlin/
 node_modules/

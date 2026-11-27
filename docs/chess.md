@@ -1,363 +1,354 @@
-# Шахматы с контактами (M9)
+# Chess with contacts (M9)
 
-Партия идёт между двумя узлами MeshCore через личные сообщения: каждая команда —
-обычное зашифрованное текстовое сообщение `TXT_MSG` с подтверждением (ACK) и
-повторами MeshCore. Отдельного типа пакетов нет, поэтому сообщения проходят через
-любые ретрансляторы MeshCore, а штатное приложение MeshCore показывает их читаемым
-текстом. Общий канал (Public) для ходов не используется: его отправитель не
-подтверждён ключом.
+A game is played between two MeshCore nodes through direct messages: every command is
+an ordinary encrypted `TXT_MSG` text message with a delivery receipt (ACK) and
+MeshCore retries. There is no separate packet type, so the messages pass through
+any MeshCore repeaters, and the stock MeshCore app shows them as readable
+text. The public channel (Public) is not used for moves: its sender is not
+authenticated by a key.
 
-Код: `src/Chess.cpp` (правила), `src/ChessNet.cpp` (партии, команды, сохранение),
-`src/UiChess.inc` (экран M9), `src/UiChessCompact.inc` (OLED 128×64), раздел «Шахматы» веб-страницы
-(`web/index.html`). Играют на экране любой платы с экраном или на веб-странице и в приложении;
-USB-команды `chess ...` есть на всех платах.
+Code: `src/games/chess/Chess.cpp` (rules), `src/games/chess/ChessNet.cpp` (games, commands, storage),
+`src/games/chess/UiChess.inc` (M9 screen), `src/games/chess/UiChessCompact.inc` (128×64 OLED), the “Chess” section of the web page
+(`web/index.html`). You play on the screen of any board that has one, or on the web page and in the app;
+the USB commands `chess ...` exist on every board.
 
-## Экран 128×64: одна кнопка и джойстик
+## The 128×64 screen: one button
 
-Heltec, GAT562 и платы сообщества с OLED показывают экран «Шахматы» после «Узлов»: список партий,
-доску 64×64 слева (ваша сторона внизу) и справа соперника, цвет, состояние, последний ход и доставку.
-Вызов — из карточки узла («Шахматы: вызвать» в её меню), согласие — в меню партии.
+The Heltec V4 shows a “Chess” screen after “Nodes”: the list
+of games, a 64×64 board on the left (your side at the bottom) and, on the right, the opponent, your colour,
+the state, the last move and the delivery. A challenge comes from a node card (“Chess: invite” in its menu),
+acceptance from the game menu.
 
-Одна кнопка (Heltec V4/V3, Wireless Tracker, T-Beam и другие однокнопочные платы): клик — следующий
-вариант, удержание — выбрать его.
-- В списке удержание открывает партию; при нескольких партиях — меню «Открыть», «Следующая партия».
-- В свой ход клик перебирает ваши фигуры, у которых есть ходы, — по рядам снизу вверх, слева направо;
-  справа видно выбранную фигуру («Кg1»), за последней фигурой идёт «Меню партии». Удержание берёт фигуру.
-- Затем клик перебирает клетки, куда она может пойти (они отмечены точками), справа — ход целиком
-  («Кg1-f3», «e7-e8=Ф»), за последней клеткой — «Отмена». Удержание делает ход; пешка превращается в ферзя.
-- Не в свой ход клик переходит к следующему экрану (доска остаётся открытой), удержание открывает меню
-  партии: ничья, сдаться, повтор недоставленного хода, «Список партий».
+A click shows the next choice, hold takes it.
+- In the list, hold opens the game; with several games, a menu: “Open game”, “Next game”.
+- On your move a click steps through your pieces that can move — row by row from the bottom, left to
+  right; the right side names the piece (“Ng1”), and after the last piece comes “Game menu”. Hold picks
+  the piece.
+- Then a click steps through the squares it can reach (marked with dots), the right side shows the whole
+  move (“Ng1-f3”, “e7-e8=Q”), and after the last square comes “Cancel”. Hold plays the move; a pawn
+  promotes to a queen.
+- Off your move a click goes to the next screen (the board stays open), hold opens the game menu: draw,
+  resign, resend an undelivered move, “Game list”.
 
-Перебирать только допустимые ходы на одной кнопке быстрее, чем водить курсор: в начале партии у
-белых 10 фигур с ходами, у фигуры — до 27 клеток. Компаса и гироскопа у Heltec нет, а на M9
-(акселерометр и магнитометр) есть клавиатура, поэтому наклоном фигуры не выбираются.
+Stepping through legal moves only is quicker on one button than moving a cursor: at the start White
+has 10 pieces that can move, and a piece reaches up to 27 squares. The Heltec has no compass or gyroscope,
+and the M9 (accelerometer and magnetometer) has a keyboard, so pieces are not chosen by tilting.
 
-Джойстик (GAT562): курсор двигается по доске, OK берёт фигуру и делает ход, «назад» отпускает фигуру
-или возвращает к списку, удержание OK открывает меню партии.
+## Commands
 
-## Команды
+A message starts with `♟` (U+265F) and four hexadecimal digits of the game number,
+then a space and the command. Text after the known fields is not read — an
+explanation for a human goes there.
 
-Сообщение начинается с `♟` (U+265F) и четырёх шестнадцатеричных цифр номера партии,
-затем пробел и команда. Текст после известных полей не читается — туда пишется
-пояснение для человека.
-
-| Текст | Значение |
+| Text | Meaning |
 |---|---|
-| `♟3F2A new w r · шахматы MeshMesh: вы играете чёрными` | вызов; `w`/`b` — цвет отправителя, `r` — на рейтинг |
-| `♟3F2A yes` / `♟3F2A no` | принять / отказаться (или отменить свой вызов до первого хода) |
-| `♟3F2A 5 g1f3 3. Nf3` | ход: номер полухода, ход в UCI (`e7e8q` — превращение), запись для человека |
-| `♟3F2A draw?` / `♟3F2A draw` | предложить ничью / согласиться на предложенную |
-| `♟3F2A resign` | сдаться |
-| `♟3F2A sig 1791140000 <base64>` | подпись результата партии на рейтинг (раздел «Рейтинг ELO») |
+| `♟3F2A new w r · MeshMesh chess: you play Black` | invitation; `w`/`b` — the sender's color, `r` — rated; the trailing text is for a human reader (older boards send it in Russian) |
+| `♟3F2A yes` / `♟3F2A no` | accept / decline (or cancel your own invitation before the first move) |
+| `♟3F2A 5 g1f3 3. Nf3` | move: half-move number, the move in UCI (`e7e8q` — promotion), notation for a human |
+| `♟3F2A draw?` / `♟3F2A draw` | offer a draw / accept the offered draw |
+| `♟3F2A resign` | resign |
+| `♟3F2A sig 1791140000 <base64>` | the signature of a rated game's result (see “ELO rating”) |
 
-Приём: команды принимаются только в личных сообщениях от контакта этой партии.
-Ход засчитывается, если номер полухода следующий, очередь соперника и ход допустим
-по правилам. Повтор последнего хода соперника (так бывает, когда потерялся ACK и
-отправитель повторил) молча пропускается; ход не по очереди или недопустимый не
-меняет партию, на экране появляется уведомление. Ответный ход соперника и его «yes»
-подтверждают доставку моего хода/вызова, даже если ACK не дошёл. Первый ход белых
-в ответ на вызов, где вызвавший играет чёрными, считается согласием.
+Reception: commands are accepted only in direct messages from the contact of that game.
+A move counts if the half-move number is the next one, it is the opponent's turn and the move is legal
+by the rules. A repeat of the opponent's last move (this happens when an ACK was lost and
+the sender retried) is silently skipped; a move out of turn or an illegal move does not
+change the game, and a notification appears on the screen. The opponent's reply move and their “yes”
+confirm delivery of my move/invitation even if the ACK did not arrive. White's first move
+in reply to an invitation where the inviter plays black counts as acceptance.
 
-## Доставка при плохой связи
+## Delivery over a poor link
 
-Маршрут — как у любого личного сообщения MeshCore: пока путь неизвестен, сообщение идёт
-затоплением через ретрансляторы, ответ приносит путь, дальше — прямая адресация по нему.
-Если по известному пути нет ACK, третья попытка идёт затоплением; если и она не
-подтверждена, путь сбрасывается, и следующая отправка снова ищет маршрут.
+The route is the same as for any MeshCore direct message: while the path is unknown, the message is
+flooded through repeaters, the reply brings back the path, and after that it is sent directly along it.
+If there is no ACK over the known path, the third attempt is flooded; if that is not
+confirmed either, the path is reset, and the next send looks for a route again.
 
-Ход сразу записывается на своём устройстве и уходит сообщением; MeshCore делает до трёх
-попыток (около 1,5 мин). Если подтверждения нет, команда помечается «не доставлено» и
-повторяется автоматически: через 2, 5 и 10 минут, затем каждые 15 минут, а также сразу,
-как только устройство снова услышит соперника (объявление или любой его пакет), но не
-чаще раза в 2 минуты — чтобы при односторонней связи не занимать эфир. Повтор идёт по
-одной команде: сначала последний свой ход (он берётся из партии, поэтому предложение
-ничьей или сдача, отправленные позже, его не заменяют), затем последняя другая команда.
-Подтверждением служит ACK или ответ соперника (его ход подтверждает мой ход и принятие
-вызова, его согласие — моё предложение ничьей). Через 24 часа без подтверждения
-автоповтор останавливается; R на M9 или «Повторить отправку» в вебе отправляют сразу и
-запускают его снова. Флаг недоставленного хода сохраняется (формат `MMC1` версии 2,
-версия 1 читается); после перезапуска повтор начинается через минуту.
+A move is recorded on your own device immediately and is sent as a message; MeshCore makes up to three
+attempts (about 1.5 min). If there is no confirmation, the command is marked “not delivered” and
+is retried automatically: after 2, 5 and 10 minutes, then every 15 minutes, and also as soon
+as the device hears the opponent again (an advert or any of their packets), but not
+more often than once every 2 minutes — so as not to occupy the air when the link is one-way. Retries go
+one command at a time: first your own last move (it is taken from the game, so a draw
+offer or resignation sent later does not replace it), then the last other command.
+Confirmation is an ACK or the opponent's reply (their move confirms my move and the acceptance of
+the invitation, their agreement confirms my draw offer). After 24 hours without confirmation
+automatic retrying stops; R on the M9 or “Resend” on the web page send immediately and
+start it again. The undelivered-move flag is saved (format `MMC1` version 2,
+version 1 is readable); after a restart, retrying starts after one minute.
 
-Обе стороны сами определяют конец партии по одним правилам: мат, пат, троекратное
-повторение, 50 ходов без взятия и хода пешкой, недостаточно материала, предел
-512 полуходов (ничья). Отдельного сообщения о результате нет.
+Both sides determine the end of the game themselves by the same rules: checkmate, stalemate, threefold
+repetition, 50 moves without a capture or a pawn move, insufficient material, the limit of
+512 half-moves (draw). There is no separate result message.
 
-Человек со штатным приложением MeshCore может играть, набирая команды вручную
-(например `♟3F2A 2 e7e5`), — это проверено с платой, показывающей эти сообщения
-обычным чатом; удобного интерфейса у него нет.
+A person with the stock MeshCore app can play by typing the commands manually
+(for example `♟3F2A 2 e7e5`) — this was tested with a board that shows these messages
+as an ordinary chat; there is no convenient interface for them.
 
-## Рейтинг ELO
+## ELO rating
 
-Партия бывает «на рейтинг» (по умолчанию) или товарищеской: выбор — строка «Партия» на экране вызова
-M9 (клавиша F или касание), переключатель на веб-странице, `chess invite NODE w|b|r friendly` по USB.
-Вызов на рейтинг несёт метку `r` (`♟3F2A new w r · …`); принимая его, соперник соглашается на рейтинг.
-Старые версии и страница companion метку не читают и играют товарищескую партию.
+A game is rated (the default) or friendly: the choice is the “Game” row on the M9 challenge screen
+(the F key or a tap), a switch on the web page, `chess invite NODE w|b|r friendly` over USB.
+A rated challenge carries the `r` mark (`♟3F2A new w r · …`); by accepting it the opponent agrees to a rated game.
+Older versions and the companion page do not read the mark and play a friendly game.
 
-**Подпись результата.** Когда партия окончена (мат, пат, сдача, ничья и т. д.) и каждый сделал хотя бы
-один ход, каждая сторона в основном цикле (не в обработчике радио) составляет одну и ту же запись и
-подписывает её ключом своего узла MeshCore (Ed25519):
+**Signing the result.** When a game is over (mate, stalemate, resignation, a draw and so on) and each side
+made at least one move, each side, in the main loop (not in the radio handler), builds the same record and
+signs it with its MeshCore node key (Ed25519):
 
-| Поле | Байты |
+| Field | Bytes |
 |---|---|
 | `MMR1` | 4 |
-| ключ белых, ключ чёрных | 32 + 32 |
-| номер партии, результат (1 белые, 2 чёрные, 3 ничья), причина | 2 + 1 + 1 |
-| число полуходов, первые 16 байт SHA-256 списка ходов | 2 + 16 |
-| флаги (бит 0 — на рейтинг) | 1 |
+| White's key, Black's key | 32 + 32 |
+| game number, result (1 White, 2 Black, 3 draw), reason | 2 + 1 + 1 |
+| half-move count, the first 16 bytes of SHA-256 of the move list | 2 + 16 |
+| flags (bit 0 — rated) | 1 |
 
-Подписываются эти 91 байт и часы подписавшего (Unix-время, 0 — если часы не установлены). Подпись
-уходит командой `♟3F2A sig 1791140000 <88 знаков base64>` с ACK и теми же повторами, что и ход;
-R повторяет её сразу. Подпись соперника проверяется его ключом из контакта (он запоминается при вызове);
-если запись у сторон разошлась (например, потерялся ход), подпись не сходится и партия остаётся без рейтинга.
-Запись с двумя проверенными подписями сохраняется; повторная копия той же записи не учитывается.
+These 91 bytes and the signer's clock (Unix time, 0 when the clock is not set) are signed. The signature
+goes out as `♟3F2A sig 1791140000 <88 base64 characters>` with an ACK and the same retries as a move;
+R resends it at once. The opponent's signature is checked with their key from the contact (remembered at the
+challenge); if the sides' records differ (a lost move, for example), the signature does not match and the game
+stays unrated. A record with both signatures checked is kept; a second copy of the same record does not count.
 
-**Расчёт.** ELO пересчитывается из сохранённых записей в одном порядке (по более раннему из двух
-времён, затем по отпечатку ходов), поэтому одинаковые записи дают одинаковые числа на всех устройствах.
-Начальный рейтинг 1500; коэффициент K = 32 первые 20 засчитанных партий игрока, затем 20; ожидаемый
-результат `1/(1+10^((Rb−Ra)/400))`. С одним соперником в сутки (UTC) засчитываются 3 партии, остальные
-хранятся и видны, но рейтинг не меняют («сверх дневного предела»). Счёт против каждого соперника
-(+победы =ничьи −поражения) считается по всем сохранённым партиям.
+**Calculation.** ELO is replayed from the kept records in one order (by the earlier of the two times,
+then by the moves digest), so the same records give the same numbers on every device. The starting
+rating is 1500; K = 32 for a player's first 20 counted games, then 20; the expected score is
+`1/(1+10^((Rb−Ra)/400))`. Three games with one opponent per UTC day count; the rest are kept and shown
+but do not change the rating (“over the daily limit”). The score against each opponent
+(+wins =draws −losses) covers all kept games.
 
-**Хранение.** `/meshmesh/rating.bin` в LittleFS (`MMR1`, игроки, записи, CRC-32; запись через
-`rating.new`/`rating.old`, как у партий). До 128 записей на ESP32 и 40 на GAT562; самая старая запись
-при переполнении переносится в «базу» игроков, рейтинг не меняется. Игроков — до 32.
+**Storage.** `/meshmesh/rating.bin` in LittleFS (`MMR1`, players, records, CRC-32; written through
+`rating.new`/`rating.old` like the games). Up to 128 records; when full, the
+oldest record moves into the players' base and the ratings do not change. Up to 32 players.
 
-**Где видно.** M9 и T-Deck: заголовок «Шахматы · ELO 1520», вкладка «Рейтинг» (◂▸): рейтинг, изменение
-за последние партии и график, игроки с рейтингом и вашим счётом; на экране вызова — ELO соперника и
-сколько даст победа и отнимет поражение; на доске оконченной партии — «ELO 1516 (+16)» или состояние
-подписи («ждём подпись», «подписи не сошлись»). Веб-страница и приложение: вкладки «Партии / Рейтинг»,
-переключатель «На рейтинг / Товарищеская», прогноз у контактов, строка рейтинга на доске
-(`GET /api/chess?rating=1`, USB `chess rating`; поля `rated`, `sign`, `elo_before`, `elo_after` в списке
-партий). Heltec и GAT562 показывают изменение рейтинга во всплывающем окне.
+**Where it shows.** M9: the title “Chess · ELO 1520”, the “Rating” tab (◂▸): the rating, the
+change over the latest games and a chart, players with their rating and your score; on the challenge
+screen — the opponent's ELO and what a win gives and a loss takes; on the board of a finished game —
+“ELO 1516 (+16)” or the signature state (“their signature”, “signatures”). Web page and app: the
+“Games / Rating” tabs, the “Rated / Friendly” switch, the forecast next to contacts, the rating line on the board
+(`GET /api/chess?rating=1`, USB `chess rating`; the `rated`, `sign`, `elo_before`, `elo_after` fields in the
+game list). The Heltec V4 shows the rating change in a pop-up.
 
-Накрутку вторым своим устройством подпись не исключает: она подтверждает, что результат признали оба
-ключа, но не что за ключами разные люди. Дневной предел её ограничивает.
+Signing does not rule out boosting a rating with a second device of your own: it proves that both keys
+accepted the result, not that different people hold them. The daily limit restricts it.
 
-## Турнир (швейцарская система)
+## Tournament (Swiss system)
 
-Организатор — любая плата с MeshMesh: M9, T-Deck, Heltec, GAT562 и платы сообщества (на GAT562 турнир
-поместился после разделения образов по языкам). Турнир создаётся на M9 («Шахматы» → вкладка «Турниры» → «Создать турнир»:
-название, игроки из чат-контактов, число туров и время на ход), на веб-странице или по USB
-`tour create ТУРЫ ЧАСЫ ID,ID,... НАЗВАНИЕ`. До 10 игроков вместе с организатором, до 9 туров;
-одновременно хранится до трёх турниров. Все партии турнира — на рейтинг.
+The organiser is any board with MeshMesh: the M9 or the Heltec V4.
+A tournament is created on the M9 (“Chess” → the “Tournaments” tab → “Create a tournament”: name,
+players from the chat contacts, the number of rounds and the time a move), on the web page or over USB
+`tour create ROUNDS HOURS ID,ID,... NAME`. Up to 10 players with the organiser, up to 9 rounds; up to
+three tournaments are kept at once. Every tournament game is rated.
 
-**Как идёт.** Организатор рассылает приглашения; турнир стартует сам, когда ответили все и согласились
-хотя бы двое (S на странице турнира — начать сразу с согласившимися). Пары составляет устройство
-организатора: первый тур — по жребию (зерно — номер турнира), дальше игроки упорядочиваются по очкам,
-затем по рейтингу, и внутри группы с равными очками верхняя половина играет с нижней; повторных встреч
-нет, пока их можно избежать (перебор с возвратом), белые достаются тому, у кого их было меньше, затем
-тому, кто играл чёрными в прошлом туре. При нечётном числе игроков самый низкий в таблице игрок без
-пропуска получает очко без игры. Каждому игроку уходит его пара: цвет, номер партии, ключ и имя соперника
-(соперник добавляется в контакты, даже если его объявления не слышно; сообщения ему идут затоплением, пока
-не найден путь). Партия начинается сразу, без вызова; если все доски заняты, она вытесняет самую старую
-оконченную партию с сохранённым рейтингом и отправленным отчётом, а если и такой нет — создаётся при следующей попытке, раз в 30 с. Когда партия окончена, устройство каждого игрока
-само сообщает результат организатору; совпавшие отчёты двух игроков дают результат, разошедшиеся —
-«спор», который решает организатор (W/B/D на экране пар M9, кнопки на веб-странице, USB
-`tour result ТУРНИР ПАРТИЯ w|b|d`). Когда решены все партии тура, организатор рассылает таблицу
-(очки и коэффициент Бухгольца — сумма очков соперников) и пары следующего тура; после последнего —
-итог. Старт и подведение тура выполняются в основном цикле, а не в обработчике радио: перебор пар и
-рассылка не помещались в его стек (проверено паникой M9 на железе).
+**How it goes.** The organiser sends invitations; the tournament starts by itself when everyone has
+answered and at least two agreed (S on the tournament page starts at once with those who agreed). The
+organiser's device pairs: round 1 by lot (seeded by the tournament number), later the players are
+ordered by score, then by rating, and inside a score group the top half plays the bottom half; nobody
+meets twice while it can be avoided (a search with backtracking); White goes to the player with fewer
+Whites, then to the one who had Black last round. With an odd number of players the lowest player
+without a bye gets a point without a game. Each player gets their pairing: colour, game number, the
+opponent's key and name (the opponent becomes a contact even if their advert is not heard; messages go
+by flood until a path is found). The game starts at once, without a challenge; when every board is busy it
+takes the place of the oldest finished game whose rating and report are done, and if there is none it is created on a later attempt, every 30 s. When a game is over, each
+player's device reports the result to the organiser by itself; two matching reports give the result,
+differing ones a “dispute” that the organiser settles (W/B/D on the M9 pairings screen, buttons on the web
+page, USB `tour result TOUR GAME w|b|d`). When every game of the round is decided, the organiser sends the
+standings (points and the Buchholz score — the sum of the opponents' points) and the next round's pairings;
+after the last one — the result. Starting and closing a round run in the main loop, not in the radio handler:
+the pairing search and sending did not fit its stack (an M9 panic on the hardware showed it).
 
-| Текст (`♞` — U+265E, номер турнира) | Значение |
+| Text (`♞` — U+265E, tournament number) | Meaning |
 |---|---|
-| `♞7C01 inv 5 24 7 Кубок двора` | приглашение: туры, часов на ход, игроков, название |
-| `♞7C01 yes` / `♞7C01 no` | ответ игрока |
-| `♞7C01 pl 7A8544:Имя,C99339:Имя` | список игроков (первые 6 цифр ID и имя до 12 байт), по частям |
-| `♞7C01 r2 w 3F2A <ключ base64> Имя` / `♞7C01 r2 bye` | пара тура: цвет, номер партии, ключ и имя соперника / без игры |
-| `♞7C01 res 3F2A w` | результат игрока: `w`, `b`, `d` |
-| `♞7C01 st 2 7A8544:3:5,…` | таблица после тура: ID, очки×2, Бухгольц×2 |
-| `♞7C01 end 5 7A8544:7:21,…` / `♞7C01 cancel` | турнир окончен (с итоговой таблицей — место верное, в каком бы порядке ни дошли сообщения) / отменён |
+| `♞7C01 inv 5 24 7 Courtyard cup` | invitation: rounds, hours a move, players, name |
+| `♞7C01 yes` / `♞7C01 no` | a player's answer |
+| `♞7C01 pl 7A8544:Name,C99339:Name` | the players (first 6 ID digits and a name up to 12 bytes), in parts |
+| `♞7C01 r2 w 3F2A <base64 key> Name` / `♞7C01 r2 bye` | the round's pairing: colour, game number, the opponent's key and name / a bye |
+| `♞7C01 res 3F2A w` | a player's result: `w`, `b`, `d` |
+| `♞7C01 st 2 7A8544:3:5,…` | the standings after a round: ID, points×2, Buchholz×2 |
+| `♞7C01 end 5 7A8544:7:21,…` / `♞7C01 cancel` | finished (with the final standings, so the place is right whichever message arrives first) / cancelled |
 
-Команды турнира идут личными сообщениями с ACK; без подтверждения они повторяются через 2, 5, 10 и
-каждые 15 минут в течение суток (очередь до 40 сообщений сохраняется вместе с турнирами в
-`/meshmesh/tour.bin`, после перезапуска повтор через минуту). Время на ход пока справочное: поражения
-по времени нет. Если организатор пропал, турнир останавливается — передачи организаторства нет.
+Tournament commands go as direct messages with ACK; unconfirmed ones are resent after 2, 5, 10 and every
+15 minutes for a day (a queue of up to 40 messages is saved with the tournaments in `/meshmesh/tour.bin`;
+after a restart resending starts in a minute). The time a move is a guide for now: there is no loss on
+time. If the organiser disappears, the tournament stops — organising is not handed over.
 
-**Где видно.** M9 и T-Deck: вкладка «Турниры» (список, приглашение, набор участников, страница турнира
-с вашей партией тура, таблицей и партиями — ◂▸, OK — к партии), плашка турнира на доске, всплывающие
-сообщения и пробуждение экрана при паре тура и итоге. Heltec и GAT562 — всплывающее окно с текстом новости;
-отвечать на приглашение и смотреть таблицу — на веб-странице или в приложении, играть можно и на экране. Веб-страница и приложение: вкладка «Турниры» с теми же действиями
-и формой создания (`GET /api/tour`, USB `tour`).
+**Where it shows.** M9: the “Tournaments” tab (the list, an invitation, gathering players, the
+tournament page with your game of the round, the standings and the games — ◂▸, OK — to the game), the
+tournament strip on the board, pop-ups and a lit screen for a round's pairing and the result. Heltec V4 — a
+pop-up with the news; answering an invitation and the standings are on the web page or in the app, and the
+game can be played on the screen too. Web page and app: the “Tournaments” tab
+with the same actions and a creation form (`GET /api/tour`, USB `tour`).
 
-## Обмен журналами
+## Ledger exchange
 
-Записи с двумя подписями расходятся между узлами, поэтому рейтинг одинаков у всех, кто их получил, —
-в том числе для партий, которых узел не видел. Запись несёт ключи обоих игроков и обе подписи, поэтому узел
-проверяет её сам и принимает от любого контакта; поддельная или изменённая запись отбрасывается.
+Records with both signatures spread between nodes, so everyone who has them shows the same ratings — also
+for games a node did not see. A record carries both players' keys and signatures, so a node checks it by itself
+and accepts it from any contact; a forged or changed record is dropped.
 
-| Текст (`♜` — U+265C) | Значение |
+| Text (`♜` — U+265C) | Meaning |
 |---|---|
-| `♜sum 12 A1B2C3D4` | число новейших записей (до 64) и отпечаток их номеров |
-| `♜ok` | журналы совпадают |
-| `♜inv 1/2 1A2B3C4D,5E6F7A8B,…` | номера новейших записей (номер — первые 4 байта SHA-256 записи), по 15 на сообщение |
-| `♜want 1A2B3C4D,…` | недостающие записи (не больше 10 за сеанс) |
-| `♜rec 1A2B3C4D 2/3 <base64>` | запись в трёх частях: без `MMR1` и флагов, оба времени, обе подписи (222 байта) |
+| `♜sum 12 A1B2C3D4` | the number of newest records (up to 64) and a digest of their numbers |
+| `♜ok` | the ledgers match |
+| `♜inv 1/2 1A2B3C4D,5E6F7A8B,…` | the newest record numbers (a number is the first 4 bytes of the record's SHA-256), 15 a message |
+| `♜want 1A2B3C4D,…` | missing records (at most 10 a session) |
+| `♜rec 1A2B3C4D 2/3 <base64>` | a record in three parts: without `MMR1` and the flags, both times, both signatures (222 bytes) |
 
-Сеанс: один узел шлёт `sum`; при расхождении второй присылает свой список, первый просит недостающее и
-присылает свой, второй просит недостающее у него. Сообщения уходят не чаще раза в 6 с и только при
-свободном радио; входящие разбираются в основном цикле. Сверка начинается сама, когда слышен узел,
-игравший партии на рейтинг или уже сверявшийся, — не чаще раза в 6 часов на узел; вручную — S на вкладке
-«Рейтинг» M9, кнопка «Сверить журнал сейчас» на веб-странице, USB `chess sync` (все такие узлы, слышные за
-сутки) или `chess sync NODE_ID`. Если журнал полон, запись старше самой старой хранимой не принимается: такая
-могла уже войти в базу игроков и посчиталась бы дважды. Узлы с журналами разного размера (128 записей на
-ESP32, 40 на GAT562) после переноса старых записей в базу могут слегка расходиться в рейтинге.
-`chess rating clear` по USB очищает журнал (например, перед восстановлением сверкой с соседями).
+A session: one node sends `sum`; if they differ the other sends its list, the first asks for what it lacks and
+sends its own list, the second asks for what it lacks. Messages go at most every 6 s and only when the radio is
+free; incoming ones are handled in the main loop. A sync starts by itself when a node is heard that played rated
+games or has synced before — at most every 6 hours per node; by hand — S on the M9 “Rating” tab, the “Sync the
+ledger now” button on the web page, USB `chess sync` (every such node heard in a day) or `chess sync NODE_ID`.
+When the ledger is full, a record older than the oldest kept one is not accepted: it may already be in the
+players' base and would count twice. `chess rating clear` over USB empties the
+ledger (for example before restoring it by syncing with the neighbours).
 
-## Архив партий (PGN)
+## Game archive (PGN)
 
-Каждая оконченная партия с ходами записывается на SD-карту — `/meshmesh/chess/ГГГГММДД-НОМЕР.pgn` (дата
-начала по UTC, номер партии) — на M9, T-Deck и других платах с картой; когда приходит подпись соперника для
-рейтинга, файл переписывается с тегами `WhiteElo`/`BlackElo`. Так партия сохраняется и после того, как её доску
-займёт новая. PGN — стандартный: семь обязательных тегов, ходы в английской записи (`Qxf7#`), причина конца
-партии комментарием (`{checkmate}`), имя события — название турнира или «MeshMesh rated/friendly game».
-Веб-страница и приложение: кнопка «PGN» у партии (на любой плате, PGN строится из партии на устройстве) и раздел
-«Архив партий на SD-карте» на вкладке «Партии»; текст можно скопировать или сохранить файлом (в приложении —
-скопировать). USB: `chess pgn НОМЕР`, `chess archive` (список, новые первыми, до 60) и `chess archive ИМЯ` —
-ответ одной строкой JSON (`{"pgn":"…"}`), чтобы его читали USB-клиенты и приложение. Список собирается в куче:
-с массивами на стеке драйвер SD-карты переполнял стек основной задачи (паника M9 на железе).
+Every finished game with moves is written to the SD card — `/meshmesh/chess/YYYYMMDD-NUMBER.pgn` (the UTC start
+date, the game number) — on the M9 (the board with a card); when the opponent's rating signature
+arrives the file is written again with the `WhiteElo`/`BlackElo` tags. So a game survives after a new one takes its
+board. The PGN is standard: the seven required tags, moves in English notation (`Qxf7#`), the end of the game as a
+comment (`{checkmate}`), the event — the tournament name or “MeshMesh rated/friendly game”. Web page and app: the
+“PGN” button of a game (on any board; the PGN is built from the game on the device) and the “Game archive on the SD
+card” section on the “Games” tab; the text can be copied or saved as a file (in the app — copied). USB:
+`chess pgn NUMBER`, `chess archive` (the list, newest first, up to 60) and `chess archive NAME` — the reply is one
+JSON line (`{"pgn":"…"}`) so USB clients and the app read it. The list is built on the heap: with arrays on the stack
+the SD driver overflowed the main task's stack (an M9 panic on the hardware).
 
-## Экран M9
+## M9 screen
 
-Главное меню → «Шахматы»: список партий (сначала те, где нужен ваш ход или ответ),
-«Новая партия» → выбор чат-контакта и цвета (белые, чёрные, случайно). Доска
-повёрнута к игроку; последний ход и шах подсвечены, у взятой фигуры показаны
-допустимые ходы. Клавиши: стрелки — курсор, OK — взять/поставить, BACK — вернуть
-фигуру или выйти к списку, D — предложить/принять ничью, X дважды — сдаться,
-R — повторить недоставленное сразу (иначе повтор автоматический), N — реванш с обменом цветов, DEL — отказ,
-отмена вызова или удаление оконченной партии, H — справка. Запись ходов — в
-русской нотации (Кр, Ф, Л, С, К), если выбран русский интерфейс.
+Main menu → “Chess”: the list of games (first those where your move or reply is needed),
+“New game” → choice of chat contact and color (white, black, random). The board
+is turned towards the player; the last move and check are highlighted, a picked-up piece shows its
+legal moves. Keys: arrows — cursor, OK — pick up/put down, BACK — return the
+piece or go back to the list, D — offer/accept a draw, X twice — resign,
+R — resend an undelivered command immediately (otherwise the retry is automatic), N — rematch with colors swapped, DEL — decline,
+cancel an invitation or delete a finished game, H — help.
 
-Одновременно хранится до 6 партий (на всех платах). Новая партия — свой вызов, чужой вызов или пара
-турнира — занимает свободное место или место самой старой оконченной: сначала уже открытой, затем и
-неоткрытой (на платах без экрана шахмат оконченные партии никто не открывает). Оконченная партия остаётся,
-пока не пришла подпись соперника для рейтинга или не отправлен отчёт организатору турнира; результат
-к этому времени уже в журнале рейтинга. Идущие партии и вызовы не вытесняются: если шесть партий идут,
-новый вызов отклоняется автоматически, а свой — с сообщением «Идут шесть партий: завершите одну».
+Up to 6 games are stored at a time (on every board). A new game — your challenge, someone else's, or a
+tournament pairing — takes a free slot or the place of the oldest finished game: an opened one first, then
+also one nobody opened (on boards without a chess screen nobody opens finished games). A finished game stays
+until the opponent's rating signature has arrived and the tournament report has gone; its result is in the
+rating ledger by then. Games in progress and challenges are never pushed out: with six games in progress a new
+challenge is declined automatically, and your own gets “Six games in progress: finish one”.
 
-## Веб-страница
+## Web page
 
-Плитка «Шахматы»: список партий, выбор цвета и вызов чат-контакта, доска с касаниями
-(касание своей фигуры показывает её ходы, касание поля — ход; при превращении —
-выбор фигуры), предложение и принятие ничьей, сдача и удаление двойным нажатием,
-реванш, повтор недоставленной команды, запись ходов. Правила и партии остаются
-в прошивке: `GET /api/chess` — список и последние новости, `GET /api/chess?id=3F2A` —
-запись ходов и допустимые ходы, действия — `POST /api/command` (`chess move 3F2A e2e4`).
-Страница опрашивает устройство раз в 3 с.
+The “Chess” tile: the list of games, color choice and inviting a chat contact, a touch board
+(touching your piece shows its moves, touching a square makes the move; on promotion —
+choice of piece), offering and accepting a draw, resigning and deleting with a double press,
+rematch, resending an undelivered command, the move record. The rules and the games stay
+in the firmware: `GET /api/chess` — the list and the latest news, `GET /api/chess?id=3F2A` —
+the move record and legal moves, actions — `POST /api/command` (`chess move 3F2A e2e4`).
+The page polls the device every 3 s.
 
-## Со штатной MeshCore companion (страница сайта)
+## With a stock MeshCore companion (website page)
 
-https://ikrasnodymov.github.io/meshmesh/chess/ — та же страница шахмат, но без MeshMesh на своём
-устройстве: она подключается к плате со штатной прошивкой MeshCore Companion по USB (Web Serial)
-или Bluetooth (Web Bluetooth) и играет через неё обычными личными сообщениями. Соперник играет
-на MeshMesh (M9, Heltec, GAT562) или на такой же странице.
+https://ikrasnodymov.github.io/meshmesh/chess/ — the same chess page, but without MeshMesh on your own
+device: it connects to a board running the stock MeshCore Companion firmware over USB (Web Serial)
+or Bluetooth (Web Bluetooth) and plays through it with ordinary direct messages. The opponent plays
+on MeshMesh (M9, Heltec V4) or on the same page.
 
-- Правила и партии работают в браузере: `web/chess-companion.js` — перенос `src/Chess.cpp` и
-  `src/ChessNet.cpp` (те же команды, приём, повторы, автоповтор недоставленного).
-  `tools/chess_site.py` собирает страницу из `web/index.html` и этого файла
-  (`tools/pages.py` кладёт её в `chess/` на сайте); в прошивку файл не входит.
-- Протокол companion (`upstream/meshcore-stock/examples/companion_radio/MyMesh.cpp`):
-  `DEVICE_QUERY` (версия 3), `APP_START`, установка часов (только вперёд, как в приложении),
-  `GET_CONTACTS`, `SEND_TXT_MSG`, ACK — `PUSH_SEND_CONFIRMED`, приём — `MSG_WAITING` и
-  `SYNC_NEXT_MESSAGE`. USB: кадры `<`/`>` с длиной; Bluetooth: Nordic UART, кадр на
-  уведомление, PIN — средствами ОС. Отправка — как у приложения MeshCore: до трёх попыток с
-  одной меткой времени, перед третьей сбрасывается путь (затопление).
-- Партии хранятся в браузере (`localStorage`), отдельно для ключа каждой companion. Ход,
-  сделанный без связи, помечается «не доставлено» и уходит после подключения.
-- Ходы соперника, пришедшие при закрытой странице, ждут в очереди companion (16 сообщений у
-  USB-сборки) и забираются при подключении. Автоповтор своих ходов работает, пока страница открыта.
-- К companion подключается одно приложение: пока открыта страница, приложение MeshCore к этому
-  устройству не подключать. Личные и канальные сообщения, не относящиеся к шахматам, страница
-  забирает из очереди и показывает в разделе «Другие сообщения»; в приложении MeshCore их уже не будет.
-- Языки — те же 15, что у сайта: язык берётся из выбора на сайте (`mm-lang`), иначе из языков
-  браузера; переключатель есть на стартовом экране и под списком партий. Страница собрана из русской
-  `web/index.html`, поэтому `web/chess-i18n.js` переводит её текст при отрисовке по словарям
-  `i18n/chess/<lang>.json` (ключ — русский текст, полный список — `en.json`); веб-страница плат остаётся
-  русской. Ходы пишутся буквами фигур языка (Sf3, Cf3, Nf3), рокировки и ходы пешек — как есть.
-  Пояснение в вызове («шахматы MeshMesh: вы играете чёрными») уходит сопернику на выбранном языке, как
-  с плат; команды в сообщениях от языка не зависят. Имена и чужие сообщения не переводятся.
-- Chrome или Edge на компьютере и Chrome на Android; Safari, iOS и Firefox не умеют ни Web Serial,
-  ни Web Bluetooth. Разрешённый ранее USB-порт страница открывает сама при загрузке.
-- Проверено 2 октября 2026 (`docs/verification.md`): USB-companion v1.17.1 на GAT562 против M9 по радио
-  (`chess_companion_check.py`) и в Chrome по Web Serial. Bluetooth и Chrome на Android не проверялись.
+- The rules and games run in the browser: `web/chess-companion.js` is a port of `src/games/chess/Chess.cpp` and
+  `src/games/chess/ChessNet.cpp` (the same commands, reception, retries, automatic resending of undelivered commands).
+  `tools/site/chess_site.py` builds the page from `web/index.html` and this file
+  (`tools/site/pages.py` puts it into `chess/` on the website); the file is not part of the firmware.
+- The companion protocol (MeshCore `companion-v1.17.1`, `examples/companion_radio/MyMesh.cpp`):
+  `DEVICE_QUERY` (version 3), `APP_START`, setting the clock (forward only, as in the app),
+  `GET_CONTACTS`, `SEND_TXT_MSG`, ACK — `PUSH_SEND_CONFIRMED`, reception — `MSG_WAITING` and
+  `SYNC_NEXT_MESSAGE`. USB: `<`/`>` frames with a length; Bluetooth: Nordic UART, one frame per
+  notification, PIN — handled by the OS. Sending works as in the MeshCore app: up to three attempts with
+  one timestamp, and the path is reset before the third (flooding).
+- Games are stored in the browser (`localStorage`), separately for each companion's key. A move
+  made without a connection is marked “not delivered” and is sent after connecting.
+- The opponent's moves that arrive while the page is closed wait in the companion's queue (16 messages in
+  the USB build) and are fetched on connection. Automatic resending of your own moves works while the page is open.
+- Only one app can connect to a companion: while the page is open, do not connect the MeshCore app to that
+  device. Direct and channel messages unrelated to chess are taken from the queue by the page
+  and shown in the “Other messages” section; they will no longer be in the MeshCore app.
+- The page is in English, like the boards' web page; moves use the piece letters K Q R B N, and the note in a
+  challenge (“MeshMesh chess: you play Black”) is English, as from the boards.
+- Chrome or Edge on a computer and Chrome on Android; Safari, iOS and Firefox support neither Web Serial
+  nor Web Bluetooth. The page opens a previously allowed USB port by itself on load.
+- Verified on October 2, 2026 (`docs/verification.md`): USB companion v1.17.1 on the GAT562 against the M9 over the radio
+  (`chess_companion_check.py`) and in Chrome over Web Serial. Bluetooth and Chrome on Android were not checked.
 
-## Уведомления
+## Notifications
 
-- M9 и T-Deck: всплывающее сообщение «Heltec V4: Кf3, ваш ход» (на любой странице, кроме
-  заблокированного экрана), звук, значок «ждёт хода» на плитке. Новость, требующая хода или
-  ответа (ход соперника, вызов, предложение ничьей), и итог партии зажигают погасший экран.
-- Заблокированный экран: карточка партии над карточкой сообщений — соперник, его ход и
-  состояние («Вызывает вас: вы играете чёрными»), справа «ещё N», если хода ждут другие партии.
-  Показывается партия с последней непросмотренной новостью, иначе самая свежая из ждущих хода.
-  Удержание OK разблокирует и сразу открывает эту партию. Настройка «Экран блокировки»
-  (`lock_details`, «Экран и устройство», веб-страница): «Скрыто» оставляет «Шахматы · N ждут хода»
-  и «Разблокируйте, чтобы прочитать» без имён, ходов и отправителей.
-- Heltec и другие платы с OLED: окно «Шахматы» с тем же текстом, три вспышки светодиода, экран
-  просыпается; клик закрывает окно, удержание (OK на GAT562) открывает партию. Если эта партия уже
-  открыта на экране, окна нет: обновляется доска.
-- Веб-страница: всплывающее сообщение о ходе соперника, вызове, предложении ничьей,
-  результате и недоставленной команде; число партий, ждущих хода, в заголовке
-  вкладки и на плитке; по желанию звук (кнопка на странице «Шахматы») и вибрация,
-  где браузер её поддерживает. Системные уведомления браузера (Notification API)
-  по адресу `http://192.168.4.1` недоступны: браузеры разрешают их только на HTTPS.
-  Страница сообщает о ходе, пока она открыта. На странице `chess/` сайта (HTTPS) кнопка
-  «Уведомления в фоне» включает системные уведомления, пока вкладка открыта в фоне; нажатие
-  открывает партию.
-- Приложение Android в фоне: своё уведомление на каждую партию (ход соперника, вызов, принятый
-  вызов, предложение ничьей, итог), следующая новость той же партии заменяет его; нажатие открывает
-  доску. Текст строится из списка партий (`/api/chess`), а не из сообщения платы, поэтому он русский
-  при любом языке экрана. Партии проверяются, как только плата что-то приняла, и не реже раза в 32 с.
+- M9: a pop-up message “Heltec V4: Nf3, your move” (on any page except
+  the lock screen), a sound, a “waiting for move” badge on the tile. News that needs a move
+  or an answer (the opponent's move, a challenge, a draw offer) and the end of a game light a dark screen.
+- Lock screen: a game card above the messages card — the opponent, their move and the state
+  (“Challenges you: you play Black”), with “more: N” on the right when other games wait for a move.
+  It shows the game with the latest unseen news, otherwise the newest game waiting for a move.
+  Holding OK unlocks and opens that game at once. The “Lock screen” setting (`lock_details`,
+  “Screen & device”, web page): “Hidden” leaves “Chess · N games wait” and “Unlock to read”
+  without names, moves and senders.
+- Heltec V4: a “Chess” window with the same text, three LED flashes, the screen
+  wakes up; a click closes the window, hold opens the game. When that game is already
+  open on the screen there is no window: the board is updated.
+- Web page: a pop-up message about the opponent's move, an invitation, a draw offer,
+  the result and an undelivered command; the number of games waiting for a move in the
+  tab title and on the tile; optionally a sound (a button on the “Chess” page) and vibration
+  where the browser supports it. System browser notifications (Notification API)
+  are not available at `http://192.168.4.1`: browsers allow them only over HTTPS.
+  The page reports a move while it is open. On the site's `chess/` page (HTTPS) the
+  “Background notifications” button turns on system notifications while the tab is in the
+  background; a click opens the game.
+- Android app in the background: one notification per game (the opponent's move, a challenge,
+  an accepted challenge, a draw offer, the result), replaced by the next news of that game; a tap
+  opens the board. The text is built from the game list (`/api/chess`), not from the board's message,
+  so it is Russian whatever the screen language. Games are checked as soon as the board receives
+  something, and at least every 32 s.
 
-## Сохранение
+## Storage
 
-`/meshmesh/chess.bin` во внутренней LittleFS: заголовок `MMC1`, версия, партии
-(соперник, номер, цвет, состояние, последняя отправленная команда и её статус,
-список ходов) и CRC-32. Запись идёт в `chess.new`, прежняя копия переименовывается
-в `chess.old`, затем новая — в `chess.bin`; при чтении повреждённого основного файла
-берётся `chess.old`. При загрузке ходы переигрываются по правилам; партия с
-недопустимым ходом отбрасывается. Команда, для которой до перезапуска не было ACK,
-считается недоставленной и повторяется автоматически. SD-карта и история чата не затрагиваются.
-Версия 3 добавила к партии метку рейтинга, ключ соперника и обе подписи; файлы версий 1 и 2 читаются,
-а более старая прошивка файл версии 3 не читает (её партии после отката пропадут). Рейтинг — отдельный
-файл `rating.bin` (раздел «Рейтинг ELO»).
+`/meshmesh/chess.bin` in the internal LittleFS: the `MMC1` header, version, games
+(opponent, number, color, state, the last sent command and its status,
+the list of moves) and a CRC-32. It is written to `chess.new`, the previous copy is renamed
+to `chess.old`, then the new one to `chess.bin`; if the main file is corrupted when read,
+`chess.old` is used. On load the moves are replayed by the rules; a game with an
+illegal move is discarded. A command that had no ACK before the restart
+is considered undelivered and is retried automatically. The SD card and chat history are not touched.
+Version 3 added the rated mark, the opponent's key and both signatures to a game; version 1 and 2 files
+are read, while older firmware does not read a version 3 file (its games are lost after a downgrade). The rating
+is a separate file, `rating.bin` (see “ELO rating”).
 
-## Проверки
+## Checks
 
-- `tools/ui_preview/build.sh m9 DIR` — кроме экранов, турнир целиком на стороне организатора: мастер с шестью
-  контактами, автостарт после всех ответов (не в обработчике радио), четыре тура с отчётами обоих игроков,
-  спор, решённый организатором; проверки: по одной партии на пару и один свободный тур за тур, без повторных
-  встреч, не больше одного свободного тура на игрока, чередование цветов, сумма очков и порядок таблицы;
-  сторона игрока — приглашение, список игроков, пара с ключом соперника создаёт партию, таблица.
-- `tools/chess/rating_check.sh` — на компьютере: подписи кодом Ed25519 из MeshCore (чужие часы или
-  результат подпись ломают), base64, ELO 1500 → 1516/1484, ожидаемое изменение, дневной предел,
-  повторная запись, чтение файла и перенос старых записей в базу.
-- `tools/chess/rules_check.sh` — на компьютере: perft для шести эталонных позиций
-  (включая рокировки, взятие на проходе и превращения), FEN, запись ходов,
-  мат, пат, повторение, недостаточный материал, отказ от недопустимого списка ходов.
-- `tools/ui_preview/build.sh m9 DIR` — экраны шахмат (список, выбор, доска, фигура с
-  ходами, превращение, недоставленный ход, предложение ничьей, справка).
-- `tools/ui_preview/build.sh heltec DIR` — одна кнопка: список, фигура, клетки, «Отмена» возвращает
-  фигуру, ход Сf1-c4, ответ соперника без всплывающего окна, «Меню партии» и «Список партий».
-- `tools/web_usb_bridge.py --port PORT` — веб-страница в браузере компьютера с ответами
-  платы через USB (действия реально уходят по радио); для визуальной проверки
-  без подключения к Wi-Fi устройства. Настоящий HTTP по Wi-Fi, включая
-  `/api/chess`, проверяет `wifi_probe.py`.
-- `tools/chess_check.py` — по радио между M9 и Heltec: вызов с Heltec, принятие на
-  экране M9, партия до мата с совпадением позиций после каждого полухода, повтор и
-  недопустимый ход текстом игнорируются, в историю чата команды не попадают,
-  перезапусков нет. Входит в `finish_on_hardware.py` после проверки радио. С `--heltec-screen`
-  Heltec делает свои ходы на экране одной кнопкой (USB-события клика и удержания, физическую
-  кнопку это не проверяет).
-- `node tools/chess/companion_check.cjs` — на компьютере для страницы companion: perft, запись
-  ходов и окончания правил браузера, 300 случайных партий, сверенных по каждому полуходу с
-  `src/Chess.cpp` (`tools/chess/replay.cpp`); партия двух экземпляров с потерянным ACK, повтором,
-  матом, автоповтором, ничьей и сохранением; протокол companion на имитаторе (кадры с мусором
-  перед ними, контакты, ACK, три попытки со сбросом пути, «не доставлено»).
-- `node tools/chess/i18n_check.cjs [lang ...]` — языки страницы companion: настоящие функции
-  `web/index.html` дают тексты всех состояний партии, новостей хода и доставки; в каждом языке не должно
-  остаться непереведённых кусков, ходы — буквами фигур языка. Ключи, подстановки и формы множественного
-  числа словарей сверяет `tools/chess_site.py` при сборке сайта.
-- `tools/chess_companion_check.py --companion PORT` — по радио: код страницы в Node
-  (`tools/chess/companion_node.cjs`) через `usb_tcp_bridge.py --raw` и штатную USB-companion
-  против M9 на MeshMesh: вызов со страницы и мат, повтор и недопустимый ход текстом игнорируются,
-  вызов с M9 и ничья по соглашению, обычное сообщение попадает в «Другие сообщения» одной копией,
-  ACK на каждую команду, совпадение позиций, M9 не перезапускается и не показывает команды в чате.
+- `tools/ui_preview/build.sh m9 DIR` — besides the screens, a whole tournament on the organiser's side: the
+  wizard with six contacts, the automatic start after every answer (not in the radio handler), four rounds with
+  both players' reports, a dispute settled by the organiser; the checks: one game per pair and one bye per round,
+  no repeated games, at most one bye per player, alternating colours, the total of points and the standings
+  order; the player's side — an invitation, the player list, a pairing with the opponent's key starts the game,
+  the standings.
+- `tests/chess/rating_check.sh` — on a computer: signatures with the MeshCore Ed25519 code (another clock or
+  result breaks the signature), base64, ELO 1500 → 1516/1484, the expected change, the daily limit,
+  a repeated record, reading the file back and moving old records into the base.
+- `tests/chess/rules_check.sh` — on a computer: perft for six reference positions
+  (including castling, en passant and promotions), FEN, the move record,
+  checkmate, stalemate, repetition, insufficient material, rejection of an illegal move list.
+- `tools/ui_preview/build.sh m9 DIR` — the chess screens (list, selection, board, a piece with
+  its moves, promotion, an undelivered move, a draw offer, help).
+- `tools/ui_preview/build.sh heltec DIR` — one button: the list, a piece, its squares, “Cancel” puts the
+  piece back, the move Bf1-c4, the opponent's reply without a pop-up, “Game menu” and “Game list”.
+- `tools/hw/web_usb_bridge.py --port PORT` — the web page in a computer browser with the board's
+  answers over USB (actions really go out over the radio); for visual checking
+  without connecting to the device's Wi-Fi. Real HTTP over Wi-Fi, including
+  `/api/chess`, is checked by `wifi_probe.py`.
+- `tools/hw/chess_check.py` — over the radio between the M9 and the Heltec: an invitation from the Heltec, acceptance on
+  the M9 screen, a game to checkmate with matching positions after every half-move, a repeat and
+  an illegal move as text are ignored, commands do not get into the chat history,
+  no restarts. Part of `finish_on_hardware.py` after the radio check. With `--heltec-screen` the
+  Heltec plays its moves on its screen with the one button (USB click and hold events; this does not
+  check the physical button).
+- `node tests/chess/companion_check.cjs` — on a computer, for the companion page: perft, the move
+  record and the browser rules' game endings, 300 random games checked half-move by half-move against
+  `src/games/chess/Chess.cpp` (`tests/chess/replay.cpp`); a game between two instances with a lost ACK, a retry,
+  checkmate, automatic resending, a draw and storage; the companion protocol on a simulator (frames with garbage
+  in front of them, contacts, ACK, three attempts with a path reset, “not delivered”).
+- `tools/hw/chess_companion_check.py --companion PORT` — over the radio: the page code in Node
+  (`tools/hw/chess_companion_node.cjs`) through `usb_tcp_bridge.py --raw` and the stock USB companion
+  against the M9 on MeshMesh: an invitation from the page and checkmate, a repeat and an illegal move as text are ignored,
+  an invitation from the M9 and a draw by agreement, an ordinary message lands in “Other messages” as a single copy,
+  an ACK for every command, matching positions, the M9 does not restart and does not show the commands in the chat.

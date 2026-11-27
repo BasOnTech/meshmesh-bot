@@ -1,0 +1,22 @@
+{
+  "name": "hex0x-color",
+  "displayName": "Hex 0x Color Picker",
+  "description": "Native colour swatches + picker for 0xRRGGBB values in theme headers",
+  "version": "0.0.1",
+  "publisher": "local",
+  "engines": { "vscode": "^1.60.0" },
+  "activationEvents": ["onLanguage:c", "onLanguage:cpp"],
+  "main": "./extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Hex 0x Color",
+      "properties": {
+        "hex0xColor.include": {
+          "type": "string",
+          "default": "**/src/ui/themes/*.h",
+          "description": "Glob of files that get 0xRRGGBB colour swatches (reload window after changing)"
+        }
+      }
+    }
+  }
+}

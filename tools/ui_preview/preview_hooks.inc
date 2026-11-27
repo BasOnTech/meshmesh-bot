@@ -2,17 +2,12 @@
 bool MeshRadio::resetPath(uint64_t id){Peer* p=contact(id);if(!p)return false;p->pathLength=255;return true;}
 bool MeshRadio::removeContact(uint64_t id){Peer* p=contact(id);if(!p)return false;unsigned i=p-peers;memmove(peers+i,peers+i+1,sizeof(Peer)*(peerCount-i-1));peerCount--;return true;}
 void Hardware::ping(uint16_t,uint16_t){}
-// Signal radar: synthetic sweep results; the table and trend logic are the real src/RadarModel.cpp.
-#include "Radar.h"
+// Signal radar: synthetic sweep results; the table and trend logic are the real src/apps/RadarModel.cpp.
+#include "apps/Radar.h"
 Radar& radar=*new Radar;
 void Radar::open(){if(active)return;active=true;wifi=WifiReady;sweeps=3;count=0;
-#if defined(MM_NO_WIFI)
- wifi=WifiOff;
-#endif
- struct {uint64_t id;const char* name;uint8_t ch;bool open;int rssi;} aps[]={{0x5A1F0C9E1101ULL,"MM-9E77D2",1,false,-41},{0x34E8941A2B3CULL,"Keenetic-4471",6,false,-58},{0xA0F3C1223344ULL,"TP-Link_5GHz",11,false,-66},{0x10FEED000001ULL,"",3,false,-72},{0x28CDC1ABCDEFULL,"Кафе Бахетле",1,true,-79},{0xB827EB000102ULL,"DIRECT-HP-M28",6,false,-88}};
-#if !defined(MM_NO_WIFI)
+ struct {uint64_t id;const char* name;uint8_t ch;bool open;int rssi;} aps[]={{0x5A1F0C9E1101ULL,"MM-9E77D2",1,false,-41},{0x34E8941A2B3CULL,"Keenetic-4471",6,false,-58},{0xA0F3C1223344ULL,"TP-Link_5GHz",11,false,-66},{0x10FEED000001ULL,"",3,false,-72},{0x28CDC1ABCDEFULL,"Cafe Bakhetle",1,true,-79},{0xB827EB000102ULL,"DIRECT-HP-M28",6,false,-88}};
  for(auto& a:aps){RadarTarget* t=upsert(RadarTarget::Wifi,a.id);strcpy(t->name,a.name);t->channel=a.ch;t->open=a.open;t->rssi=a.rssi;t->seen=millis();}
-#endif
  struct {uint64_t id;const char* name;RadarTarget::Device device;uint16_t vendor;int rssi;} bles[]={{0x6A11,"",RadarTarget::Personal,0x004c,-52},{0x6A12,"Galaxy Watch6",RadarTarget::Watch,0x0075,-61},{0x6A13,"",RadarTarget::Audio,0x004c,-70},{0x6A14,"MeshMesh 0E44",RadarTarget::Unknown,0xffff,-47},{0x6A15,"",RadarTarget::Unknown,0x0006,-83}};
  for(auto& b:bles){RadarTarget* t=upsert(RadarTarget::Ble,b.id);strcpy(t->name,b.name);t->device=b.device;t->vendor=b.vendor;t->rssi=b.rssi;t->seen=millis()-(b.id&3)*7000;}
  ble=BleReady;
@@ -31,15 +26,15 @@ bool Radar::track(unsigned index){if(index>=count)return false;focus=targets[ind
  lastSample=millis()-300;rate=21;return true;}
 void Radar::untrack(){tracking=false;reset();}
 // Chess: the real ChessNet with its saved games kept in memory; sent commands only get an ID.
-#include "ChessNet.h"
+#include "games/chess/ChessNet.h"
 #include <vector>
 static std::vector<uint8_t> chessSaved;
 bool chessStoreWrite(const uint8_t* d,size_t n){chessSaved.assign(d,d+n);return true;}
 size_t chessStoreRead(uint8_t* d,size_t cap){if(chessSaved.size()>cap)return 0;memcpy(d,chessSaved.data(),chessSaved.size());return chessSaved.size();}
 struct PreviewSent{uint32_t id;uint64_t peer;std::string text;};static std::vector<PreviewSent> previewSent; // game and tournament commands sent
 uint32_t MeshRadio::sendGame(const String& text,uint64_t peer){previewSent.push_back({++nextId,peer,text.c_str()});return nextId;}
-// Rated results: the real src/ChessRating.cpp with its file in memory; the node "signs" with a fixed pattern.
-#include "ChessRating.h"
+// Rated results: the real src/games/chess/ChessRating.cpp with its file in memory; the node "signs" with a fixed pattern.
+#include "games/chess/ChessRating.h"
 static std::vector<uint8_t> ratingSaved;
 bool rating::storeWrite(const uint8_t* d,size_t n){ratingSaved.assign(d,d+n);return true;}
 size_t rating::storeRead(uint8_t* d,size_t cap){if(ratingSaved.size()>cap)return 0;memcpy(d,ratingSaved.data(),ratingSaved.size());return ratingSaved.size();}
@@ -52,19 +47,19 @@ static std::vector<std::pair<std::string,std::string>> previewArchive;
 bool chessArchiveWrite(const String& name,const String& text){for(auto& a:previewArchive)if(a.first==name.c_str()){a.second=text.c_str();return true;}previewArchive.push_back({name.c_str(),text.c_str()});return true;}
 String chessArchiveList(){String s="{\"games\":[";for(size_t i=0;i<previewArchive.size();i++)s+=String(i?",":"")+"\""+previewArchive[i].first.c_str()+"\"";return s+"],\"sd\":true}";}
 String chessArchiveRead(const String& name){for(auto& a:previewArchive)if(a.first==name.c_str())return a.second.c_str();return "";}
-// Tournaments: the real src/ChessTour.cpp with its file in memory.
-#include "ChessTour.h"
+// Tournaments: the real src/games/chess/ChessTour.cpp with its file in memory.
+#include "games/chess/ChessTour.h"
 static std::vector<uint8_t> tourSaved;
 bool tour::storeWrite(const uint8_t* d,size_t n){tourSaved.assign(d,d+n);return true;}
 size_t tour::storeRead(uint8_t* d,size_t cap){if(tourSaved.size()!=cap)return 0;memcpy(d,tourSaved.data(),cap);return cap;}
 // Internet over Wi-Fi and the web radar holder: switched off in the preview.
-#include "Internet.h"
+#include "net/Internet.h"
 Internet internet;
 #if !defined(MM_HELTEC_V4)
 static int previewRescans=0; // the T-Deck touch check: DEL in the network list rescans
 void Internet::setEnabled(bool on){enabled=on;}void Internet::rescan(){previewRescans++;}void Internet::connectTo(const String&){}
 bool Internet::save(const String&,const String&){return true;}bool Internet::forget(const String&){return true;}
-String Internet::savedName(unsigned){return "";}String Internet::stateText(){return online()?String("Home-WiFi · 192.168.1.101"):tr("Off","Выключен");}
+String Internet::savedName(unsigned){return "";}String Internet::stateText(){return online()?String("Home-WiFi · 192.168.1.101"):tr("Off");}
 String Internet::address(){return "192.168.1.101";}
 #endif
 bool Maps::inArea() const{return true;}
@@ -74,25 +69,25 @@ static String previewCommands; // commands the screens ran, for the checks
 static bool previewOff=false;
 String powerOff(){previewOff=true;return "OK turning off";}
 bool powerOffPending(){return previewOff;}
-#if defined(MM_COMPACT) || defined(MM_BOARD_TDECK)
+#if defined(MM_COMPACT)
 int powerOnWay(){return 0;}
 #else
 int powerOnWay(){return -1;}
 #endif
 String executeCommand(const String& line){previewCommands+=line+";";return "OK";} // UiHeltec.cpp: the GAT562 GPS menu
-// Same as src/MeshRadio.cpp (the preview does not link the radio).
+// Same as src/mesh/MeshRadio.cpp (the preview does not link the radio).
 String MeshRadio::routeText(const ChatMessage& m,bool brief) const{
  if(m.protocol!=2||m.route==ChatMessage::RouteNone||(m.outgoing&&(m.status==ChatMessage::Failed||channels::isChannel(m.destination))))return "";
- String hops=m.hops==255?String():!m.hops?String(brief?tr("direct","напр."):tr("direct","напрямую")):(brief?String(m.hops)+tr(" rpt"," ретр."):String(tr("via ","через "))+m.hops+tr(" rpt"," ретр."));
- String s=m.route==ChatMessage::RouteDirect?(hops.length()?hops:String(tr("routed","по маршруту")))
+ String hops=m.hops==255?String():!m.hops?String(brief?tr("direct"):tr("direct")):(brief?String(m.hops)+tr(" rpt"):String(tr("via "))+m.hops+tr(" rpt"));
+ String s=m.route==ChatMessage::RouteDirect?(hops.length()?hops:String(tr("routed")))
   :!m.outgoing?(hops.length()?hops:String("flood")) // incoming: how far it came
   :m.status==ChatMessage::Delivered&&hops.length()&&!brief?"flood, "+hops:String("flood");
- if(m.outgoing&&m.tries>1)s+=m.status==ChatMessage::Delivered?(brief?" #"+String(m.tries):String(tr(" · try "," · попытка "))+m.tries):" "+String(m.tries)+"/3";
+ if(m.outgoing&&m.tries>1)s+=m.status==ChatMessage::Delivered?(brief?" #"+String(m.tries):String(tr(" · try "))+m.tries):" "+String(m.tries)+"/3";
  return s;
 }
 // Device modes: a repeater or room server with made-up passwords and counts.
-#include "MeshServer.h"
-#include "Regions.h"
+#include "mesh/MeshServer.h"
+#include "mesh/Regions.h"
 MeshServer meshServer;
 bool MeshServer::room() const{return config.role==RoleRoom;}
 ServerView MeshServer::view(){ServerView v;v.running=config.role!=RoleNormal;v.room=room();v.forwarding=!v.room;v.password="48213906";v.guest=v.room?"garden":"";
@@ -102,8 +97,8 @@ bool MeshServer::post(const String&){return true;}
 bool MeshServer::advertise(bool){return true;}
 const char* roleName(uint8_t role){return role==RoleRepeater?"repeater":role==RoleRoom?"room":"normal";}
 String setRole(uint8_t role){return String("OK role ")+roleName(role)+"; restarting";}
-// Channels: the table in memory (src/MeshRadio.cpp keeps it in NVS and gives it to MeshCore); the names,
-// keys, links and QR codes are the real src/Channels.cpp.
+// Channels: the table in memory (src/mesh/MeshRadio.cpp keeps it in NVS and gives it to MeshCore); the names,
+// keys, links and QR codes are the real src/mesh/Channels.cpp.
 const channels::Channel* MeshRadio::channel(uint64_t id) const{int i=channelIndex(id);return i<0?nullptr:&channelList[i];}
 int MeshRadio::channelIndex(uint64_t id) const{for(unsigned i=0;i<channelCount;i++)if(channelList[i].id==id)return i;return -1;}
 MeshRadio::ChannelResult MeshRadio::addChannel(const String& name,const uint8_t secret[16],uint64_t* id){
@@ -123,21 +118,6 @@ Search search;
 bool find(){static Found list[MaxFound];search=Search();search.found=list;search.state=Search::Done;search.repeaters=search.answered=2;for(const char* n:{"ru","mow","msk","sao"}){strcpy(search.found[search.count].name,n);search.found[search.count++].repeaters=2;}return true;}
 void tick(){}
 String json(){return "{}";}
-}
-// Network search: the answer near Moscow with a Kazan profile on the board, at once (src/NetFind.inc on the boards).
-#include "NetFind.h"
-namespace netfind {
-State state;
-bool start(bool,const float*,const float*){static Result list[MaxResults];uint16_t found=state.found;state=State();state.found=found;state.results=list;
- RadioProfile here=config.radio(),near=here;near.sf=7;near.cr=7;
- list[0]=Result();list[0].radio=here;list[0].current=true;list[0].done=true;
- list[1]=Result();list[1].radio=near;list[1].place=1;list[1].repeaters=3;list[1].packets=5;list[1].snr=26;list[1].done=true;
- state.count=2;state.best=1;state.located=true;state.phase=State::Done;return true;}
-void stop(){}void cancel(){}void tick(){}
-String json(){return "{}";}
-String placeName(uint8_t place){return place==1?"Москва и Московская область":"";}
-String profileText(const RadioProfile& r){return String(r.frequency,3)+" SF"+String(r.sf)+" BW"+String(r.bandwidth,1);}
-String use(uint8_t){return "OK radio test";}
 }
 int MeshRadio::probeHashtag(const String& raw){String tag=channels::hashtag(raw);if(!tag.length())return -1;for(unsigned i=0;i<heardCount;i++)if(tag==heard[i].name)return heard[i].packets;return tag=="#test"?2:0;}
 // MeshMesh storage files: none in the preview (read marks fall back to the Preferences shim).

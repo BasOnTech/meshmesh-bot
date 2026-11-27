@@ -63,7 +63,6 @@ nav a:hover{color:var(--ink);text-decoration:none}
 .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px}
 .cta-more{display:none} /* the header menu links to the features; shown when the menu is hidden */
 .facts{display:flex;gap:28px;flex-wrap:wrap;margin-top:40px;color:var(--dim);font-size:14px}
-[dir=rtl] .news i,[dir=rtl] .lb .nav svg{transform:scaleX(-1)}
 .news{display:flex;align-items:center;gap:14px;max-width:560px;margin-top:24px;padding:12px 16px;background:var(--card);border:1px solid var(--line);border-radius:12px;color:var(--ink);text-decoration:none;font-size:15px;line-height:1.4;transition:border-color .15s}.news:hover{border-color:var(--accent)}.news .t{width:34px;height:34px;border-radius:10px;background:var(--deep);color:var(--accent);display:grid;place-items:center;flex:none}.news .t svg{width:20px;height:20px}.news>span{flex:1}.news i{font-style:normal;color:var(--accent)}
 .facts b{display:block;color:var(--ink);font-size:22px;font-weight:700}
 /* devices */
@@ -79,13 +78,6 @@ nav a:hover{color:var(--ink);text-decoration:none}
 .heltec .oled{aspect-ratio:2/1;background:#000;border-radius:3px;overflow:hidden;border:2px solid #05080b}
 .heltec .oled img{width:100%;height:100%}
 .heltec .lbl{display:flex;justify-content:space-between;margin-top:8px;font:500 9px "JetBrains Mono",monospace;color:#6c7f94}
-.gat{position:absolute;right:-34px;bottom:-40px;width:184px;background:linear-gradient(160deg,#2a2f37,#14181d);border-radius:14px;padding:12px 12px 10px;border:1px solid #3a424d;box-shadow:0 24px 50px -10px rgba(0,0,0,.8);transform:rotate(5deg)}
-.gat .oled{aspect-ratio:2/1;background:#000;border-radius:3px;overflow:hidden;border:2px solid #05080b}
-.gat .oled img{width:100%;height:100%}
-.gat .pad{display:flex;align-items:center;justify-content:center;gap:22px;margin-top:10px}
-.gat .joy{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#56606c,#2a3038 70%);border:1px solid #4a535e;box-shadow:inset 0 -2px 3px rgba(0,0,0,.5)}
-.gat .back{width:14px;height:14px;border-radius:50%;background:#3a424d;border:1px solid #4f5965}
-.gat .lbl{display:flex;justify-content:space-between;margin-top:8px;font:500 9px "JetBrains Mono",monospace;color:#7d8794}
 .dots{display:flex;gap:8px;justify-content:center;margin-top:18px}
 .dots button{width:8px;height:8px;border-radius:50%;border:0;background:var(--line);padding:0;cursor:pointer}
 .dots button.on{background:var(--accent);width:22px;border-radius:4px}
@@ -156,35 +148,6 @@ esp-web-install-button{display:inline-block}
 .fwlang label{color:var(--ink);font-weight:600;font-size:15px}
 .fwlang select{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;font:500 15px Inter,system-ui,sans-serif;padding:8px 10px}
 .fwlang small{color:var(--faint);font-size:13px;flex-basis:100%}
-/* network of a city (netpick.js): Russian only, folded */
-html:not([lang=ru]) #netPick{display:none}
-#netPick{margin-top:28px;padding-top:20px;padding-bottom:20px}
-#netPick summary{display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none}
-#netPick summary::-webkit-details-marker{display:none}
-#netPick summary h3{margin:0}
-#netPick summary span{color:var(--dim);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-#netPick summary i{margin-inline-start:auto;color:var(--dim);font-style:normal;transition:transform .15s}
-#netPick[open] summary i{transform:rotate(180deg)}
-#netPick[open] summary{margin-bottom:12px}
-#netPick .small{font-size:14px;color:var(--dim);margin:8px 0}
-#netPick ol{margin-top:18px}
-#netPick ol li>div{flex:1;min-width:0}
-#netPick ol li b.stp{display:block;color:var(--ink);margin:2px 0 10px}
-#netPick .note{margin-top:10px}
-#netPick .btn{height:40px;padding:0 16px;font-size:15px}
-#netPick a.small,.linkbtn{color:var(--accent)}
-.linkbtn{background:none;border:0;padding:0;font:inherit;cursor:pointer}
-#netQ{flex:1;min-width:160px;height:40px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;font:500 15px Inter,system-ui,sans-serif;padding:0 12px}
-.netrow{display:flex;align-items:stretch;gap:6px;margin-top:6px}
-.netrow button{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;text-align:start;padding:8px 12px;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
-.netrow button:hover{border-color:#3a4a5c}
-.netrow.on button{border-color:var(--accent);background:rgba(31,194,174,.08)}
-.netrow.on button b::before{content:"✓ ";color:var(--accent)}
-.netrow button span{color:var(--dim)}
-.netrow button small{margin-inline-start:auto;color:var(--faint);font-size:12px;white-space:nowrap}
-.netrow a{display:grid;place-items:center;width:36px;border:1px solid var(--line);border-radius:10px;color:var(--dim)}
-.netrow a:hover{text-decoration:none;color:var(--accent)}
-@media (max-width:600px){#netPick ol li{display:block;position:relative}#netPick ol li::before{position:absolute;top:0;inset-inline-start:0}#netPick ol li b.stp{padding-inline-start:38px;line-height:26px}}
 /* docs */
 .docs{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:40px}
 .doc{display:block;padding:20px;background:var(--card);border:1px solid var(--line);border-radius:14px;color:var(--ink);transition:border-color .15s,transform .15s}
@@ -214,9 +177,8 @@ footer a{color:var(--dim)}
 .lb svg{width:20px;height:20px}
 @media (max-width:960px){
  .hero .wrap{grid-template-columns:1fr}
- .stage{min-height:0;margin:20px auto 0;padding-bottom:30px;width:min(400px,100%)} /* Heltec and GAT562 sit at the M9's corners */
+ .stage{min-height:0;margin:20px auto 0;padding-bottom:30px;width:min(400px,100%)} /* Heltec sits at the M9's corner */
  .heltec{left:-110px;bottom:-40px}
- .gat{right:-110px;bottom:-30px}
  .grid{grid-template-columns:repeat(2,1fr)}
  .flash{grid-template-columns:1fr}
  .docs{grid-template-columns:repeat(2,1fr)}
@@ -224,16 +186,13 @@ footer a{color:var(--dim)}
  .cta-more{display:inline-flex}
  .lang{margin-inline-start:auto}
 }
-@media (max-width:760px){.heltec{left:-70px}.gat{right:-70px}}
+@media (max-width:760px){.heltec{left:-70px}}
 @media (max-width:620px){
  .wrap{padding:0 16px}
  section{padding:64px 0}
  .hero{padding:40px 0 56px}
  .grid,.steps,.docs{grid-template-columns:1fr}
  .heltec{width:140px;left:-6px;bottom:-10px}
- .gat{width:128px;right:-6px;bottom:-22px;padding:8px 8px 7px}
- .gat .pad{gap:14px;margin-top:6px}.gat .joy{width:20px;height:20px}.gat .back{width:10px;height:10px}
- .cta-apk{order:-1;background:var(--accent);border-color:var(--accent);color:#04201c}
  .btn.primary.cta-install{background:var(--card);border-color:var(--line);color:var(--ink)}
  .lb .nav{display:none}
  .diagram .horiz{display:none}
@@ -266,19 +225,18 @@ footer a{color:var(--dim)}
 <section class="hero">
  <div class="wrap">
   <div>
-   <div class="kicker">LoRa · MeshCore · ESP32 · nRF52</div>
+   <div class="kicker">LoRa · MeshCore · ESP32</div>
    <h1 data-i18n="hero.title"></h1>
    <p class="lead" data-i18n="hero.lead"></p>
    <div class="cta">
     <a class="btn primary cta-install" href="#install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16"/></svg><span data-i18n="cta.install"></span></a>
-    <a class="btn cta-apk" href="app/meshmesh.apk" download><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.48l1.84-3.18a.38.38 0 0 0-.66-.38l-1.86 3.22a11.4 11.4 0 0 0-9.84 0L5.22 5.92a.38.38 0 0 0-.66.38L6.4 9.48A10.8 10.8 0 0 0 1 18h22a10.8 10.8 0 0 0-5.4-8.52ZM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Z"/></svg><span data-i18n="cta.apk"></span></a>
     <a class="btn cta-more" href="#features"><span data-i18n="cta.more"></span></a>
    </div>
    <a class="news" href="#features"><b class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg></b><span data-i18n="news.emoji"></span><i>→</i></a>
    <div class="facts">
     <div><b>14</b><span data-i18n="facts.boards"></span></div>
     <div><b>MeshCore</b><span data-i18n="facts.radio"></span></div>
-    <div><b>15</b><span data-i18n="facts.ui"></span></div>
+    <div><b>2</b><span data-i18n="facts.ui"></span></div>
     <div><b>MIT</b><span data-i18n="facts.license"></span></div>
    </div>
   </div>
@@ -289,7 +247,6 @@ footer a{color:var(--dim)}
      <div class="keys" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="w"></i><i></i><i></i><i></i></div>
     </div>
     <div class="heltec" aria-label="Heltec V4"><div class="oled"><img id="heroOled" data-shot="heltec-home" alt="Heltec V4"></div><div class="lbl"><span>HELTEC V4</span><span>PRG ●</span></div></div>
-    <div class="gat" aria-label="GAT562 30S"><div class="oled"><img id="heroGat" data-shot="gat562-home" alt="GAT562"></div><div class="pad"><span class="joy"></span><span class="back"></span></div><div class="lbl"><span>GAT562 30S</span><span>nRF52</span></div></div>
    </div>
    <div class="dots" id="heroDots"></div>
   </div>
@@ -395,15 +352,7 @@ footer a{color:var(--dim)}
      <li><span data-i18n="esp.step2"></span></li>
      <li><span data-i18n="esp.step3"></span></li>
     </ol>
-    <ol id="uf2Steps" hidden>
-     <li><span data-i18n="uf2.step1"></span></li>
-     <li><span data-i18n="uf2.step2"></span></li>
-     <li><span data-i18n="uf2.step3"></span></li>
-     <li><span data-i18n="uf2.step4"></span></li>
-    </ol>
     <div class="row" id="installRow">
-     <button class="btn primary" id="nrfInstall" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><span id="nrfLabel"><span data-i18n="btn.install"></span></span></button>
-     <a class="btn" id="uf2" href="#" download hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16"/></svg><span>firmware.uf2</span></a>
      <esp-web-install-button id="installer">
       <button slot="activate" class="btn primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><span data-i18n="btn.install"></span></button>
       <span slot="unsupported" class="unsup"><span data-i18n="web.unsupported"></span></span>
@@ -411,8 +360,6 @@ footer a{color:var(--dim)}
      </esp-web-install-button>
      <a class="btn" id="zip" href="#" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16"/></svg><span data-i18n="btn.files"></span></a>
     </div>
-    <div class="note" id="nrfStatus" hidden><div id="nrfText"></div><progress id="nrfProgress" max="1" value="0" hidden style="width:100%;margin-top:8px"></progress></div>
-    <div class="note" id="uf2Note" hidden><span data-i18n="uf2.note"></span></div>
     <div class="note esp-only"><span data-i18n="esp.portBusy"></span></div>
     <div class="note warn" id="communityNote" hidden><span data-i18n="board.communityNote"></span></div>
    </div>
@@ -424,28 +371,11 @@ footer a{color:var(--dim)}
      <li><span data-i18n="good.radio"></span></li>
      <li><span data-i18n="good.law"></span></li>
     </ol>
-    <div class="note"><span data-i18n="app.note"></span>
-     <div class="row" style="margin-top:12px"><a class="btn" href="app/meshmesh.apk" download><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.48l1.84-3.18a.38.38 0 0 0-.66-.38l-1.86 3.22a11.4 11.4 0 0 0-9.84 0L5.22 5.92a.38.38 0 0 0-.66.38L6.4 9.48A10.8 10.8 0 0 0 1 18h22a10.8 10.8 0 0 0-5.4-8.52ZM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Z"/></svg><span data-i18n="app.download"></span></a><small style="color:var(--faint)">Android 10+</small></div>
-    </div>
     <div class="note"><span data-i18n="chess.note"></span>
      <div class="row" style="margin-top:12px"><a class="btn" href="chess/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M9 18h6l1-6H8zM10 12V9l-2-2 2-1V3h4v3l2 1-2 2v3"/></svg><span data-i18n="chess.open"></span></a></div>
     </div>
    </div>
   </div>
-  <details class="panel" id="netPick">
-   <summary><h3 data-i18n="net.title"></h3><span id="netSum"></span><i>▾</i></summary>
-   <p class="small" data-i18n="net.lead"></p>
-   <ol>
-    <li><div><b class="stp" data-i18n="net.choose"></b>
-     <div class="row"><input id="netQ" autocomplete="off" data-i18n-placeholder="net.search"><button class="btn" type="button" data-net-do="locate"><span data-i18n="net.nearby"></span></button></div>
-     <p class="small" id="netPos" hidden></p>
-     <div id="netChosen"></div>
-     <div id="netList"></div>
-     <p class="small"><span id="netCat"></span> <a class="small" href="https://github.com/VoxMesh/meshcore-local-networks" target="_blank" rel="noopener">VoxMesh</a> · <button class="linkbtn" type="button" data-net-do="update"><span data-i18n="net.update"></span></button></p>
-    </div></li>
-    <li><div><b class="stp" data-i18n="net.connect"></b><div id="netBoard"></div><div class="note" id="netStatus" hidden></div></div></li>
-   </ol>
-  </details>
  </div>
 </section>
 
@@ -485,9 +415,9 @@ footer a{color:var(--dim)}
 
 <script>
 const REPO='https://github.com/IKrasnodymov/meshmesh';
-// Site and device languages (include/I18n.h order); site/i18n/<code>.json holds the page text.
-const LANGS=[['en','English'],['ru','Русский'],['uk','Українська'],['es','Español'],['pt','Português'],['fr','Français'],['de','Deutsch'],['it','Italiano'],['pl','Polski'],['tr','Türkçe'],['zh','中文'],['ja','日本語'],['ko','한국어'],['ar','العربية'],['id','Bahasa Indonesia']];
-const CODES=LANGS.map(l=>l[0]),RTL=['ar'];
+// Site and device languages (src/i18n/I18n.h order); site/i18n/<code>.json holds the page text.
+const LANGS=[['en','English']];
+const CODES=LANGS.map(l=>l[0]);
 const ICONS={
  chat:'<path d="M4 5h16v11H8l-4 4z"/>',map:'<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>',
  nodes:'<circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="18" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="M11 7.3 6.2 15.8M13 7.3l4.8 8.5M7.5 18h9"/>',
@@ -511,23 +441,19 @@ const ICONS={
 // Each feature: icon, colour, screenshots (img/<name>-<lang>.png, the device page img/web-<name>-<lang>.webp); texts f.<id>.t, f.<id>.d and shot.<name>.
 const FEATURES=[
  {id:'games',ic:'chess',c:'#e9b13b',shots:['m9-checkers','m9-sea-mid','heltec-checkers-move','heltec-sea-hunt','m9-home-folder','m9-folder','m9-checkers-chain','m9-sea-lost']},
- {id:'emoji',ic:'chat',c:'#e9b13b',shots:['m9-chat','t114-popup','heltec-popup','m9-threads']},
+ {id:'emoji',ic:'chat',c:'#e9b13b',shots:['m9-chat','heltec-popup','m9-threads']},
  {id:'backup',ic:'backup',c:'#4f9df7',shots:['web-backup-restore','web-backup']},
- {id:'netfind',ic:'tower',c:'#4cc26b',shots:['m9-radio-net','web-netfind','t114-radio-net','heltec-radio-net']},
- {id:'networks',ic:'region',c:'#4f9df7',shots:['m9-radio-test','web-networks','web-networks-test']},
- {id:'sheet',ic:'dice',c:'#a78bfa',shots:['m9-dice-sheet','m9-dice-sheet-ret','t114-dice-sheet','m9-dice-templates','heltec-dice-sheet','m9-dice-offer']},
- {id:'counter',ic:'tally',c:'#4cc26b',shots:['m9-people-cards','m9-people-new','t114-people-two','heltec-people-two','m9-home']},
- {id:'wardrive',ic:'route',c:'#4cc26b',shots:['m9-wardrive','m9-wardrive-map','t114-wardrive','heltec-wardrive','heltec-wardrive-repeaters','t114-wardrive-repeaters']},
+ {id:'sheet',ic:'dice',c:'#a78bfa',shots:['m9-dice-sheet','m9-dice-sheet-ret','m9-dice-templates','heltec-dice-sheet','m9-dice-offer']},
+ {id:'counter',ic:'tally',c:'#4cc26b',shots:['m9-people-cards','m9-people-new','heltec-people-two','m9-home']},
+ {id:'wardrive',ic:'route',c:'#4cc26b',shots:['m9-wardrive','m9-wardrive-map','heltec-wardrive','heltec-wardrive-repeaters']},
  {id:'alerts',ic:'bell',c:'#e9b13b',phone:true,shots:['web-alerts-feed','web-alerts-settings']},
  {id:'path',ic:'route',c:'#1fc2ae',phone:true,shots:['web-msg-path','web-msg-echoes']},
- {id:'regions',ic:'region',c:'#38bdf8',shots:['m9-radio-regions','m9-channel-region','heltec-radio-region','t114-radio-find']},
- {id:'companion',ic:'phone',c:'#1fc2ae',shots:['m9-network-ble','t114-ble-on','heltec-ble-on']},
- {id:'dice',ic:'dice',c:'#e9b13b',shots:['m9-dice-shapes','t114-dice-saved','m9-dice-grid','m9-dice-counters','heltec-dice-grid','m9-dice-saved']},
- {id:'pet',ic:'paw',c:'#f472b6',shots:['m9-pet-happy','t114-pet-happy','m9-pet-hungry','heltec-pet-stats','m9-pet-dead']},
- {id:'t114',ic:'oled',c:'#4f9df7',oled:true,shots:['t114-home','t114-chess-targets','t114-chess-list','t114-radar','t114-popup','t114-nodes']},
+ {id:'regions',ic:'region',c:'#38bdf8',shots:['m9-radio-regions','m9-channel-region','heltec-radio-region']},
+ {id:'companion',ic:'phone',c:'#1fc2ae',shots:['m9-network-ble','heltec-ble-on']},
+ {id:'dice',ic:'dice',c:'#e9b13b',shots:['m9-dice-shapes','m9-dice-grid','m9-dice-counters','heltec-dice-grid','m9-dice-saved']},
+ {id:'pet',ic:'paw',c:'#f472b6',shots:['m9-pet-happy','m9-pet-hungry','heltec-pet-stats','m9-pet-dead']},
  {id:'chess',ic:'chess',c:'#4cc26b',shots:['m9-chess-italian','m9-chess-promotion','m9-locked-chess','heltec-chess-piece','heltec-chess-move','heltec-chess-gamemenu','heltec-chess-list','m9-chess-rating','m9-chess-pick-rated','m9-chess-rated-result','m9-tour-final','m9-tour-new-players','m9-tour-invite','web-chess-companion-board','web-chess-companion-list','web-chess-companion-connect']},
  {id:'channels',ic:'hash',c:'#1fc2ae',shots:['m9-threads-channels','m9-channel-private','m9-channel-add','m9-chat-invite','heltec-invite-menu']},
- {id:'gat562',ic:'oled',c:'#e4e9ee',oled:true,shots:['gat562-home','gat562-keyboard','gat562-chess','gat562-chess-list','gat562-radar','gat562-node-menu']},
  {id:'modes',ic:'tower',c:'#a78bfa',shots:['m9-role-boot','m9-repeater','m9-room','m9-room-post','heltec-role','heltec-repeater','heltec-room']},
  {id:'chats',ic:'chat',c:'#1fc2ae',shots:['m9-threads','m9-chat','m9-chat-public','heltec-messages','heltec-popup']},
  {id:'maps',ic:'map',c:'#4f9df7',shots:['m9-map','m9-library']},
@@ -536,24 +462,23 @@ const FEATURES=[
  {id:'motion',ic:'motion',c:'#e9b13b',shots:['m9-motion']},
  {id:'solitaire',ic:'cards',c:'#e5564d',shots:['m9-solitaire-played']},
  {id:'gps',ic:'compass',c:'#4f9df7',shots:['m9-sensors','heltec-gps']},
- {id:'screen',ic:'keyboard',c:'#1fc2ae',shots:['m9-home','m9-layout','m9-locked']},
+ {id:'screen',ic:'keyboard',c:'#1fc2ae',shots:['m9-home','m9-locked']},
  {id:'settings',ic:'sliders',c:'#8d99a6',shots:['m9-settings','m9-radio','m9-diagnostics','heltec-settings']},
  {id:'oneButton',ic:'oled',c:'#e4e9ee',oled:true,shots:['heltec-home','heltec-messages-menu','heltec-wifi-on']},
  {id:'phone',ic:'phone',c:'#4f9df7',phone:true,shots:['web-home','web-chat','web-channel-qr','web-channel-add','web-public','web-nodes','web-map','web-radar','web-homing','web-motion','web-board','web-radio','web-desktop']}
 ];
 const HERO=['m9-home','m9-chat','m9-map','m9-radar','m9-chess-italian','m9-motion'];
 const OLED=['heltec-home','heltec-messages','heltec-nodes','heltec-radar','heltec-gps','heltec-popup'];
-const GAT=['gat562-home','gat562-keyboard','gat562-chess','gat562-radar','gat562-chess-list','gat562-node-menu'];
-// Documents: the overview in every language; the details in Russian, translated to English (docs/en).
-const DOCS=[['README.md','doc.readme'],['docs/channels.md','doc.channels'],['docs/regions.md','doc.regions'],['docs/networks.md','doc.networks'],['docs/wardrive.md','doc.wardrive'],['docs/meshcore-migration.md','doc.migration'],['docs/boards.md','doc.boards'],['docs/gat562.md','doc.gat562'],['docs/t114.md','doc.t114'],['docs/android.md','doc.android'],['docs/companion.md','doc.companion'],['docs/repeater.md','doc.repeater'],['docs/pet.md','doc.pet'],['docs/dice.md','doc.dice'],['docs/chess.md','doc.chess'],['docs/games.md','doc.games'],['docs/maps-format.md','doc.maps'],['docs/feature-parity.md','doc.parity'],['docs/verification.md','doc.verification']];
+// Documents: the overview and the details, in English (docs/).
+const DOCS=[['README.md','doc.readme'],['docs/channels.md','doc.channels'],['docs/regions.md','doc.regions'],['docs/wardrive.md','doc.wardrive'],['docs/meshcore-migration.md','doc.migration'],['docs/companion.md','doc.companion'],['docs/repeater.md','doc.repeater'],['docs/pet.md','doc.pet'],['docs/dice.md','doc.dice'],['docs/chess.md','doc.chess'],['docs/games.md','doc.games'],['docs/maps-format.md','doc.maps'],['docs/feature-parity.md','doc.parity'],['docs/verification.md','doc.verification']];
 function docPath(path){
  if(path==='README.md')return lang==='en'?path:`README.${lang}.md`;
- return lang==='ru'?path:path.replace('docs/','docs/en/');
+ return path;
 }
 let lang='en',T={},EN={};
 const L=k=>T[k]??EN[k]??k;
-// Screenshots: generated for each language (tools/site_shots.py); English when one is missing.
-// The device page in the site's language (tools/web_shots.py); the chess page's companion shots are one set.
+// Screenshots: generated for each language (tools/site/site_shots.py); English when one is missing.
+// The device page in the site's language (tools/site/web_shots.py); the chess page's companion shots are one set.
 const shotSrc=n=>n.startsWith('web-chess-')?`img/${n}.webp`:n.startsWith('web-')?`img/${n}-${lang}.webp`:`img/${n}-${lang}.png`;
 const shotFallback='onerror="if(!this.dataset.f){this.dataset.f=1;this.src=this.src.replace(/-[a-z]+\\.(png|webp)$/,\'-en.$1\')}"';
 const svg=(k,col)=>`<svg viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
@@ -562,7 +487,7 @@ function loadDict(code){return dicts[code]||(dicts[code]=fetch(`i18n/${code}.jso
 function pickLang(){
  const q=new URLSearchParams(location.search).get('lang');if(CODES.includes(q))return q;
  try{const s=localStorage.getItem('mm-lang');if(CODES.includes(s))return s}catch(e){}
- for(const l of navigator.languages||[navigator.language||'']){const c=(l||'').toLowerCase().split('-')[0];if(CODES.includes(c))return c;if(c==='be')return 'ru'}
+ for(const l of navigator.languages||[navigator.language||'']){const c=(l||'').toLowerCase().split('-')[0];if(CODES.includes(c))return c}
  return 'en';
 }
 async function setLang(code,remember){
@@ -571,7 +496,7 @@ async function setLang(code,remember){
  render();document.documentElement.classList.remove('loading');
 }
 function render(){
- const root=document.documentElement;root.lang=lang;root.dir=RTL.includes(lang)?'rtl':'ltr';
+ const root=document.documentElement;root.lang=lang;root.dir='ltr';
  document.getElementById('siteLang').value=lang;
  for(const e of document.querySelectorAll('[data-i18n]'))e.innerHTML=L(e.dataset.i18n);
  for(const e of document.querySelectorAll('[data-i18n-content]'))e.content=L(e.dataset.i18nContent);
@@ -596,11 +521,11 @@ function heroGo(i){
  heroI=(i+HERO.length)%HERO.length;
  document.querySelectorAll('#heroScreen img').forEach((im,k)=>im.classList.toggle('on',k===heroI));
  document.querySelectorAll('#heroDots button').forEach((b,k)=>b.classList.toggle('on',k===heroI));
- for(const [id,list] of [['heroOled',OLED],['heroGat',GAT]]){const im=document.getElementById(id);im.dataset.f='';im.src=shotSrc(list[heroI%list.length])}
+ for(const [id,list] of [['heroOled',OLED]]){const im=document.getElementById(id);im.dataset.f='';im.src=shotSrc(list[heroI%list.length])}
 }
 function heroStart(){clearInterval(heroTimer);heroTimer=setInterval(()=>heroGo(heroI+1),3200)}
 document.getElementById('heroDots').addEventListener('click',e=>{const b=e.target.closest('[data-h]');if(b){heroGo(+b.dataset.h);heroStart()}});
-for(const id of ['heroOled','heroGat'])document.getElementById(id).addEventListener('error',e=>{const im=e.target;if(!im.dataset.f){im.dataset.f=1;im.src=im.src.replace(/-[a-z]+\.(png|webp)$/,'-en.$1')}});
+for(const id of ['heroOled'])document.getElementById(id).addEventListener('error',e=>{const im=e.target;if(!im.dataset.f){im.dataset.f=1;im.src=im.src.replace(/-[a-z]+\.(png|webp)$/,'-en.$1')}});
 // Lightbox
 let lbF=null,lbI=0;
 function lbShow(){
@@ -624,7 +549,7 @@ document.getElementById('lb').addEventListener('click',e=>{
  const t=e.target.closest('[data-t]');if(t){lbI=+t.dataset.t;lbShow()}
 });
 // Arrow keys follow the reading direction.
-document.addEventListener('keydown',e=>{if(!document.getElementById('lb').classList.contains('open'))return;const r=document.documentElement.dir==='rtl'?-1:1;if(e.key==='Escape')lbClose();if(e.key==='ArrowRight')lbStep(r);if(e.key==='ArrowLeft')lbStep(-r)});
+document.addEventListener('keydown',e=>{if(!document.getElementById('lb').classList.contains('open'))return;const r=1;if(e.key==='Escape')lbClose();if(e.key==='ArrowRight')lbStep(r);if(e.key==='ArrowLeft')lbStep(-r)});
 let touchX=null;
 document.getElementById('lb').addEventListener('touchstart',e=>touchX=e.touches[0].clientX,{passive:true});
 document.getElementById('lb').addEventListener('touchend',e=>{if(touchX==null)return;const dx=e.changedTouches[0].clientX-touchX;if(Math.abs(dx)>50)lbStep(dx<0?1:-1);touchX=null});
@@ -638,9 +563,9 @@ function pickBoard(){
  try{const s=localStorage.getItem('mm-board');if(ok(s))return s}catch(e){}
  return null;
 }
-const SUB=['heltec_t114','gat562_30s','m9','heltec_v4','heltec_v4_r8','tdeck'];
+const SUB=['m9','heltec_v4','heltec_v4_r8'];
 // The device language: the site's unless the visitor picked another; ESP32 boards get the partition table
-// with it (firmware/<env>/manifest-<code>.json), nRF52 boards the image with that language, patched (nrf52 module below).
+// with it (firmware/<env>/manifest-<code>.json).
 let fwLangPicked=false;
 const fwLang=()=>document.getElementById('fwLang').value;
 function fwLangDefault(){if(!fwLangPicked)document.getElementById('fwLang').value=lang;}
@@ -654,19 +579,16 @@ function renderBoards(){
  const chosen=document.getElementById('chosen');chosen.classList.toggle('pick',!b);
  document.getElementById('installRow').hidden=!b;
  if(!b){
-  for(const id of ['espSteps','uf2Steps','uf2Note','nrfStatus','communityNote','chosenTag'])document.getElementById(id).hidden=true;
+  for(const id of ['espSteps','communityNote','chosenTag'])document.getElementById(id).hidden=true;
   for(const e of document.querySelectorAll('.esp-only'))e.style.display='none';
   document.getElementById('chosenName').textContent=L('board.pick');
   document.getElementById('chosenInfo').textContent=L('board.pickNote');
   return;
  }
  document.getElementById('chosenTag').hidden=false;
- // nRF52 boards install by copying a UF2 file to the bootloader drive, not over Web Serial.
- const uf2=b.install==='uf2';
- document.getElementById('installer').style.display=uf2?'none':'';document.getElementById('espSteps').hidden=uf2;
- document.getElementById('nrfInstall').hidden=!uf2||!b.dfu;document.getElementById('uf2Note').hidden=!uf2;if(window.nrfReset)window.nrfReset();
- for(const e of document.querySelectorAll('.esp-only'))e.style.display=uf2?'none':'';document.getElementById('uf2Steps').hidden=!uf2;document.getElementById('uf2').hidden=!uf2;
- if(uf2)document.getElementById('uf2').href=b.uf2;else document.getElementById('installer').setAttribute('manifest',b.langs?`firmware/${b.env}/manifest-${fwLang()}.json`:`firmware/${b.env}/manifest.json`);
+ document.getElementById('installer').style.display='';document.getElementById('espSteps').hidden=false;
+ for(const e of document.querySelectorAll('.esp-only'))e.style.display='';
+ document.getElementById('installer').setAttribute('manifest',b.langs?`firmware/${b.env}/manifest-${fwLang()}.json`:`firmware/${b.env}/manifest.json`);
  document.getElementById('zip').href=b.zip;
  document.getElementById('chosenName').textContent=b.name;
  document.getElementById('chosenInfo').textContent=`MeshMesh ${VERSION} · ${b.chip} · ${b.flash}`;
@@ -682,46 +604,6 @@ let VERSION='';
 fetch('firmware/boards.json').then(r=>r.json()).then(j=>{VERSION=j.version;BOARDS=j.boards;board=pickBoard();document.getElementById('ver').textContent=j.version;renderBoards()}).catch(()=>{document.getElementById('boards').innerHTML=`<p class="unsup">${L('boards.publishing')}</p>`});
 setLang(pickLang(),false).then(heroStart);
 setTimeout(()=>document.documentElement.classList.remove('loading'),2500); // never stay hidden
-</script>
-<script type="module" src="netpick.js"></script>
-<script type="module">
-// nRF52 boards (GAT562, T114): install over Web Serial with the bootloader's serial DFU (site/nrf52dfu.js).
-import {dfuFlash,touch1200,webSerialIo,isBootloader,withLanguage,uf2WithLanguage} from './nrf52dfu.js';
-const el=id=>document.getElementById(id),T=k=>L(k);
-let continuing=false;
-function label(next){continuing=next;el('nrfLabel').innerHTML='<span>'+T(next?'nrf.continue':'btn.install')+'</span>';}
-function say(text,cls='',progress=null){const s=el('nrfStatus');s.hidden=false;s.className='note '+cls;el('nrfText').textContent=text;const p=el('nrfProgress');p.hidden=progress===null;if(progress!==null)p.value=progress;}
-window.nrfReset=()=>{el('nrfStatus').hidden=true;label(false);};
-// 1 MB flash: English and Russian in every image, each other language in its own (lang_images).
-const image=(b,code)=>b.lang_images&&b.lang_images[code]||{bin:b.dfu&&b.dfu.bin,dat:b.dfu&&b.dfu.dat,uf2:b.uf2};
-async function files(b){const get=u=>fetch(u).then(r=>{if(!r.ok)throw new Error(u+' '+r.status);return r.arrayBuffer()}).then(a=>new Uint8Array(a));const i=image(b,fwLang());return Promise.all([get(i.bin),get(i.dat)]);}
-el('nrfInstall').addEventListener('click',async()=>{
- const b=BOARDS.find(x=>x.env===board),btn=el('nrfInstall');
- if(!b||!b.dfu)return;
- if(!('serial' in navigator)){say(T('nrf.noSerial'),'warn');return;}
- btn.disabled=true;
- try{
-  const port=await navigator.serial.requestPort({filters:[{usbVendorId:0x239a}]});
-  if(!isBootloader(port)){
-   say(T('nrf.toBootloader'));await touch1200(port);
-   label(true);say(T('nrf.inBootloader'));return;}
-  label(false);say(T('nrf.downloading'),'',0);
-  const [raw,rawDat]=await files(b);const [bin,dat]=withLanguage(raw,rawDat,fwLang());const io=await webSerialIo(port);
-  try{await dfuFlash(io,bin,dat,(part,stage)=>say(stage==='erase'?T('nrf.erasing'):stage==='done'?T('nrf.written'):T('nrf.writing')+Math.round(part*100)+'%','',part));}
-  finally{await io.close();}
-  say(T('nrf.done')+VERSION+'.','ok',null);
- }catch(e){if(e.name==='NotFoundError'){if(!continuing)el('nrfStatus').hidden=true;}else say(T('nrf.error')+e.message+T('nrf.retry'),'warn');}
- finally{btn.disabled=false;}
-});
-// firmware.uf2 for the bootloader drive, with the chosen device language.
-el('uf2').addEventListener('click',async e=>{
- const b=BOARDS.find(x=>x.env===board);if(!b||!b.uf2||e.currentTarget.dataset.ready)return;
- e.preventDefault();const a=e.currentTarget;
- try{const r=await fetch(image(b,fwLang()).uf2);if(!r.ok)throw new Error(r.url+' '+r.status);const raw=new Uint8Array(await r.arrayBuffer());
-  const url=URL.createObjectURL(new Blob([uf2WithLanguage(raw,fwLang())],{type:'application/octet-stream'}));
-  a.href=url;a.dataset.ready=1;a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.href=b.uf2;delete a.dataset.ready},4000);
- }catch(err){say(T('nrf.error')+err.message,'warn');}
-});
 </script>
 </body>
 </html>
