@@ -103,7 +103,6 @@ void drawChat() {
   String sub = channels::isChannel(recipient) ? (ch && !channels::isPublic(ch->secret) && !channels::isHashtag(*ch) ? t("Private channel · senders unverified · no ACK") : t("Open channel · senders unverified · no ACK")) : p && p->type == 3 ? typeText(p->type) + " · " + (remote::find(p->id) && remote::find(p->id)->login == remote::Done ? t("logged in") : t("log in: node card > Server"))
                                                                                                                                                                                                                             : p                 ? typeText(p->type) + " · " + pathText(*p) + (p->heard ? " · " + ago(millis() - p->seen) : String())
                                                                                                                                                                                                                                                 : t("Not in contacts");
-  text(8, 33, fit(sub, 270, small), textMuted, small);
   String rows[6];
   unsigned inputRows = max(1u, wrap(composer, rows, 6, 276));
   unsigned shown = min(inputRows, 3u);
@@ -111,25 +110,29 @@ void drawChat() {
   int indices[64], total = 0;
   for(unsigned i = 0; i < meshRadio.historyCount; i++)
     if(belongs(meshRadio.history[i], recipient)) indices[total++] = i;
-  int end = max(0, total - chatOffset), bottom = boxY - 5;
   // Full-width messages: a header (author left; hops, ticks and time right) over the text, a rule between them;
-  // ours are marked by an accent stripe.
-  const int top = 41, textX = 10, right = 312, pitch = 15; // pitch: the body's line height, 2 px over the font for legibility
+  // ours are marked by an accent stripe. They scroll by pixels: chatOffset is how far the view is above the newest.
+  const int top = 41, textX = 10, right = 312, pitch = 15, gap = 7; // pitch: the body's line height, 2 px over the font for legibility
+  int heights[64], content = 0;
+  for(int j = 0; j < total; j++) {
+    String lines[7];
+    heights[j] = 11 + wrap(bubbleText(meshRadio.history[indices[j]]), lines, 7, right - textX) * pitch;
+    content += heights[j] + (j ? gap : 0);
+  }
+  int floor = boxY - 5, view = floor - top, range = max(0, content - view);
+  chatOffset = constrain(chatOffset, 0, range);
+  int bottom = floor + chatOffset;
   bool group = channels::isChannel(recipient) || isRoom(recipient); // a channel or room post names its author
-  for(int j = end - 1; j >= 0 && bottom > top + 20; j--) {
+  for(int j = total - 1; j >= 0 && bottom > 21; j--) {
+    int h = heights[j], y = bottom - h, hy = y + 8;
+    bottom = y - gap;
+    if(y > floor) continue; // under the composer
     auto& m = meshRadio.history[indices[j]];
     String lines[7];
     unsigned n = wrap(bubbleText(m), lines, 7, right - textX);
     String when = timeText(m.timestamp), state = hopText(m);
     int metaW = measure(when, small) + (m.outgoing ? 14 : 0) + (state.length() ? measure(state, small) + 4 : 0);
-    int h = 11 + n * pitch;
-    if(bottom - h < top) {
-      if(j != end - 1) break;
-      n = max(1, (bottom - top - 11) / pitch);
-      h = 11 + n * pitch;
-    }
-    int y = bottom - h, hy = y + 8;
-    if(j != end - 1) d.drawFastHLine(4, y + h + 3, right - 4, gridLine);
+    if(j != total - 1) d.drawFastHLine(4, y + h + 3, right - 4, gridLine);
     if(m.outgoing) d.fillRoundRect(4, y, 2, h, radiusStripe, accent);
     String name = m.outgoing ? String(t("You")) : group && m.name[0] ? String(m.name) : nameOf(recipient);
     text(textX, hy, fit(name, right - textX - metaW - 8, small), m.outgoing ? accent : avatarHues[(m.source ^ m.source >> 17 ^ m.source >> 41) % 8] | 0x4208, small);
@@ -142,21 +145,18 @@ void drawChat() {
     }
     if(state.length()) textRight(mx, hy, state, m.status == ChatMessage::Failed ? bad : textSubtle, small);
     for(unsigned k = 0; k < n; k++) text(textX, hy + 15 + k * pitch, lines[k]);
-    bottom = y - 7;
   }
+  // Messages scrolled past the edges go under the subtitle (the status bar is drawn over the page) and the composer.
+  d.fillRect(0, 21, 320, top - 21, surfacePage);
+  d.fillRect(0, floor, 320, 240 - floor, surfacePage);
+  text(8, 33, fit(sub, 270, small), textMuted, small);
+  scrollbar(range - chatOffset, view, content, top, view);
   if(!total) {
     icon(ch && !channels::isPublic(ch->secret) && !channels::isHashtag(*ch) ? IcLock : channels::isChannel(recipient) ? IcHash
                                                                                                                       : IcChat,
          160, 86, 14, iconSubtle);
     textCenter(160, 124, t("No messages yet"), textMuted);
     textCenter(160, 142, t("Type and press OK to send"), textSubtle, small);
-  }
-  if(chatOffset) {
-    String c = String(chatOffset);
-    int w = measure(c, small) + 18;
-    d.fillRoundRect(304 - w, boxY - 19, w, 14, radiusPill, accent);
-    tri(304 - w + 7, boxY - 12, 2, 3, onFill);
-    text(304 - w + 12, boxY - 8, c, onFill, small);
   }
   panel(8, boxY, 304, boxH, surfaceCard, radiusField);
   d.drawRoundRect(8, boxY, 304, boxH, radiusField, composer.length() ? accent : border);
@@ -212,15 +212,12 @@ void chatKey(int key) {
     composer.remove(meshmesh::previousCharacter(composer.c_str(), composer.length()));
     return;
   }
-  if(key == KeyUp) {
-    unsigned total = 0;
-    for(unsigned i = 0; i < meshRadio.historyCount; i++)
-      if(belongs(meshRadio.history[i], recipient)) total++;
-    chatOffset = min(chatOffset + 1, max(0, int(total) - 1));
+  if(key == KeyUp) { // a body line at a time; drawChat() stops it at the oldest message
+    chatOffset += 15;
     return;
   }
   if(key == KeyDown) {
-    chatOffset = max(0, chatOffset - 1);
+    chatOffset = max(0, chatOffset - 15);
     return;
   }
   if(key == KeyRight) {
