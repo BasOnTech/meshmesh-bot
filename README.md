@@ -7,11 +7,11 @@ It is based on MeshMesh. However over time there are so many changes in code and
 Differences between MeshMesh:
 - Only supports ThinkNode M9 and Helltek v4
 - Only in English
-- More refined UI
+- List interface for quick navigating
 
 ---
 
-**Website and one-click browser install: https://ikrasnodymov.github.io/meshmesh/**
+**Website and one-click browser install: https://basontech.github.io/meshmesh-bot/**
 
 Off-grid messaging firmware for the ThinkNode M9 and Heltec V4 LoRa devices. Messages hop by radio from device to
 device, with no internet, no cell network and no servers. The radio layer is
@@ -40,7 +40,7 @@ MeshCore nodes.
 - **Checkers and sea battle** with your contacts over the mesh (0.33.0): Russian draughts and a 10×10 sea battle, each move an acknowledged message, no rating; all games sit in a Games folder of the menu, and folders can be created, renamed, hidden and filled on the web page or in the app. [docs/games.md](docs/games.md)
 - **Mesh pet** — a Tamagotchi-like pixel creature on every board that feeds on radio traffic, grows up and can die of hunger or loneliness. [docs/pet.md](docs/pet.md)
 - **Dice** — the DIC3R dice roller on every board: RPG pools and formulas (2d6+1, d20, d66, d%), a Warhammer grid with a success threshold and a character sheet of blocks (stats, tracks, marks, abilities that roll and spend) with D&D 5e and R.E.T. templates, built on the web page or in the app and sent to a contact over the mesh; the same on the screen, the web page and the app. [docs/dice.md](docs/dice.md)
-- **Chess without MeshMesh on your device**: [the chess page](https://ikrasnodymov.github.io/meshmesh/chess/) plays through a
+- **Chess without MeshMesh on your device**: [the chess page](https://basontech.github.io/meshmesh-bot/chess/) plays through a
   board running the official MeshCore Companion firmware, over USB (Web Serial) or Bluetooth (Web Bluetooth), in Chrome or Edge.
 - **Repeater and room server modes** — chosen at boot (M9 screen, Heltec button) or in Settings,
   on the web page, over USB: the device becomes a stock-compatible MeshCore repeater or room server
@@ -63,7 +63,7 @@ This fork supports only these boards; the original MeshMesh also builds for nRF5
 
 ## Install
 
-**Browser:** open the [website](https://ikrasnodymov.github.io/meshmesh/#install) in Chrome or
+**Browser:** open the [website](https://basontech.github.io/meshmesh-bot/#install) in Chrome or
 Edge on a computer, pick your board and the device language, press **Install**. Updating MeshMesh
 keeps your key, contacts, settings and history; tick “Erase device” only when coming from other firmware.
 

@@ -24,7 +24,7 @@ Do not present old reports or an identical version string as verification of a n
 ## Repository
 
 GitHub: this fork, `BasOnTech/meshmesh-bot`, of the public `IKrasnodymov/meshmesh` (MIT; `README.md` — the overview, `docs/` — the detailed documents, all in English), main branch `main`. The site is
-GitHub Pages from `site/` (https://ikrasnodymov.github.io/meshmesh/): `.github/workflows/pages.yml`
+GitHub Pages from `site/` (https://basontech.github.io/meshmesh-bot/): `.github/workflows/pages.yml`
 builds all boards and `tools/site/pages.py` (ESP Web Tools browser-install manifests,
 writing at offsets without erasing NVS). Screen screenshots — `tools/ui_preview`; the interactive simulator in an SDL2 window —
 `tools/ui_preview/sim.sh [m9] [LANG]` (`SIM=1` in `build.sh`, code in `tools/ui_preview/live.inc`; rebuilds via fswatch).

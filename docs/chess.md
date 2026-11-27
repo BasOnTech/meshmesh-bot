@@ -244,7 +244,7 @@ The page polls the device every 3 s.
 
 ## With a stock MeshCore companion (website page)
 
-https://ikrasnodymov.github.io/meshmesh/chess/ — the same chess page, but without MeshMesh on your own
+https://basontech.github.io/meshmesh-bot/chess/ — the same chess page, but without MeshMesh on your own
 device: it connects to a board running the stock MeshCore Companion firmware over USB (Web Serial)
 or Bluetooth (Web Bluetooth) and plays through it with ordinary direct messages. The opponent plays
 on MeshMesh (M9, Heltec V4) or on the same page.
