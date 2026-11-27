@@ -137,9 +137,9 @@ constexpr uint16_t rgb(uint32_t v) { return ((v >> 8) & 0xf800) | ((v >> 5) & 0x
 const Theme* theme = themes[0];
 uint16_t surfacePage, surfaceBar, surfaceCard, surfaceFocus, surfaceWell, border, gridLine, accent, accentDeep;
 uint16_t textPrimary, textMuted, textSubtle, iconPrimary, iconMuted, iconSubtle, graphicPrimary, graphicMuted, graphicSubtle, onFill;
-uint16_t secondary, secondaryDeep, tertiary, info, ok, okDeep, warn, warnDeep, alert, bad, badDeep, outBubble, inBubble;
+uint16_t secondary, secondaryDeep, tertiary, info, ok, okDeep, warn, warnDeep, alert, bad, badDeep;
 uint16_t avatarHues[8];
-uint8_t radiusDialog, radiusCard, radiusBubble, radiusRow, radiusRowCompact, radiusField, radiusWell, radiusToast, radiusOverlay, radiusKey, radiusPill, radiusBar, radiusStripe;
+uint8_t radiusDialog, radiusCard, radiusRow, radiusRowCompact, radiusField, radiusWell, radiusToast, radiusOverlay, radiusKey, radiusPill, radiusBar, radiusStripe;
 void applyTheme(const Theme& t) {
   theme = &t;
   surfacePage = rgb(t.surfacePage), surfaceBar = rgb(t.surfaceBar), surfaceCard = rgb(t.surfaceCard), surfaceFocus = rgb(t.surfaceFocus), surfaceWell = rgb(t.surfaceWell), border = rgb(t.border), gridLine = rgb(t.gridLine);
@@ -150,9 +150,8 @@ void applyTheme(const Theme& t) {
   accent = rgb(t.accent), accentDeep = rgb(t.accentDeep);
   secondary = rgb(t.secondary), secondaryDeep = rgb(t.secondaryDeep), tertiary = rgb(t.tertiary), info = rgb(t.info);
   ok = rgb(t.ok), okDeep = rgb(t.okDeep), warn = rgb(t.warn), warnDeep = rgb(t.warnDeep), alert = rgb(t.alert), bad = rgb(t.bad), badDeep = rgb(t.badDeep);
-  outBubble = rgb(t.outBubble), inBubble = rgb(t.inBubble);
   for(unsigned i = 0; i < 8; i++) avatarHues[i] = rgb(t.avatarHues[i]);
-  radiusDialog = t.radiusDialog, radiusCard = t.radiusCard, radiusBubble = t.radiusBubble, radiusRow = t.radiusRow, radiusRowCompact = t.radiusRowCompact;
+  radiusDialog = t.radiusDialog, radiusCard = t.radiusCard, radiusRow = t.radiusRow, radiusRowCompact = t.radiusRowCompact;
   radiusField = t.radiusField, radiusWell = t.radiusWell, radiusToast = t.radiusToast, radiusOverlay = t.radiusOverlay, radiusKey = t.radiusKey;
   radiusPill = t.radiusPill, radiusBar = t.radiusBar, radiusStripe = t.radiusStripe;
 }

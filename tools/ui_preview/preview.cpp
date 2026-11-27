@@ -137,20 +137,22 @@ int main(int argc,char** argv){
   auto& tr=remote::trace;tr.id=peerId(1);tr.state=remote::Done;tr.hops=1;tr.hashes[0]=uint8_t(peerId(1)>>56);tr.snr[0]=49;tr.snr[1]=34;}
  time_t now=time(nullptr);
  auto add=[&](uint64_t src,uint64_t dst,const char* name,const char* text,bool out,ChatMessage::Status st,int ago){ChatMessage m;m.source=src;m.destination=dst;strcpy(m.name,name);strcpy(m.text,text);m.outgoing=out;m.status=st;m.timestamp=now-ago;m.id=++nextId;meshRadio.history[meshRadio.historyCount++]=m;};
+ // How the last added message travelled: hop count (255 unknown), route, repeats heard
+ auto via=[&](uint8_t hops,ChatMessage::Route r,uint8_t heard=0){auto& m=meshRadio.history[meshRadio.historyCount-1];m.hops=hops;m.route=r;m.heard=heard;};
  uint64_t B=meshmesh::Broadcast;
- add(peerId(5),B,"Marat","Hi all! 👋 Anyone on air near the Kremlin?",false,ChatMessage::Received,5400);
- add(meshRadio.nodeId,B,"M9","On air, M9 near the Kremlin",true,ChatMessage::Sent,5300);
- add(peerId(0),meshRadio.nodeId,"Heltec V4","Radio test V4 → M9: 1790746076",false,ChatMessage::Received,3600);
- add(meshRadio.nodeId,peerId(0),"M9","Copy, loud and clear. SNR about 9 dB",true,ChatMessage::Delivered,3500);
- add(meshRadio.nodeId,peerId(0),"M9","Long message check: wrapped lines must fit neatly inside the bubble",true,ChatMessage::Failed,1200);
- add(peerId(0),meshRadio.nodeId,"Heltec V4","OK 👍🏽",false,ChatMessage::Received,300);
- add(peerId(3),meshRadio.nodeId,"Igor T-Deck","Be there in 10 minutes 🚗💨",false,ChatMessage::Received,120);
- add(meshRadio.nodeId,peerId(3),"M9","Waiting at the entrance 😊☕️",true,ChatMessage::Sent,60);
+ add(peerId(5),B,"Marat","Hi all! 👋 Anyone on air near the Kremlin?",false,ChatMessage::Received,5400);via(2,ChatMessage::RouteFlood);
+ add(meshRadio.nodeId,B,"M9","On air, M9 near the Kremlin",true,ChatMessage::Sent,5300);via(255,ChatMessage::RouteFlood,3);
+ add(peerId(0),meshRadio.nodeId,"Heltec V4","Radio test V4 → M9: 1790746076",false,ChatMessage::Received,3600);via(0,ChatMessage::RouteFlood);
+ add(meshRadio.nodeId,peerId(0),"M9","Copy, loud and clear. SNR about 9 dB",true,ChatMessage::Delivered,3500);via(0,ChatMessage::RouteDirect);
+ add(meshRadio.nodeId,peerId(0),"M9","Long message check: wrapped lines must use the full width of the screen",true,ChatMessage::Failed,1200);
+ add(peerId(0),meshRadio.nodeId,"Heltec V4","OK 👍🏽",false,ChatMessage::Received,300);via(0,ChatMessage::RouteDirect);
+ add(peerId(3),meshRadio.nodeId,"Igor T-Deck","Be there in 10 minutes 🚗💨",false,ChatMessage::Received,120);via(3,ChatMessage::RouteFlood);
+ add(meshRadio.nodeId,peerId(3),"M9","Waiting at the entrance 😊☕️",true,ChatMessage::Sent,60);via(255,ChatMessage::RouteFlood);
  // Channels: Public, a hashtag and a private one with messages; two more heard on air.
  meshRadio.channelCount=1;strcpy(meshRadio.channelList[0].name,"Public");memcpy(meshRadio.channelList[0].secret,channels::publicSecret,16);meshRadio.channelList[0].id=meshmesh::Broadcast;
  {uint64_t tag,priv;meshRadio.joinHashtag("kazan",&tag);uint8_t k[16];for(int i=0;i<16;i++)k[i]=uint8_t(200-i*9);meshRadio.addChannel("Friends",k,&priv);
-  add(peerId(3),tag,"Igor T-Deck","Who is going to Kaban on Saturday?",false,ChatMessage::Received,2400);
-  add(peerId(5),priv,"Marat","Meeting at 19:00 🔥🎉 🇳🇱🦖",false,ChatMessage::Received,900);
+  add(peerId(3),tag,"Igor T-Deck","Who is going to Kaban on Saturday?",false,ChatMessage::Received,2400);via(2,ChatMessage::RouteFlood);
+  add(peerId(5),priv,"Marat","Meeting at 19:00 🔥🎉 🇳🇱🦖",false,ChatMessage::Received,900);via(1,ChatMessage::RouteFlood);
   meshRadio.heard[0].hash=0x5A;meshRadio.heard[0].packets=3;meshRadio.heard[0].at=fakeMillis-120000;strcpy(meshRadio.heard[0].name,"#ru");
   meshRadio.heard[1].hash=0x07;meshRadio.heard[1].packets=1;meshRadio.heard[1].at=fakeMillis-600000;meshRadio.heardCount=2;meshRadio.heardSamples=4;
   channels::Channel invite{};strcpy(invite.name,"Hiking");for(int i=0;i<16;i++)invite.secret[i]=uint8_t(i*13+5);

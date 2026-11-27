@@ -81,6 +81,21 @@ void statusMark(int x, int y, const ChatMessage& m) {
   default: break;
   }
 }
+// How far a message travelled, short for its header: "direct", "2 hops", "flood"; our channel posts get no ACK, so
+// they show how many repeaters passed them on.
+String hopText(const ChatMessage& m) {
+  if(m.status == ChatMessage::Failed) return t("not confirmed");
+  String s;
+  if(m.outgoing && channels::isChannel(m.destination)) {
+    if(m.heard) s = String(t("heard ")) + String(m.heard) + "×";
+  } else if(m.protocol == 2 && m.route != ChatMessage::RouteNone) {
+    s = m.hops == 255 ? (m.route == ChatMessage::RouteDirect ? String(t("routed")) : String("flood")) : !m.hops ? String(t("direct"))
+                                                                                                                 : count(m.hops, "hop", "hops");
+    if(m.outgoing && m.tries > 1) s += m.status == ChatMessage::Delivered ? String(t(" · try ")) + String(m.tries) : " " + String(m.tries) + "/3";
+  }
+  if(m.protocol == 1) s = "MM/1 " + s;
+  return s;
+}
 void drawChat() {
   auto& d = g();
   Peer* p = peerOf(recipient);
@@ -97,36 +112,37 @@ void drawChat() {
   for(unsigned i = 0; i < meshRadio.historyCount; i++)
     if(belongs(meshRadio.history[i], recipient)) indices[total++] = i;
   int end = max(0, total - chatOffset), bottom = boxY - 5;
-  const int top = 41;
+  // Full-width messages: a header (author left; hops, ticks and time right) over the text, a rule between them;
+  // ours are marked by an accent stripe.
+  const int top = 41, textX = 10, right = 312, pitch = 15; // pitch: the body's line height, 2 px over the font for legibility
+  bool group = channels::isChannel(recipient) || isRoom(recipient); // a channel or room post names its author
   for(int j = end - 1; j >= 0 && bottom > top + 20; j--) {
     auto& m = meshRadio.history[indices[j]];
     String lines[7];
-    unsigned n = wrap(bubbleText(m), lines, 7, 214);
-    bool named = !m.outgoing && (channels::isChannel(recipient) || isRoom(recipient)); // a room post names its author
-    String when = timeText(m.timestamp), state = m.status == ChatMessage::Failed ? t("not confirmed") : meshRadio.routeText(m);
-    if(m.protocol == 1) state = "MM/1 " + state;
-    int metaW = measure(when, small) + (state.length() ? measure(state, small) + 4 : 0) + (m.outgoing ? 12 : 0), w = metaW;
-    for(unsigned k = 0; k < n; k++) w = max(w, measure(lines[k]));
-    if(named) w = max(w, measure(m.name, small));
-    w = max(44, w + 16);
-    int h = 7 + (named ? 11 : 0) + n * 13 + 10;
+    unsigned n = wrap(bubbleText(m), lines, 7, right - textX);
+    String when = timeText(m.timestamp), state = hopText(m);
+    int metaW = measure(when, small) + (m.outgoing ? 14 : 0) + (state.length() ? measure(state, small) + 4 : 0);
+    int h = 11 + n * pitch;
     if(bottom - h < top) {
       if(j != end - 1) break;
-      n = max(1, (bottom - top - 7 - (named ? 11 : 0) - 10) / 13);
-      h = 7 + (named ? 11 : 0) + n * 13 + 10;
+      n = max(1, (bottom - top - 11) / pitch);
+      h = 11 + n * pitch;
     }
-    int x = m.outgoing ? 312 - w : 8, y = bottom - h, ty = y + 14;
-    panel(x, y, w, h, m.outgoing ? outBubble : inBubble, radiusBubble);
-    if(named) {
-      text(x + 8, y + 10, fit(m.name, w - 16, small), avatarHues[(m.source ^ m.source >> 17 ^ m.source >> 41) % 8] | 0x4208, small);
-      ty += 11;
+    int y = bottom - h, hy = y + 8;
+    if(j != end - 1) d.drawFastHLine(4, y + h + 3, right - 4, gridLine);
+    if(m.outgoing) d.fillRoundRect(4, y, 2, h, radiusStripe, accent);
+    String name = m.outgoing ? String(t("You")) : group && m.name[0] ? String(m.name) : nameOf(recipient);
+    text(textX, hy, fit(name, right - textX - metaW - 8, small), m.outgoing ? accent : avatarHues[(m.source ^ m.source >> 17 ^ m.source >> 41) % 8] | 0x4208, small);
+    int mx = right;
+    textRight(mx, hy, when, textMuted, small);
+    mx -= measure(when, small) + 4;
+    if(m.outgoing) {
+      statusMark(mx - 10, hy, m);
+      mx -= 14;
     }
-    for(unsigned k = 0; k < n; k++) text(x + 8, ty + k * 13, lines[k]);
-    int mx = x + w - 7 - (m.outgoing ? 11 : 0), my = y + h - 4;
-    textRight(mx, my, when, textMuted, small);
-    if(state.length()) textRight(mx - measure(when, small) - 4, my, state, m.status == ChatMessage::Failed ? bad : textSubtle, small);
-    if(m.outgoing) statusMark(x + w - 15, my, m);
-    bottom = y - 5;
+    if(state.length()) textRight(mx, hy, state, m.status == ChatMessage::Failed ? bad : textSubtle, small);
+    for(unsigned k = 0; k < n; k++) text(textX, hy + 15 + k * pitch, lines[k]);
+    bottom = y - 7;
   }
   if(!total) {
     icon(ch && !channels::isPublic(ch->secret) && !channels::isHashtag(*ch) ? IcLock : channels::isChannel(recipient) ? IcHash

@@ -147,7 +147,7 @@ found; do not add tests that merely duplicate the implementation.
   (lines, knobs, bars, chart strokes, the toast's colour bar); `onFill` for text and glyphs on a coloured fill
   (badges, buttons, toggle knob, checkmarks); `accent`, `secondary`, `tertiary` for categories; state `info`, `ok`,
   `warn`, `alert` (between warn and bad), `bad`; `*Deep` for the dark tint behind a role's icon or text;
-  `outBubble`, `inBubble`, `avatarHues[]`.
+  `avatarHues[]`.
 - Pick the role by what is drawn and on what: text on a panel — `text*`; an icon's hole is the colour behind it
   (`surfacePage` on the page, `surfaceWell` on a well); content on an `accent` or state fill — `onFill`.
 - No `rgb(0x…)` for UI chrome: use a role, or add one to `Theme.h`, to every theme file (designated initializers in

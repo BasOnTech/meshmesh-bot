@@ -17,11 +17,10 @@ struct Theme {
   uint32_t secondary, secondaryDeep;                              // the second category: private channels, repeaters, nodes, LoRa, tournaments
   uint32_t tertiary;                                              // a third: the pet, BLE devices
   uint32_t info, ok, okDeep, warn, warnDeep, alert, bad, badDeep; // state, from neutral to worst (alert: between warn and bad)
-  uint32_t outBubble, inBubble;                                   // chat bubbles: sent, received
   uint32_t avatarHues[8];                                         // contact avatars, by key
   // Corner radii; fillRoundRect caps a radius at half the shorter side, so a large one gives round ends.
   uint8_t radiusDialog;                                           // dialogs and popups over a screen
-  uint8_t radiusCard, radiusBubble;                               // cards and info panels; chat bubbles
+  uint8_t radiusCard;                                             // cards and info panels
   uint8_t radiusRow, radiusRowCompact;                            // list rows and buttons (28 px and up); short rows (20-24 px)
   uint8_t radiusField, radiusWell;                                // text input fields; icon squares
   uint8_t radiusToast, radiusOverlay, radiusKey;                  // the toast; labels and boxes over the map; key caps of the hints
