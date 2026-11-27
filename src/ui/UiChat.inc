@@ -119,9 +119,9 @@ void drawChat() {
     heights[j] = 11 + wrap(bubbleText(meshRadio.history[indices[j]]), lines, 7, right - textX) * pitch;
     content += heights[j] + (j ? gap : 0);
   }
-  int floor = boxY - 5, view = floor - top, range = max(0, content - view);
+  int floor = boxY - 5, view = floor - top - 8, range = max(0, content - view); // 4 px clear of the bars at either end
   chatOffset = constrain(chatOffset, 0, range);
-  int bottom = floor + chatOffset;
+  int bottom = floor - 4 + chatOffset;
   bool group = channels::isChannel(recipient) || isRoom(recipient); // a channel or room post names its author
   for(int j = total - 1; j >= 0 && bottom > 21; j--) {
     int h = heights[j], y = bottom - h, hy = y + 8;
@@ -146,11 +146,14 @@ void drawChat() {
     if(state.length()) textRight(mx, hy, state, m.status == ChatMessage::Failed ? bad : textSubtle, small);
     for(unsigned k = 0; k < n; k++) text(textX, hy + 15 + k * pitch, lines[k]);
   }
-  // Messages scrolled past the edges go under the subtitle (the status bar is drawn over the page) and the composer.
-  d.fillRect(0, 21, 320, top - 21, surfacePage);
-  d.fillRect(0, floor, 320, 240 - floor, surfacePage);
+  // The subtitle and the composer sit on bars of their own; messages scrolled past the edges go under them (the status
+  // bar is drawn over the page).
+  d.fillRect(0, 21, 320, top - 21, surfaceSubbar);
+  d.fillRect(0, floor, 320, 240 - floor, surfaceSubbar);
+  d.drawFastHLine(0, top - 1, 320, surfaceBar); // a dark edge towards the messages
+  d.drawFastHLine(0, floor, 320, surfaceBar);
   text(8, 33, fit(sub, 270, small), textMuted, small);
-  scrollbar(range - chatOffset, view, content, top, view);
+  scrollbar(range - chatOffset, view, content, top, floor - top);
   if(!total) {
     icon(ch && !channels::isPublic(ch->secret) && !channels::isHashtag(*ch) ? IcLock : channels::isChannel(recipient) ? IcHash
                                                                                                                       : IcChat,

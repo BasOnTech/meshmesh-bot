@@ -141,7 +141,7 @@ found; do not add tests that merely duplicate the implementation.
   (`UiHeltec.cpp`, `*Compact.inc`) does not use themes.
 - Colours are named by role, never by hue or a vague word (no `violet`, `pink`, `ink`, `dim`, `card`). Hue names live
   only in a theme file's own palette namespace (`midnight::violet`), and the theme assigns them to roles.
-- The roles: surfaces `surfacePage`, `surfaceBar` (status and key bars), `surfaceCard`, `surfaceFocus` (focused row),
+- The roles: surfaces `surfacePage`, `surfaceBar` (status and key bars), `surfaceSubbar` (a page's own bars around scrolling content: a chat's subtitle and composer), `surfaceCard`, `surfaceFocus` (focused row),
   `surfaceWell` (inset: icon squares, input fields), `border`, `gridLine`; foreground per kind, each with
   `Primary`/`Muted`/`Subtle` — `text*` for text, `icon*` for `icon()` and arrow glyphs, `graphic*` for drawn shapes
   (lines, knobs, bars, chart strokes, the toast's colour bar); `onFill` for text and glyphs on a coloured fill

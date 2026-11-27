@@ -7,6 +7,7 @@
 struct Theme {
   const char* name;
   uint32_t surfacePage, surfaceBar, surfaceCard, surfaceFocus;    // surfaces: page, status and key bars, panels, focused panel
+  uint32_t surfaceSubbar;                                         // a page's own bars around scrolling content: a chat's subtitle and composer
   uint32_t surfaceWell;                                           // inset on a surface: icon squares, input fields
   uint32_t border, gridLine;                                      // outlines and dividers; chart grid
   uint32_t textPrimary, textMuted, textSubtle;                    // text: main, secondary info, hints and disabled

@@ -135,14 +135,14 @@ unsigned nodeOrder[24], nodeTotal = 0;
 // Palette: the active theme (ui/Theme.h, ui/themes/) as RGB565 and its corner radii; theme keeps its 0xRRGGBB values for mix().
 constexpr uint16_t rgb(uint32_t v) { return ((v >> 8) & 0xf800) | ((v >> 5) & 0x07e0) | ((v >> 3) & 0x1f); }
 const Theme* theme = themes[0];
-uint16_t surfacePage, surfaceBar, surfaceCard, surfaceFocus, surfaceWell, border, gridLine, accent, accentDeep;
+uint16_t surfacePage, surfaceBar, surfaceCard, surfaceFocus, surfaceSubbar, surfaceWell, border, gridLine, accent, accentDeep;
 uint16_t textPrimary, textMuted, textSubtle, iconPrimary, iconMuted, iconSubtle, graphicPrimary, graphicMuted, graphicSubtle, onFill;
 uint16_t secondary, secondaryDeep, tertiary, info, ok, okDeep, warn, warnDeep, alert, bad, badDeep;
 uint16_t avatarHues[8];
 uint8_t radiusDialog, radiusCard, radiusRow, radiusRowCompact, radiusField, radiusWell, radiusToast, radiusOverlay, radiusKey, radiusPill, radiusBar, radiusStripe;
 void applyTheme(const Theme& t) {
   theme = &t;
-  surfacePage = rgb(t.surfacePage), surfaceBar = rgb(t.surfaceBar), surfaceCard = rgb(t.surfaceCard), surfaceFocus = rgb(t.surfaceFocus), surfaceWell = rgb(t.surfaceWell), border = rgb(t.border), gridLine = rgb(t.gridLine);
+  surfacePage = rgb(t.surfacePage), surfaceBar = rgb(t.surfaceBar), surfaceCard = rgb(t.surfaceCard), surfaceFocus = rgb(t.surfaceFocus), surfaceSubbar = rgb(t.surfaceSubbar), surfaceWell = rgb(t.surfaceWell), border = rgb(t.border), gridLine = rgb(t.gridLine);
   textPrimary = rgb(t.textPrimary), textMuted = rgb(t.textMuted), textSubtle = rgb(t.textSubtle);
   iconPrimary = rgb(t.iconPrimary), iconMuted = rgb(t.iconMuted), iconSubtle = rgb(t.iconSubtle);
   graphicPrimary = rgb(t.graphicPrimary), graphicMuted = rgb(t.graphicMuted), graphicSubtle = rgb(t.graphicSubtle);

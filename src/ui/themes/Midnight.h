@@ -12,6 +12,7 @@ constexpr Theme themeMidnight{
   .surfaceBar = 0x000000,
   .surfaceCard = 0x131a22,
   .surfaceFocus = 0x1c2835,
+  .surfaceSubbar = 0x0e141b,
   .surfaceWell = midnight::night,
   .border = 0x2a3542,
   .gridLine = 0x223040,
