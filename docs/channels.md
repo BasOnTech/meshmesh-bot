@@ -40,7 +40,7 @@ HTTP) does not get the links of private channels, just as it does not get the no
 
 **Heard on air.** Packets of channels this node has not joined cannot be decrypted; only the channel's hash
 byte is visible. MeshMesh counts such packets per hash (relayed copies once), keeps the last six and tries
-common hashtags on them (`#test`, `#ping`, `#mesh`, `#ru`, `#moscow`, `#kazan` and others, the list is
+common hashtags on them (`#test`, `#ping`, `#mesh`, `#nl`, `#amsterdam`, `#utrecht` and others, the list is
 `channels::commonTags`). When a name fits, the channel is shown as “#name — join”. While a hashtag is being
 typed, the screen and the page show how many stored packets it opens. The key of a private channel cannot
 be found this way.

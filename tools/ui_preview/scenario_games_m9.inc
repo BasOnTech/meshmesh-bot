@@ -60,8 +60,8 @@
  openGame(g2);tick();cursorTo("a1");key(13);cursorTo("g7");shot("m9-checkers-chain");key(13);
  must(g2->state==Duel::Over&&g2->result==Duel::Won&&g2->reason==Duel::Rules,"the chain takes the last pieces: won");shot("m9-checkers-won");
  key(0x08);key(0x08);must(has("\"page\":\"checkers\"")&&g2->state==Duel::Free,"DEL twice removes the finished game");
- // Invited by Igor, who plays White: my side (Black) at the bottom; OK accepts, their move, mine by the keys.
- {char t[64];snprintf(t,sizeof t,"\xf0\x9f\x8f\x81%04X new w",0x4B1D);duels.receive(peerId(3),"Igor T-Deck",t);}
+ // Invited by John, who plays White: my side (Black) at the bottom; OK accepts, their move, mine by the keys.
+ {char t[64];snprintf(t,sizeof t,"\xf0\x9f\x8f\x81%04X new w",0x4B1D);duels.receive(peerId(3),"John T-Deck",t);}
  Duel* g3=duels.find(0x4B1D);must(g3&&g3->state==Duel::Invited&&g3->mine==checkers::Black,"invited as Black");tick();shot("m9-duel-news");
  openGame(g3);shot("m9-checkers-invited");key(13);must(g3->state==Duel::Playing,"accepted by OK");
  say(g3,"1 c3-d4");tick();cursorTo("f6");key(13);cursorTo("e5");shot("m9-checkers-black");key(13);must(g3->game.plies==2,"f6-e5 as Black");
@@ -85,8 +85,8 @@
  cursorTo("h9");key(13);tick();shot("m9-sea");must(s1->aim==sea::parseCell("h9"),"h9 aimed");key('h');shot("m9-sea-help");key(0x86);
  say(s1,"9 = sunk");tick();cursorTo("b9");shot("m9-sea-mid");
  say(s1,"resign");must(s1->state==Duel::Over,"they resigned");must(s1->state==Duel::Over&&lastSent().find(" fleet ")!=std::string::npos,"the winner shows the fleet");shot("m9-sea-won");
- // Invited by Igor (they shoot first): they sink my whole fleet, then show theirs, which does not match an answer.
- {char t[64];snprintf(t,sizeof t,"\xf0\x9f\x9a\xa2%04X new",0x5EA2);duels.receive(peerId(3),"Igor T-Deck",t);}
+ // Invited by John (they shoot first): they sink my whole fleet, then show theirs, which does not match an answer.
+ {char t[64];snprintf(t,sizeof t,"\xf0\x9f\x9a\xa2%04X new",0x5EA2);duels.receive(peerId(3),"John T-Deck",t);}
  Duel* s2=duels.find(0x5EA2);must(s2&&s2->state==Duel::Invited&&s2->mine==1,"sea invitation to me");openGame(s2);shot("m9-sea-invited");key(13);must(s2->state==Duel::Playing&&!s2->myTurn(),"accepted: their shot first");
  sea::Fleet theirs;theirs.random(77);
  {char c[4];int water=0;while(s2->home.fleet.shipAt(water)>=0)water++;sea::cellName(water,c);std::string b=std::string("1 ")+c;say(s2,b.c_str());must(s2->myTurn(),"their miss");

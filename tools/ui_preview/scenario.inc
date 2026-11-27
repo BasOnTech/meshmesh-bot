@@ -101,7 +101,7 @@ static void scenario(){
   shot("chess-italian");key(0x86);key(13);for(int i=0;i<3;i++)key(0xb6);key(13);key(0xb7);key(0xb5);key(0xb5);shot("chess-held");key(0x86);key('h');shot("chess-help");key(0x86);key(0x86);
   ChessMatch* b=chessNet.invite(peerId(5),chess::White);sayId(5,"Marat",b->id,"yes");play(5,"Marat",b,{"e2e4","e7e5","d1h5","b8c6","f1c4","g8f6","h5f7"});
   ChessMatch* c=chessNet.invite(peerId(0),chess::White);sayId(0,"Heltec V4",c->id,"yes");play(0,"Heltec V4",c,{"a2a4","b7b5","a4b5","a7a6","b5a6","c8b7","a6b7","b8c6"});
-  sayId(3,"Igor T-Deck",0x4B1D,"new w · MeshMesh chess");
+  sayId(3,"John T-Deck",0x4B1D,"new w · MeshMesh chess");
   auto openList=[&](int row){tile("chess");key(13);for(int k=0;k<row;k++)key(0xb6);};
   openList(0);shot("chess-list");
   for(int i=1;i<=4;i++){openList(i);key(13);char n[32];snprintf(n,sizeof n,"chess-open%d",i);shot(n);}
@@ -115,9 +115,9 @@ static void scenario(){
   // the rating tab with two games.
   {auto sayLong=[](int peer,const char* name,unsigned id,const char* body){char t[160];snprintf(t,sizeof t,"\xe2\x99\x9f%04X %s",id,body);chessNet.receive(peerId(peer),name,t);};
    char sig[rating::SigTextSize+1],body[128];uint8_t raw[64];memset(raw,0x33,64);rating::sigText(raw,sig);
-   ChessMatch* d=chessNet.invite(peerId(3),chess::White);sayId(3,"Igor T-Deck",d->id,"yes");play(3,"Igor T-Deck",d,{"f2f3","e7e5","g2g4","d8h4"});
+   ChessMatch* d=chessNet.invite(peerId(3),chess::White);sayId(3,"John T-Deck",d->id,"yes");play(3,"John T-Deck",d,{"f2f3","e7e5","g2g4","d8h4"});
    for(int i=0;i<2;i++){chessNet.tick();tick();}
-   snprintf(body,sizeof body,"sig 1791140000 %s",sig);sayLong(5,"Marat",b->id,body);snprintf(body,sizeof body,"sig 1791150000 %s",sig);sayLong(3,"Igor T-Deck",d->id,body);
+   snprintf(body,sizeof body,"sig 1791140000 %s",sig);sayLong(5,"Marat",b->id,body);snprintf(body,sizeof body,"sig 1791150000 %s",sig);sayLong(3,"John T-Deck",d->id,body);
    for(int i=0;i<2;i++){chessNet.tick();tick();}
    if(b->sign!=ChessMatch::SignStored||d->sign!=ChessMatch::SignStored||rating::book.myElo()==rating::Start){printf("FAIL rated results: %d %d %d\n",b->sign,d->sign,rating::book.myElo());exit(1);}
    // PGN of the won game, and the archive on the SD card.
@@ -147,7 +147,7 @@ static void scenario(){
    ChessMatch* fresh=chessNet.invite(peerId(3),chess::White,false);if(!fresh)fail("a finished game gives its board");
    if(!chessNet.find(pendingId))fail("the game waiting for a signature stays");if(chessNet.find(evicted)&&chessNet.find(evicted)!=fresh)fail("the oldest settled game gives its board");
    for(auto& m:chessNet.matches)m=ChessMatch();
-   for(int i=0;i<6;i++)game(i%2?3:0,i%2?"Igor T-Deck":"Heltec V4",false);
+   for(int i=0;i<6;i++)game(i%2?3:0,i%2?"John T-Deck":"Heltec V4",false);
    if(chessNet.room()||chessNet.invite(peerId(5),chess::White,false))fail("six games in progress refuse a seventh");
    previewSent.clear();char t[64];snprintf(t,sizeof t,"\xe2\x99\x9f" "7777 new w r · MeshMesh chess");chessNet.receive(peerId(5),"Marat",t);
    if(chessNet.find(0x7777)||previewSent.empty()||previewSent.back().text.find("7777 no")==std::string::npos)fail("a challenge to a full device is declined");}
@@ -161,7 +161,7 @@ static void scenario(){
    unsigned invites=0;for(auto& m:previewSent)invites+=m.text.find(" inv ")!=std::string::npos;if(invites!=6)fail("six invitations");
    auto openTour=[&](uint16_t id){char want[24];snprintf(want,sizeof want,"\"tour\":\"%04X\"",id);for(int row=1;row<=3;row++){tile("chess");key(13);key('2');for(int k=0;k<row;k++)key(0xb6);key(13);if(uiStatus().indexOf(want)>=0)return;}fail("tournament page");};
    char cmd[200];auto say=[&](int peer,const char* name,const char* body){snprintf(cmd,sizeof cmd,"\xe2\x99\x9e%04X %s",T->id,body);tour::net.receive(peerId(peer),name,cmd);};
-   const char* names[]={"Heltec V4","","","Igor T-Deck","","Marat","Lilya","Rinat","Timur"};int who[]={0,3,5,6,7,8};
+   const char* names[]={"Heltec V4","","","John T-Deck","","Marat","Lilya","Rinat","Timur"};int who[]={0,3,5,6,7,8};
    for(int i=0;i<5;i++)say(who[i],names[who[i]],"yes");tour::net.tick();if(T->state!=tour::Inviting)fail("started before everyone answered");
    say(who[5],names[who[5]],"yes");if(T->state!=tour::Inviting)fail("started inside the radio callback");tour::net.tick();if(T->state!=tour::Running||T->round!=1)fail("automatic start");
    auto playerPeer=[&](uint8_t idx)->int{for(int w:who)if(T->players[idx].id==peerId(w))return w;return -1;};
@@ -190,11 +190,11 @@ static void scenario(){
    tour::Row rows[tour::MaxPlayers];unsigned n=tour::net.standings(*T,rows),total=0;for(unsigned i=0;i<n;i++)total+=rows[i].half;if(n!=7||total!=2*4*4)fail("standings: 4 points a round");
    for(unsigned i=1;i<n;i++)if(rows[i].half>rows[i-1].half)fail("standings order");
    openTour(T->id);for(int i=0;i<3;i++)tick();shot("tour-final");key(0xb7);shot("tour-final-games");key(0x86);
-   // Player side: an invitation from Igor, the player list, a pairing with Marat's key, the standings.
-   uint16_t pid=0xA7C1;auto org=[&](const char* body){snprintf(cmd,sizeof cmd,"\xe2\x99\x9e%04X %s",pid,body);tour::net.receive(peerId(3),"Igor T-Deck",cmd);};
+   // Player side: an invitation from John, the player list, a pairing with Marat's key, the standings.
+   uint16_t pid=0xA7C1;auto org=[&](const char* body){snprintf(cmd,sizeof cmd,"\xe2\x99\x9e%04X %s",pid,body);tour::net.receive(peerId(3),"John T-Deck",cmd);};
    org("inv 5 24 6 Autumn Swiss");tour::Tour* P=tour::net.find(pid);if(!P||P->state!=tour::Invited)fail("invitation received");
    openTour(pid);for(int i=0;i<2;i++)tick();shot("tour-invite");previewSent.clear();key(13);if(P->state!=tour::Running||previewSent.empty()||previewSent.back().text.find(" yes")==std::string::npos)fail("joined");
-   char list[160];snprintf(list,sizeof list,"pl %06lX:Igor,%06lX:M9,%06lX:Marat,%06lX:Lilya",(unsigned long)(peerId(3)>>40),(unsigned long)(meshRadio.nodeId>>40),(unsigned long)(peerId(5)>>40),(unsigned long)(peerId(6)>>40));org(list);
+   char list[160];snprintf(list,sizeof list,"pl %06lX:John,%06lX:M9,%06lX:Marat,%06lX:Lilya",(unsigned long)(peerId(3)>>40),(unsigned long)(meshRadio.nodeId>>40),(unsigned long)(peerId(5)>>40),(unsigned long)(peerId(6)>>40));org(list);
    const Peer* marat=nullptr;for(unsigned i=0;i<meshRadio.peerCount;i++)if(meshRadio.peers[i].id==peerId(5))marat=&meshRadio.peers[i];
    const char* b64="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";std::string key64;
    for(int i=0;i<32;i+=3){uint32_t v=uint32_t(marat->publicKey[i])<<16|(i+1<32?marat->publicKey[i+1]<<8:0)|(i+2<32?marat->publicKey[i+2]:0);key64+=b64[v>>18&63];key64+=b64[v>>12&63];key64+=i+1<32?b64[v>>6&63]:'=';key64+=i+2<32?b64[v&63]:'=';}
@@ -313,7 +313,7 @@ static void scenario(){
   must(dicer.command("dice char use 1").startsWith("OK")&&dicer.value(0)==17,"the character's sheet comes back");
   must(dicer.command("dice pool 3 d8 -2").startsWith("OK")&&dicer.poolText()=="3d8-2","pool");
   // D&D: modifiers, derived values, skills, spending.
-  
+
   must(dicer.command("dice char new dnd Arwen").startsWith("OK")&&dicer.sheet.count>=40,"D&D template");
   int dex=dicer.find("dex"),ac=dicer.find("ac"),init=dicer.find("init"),sl1=dicer.find("sl1");must(dex>=0&&ac>=0&&init>=0&&sl1>=0,"D&D codes");
   must(dicer.value(ac)==10&&dicer.badge(dex)=="+0","AC 10 at DEX 10");
@@ -523,7 +523,7 @@ static void scenario(){
 #else
   key(0x86);key(0x82);key(13);must(uiStatus().indexOf("\"page\":\"wardrive\"")>=0,"open wardrive");shot("wardrive-off");
   key(13);must(wardrive::settings.passive&&wardrive::settings.ping,"OK starts listening and pings");wardriveData();tick();shot("wardrive");
-  key(0x85);bool follow=maps.follow;maps.follow=false;maps.center(55.7975,49.1137);shot("wardrive-map");maps.follow=follow;key(0x82);
+  key(0x85);bool follow=maps.follow;maps.follow=false;maps.center(52.3743,4.8975);shot("wardrive-map");maps.follow=follow;key(0x82);
 #endif
   {StaticJsonDocument<64>d;d["action"]="stop";wardrive::command(d.as<JsonObjectConst>());}config.apps[0]=0;printf("wardrive UI checks passed\n");}
 // Power off last: the screens stop taking keys once it is requested.

@@ -8,8 +8,8 @@ namespace channels {
 const uint8_t publicSecret[16] = {0x8b, 0x33, 0x87, 0xe9, 0xc5, 0xcd, 0xea, 0x6a, 0xc9, 0xe5, 0xed, 0xba, 0xa1, 0x15, 0xcd, 0x72};
 // Names people tend to give open channels; each costs two hashes per heard packet with a matching byte.
 const char* const commonTags[] = {"#test", "#testing", "#ping", "#bot", "#chat", "#general", "#local", "#mesh", "#meshcore", "#news", "#weather",
-                                  "#emergency", "#sos", "#help", "#random", "#offtopic", "#repeaters", "#wardrive", "#wardriving", "#ru", "#russia", "#moscow", "#msk", "#spb",
-                                  "#kazan", "#tatarstan", "#ua", "#ukraine", "#kyiv", "#de", "#germany", "#pl", "#poland", "#uk", "#us", "#usa", "#eu", "#europe"};
+                                  "#emergency", "#sos", "#help", "#random", "#offtopic", "#repeaters", "#wardrive", "#wardriving", "#nl", "#netherlands", "#nederland",
+                                  "#amsterdam", "#rotterdam", "#denhaag", "#utrecht", "#eindhoven", "#groningen", "#be", "#belgium", "#de", "#germany", "#uk", "#eu", "#europe"};
 const unsigned commonTagCount = sizeof(commonTags) / sizeof(commonTags[0]);
 static void sha(uint8_t* out, size_t n, const void* data, size_t len) {
   SHA256 h;
