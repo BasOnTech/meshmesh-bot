@@ -1084,7 +1084,7 @@ struct CompanionCore {
     listing = false;
   }
 };
-// On the heap at first use: the classic ESP32 boards have no static DRAM to spare for its 3.5 KB.
+// On the heap at first use, so its 3.5 KB of static DRAM stays free when unused.
 static CompanionCore* appCore = nullptr;
 static CompanionCore& app() {
   if(!appCore) appCore = new CompanionCore;

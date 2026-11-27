@@ -41,10 +41,6 @@
 #else
 #define MM_RADIO_LR1110 1
 #endif
-// One button (click, hold): the Heltec.
-#if defined(MM_COMPACT)
-#define MM_ONE_BUTTON 1
-#endif
 // Native USB (ESP32-S3 USB Serial/JTAG) instead of a USB-UART bridge.
 #if defined(ARDUINO_USB_CDC_ON_BOOT) && ARDUINO_USB_CDC_ON_BOOT
 #define MM_NATIVE_USB 1

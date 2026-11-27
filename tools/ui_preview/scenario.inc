@@ -520,8 +520,6 @@ static void scenario(){
   for(int i=0;i<4&&uiStatus().indexOf("\"page\":\"home\"")<0;i++)key(0x86);key(13);must(uiStatus().indexOf("\"page\":\"wardrive\"")>=0,"open wardrive");shot("heltec-wardrive-off");
   key(0xa3);shot("heltec-wardrive-menu");key(0xa3);must(wardrive::running(),"menu starts it");wardriveData();tick();shot("heltec-wardrive");
   key(0xa3);key(13);key(13);key(0xa3);shot("heltec-wardrive-repeaters");key(0xa3);key(13);key(13);key(0xa3);key(0x86);
-#elif defined(MM_HELTEC_V4)
-  wardriveData(); // the joystick board: the same screens, reached as on the other one-button boards
 #else
   key(0x86);key(0x82);key(13);must(uiStatus().indexOf("\"page\":\"wardrive\"")>=0,"open wardrive");shot("wardrive-off");
   key(13);must(wardrive::settings.passive&&wardrive::settings.ping,"OK starts listening and pings");wardriveData();tick();shot("wardrive");

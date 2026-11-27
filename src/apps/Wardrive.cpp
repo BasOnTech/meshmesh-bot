@@ -23,7 +23,7 @@ struct Log {
   const char* path;
   const char* old;
   unsigned cap;
-  T* const waiting = new T[16]; // on the heap: static memory is short on the classic ESP32 (dram0)
+  T* const waiting = new T[16]; // on the heap, to keep static DRAM (dram0) free
   unsigned pending = 0;
   uint32_t current = 0, previous = 0, firstAt = 0, lost = 0;
   Log(const char* p, const char* o, unsigned c) : path(p), old(o), cap(c) {}

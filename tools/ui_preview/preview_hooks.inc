@@ -56,7 +56,7 @@ size_t tour::storeRead(uint8_t* d,size_t cap){if(tourSaved.size()!=cap)return 0;
 #include "net/Internet.h"
 Internet internet;
 #if !defined(MM_HELTEC_V4)
-static int previewRescans=0; // the T-Deck touch check: DEL in the network list rescans
+static int previewRescans=0; // the touch check: DEL in the network list rescans
 void Internet::setEnabled(bool on){enabled=on;}void Internet::rescan(){previewRescans++;}void Internet::connectTo(const String&){}
 bool Internet::save(const String&,const String&){return true;}bool Internet::forget(const String&){return true;}
 String Internet::savedName(unsigned){return "";}String Internet::stateText(){return online()?String("Home-WiFi · 192.168.1.101"):tr("Off");}
@@ -74,7 +74,7 @@ int powerOnWay(){return 0;}
 #else
 int powerOnWay(){return -1;}
 #endif
-String executeCommand(const String& line){previewCommands+=line+";";return "OK";} // UiHeltec.cpp: the GAT562 GPS menu
+String executeCommand(const String& line){previewCommands+=line+";";return "OK";} // UiHeltec.cpp: the GPS menu
 // Same as src/mesh/MeshRadio.cpp (the preview does not link the radio).
 String MeshRadio::routeText(const ChatMessage& m,bool brief) const{
  if(m.protocol!=2||m.route==ChatMessage::RouteNone||(m.outgoing&&(m.status==ChatMessage::Failed||channels::isChannel(m.destination))))return "";

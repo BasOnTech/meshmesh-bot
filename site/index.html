@@ -554,7 +554,7 @@ let touchX=null;
 document.getElementById('lb').addEventListener('touchstart',e=>touchX=e.touches[0].clientX,{passive:true});
 document.getElementById('lb').addEventListener('touchend',e=>{if(touchX==null)return;const dx=e.changedTouches[0].clientX-touchX;if(Math.abs(dx)>50)lbStep(dx<0?1:-1);touchX=null});
 // Boards and installer
-// No board is chosen by default: installing the image of another board is easy to miss (an M9 image on a Heltec V3).
+// No board is chosen by default: installing the image of another board is easy to miss (an M9 image on a Heltec V4).
 // The choice comes from ?board=<env> or the last one picked in this browser.
 let BOARDS=[],board=null;
 function pickBoard(){

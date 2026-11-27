@@ -120,7 +120,7 @@ pet skip SECONDS          run its clock forward (up to 14 days) to check growing
 
 ## Checks
 
-In the screen emulator (`tools/ui_preview/build.sh m9|heltec|gat562|t114`) the scenario opens the pet
+In the screen emulator (`tools/ui_preview/build.sh m9|heltec`) the scenario opens the pet
 page, shoots the egg, a happy, a hungry and an ill pet and the grave, and checks death at zero health,
 a new egg with the old pet remembered, hatching after 15 minutes and no death when death is off.
 Checks on the boards are recorded in [verification.md](verification.md).

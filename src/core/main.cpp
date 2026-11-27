@@ -114,52 +114,13 @@ void usbTick() {
 }
 }
 #if defined(MM_BOOT_TRACE)
-// Diagnostic builds only (-D MM_BOOT_TRACE): wait for the USB host, print each start step, and
-// before storage is mounted serve "flashread ADDR LEN" until "go", so storage can be saved first,
-// and "flashwrite ADDR HEX" inside the storage and core InternalFS (0xD4000-0xF4000), so a saved
-// copy (tools/nrf52_dump.py --write) can be put back byte for byte, which UF2 cannot do past 0xEA000.
+// Diagnostic builds only (-D MM_BOOT_TRACE): print each start step.
 #define BOOT(step)                \
   do {                            \
     Serial.println("BOOT " step); \
     Serial.flush();               \
     delay(30);                    \
   } while(0)
-static void bootWindow() {
-  uint32_t t = millis();
-  while(!Serial && millis() - t < 20000) delay(10);
-  delay(200);
-  Serial.println("BOOT trace: flashread ADDR LEN, flashwrite ADDR HEX, go");
-  String line;
-  t = millis();
-  while(millis() - t < 60000) {
-    if(!Serial.available()) {
-      delay(2);
-      continue;
-    }
-    char c = Serial.read();
-    if(c != '\n') {
-      if(c != '\r') line += c;
-      continue;
-    }
-    if(line == "go") break;
-    if(line.startsWith("flashread ")) {
-      uint32_t at = strtoul(line.c_str() + 10, nullptr, 16), n = 0;
-      int sp = line.indexOf(' ', 10);
-      if(sp > 0) n = strtoul(line.c_str() + sp + 1, nullptr, 16);
-      if(n && n <= 2048 && at >= 0x1000 && at + n <= 0x100000) {
-        String h = "FLASH " + String(at, HEX) + " ";
-        for(uint32_t i = 0; i < n; i++) {
-          uint8_t v = *(const uint8_t*)(at + i);
-          h += "0123456789abcdef"[v >> 4];
-          h += "0123456789abcdef"[v & 15];
-        }
-        Serial.println(h);
-      } else Serial.println("ERR flashread");
-      t = millis();
-    }
-    line = "";
-  }
-}
 #else
 #define BOOT(step) \
   do {             \
@@ -316,7 +277,7 @@ void appLoop() {
         usbLine("OK UI key");
       }
 #if !defined(MM_COMPACT)
-      // "uitouch t|h X Y" or "uitouch u|d|l|r": the T-Deck touch gestures, for checks without a finger.
+      // "uitouch t|h X Y" or "uitouch u|d|l|r": touch gestures on the 320x240 UI, for checks without a finger.
       else if(command.startsWith("uitouch ") && command.length() > 8 && strchr("thudlr", command[8])) {
         int x = 0, y = 0;
         sscanf(command.c_str() + 9, "%d %d", &x, &y);

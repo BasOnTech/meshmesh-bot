@@ -148,7 +148,7 @@ extern ChessNet chessNet;
 // Notation in the interface language: K Q R B N.
 String chessLocalSan(const char* san);
 bool chessStoreWrite(const uint8_t* data, size_t size);
-// The archive of finished games on the SD card (M9, T-Deck, boards with a card): /meshmesh/chess/*.pgn.
+// The archive of finished games on the SD card (M9): /meshmesh/chess/*.pgn.
 bool chessArchiveWrite(const String& name, const String& text);
 String chessArchiveList();                   // JSON: newest first
 String chessArchiveRead(const String& name); // empty when missing

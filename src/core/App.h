@@ -50,7 +50,7 @@ void uiKey(int key);
 bool uiScreenOff();
 String uiPerf(); // "uiperf" over USB: frame times per page since the last report (320x240 interface)
 void uiFarewell(); // power off (Power.cpp): "the device is off" and how to turn it on, the last frame before the screen goes dark
-// Touch (T-Deck; "uitouch" over USB on the 320x240 boards): 't' tap and 'h' hold at x,y; 'u','d','l','r' swipes.
+// Touch ("uitouch" over USB on the 320x240 M9): 't' tap and 'h' hold at x,y; 'u','d','l','r' swipes.
 void uiTouch(char gesture, int x, int y);
 String uiStatus();
 void portalBegin();

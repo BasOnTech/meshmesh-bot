@@ -37,8 +37,8 @@ NimBLECharacteristic* bleTx = nullptr;
 QueueHandle_t commands = nullptr;
 String bleResponse;
 unsigned bleOffset = 0;
-// "messages" goes out from a snapshot in small blocks (HistoryReply), as over USB and on the nRF52: the whole
-// history as one string (and its copy) did not fit the heap of boards without PSRAM (Heltec V3, BLE + radar).
+// "messages" goes out from a snapshot in small blocks (HistoryReply), as over USB: the whole history as one
+// string (and its copy) does not fit the heap well with BLE and the radar running.
 std::unique_ptr<HistoryReply> bleHistory;
 uint32_t nextNotification = 0;
 struct BleCommand {

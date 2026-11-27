@@ -83,7 +83,7 @@ class MeshRadio {
   uint32_t received = 0, delivered = 0; // chat messages received and delivery ACKs since boot (the pet counts them)
   float lastRssi = 0, lastSnr = 0;
   uint32_t lastRxAt = 0;
-  // On the heap: in static memory it does not fit the classic ESP32 boards (dram0 segment).
+  // On the heap, to keep static DRAM (dram0) free.
   ChatMessage* const history = new ChatMessage[64];
   unsigned historyCount = 0;
   Peer peers[24];

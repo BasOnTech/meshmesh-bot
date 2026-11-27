@@ -82,8 +82,7 @@ String statusJson() {
   d["idle_radio_events"] = powerRadioEvents();
   {
     int way = powerOnWay();
-    d["power_on"] = way >= 0 ? "button" : way == -2 ? "power_key"
-                                                    : "reset";
+    d["power_on"] = way >= 0 ? "button" : "reset";
     if(way >= 0) d["power_button"] = MM_BUTTON;
   } // "poweroff": what turns the board on again
   d["radio"] = meshRadio.ready;
@@ -152,7 +151,7 @@ String statusJson() {
   return s;
 }
 String messagesJson() {
-  // Do not reserve a 32 KB JSON pool in addition to the serialized history on small nRF52 heaps.
+  // Do not reserve a 32 KB JSON pool in addition to the serialized history.
   // Measure first so allocation failure is an explicit error, never a misleading empty array.
   StaticJsonDocument<1024> d;
   auto record = [&](unsigned i) { historyJsonRecord(d, meshRadio.history[i]); };
@@ -369,7 +368,7 @@ String configJson(bool includeKey) {
   d["apps"] = appsText(config.apps);
   d["region"] = config.region;
   d["preset"] = config.preset;
-#if defined(MM_ONE_BUTTON)
+#if defined(MM_COMPACT)
   d["double_back"] = config.doubleBack; // the page shows the switch only where the board has it
 #endif
   if(config.previous.set()) profileJson(d.createNestedObject("radio_prev"), config.previous);

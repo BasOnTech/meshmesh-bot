@@ -21,7 +21,7 @@ struct Found {
   char name[NameBytes + 1] = {};
   uint8_t repeaters = 0;
 };
-// found: MaxFound entries on the heap from the first search (the classic ESP32 boards have no static DRAM to spare).
+// found: MaxFound entries on the heap from the first search (keeps static DRAM free).
 struct Search {
   enum State : uint8_t { Idle,
                          Listening,

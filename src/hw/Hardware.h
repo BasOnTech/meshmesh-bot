@@ -70,8 +70,8 @@ class Hardware {
   void ping(uint16_t hz, uint16_t ms);
   void flush();
   // Power off (Power.cpp): the screen, GPS and peripheral supplies off; the levels are held through
-  // deep sleep (ESP32) or System OFF (nRF52). started: begin() ran; false on a wake that goes back to
-  // sleep, when only the pin levels are set again. A board with a PMU (T-Beam) is switched off by it here.
+  // deep sleep. started: begin() ran; false on a wake that goes back to sleep, when only the pin levels
+  // are set again.
   void powerDown(bool started);
   int wakePin() const; // the button that turns it on again, pressed = LOW; -1: only RESET or the power switch
   void text(int x, int y, const String& value, uint16_t color = 0xffff);
@@ -86,7 +86,7 @@ class Hardware {
 };
 extern Hardware hardware;
 #if !defined(MM_HELTEC_V4) && !defined(MM_COMPACT) && !defined(MM_UI_PREVIEW)
-// The 320x240 ST7789 boards (M9, T-Deck): the canvas goes out in bands of changed rows. A moved cursor,
+// The 320x240 ST7789 screen (M9): the canvas goes out in bands of changed rows. A moved cursor,
 // the status bar clock or a toast sends a few rows instead of all 240 (150 KB, over 15 ms at 80 MHz).
 // A row is compared by a 64-bit hash kept in internal RAM rather than against a copy of the last frame:
 // the canvas is in PSRAM, and comparing with a copy read both frames (300 KB) and wrote the changed rows again.

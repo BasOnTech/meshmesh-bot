@@ -1,5 +1,5 @@
 // The quick counter of the 320x240 screens (included by Ui.cpp; People.h keeps the cards): the open card
-// counts at once, OK or up +1, down -1; left and right turn the cards (swipes on the T-Deck), and the one
+// counts at once, OK or up +1, down -1; left and right turn the cards (or swipes), and the one
 // after the last adds a card. N or a hold names it, C colours it, R twice resets it, DEL twice deletes it;
 // B and W count the BLE and Wi-Fi devices nearby, shown on the card.
 uint32_t tallyArmed = 0;

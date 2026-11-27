@@ -1,6 +1,6 @@
-// The pet page of the one-button and joystick boards (included by UiHeltec.cpp; Pet.h has the creature).
+// The pet page of the one-button Heltec (included by UiHeltec.cpp; Pet.h has the creature).
 // On the 128x64 OLED it is drawn in outline: the lit pixels are its outline, eyes and mouth, the body stays
-// dark, as on the LCD of a keychain pet. Hold (OK on the joystick) opens its menu: pet, feed, heal, death.
+// dark, as on the LCD of a keychain pet. Hold opens its menu: pet, feed, heal, death.
 void petMono(int x, int y, int scale, uint32_t now) {
   auto& c = *hardware.canvas;
   uint8_t grid[pet::Size][pet::Size];

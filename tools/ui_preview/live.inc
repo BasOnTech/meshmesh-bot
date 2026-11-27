@@ -46,7 +46,7 @@ static void liveCommand(const std::string& line){
  else printf("commands: recv PEER TEXT | all PEER TEXT | key CODE | status\n");
  fflush(stdout);
 }
-// The canvas as RGB565: as it is on the colour boards, through the palette on the T114, white on black on the OLEDs.
+// The canvas as RGB565: as it is on the M9, white on black on the Heltec OLED.
 static const uint16_t* liveFrame(int W,int H){
 #if   defined(MM_HELTEC_V4)
  static std::vector<uint16_t> f;f.resize(W*H);const uint16_t* px=hardware.canvas->getBuffer();

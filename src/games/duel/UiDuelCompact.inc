@@ -6,18 +6,14 @@
 // ("finish it"), then the columns with cells left, then "Game menu"; hold on a cell fires, hold on a column fixes it,
 // then a click steps through its cells ("Cancel" last). Off your move a click goes to the next screen and hold opens
 // the game menu (accept, decline, draw, shuffle the fleet, my fleet, resign, send again, delete, list).
-// Joystick (GAT562): the list shows the games (up/down, OK opens). On a game the joystick moves a cursor: checkers -
-// OK picks a piece and OK on a square plays the move (several paths to it: up/down choose, OK plays); sea battle -
-// OK fires at the cell. Back drops the piece or returns to the list; holding OK opens the game menu.
 // Games start from the node card ("Checkers: invite", "Sea battle: invite") or by accepting a challenge.
 namespace {
 Duel* duelOpen = nullptr;
 int duelSel = 0, duelMenuIndex = 0;
-bool duelMenu = false, duelFleet = false, duelPaths = false;
-// duelCursor - one button: the choice (checkers: the square of a piece, -1 "Game menu"; sea: a cell, 100+column, -1
-// "Game menu" or "Cancel"); joystick: the screen square, row*8+column (checkers), or the cell (sea).
-// duelHeld: the picked piece; duelChoice: its move (one button: the n-th of its moves, -1 "Cancel"; joystick: the
-// n-th path to the cursor while duelPaths); duelColumn: the sea column fixed by a hold; duelPly: the position seen.
+bool duelMenu = false, duelFleet = false;
+// duelCursor: the choice (checkers: the square of a piece, -1 "Game menu"; sea: a cell, 100+column, -1 "Game menu"
+// or "Cancel"). duelHeld: the picked piece; duelChoice: its move (the n-th of its moves, -1 "Cancel"); duelColumn:
+// the sea column fixed by a hold; duelPly: the position seen.
 int duelCursor = 0, duelHeld = -1, duelChoice = 0, duelColumn = -1, duelPly = -1;
 Duel::Kind duelKind() { return page == SeaPage ? Duel::Sea : Duel::Checkers; }
 int duelPageOf(const Duel& g) { return g.kind == Duel::Sea ? SeaPage : CheckersPage; }
@@ -57,7 +53,7 @@ String duelState(const Duel& g) {
 void openDuel(Duel* g) {
   duelOpen = g;
   duelHeld = -1;
-  duelMenu = duelPaths = false;
+  duelMenu = false;
   duelColumn = duelPly = -1;
   dirty = true;
   if(!g) return;
@@ -92,7 +88,7 @@ unsigned duelActions(const Duel& g, DuelAct* out) {
   }
   if(g.active() && g.link() == ChatMessage::Failed) out[n++] = DaResend;
   if(!g.active()) out[n++] = DaDelete;
-  out[n++] = DaList; // the joystick has Back
+  out[n++] = DaList;
   out[n++] = DaClose;
   return n;
 }
@@ -185,13 +181,11 @@ unsigned ckMoves(const Duel& g, checkers::Move* l, int* out, int to = -1) {
 void ckSettle(const Duel& g) {
   if(!ckPicking(g)) {
     duelHeld = -1;
-    duelPaths = false;
     return;
   }
   if(duelPly != int(g.game.plies)) {
     duelPly = g.game.plies;
     duelHeld = -1;
-    duelPaths = false;
     duelChoice = 0;
     duelCursor = -2;
   }
@@ -202,7 +196,7 @@ void ckSettle(const Duel& g) {
     if(p[i] == duelCursor) return;
   duelCursor = k ? p[0] : -1;
 }
-// The move offered now: the chosen move of the picked piece (one button) or the chosen path to the cursor (joystick).
+// The move offered now: the chosen move of the picked piece.
 bool ckShown(const Duel& g, checkers::Move& m) {
   if(duelHeld < 0 || duelChoice < 0 || !ckPicking(g)) return false;
   checkers::Move l[checkers::MaxMoves];
@@ -243,7 +237,6 @@ String ckChoiceText(const Duel& g) {
 void ckPlay(Duel& g, const checkers::Move& m) {
   bool sent = duels.move(g, m);
   if(sent) duelHeld = -1;
-  duelPaths = false;
   duelSent(g, sent);
 }
 bool ckButton(Duel& g, bool click, bool hold) {
@@ -724,7 +717,6 @@ void duelStatus(JsonObject d) {
   d["duel_choice"] = duelChoice;
   d["duel_column"] = duelColumn;
   d["duel_fleet"] = duelFleet;
-  d["duel_paths"] = duelPaths;
   d["duel_menu"] = duelMenu;
   if(duelMenu) {
     DuelAct acts[12];

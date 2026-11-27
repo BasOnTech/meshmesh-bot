@@ -1199,7 +1199,7 @@ void draw() {
   p.rows += hardware.flushRows;
 }
 }
-static bool realErase = false; // DEL tapped in the footer: a real delete, also on the T-Deck
+static bool realErase = false; // DEL tapped in the footer: a real delete
 bool uiRadarPage() { return page == Scope || page == Homing || page == Motion; }
 bool uiScreenOff() { return wakeOnly; }
 String uiPerf() { return perfReport(); }

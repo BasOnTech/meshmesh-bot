@@ -1,9 +1,8 @@
-// The dice page of the one-button and joystick boards (included by UiHeltec.cpp after its actions; Dice.h keeps
-// the rolls). Hold (OK on the joystick) opens the menu with the roll first: hold, hold rolls. RPG shows the sum
+// The dice page of the one-button Heltec (included by UiHeltec.cpp after its actions; Dice.h keeps
+// the rolls). Hold opens the menu with the roll first: hold, hold rolls. RPG shows the sum
 // and the dice, Warhammer the grid (filled: at or over the threshold), the sheet one block at a time: a click
-// goes to the next block, the menu rolls its check or ability, marks pips and changes values; the joystick's
-// up/down change the dice count, the chosen grid dice or the block's value. One button counts in its own mode
-// ("Count with button"): click +1, hold -1, holding on to 5 s leaves it. Saved rolls, characters, names and the
+// goes to the next block, the menu rolls its check or ability, marks pips and changes values. The button counts
+// in its own mode ("Count with button"): click +1, hold -1, holding on to 5 s leaves it. Saved rolls, characters, names and the
 // sheet's blocks come from the web page or the app.
 bool diceRepeatSaved = false;
 int diceSavedSel = 0, diceBlockSel = 0;
@@ -247,13 +246,6 @@ bool diceRollKey(int key) {
   else if(diceRepeatSaved && dicer.savedCount()) dicer.rollSaved(diceSavedSel % dicer.savedCount());
   else dicer.rollPool();
   return true;
-}
-// Joystick up/down inside the page.
-void diceScroll(int step) {
-  auto& s = dicer.s;
-  if(s.mode == dice::Rpg) dicer.setPool(s.count - step, s.type, s.mod);
-  else if(s.mode == dice::Grid) dicer.gridChoose(int(s.gridChosen) - step);
-  else if(diceChangeable(diceBlock())) dicer.change(diceBlock(), -step);
 }
 String diceTitle() {
   const auto& s = dicer.s;

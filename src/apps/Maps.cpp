@@ -6,11 +6,7 @@
 #include <esp_heap_caps.h>
 #include <mbedtls/base64.h>
 #include <math.h>
-#if CONFIG_IDF_TARGET_ESP32S3
 #include <esp32s3/rom/miniz.h>
-#else
-#include <esp32/rom/miniz.h>
-#endif
 #include <Mm1Packet.h>
 Maps maps;
 uint32_t mapCrc(uint32_t crc, const uint8_t* bytes, size_t size) {

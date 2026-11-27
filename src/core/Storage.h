@@ -6,14 +6,10 @@
 #include <spi_flash_chip_driver.h>
 #include <esp_ota_ops.h>
 #include <Preferences.h>
-#if CONFIG_IDF_TARGET_ESP32S3
 #include <esp32s3/rom/spi_flash.h>
-#else
-#include <esp32/rom/spi_flash.h>
-#endif
-// Storage outside the partition table's LittleFS region. A user's Heltec V3 erases that region (0x610000)
-// but does not keep a write there, with no protection bits set. "fsformat" then puts LittleFS into the OTA
-// slot that is not running (MeshMesh has no OTA update, the slot stays unused) as far as that slot keeps
+// Storage outside the partition table's LittleFS region, for flash that erases that region (0x610000) but
+// does not keep a write there, with no protection bits set. "fsformat" then puts LittleFS into the OTA slot
+// that is not running (MeshMesh has no OTA update, the slot stays unused) as far as that slot keeps
 // writes, and records the place in NVS. The partition record in RAM is pointed there before mounting, so
 // esp_littlefs and esp_partition_* use it as the LittleFS partition; the partition table is not rewritten.
 namespace storage {
@@ -143,8 +139,6 @@ inline String flashSectorTest(uint32_t address) {
 }
 // The same test through the ROM functions, as esptool writes: the mode the bootloader set (the image
 // header's), not the esp_flash driver's. Runs from IRAM with the flash cache off, so the data is in DRAM.
-// ESP32-S3 only (the Heltec V3 case): the classic ESP32 builds have no IRAM to spare.
-#if CONFIG_IDF_TARGET_ESP32S3
 static IRAM_ATTR __attribute__((noinline)) int romSectorTest(uint32_t address, uint32_t* back) {
   static DRAM_ATTR const uint32_t probe[4] = {0x4d657368, 0x524f4d21, 0x5a5aa5a5, 0x0f1e2d3c};
   const spi_flash_guard_funcs_t* guard = spi_flash_guard_get();
@@ -170,17 +164,15 @@ inline String romSectorReport(uint32_t address) {
   snprintf(s, sizeof(s), "rom lost, reads %08x", unsigned(back[0]));
   return s;
 }
-#endif
 // USB "flashprobe": the erase and write test at the first and last sector and every megabyte boundary of
 // the free OTA slot and the table's LittleFS region, each only while nothing lives there; at the first
-// sector also through the ROM functions (ESP32-S3). Shows where the flash stops keeping writes; destroys
+// sector also through the ROM functions. Shows where the flash stops keeping writes; destroys
 // only data nobody uses.
 inline String flashProbe(bool fsMounted) {
   String out = "OK flash probe:";
   auto region = [&](uint32_t start, uint32_t size) {
     auto test = [&](uint32_t address) {char at[16];snprintf(at,sizeof(at)," 0x%x ",unsigned(address));out+=at;out+=flashSectorTest(address);out+=';'; };
     test(start);
-#if CONFIG_IDF_TARGET_ESP32S3
     {
       char at[16];
       snprintf(at, sizeof(at), " 0x%x ", unsigned(start));
@@ -188,7 +180,6 @@ inline String flashProbe(bool fsMounted) {
       out += romSectorReport(start);
       out += ';';
     }
-#endif
     for(uint32_t at = (start + 0xfffff) & ~0xfffffu; at < start + size; at += 0x100000)
       if(at > start) test(at);
     test(start + size - SPI_FLASH_SEC_SIZE);

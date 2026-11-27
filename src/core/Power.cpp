@@ -25,8 +25,8 @@ constexpr uint32_t IdlePollMs = 20; // below the 30 ms button debounce; also dra
 }
 void IRAM_ATTR powerRadioIrq() {
   // Called only from the RadioLib GPIO ISR. A pending notification also closes the race
-  // between checking the radio IRQ and blocking the task. The RTOS controls sleep
-  // (together with the SoftDevice on nRF52); other tasks can still run during this wait.
+  // between checking the radio IRQ and blocking the task. The RTOS controls sleep;
+  // other tasks can still run during this wait.
   if(!idleTask) return;
   BaseType_t woken = pdFALSE;
   vTaskNotifyGiveFromISR(idleTask, &woken);
@@ -71,8 +71,7 @@ String powerOff() {
     meshRadio.dirty = true;
   }
   int way = powerOnWay();
-  return way >= 0 ? "OK turning off; hold the button to turn on" : way == -2 ? "OK turning off; the power key turns it on"
-                                                                             : "OK turning off; RESET or the power switch turns it on";
+  return way >= 0 ? "OK turning off; hold the button to turn on" : "OK turning off; RESET or the power switch turns it on";
 }
 bool powerOffPending() { return offAt != 0; }
 int powerOnWay() { return hardware.wakePin(); }

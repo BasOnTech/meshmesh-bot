@@ -13,7 +13,7 @@ RADIO_FIELDS = ('frequency', 'bandwidth', 'sf', 'cr', 'power', 'hops')
 PROFILE_FIELDS = ('frequency', 'bandwidth', 'sf', 'cr')
 
 def read(device, name):
-    # nRF52 flash commits under BLE can postpone a large history reply.
+    # Flash commits under BLE can postpone a large history reply.
     return json.loads(command(device, name, timeout=25 if name == 'messages' else 8))
 
 def apply(device, settings):

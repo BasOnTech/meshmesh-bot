@@ -1,4 +1,4 @@
-// Checkers, sea battle and the app folders on the M9 interface (and the T-Deck touch checks). The other player is
+// Checkers, sea battle and the app folders on the M9 interface (and the touch checks). The other player is
 // faked: its commands go straight into duels.receive(), what we send is in previewSent.
 {
  auto must=[](bool ok,const char* why){if(!ok){printf("FAIL games %s: %s\n",why,uiStatus().c_str());exit(1);}};

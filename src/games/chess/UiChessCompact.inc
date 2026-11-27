@@ -1,15 +1,12 @@
 // Included by UiHeltec.cpp: chess with contacts on the 128x64 screen.
-// Joystick (GAT562): the list shows the games (up/down, OK opens). On the board the joystick moves a
-// cursor; OK picks a piece and OK on a highlighted square plays the move (a pawn promotes to a queen);
-// Back drops the piece or returns to the list; holding OK opens the game menu.
-// One button (Heltec and the other compact boards): the list opens a game from its menu. On your move
+// One button: the list opens a game from its menu. On your move
 // a click steps through your pieces that can move, then "Game menu"; hold picks the piece. Then a click
 // steps through the squares it reaches, then "Cancel"; hold plays the move. Off your move a click goes
 // to the next screen and hold opens the game menu.
 // Games start from the node card ("Chess: invite") or by accepting a challenge. Network, rules and
 // storage: ChessNet.
 namespace {
-// chessCursor -1: on one-button boards, the choice after the squares ("Game menu" or "Cancel").
+// chessCursor -1: the choice after the squares ("Game menu" or "Cancel").
 ChessMatch* chessOpen = nullptr;
 int chessSel = 0, chessCursor = 12, chessHeld = -1, chessPly = -1;
 bool chessMenu = false;
@@ -108,7 +105,7 @@ unsigned chessActions(const ChessMatch& m, ChessAct* out) {
   }
   if(m.active() && m.link() == ChatMessage::Failed) out[n++] = CaResend;
   if(!m.active()) out[n++] = CaDelete;
-  out[n++] = CaList; // the joystick has Back
+  out[n++] = CaList;
   out[n++] = CaClose;
   return n;
 }

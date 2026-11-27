@@ -193,7 +193,7 @@ void drawIcon(Adafruit_GFX& d, Icon id, int cx, int cy, int s, uint16_t c, uint1
     if(s > 6) thick(d, cx - s, cy + h + 1, cx + s, cy - h + 1, c);
     break;
   }
-  // The game icons only with their games (Modules.h): 1 MB nRF52 images without them save the code.
+  // The game icons only with their games (Modules.h).
 #if MM_CHECKERS
   case IcCheckers: {
     int n = s > 6 ? 4 : 2, cell = max(2, (2 * s) / n), x0 = cx - cell * n / 2, y0 = cy - cell * n / 2, r = max(2, cell * n / 4); // a corner of the board and a man standing on it

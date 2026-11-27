@@ -1,6 +1,6 @@
 #pragma once
 #include "mesh/MeshRadio.h"
-// The same JSON record for whole replies and bounded streaming on nRF52.
+// The same JSON record for whole replies and bounded streaming.
 inline void historyJsonRecord(JsonDocument& d, const ChatMessage& m) {
   d.clear();
   JsonObject j = d.to<JsonObject>();

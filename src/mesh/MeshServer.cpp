@@ -179,7 +179,7 @@ class ServerMesh : public mesh::Mesh, public CommonCLICallbacks {
   const uint8_t type;
 
  protected:
-  decltype(&LittleFS) fs = &LittleFS; // ESP32 LittleFS or the nRF52 MeshFS, both with open(name,mode,create)
+  decltype(&LittleFS) fs = &LittleFS; // LittleFS, with open(name,mode,create)
   uint32_t lastMillis = 0;
   unsigned long nextLocalAdvert = 0, nextFloodAdvert = 0, setRadioAt = 0, revertRadioAt = 0, dirtyContactsExpiry = 0;
   bool logging = false, regionLoadActive = false;

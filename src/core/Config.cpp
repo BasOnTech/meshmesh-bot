@@ -18,8 +18,8 @@ bool Config::valid() const {
 }
 void Config::load() {
   // An NVS partition that nvs_flash_init cannot open holds nothing readable: erased, so the node gets a key and
-  // settings again. A Heltec V3 left one after writes lost under the QIO flash driver (before 0.5.1); NimBLE
-  // aborts on it when Bluetooth starts.
+  // settings again. Writes lost under a wrong flash driver mode leave one; NimBLE aborts on it when Bluetooth
+  // starts.
   esp_err_t nvs = nvs_flash_init();
   if(nvs != ESP_OK) {
     Serial.printf("NVS unreadable (%s); erased, settings and key start anew\n", esp_err_to_name(nvs));
@@ -88,7 +88,7 @@ void Config::load() {
   else if(p.getBytesLength("region_key") != 16 || p.getBytes("region_key", regionKey, 16) != 16) regions::keyOf(region, regionKey);
   // Language: "lang" since 0.3.7; older versions kept only "russian".
   lang = p.getUChar("lang", LangEn);
-  if(!langAvailable(lang)) lang = LangEn; // not in this image (nRF52): English until an image with it is installed
+  if(!langAvailable(lang)) lang = LangEn; // not in this image: English until an image with it is installed
   // The site installer's choice applies once per installation; afterwards Settings decide.
   String chosen = installLanguage();
   if(chosen.length() && langAvailable(langFromCode(chosen)) && p.getString("inst_lang", "") != chosen) {

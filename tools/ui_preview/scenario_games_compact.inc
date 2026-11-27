@@ -1,4 +1,4 @@
-// Checkers, sea battle and the app folders on the 128x64 interface (Heltec, GAT562 joystick) and the T114 TFT.
+// Checkers, sea battle and the app folders on the 128x64 interface (Heltec).
 // The other player is faked: their commands go in through duels.receive, what we send is in previewSent.
  {previewOff=false; // the screens above ended with the power off
   auto must=[](bool ok,const char* why){if(!ok){printf("FAIL games %s: %s\n",why,uiStatus().c_str());exit(1);}};
@@ -6,7 +6,7 @@
   const char* prefix="heltec-";const int next=13,enter=0xa3,menu=0xa3,run=0xa3;
   auto snap=[&](const char* n){shot((std::string(prefix)+n).c_str());};
   auto home=[&]{for(int i=0;i<11&&(has("\"menu\":true")||has("\"chess_popup\":true"));i++)tick();for(int i=0;i<4&&!has("\"page\":\"home\"");i++)key(0x86);must(has("\"page\":\"home\""),"home");};
-  // A page by name: clicks (joystick: right) through the cycle; a hold (OK) enters the games folder when the page is in it.
+  // A page by name: clicks through the cycle; a hold (OK) enters the games folder when the page is in it.
   auto go=[&](const char* n,bool games){std::string w=std::string("\"page\":\"")+n+"\"";
    for(int i=0;i<40&&!has(w.c_str());i++)key(has("\"page\":\"folder\"")&&games?enter:next);must(has(w.c_str()),n);};
   auto sent=[]{return previewSent.empty()?std::string():previewSent.back().text;};
@@ -63,12 +63,12 @@
   must(g->game.plies==11&&sent().find(" 11 f2:d4:f6")!=std::string::npos,"the double capture played and sent");for(int i=0;i<2;i++)tick();snap("checkers-their-move");
   {checkers::Move l[checkers::MaxMoves];unsigned n=g->game.pos.legal(l);must(n>0,"their reply");char t[40];checkers::moveText(l[0],t,sizeof t);say(g,std::string("12 ")+t);}
   tick();must(has("\"chess_popup\":false")&&!g->unseen,"their move on the open board: no popup");
-  // The game menu: hold OK (joystick); one button on its move: "Game menu" after the pieces.
+  // The game menu: hold; on its move: "Game menu" after the pieces.
   for(int i=0;i<40&&!has("\"duel_cursor\":-1,");i++)key(13);snap("checkers-gamemenu");key(0xa3);
   must(has("\"duel_menu\":true"),"the game menu");snap("checkers-menu");
   for(int i=0;i<12&&has("\"duel_menu\":true");i++){StaticJsonDocument<1024>d;deserializeJson(d,uiStatus());if((d["duel_act"]|-1)==10){key(0xa3);break;}key(13);} // "< Back to the game"
   must(!has("\"duel_menu\":true"),"the menu closes");
-  // Kings: a later position of another game, drawn as the T114 and the OLED show them (their move).
+  // Kings: a later position of another game, drawn as the OLED shows them (their move).
   {Duel* k=duels.invite(peerId(3),Duel::Checkers,checkers::Black);must(k&&k->peer==peerId(3),"second game");
    auto& b=k->game.pos.board;memset(b,0,sizeof b);for(const char* w:{"d4K","c3","a1","e7k","f6b","g7b","h8k"}){int q=checkers::parseSquare(w);must(q>=0,w);b[q]=w[2]=='K'?checkers::King:w[2]=='k'?-checkers::King:w[2]=='b'?-checkers::Man:checkers::Man;}
    k->game.pos.side=checkers::White;k->state=Duel::Playing;

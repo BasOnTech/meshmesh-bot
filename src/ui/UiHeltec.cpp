@@ -22,8 +22,7 @@
 #include <time.h>
 // One PRG button: click = next screen or next menu item; hold = the screen's action, or its menu
 // (chess on the board: click = next choice, hold = take it; UiChessCompact.inc).
-// Folders (App.h): a folder is a screen of the cycle with its apps listed; a hold (joystick: OK on the chosen
-// app) enters it, then clicks go through its apps and after the last one back to the folder screen; Back (or a
+// Folders (App.h): a folder is a screen of the cycle with its apps listed; a hold enters it, then clicks go through its apps and after the last one back to the folder screen; Back (or a
 // double click) returns to it. Folders are made on the web page and in the app.
 namespace {
 enum Page { Home,
@@ -392,7 +391,7 @@ const uint8_t appPages[] = {Messages, QuickPage, Nodes, Gps, Signals,
 static_assert(sizeof appPages == sizeof uiApps / sizeof *uiApps, "a page for every app ID");
 // Folders: folderAt is the folder of the folder screen. A place in the cycle is a page, or FolderPage|folder<<8
 // (showPage takes both).
-int folderAt = 0, folderSel = 0; // folderSel: the joystick's choice on the folder screen
+int folderAt = 0;
 int folderCode(int f) { return FolderPage | f << 8; }
 unsigned folderPages(int f, uint8_t* out) {
   uint8_t e[AppsMax];
@@ -464,10 +463,7 @@ int folderBack() {
 void showPage(int next) {
   page = next & 0xff;
   appOpen = false;
-  if(page == FolderPage) {
-    folderAt = next >> 8;
-    folderSel = 0;
-  }
+  if(page == FolderPage) folderAt = next >> 8;
   if(page == Signals) {
     signalManual = false;
     radar.open();
@@ -510,17 +506,7 @@ int roleSel = 0;
 uint32_t rolePickAt = 0;
 String roleShort(int r) { return r == RoleRepeater ? t("Repeater") : r == RoleRoom ? t("Room server")
                                                                                    : t("Normal"); }
-// Boards without a screen (XIAO, a T-Beam without OLED) skip the boot choice: a press there would
-// change the mode unseen. The web page, BLE and USB change it instead.
-bool screenPresent() {
-#if defined(MM_COMPACT) && !defined(MM_HELTEC_V4)
-  return hardware.panel != nullptr;
-#else
-  return true;
-#endif
-}
 void openRolePick(bool atBoot) {
-  if(atBoot && !screenPresent()) return;
   rolePick = true;
   rolePickBoot = atBoot;
   rolePickAt = millis();
@@ -544,8 +530,7 @@ String applyOne(const char* key, T value) {
 }
 // Radio settings on the device: a draft saved at once, as on the M9. One button: click - next row,
 // hold - change it (click - next value, hold - done); the frequency goes digit by digit (click - the
-// digit +1, hold - the next digit). Joystick: up/down - rows, left/right - values, OK on the frequency -
-// its digits (left/right - digit, up/down - value), back - leave without saving.
+// digit +1, hold - the next digit)..
 // Region: the default one of our floods (Regions.h), chosen among the regions found; Find regions: asks the
 // repeaters that hear this node (hold). Previous: the profile before the last change of frequency, BW, SF or CR (hold
 // returns to it); during a test of a network profile from the page or app it is the test (hold keeps it, a restart
@@ -567,7 +552,7 @@ enum RadioRow { RowFreq,
 bool radioEdit = false, radioEditing = false;
 int radioRow = 0, radioDigit = 0;
 // The draft lives in zeroed memory, made a copy of config when the editor opens: a Config object with its defaults
-// would keep them in the image (536 bytes of the nRF52 flash).
+// would keep them in the image.
 alignas(Config) uint8_t radioDraftSpace[sizeof(Config)];
 Config& radioDraft = *reinterpret_cast<Config*>(radioDraftSpace);
 void openRadio() {
@@ -729,7 +714,7 @@ void radioButton(bool click, bool hold) {
     radioDigit = 0;
   }
 }
-// The key hints of the radio screen: what a click and a hold (or the joystick) do now.
+// The key hints of the radio screen: what a click and a hold do now.
 String radioHint() {
   if(radioEditing) return radioRow == RowFreq ? t("click-digit+ hold-next") : t("click-change hold-done");
   return radioRow == RowSave ? t("click-next hold-save") : radioRow == RowCancel ? t("click-next hold-leave")
@@ -912,8 +897,8 @@ unsigned actions(Act* out) {
   unsigned n = 0;
   switch(page) {
   case Home:
-    // Storage left by another firmware: on the nRF52 the settings live there (nothing is saved or sent
-    // without it); on the ESP32 the key, settings and contacts are in NVS, the history and games are not kept.
+    // Storage left by another firmware: the key, settings and contacts are in NVS, the history and games
+    // are not kept.
     if(!hardware.fsOk) out[n++] = ActFormat;
     out[n++] = ActAdvert;
     if(config.role != RoleNormal) {
@@ -963,7 +948,7 @@ unsigned actions(Act* out) {
       out[n++] = ActChessOpen;
       if(g > 1) out[n++] = ActChessNext;
     }
-  } // the joystick opens with OK
+  }
 #endif
   break;
   case CheckersPage:
@@ -976,7 +961,7 @@ unsigned actions(Act* out) {
       out[n++] = ActDuelOpen;
       if(g > 1) out[n++] = ActDuelNext;
     }
-  } // the joystick opens with OK
+  }
 #endif
   break;
   case Signals:
@@ -1030,9 +1015,7 @@ unsigned actions(Act* out) {
     out[n++] = ActBattery;
     out[n++] = ActScreen;
     out[n++] = ActContrast;
-#if defined(MM_ONE_BUTTON)
     out[n++] = ActDoubleBack;
-#endif
     out[n++] = ActRole;
     out[n++] = ActPowerOff;
     out[n++] = ActNotify;
@@ -1843,7 +1826,6 @@ void drawRadioEdit() {
 // Power off pending (Power.cpp): what turns the board on again.
 String powerOnHint() {
   int way = powerOnWay();
-  if(way == -2) return t("the power key");
   if(way < 0) return t("RESET or power switch");
   return t("hold ") + MM_BUTTON;
 }
@@ -1910,7 +1892,7 @@ void drawFolderMono() {
   int w = n > 4 ? 64 : 128;
   for(unsigned i = 0; i < n && i < rows * 2; i++) {
     int x = i / rows * 64, y = 13 + i % rows * 11;
-    bool focus = int(i) == folderSel;
+    bool focus = i == 0;
     unsigned k = appNews(p[i]);
     String badge = k ? String(k) : String();
     if(focus) c.fillRect(x, y, w - 1, 11, 1);
@@ -2223,7 +2205,6 @@ void draw() {
   hardware.flush();
 }
 }
-#if defined(MM_ONE_BUTTON)
 // Double click = back, as on the stock MeshCore screen (config.doubleBack, off by default): a click waits DoubleMs
 // for a second one, so with the option on a single click acts that much later. Counting keeps clicks immediate.
 static constexpr uint32_t DoubleMs = 400;
@@ -2282,10 +2263,8 @@ static void stepBack() {
   int f = folderBack();
   showPage(f >= 0 ? f : previousPage()); // an app of a folder: back to the folder screen
 }
-#endif
 static void uiKeyNow(int key);
 void uiKey(int key) {
-#if defined(MM_ONE_BUTTON)
   if(powerOffPending()) return;
   if(clickAt) {
     bool second = key == 13;
@@ -2304,7 +2283,6 @@ void uiKey(int key) {
     lastInput = millis();
     return;
   }
-#endif
   uiKeyNow(key);
 }
 static void uiKeyNow(int key) {
@@ -2469,9 +2447,7 @@ String uiStatus() {
   }
   d["screen_off"] = screenOff;
   d["popup"] = popupAt != 0;
-#if defined(MM_ONE_BUTTON)
   d["click_wait"] = clickAt != 0; // a click waiting for a second one (double click = back)
-#endif
   d["chess_popup"] = chessPopupAt != 0;
   d["unread"] = unreadCount;
   {
@@ -2479,7 +2455,6 @@ String uiStatus() {
     if(page == FolderPage || f >= 0) {
       d["folder"] = f >= 0 ? f : folderAt;
       d["in_folder"] = f >= 0;
-      if(page == FolderPage) d["folder_sel"] = folderSel;
     }
   }
 #if MM_DUEL
@@ -2537,12 +2512,10 @@ void uiTick() {
     }
     return;
   } // drawn once: the board turns off
-#if defined(MM_ONE_BUTTON)
   if(clickAt && now - clickAt >= DoubleMs) {
     clickAt = 0;
     uiKeyNow(13);
   } // no second click came
-#endif
   notifications::Event receivedEvent;
   while(notifications::take(receivedEvent)) {
     const auto& e = receivedEvent;

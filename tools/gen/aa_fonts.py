@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Anti-aliased faces of the 320x240 screens (M9, T-Deck): src/ui/AaFonts.h (tools/gen/i18n.py generate).
+"""Anti-aliased faces of the 320x240 screen (M9): src/ui/AaFonts.h (tools/gen/i18n.py generate).
 
 Inter, rendered with hinting into 4-bit coverage per pixel. Each face is sized so its cap height (the digit
 height for the digit face) matches the X11 bitmap face it replaces, so the layouts keep their baselines and

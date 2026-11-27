@@ -1,7 +1,7 @@
 // Settings (included by Ui.cpp): the settings menu, the Radio and Screen & device editors and turning off.
 const int settingsCount = 9;
-// Power off (Power.cpp): the M9 has no button on a GPIO, the T-Deck wakes on a held trackball click.
-String powerOnHint() { return powerOnWay() >= 0 ? t("To turn on, hold the trackball pressed") : t("To turn on: RESET or the power switch"); }
+// Power off (Power.cpp): the M9 has no button on a GPIO, RESET or the power switch turns it on.
+String powerOnHint() { return t("To turn on: RESET or the power switch"); }
 bool farewell = false; // the board is about to turn off: the last frame
 void drawOff() {
   panel(30, 62, 260, 116, surfaceCard, radiusDialog);

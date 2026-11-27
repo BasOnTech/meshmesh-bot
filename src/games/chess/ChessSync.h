@@ -47,7 +47,7 @@ class Ledger {
     uint32_t at;
     bool used;
   };
-  // On the heap only during a session (classic ESP32 boards have no static RAM to spare).
+  // On the heap only during a session, so static RAM stays free.
   struct Buffers {
     In inbox[Inbox];
     Out outbox[Outbox];
