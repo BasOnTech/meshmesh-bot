@@ -394,11 +394,16 @@ void ring(int x, int y, int w, int h, int r = 6, uint16_t color = accent) {
   g().drawRoundRect(x, y, w, h, r, color);
   g().drawRoundRect(x + 1, y + 1, w - 2, h - 2, max(r - 1, 1), color);
 }
+// Arrow head pointing up (0), right (1), down (2) or left (3): 45 degree spans mirrored about its axis, base half-width
+// s. GFX's fillTriangle rounds the two halves of a vertical-based triangle differently, so < and > came out lopsided.
 void tri(int x, int y, int dir, int s, uint16_t c) {
-  if(dir == 0) g().fillTriangle(x - s, y + s / 2, x + s, y + s / 2, x, y - s / 2 - 1, c);
-  else if(dir == 2) g().fillTriangle(x - s, y - s / 2, x + s, y - s / 2, x, y + s / 2 + 1, c);
-  else if(dir == 1) g().fillTriangle(x - s / 2, y - s, x - s / 2, y + s, x + s / 2 + 1, y, c);
-  else g().fillTriangle(x + s / 2, y - s, x + s / 2, y + s, x - s / 2 - 1, y, c);
+  for(int i = 0; i <= s; i++) {
+    int w = i, d = i - (s + 1) / 2;
+    if(dir == 0) g().drawFastHLine(x - w, y + d, 2 * w + 1, c);
+    else if(dir == 2) g().drawFastHLine(x - w, y - d, 2 * w + 1, c);
+    else if(dir == 1) g().drawFastVLine(x - d, y - w, 2 * w + 1, c);
+    else g().drawFastVLine(x + d, y - w, 2 * w + 1, c);
+  }
 }
 void thickLine(int x0, int y0, int x1, int y1, uint16_t c) {
   g().drawLine(x0, y0, x1, y1, c);
