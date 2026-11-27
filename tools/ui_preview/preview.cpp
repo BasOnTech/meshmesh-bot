@@ -130,7 +130,7 @@ int main(int argc,char** argv){
  hardware.batteryMv=3980;hardware.gps.location={true,52.3731,4.8926};hardware.gps.satellites.v=9;hardware.gps.hdop.v=1.1;hardware.gps.date.valid=true;hardware.gps.sentences=1200;
  meshRadio.ready=true;meshRadio.nodeId=0x5A1F0C9E77D2A1B3ULL;meshRadio.rxCount=148;meshRadio.txCount=37;meshRadio.relayed=12;meshRadio.rejected=2;meshRadio.lastRssi=-71;meshRadio.lastSnr=9.5;meshRadio.lastRxAt=fakeMillis-20000;
  // Node names fit Peer::name (24 bytes, as the firmware allows).
- const char* names[]={"Heltec V4","Amsterdam RPT-1","Room Amsterdam","John T-Deck","Sensor-12","Marat"};uint8_t types[]={1,2,3,1,4,1};
+ const char* names[]={"Heltec V4","Amsterdam RPT-1","Room Amsterdam","John T-Deck","Sensor-12","Linda"};uint8_t types[]={1,2,3,1,4,1};
  for(int i=0;i<6;i++){auto& p=meshRadio.peers[meshRadio.peerCount++];p.id=peerId(i);strcpy(p.name,names[i]);p.type=types[i];p.heard=i!=4;p.seen=fakeMillis-(i*47000+3000);p.rssi=-58-i*11;p.snr=11-i*3.5f;p.hops=i==0?0:i;p.pathLength=i==0?0:i==2?255:i;p.position=i==0||i==1||i==3;p.latitude=52.3731+0.0011*(i+1)*(i%2?1:-1);p.longitude=4.8926+0.0013*(i+1)*(i%3?1:-1);for(int k=0;k<8;k++)p.publicKey[k]=uint8_t(p.id>>(56-8*k));p.publicKey[8]=0x10*i+3;}
  {auto& r=remote::sessions[0];r.id=peerId(1);r.login=r.status=r.command=remote::Done;r.admin=true;r.battery=4170;r.uptime=93780;r.received=1520;r.sent=611;r.airtime=4210;r.noise=-112;r.rssi=-79;r.snr=38;
   strcpy(r.reply[0],"> Amsterdam RPT-1");strcpy(r.reply[1],"v1.17.1-meshmesh (Build: Oct  8 2026)");r.replies=2;
@@ -140,8 +140,8 @@ int main(int argc,char** argv){
  // How the last added message travelled: hop count (255 unknown), route, repeats heard
  auto via=[&](uint8_t hops,ChatMessage::Route r,uint8_t heard=0){auto& m=meshRadio.history[meshRadio.historyCount-1];m.hops=hops;m.route=r;m.heard=heard;};
  uint64_t B=meshmesh::Broadcast;
- add(peerId(5),B,"Marat","Hi all! 👋 Anyone on air near the Kremlin?",false,ChatMessage::Received,5400);via(2,ChatMessage::RouteFlood);
- add(meshRadio.nodeId,B,"M9","On air, M9 near the Kremlin",true,ChatMessage::Sent,5300);via(255,ChatMessage::RouteFlood,3);
+ add(peerId(5),B,"Linda","Hi all! 👋 Anyone on air near the Dam?",false,ChatMessage::Received,5400);via(2,ChatMessage::RouteFlood);
+ add(meshRadio.nodeId,B,"M9","On air, M9 near the Dam",true,ChatMessage::Sent,5300);via(255,ChatMessage::RouteFlood,3);
  add(peerId(0),meshRadio.nodeId,"Heltec V4","Radio test V4 → M9: 1790746076",false,ChatMessage::Received,3600);via(0,ChatMessage::RouteFlood);
  add(meshRadio.nodeId,peerId(0),"M9","Copy, loud and clear. SNR about 9 dB",true,ChatMessage::Delivered,3500);via(0,ChatMessage::RouteDirect);
  add(meshRadio.nodeId,peerId(0),"M9","Long message check: wrapped lines must use the full width of the screen",true,ChatMessage::Failed,1200);
@@ -151,12 +151,12 @@ int main(int argc,char** argv){
  // Channels: Public, a hashtag and a private one with messages; two more heard on air.
  meshRadio.channelCount=1;strcpy(meshRadio.channelList[0].name,"Public");memcpy(meshRadio.channelList[0].secret,channels::publicSecret,16);meshRadio.channelList[0].id=meshmesh::Broadcast;
  {uint64_t tag,priv;meshRadio.joinHashtag("amsterdam",&tag);uint8_t k[16];for(int i=0;i<16;i++)k[i]=uint8_t(200-i*9);meshRadio.addChannel("Friends",k,&priv);
-  add(peerId(3),tag,"John T-Deck","Who is going to Kaban on Saturday?",false,ChatMessage::Received,2400);via(2,ChatMessage::RouteFlood);
-  add(peerId(5),priv,"Marat","Meeting at 19:00 🔥🎉 🇳🇱🦖",false,ChatMessage::Received,900);via(1,ChatMessage::RouteFlood);
+  add(peerId(3),tag,"John T-Deck","Who is going to the Vondelpark on Saturday?",false,ChatMessage::Received,2400);via(2,ChatMessage::RouteFlood);
+  add(peerId(5),priv,"Linda","Meeting at 19:00 🔥🎉 🇳🇱🦖",false,ChatMessage::Received,900);via(1,ChatMessage::RouteFlood);
   meshRadio.heard[0].hash=0x5A;meshRadio.heard[0].packets=3;meshRadio.heard[0].at=fakeMillis-120000;strcpy(meshRadio.heard[0].name,"#nl");
   meshRadio.heard[1].hash=0x07;meshRadio.heard[1].packets=1;meshRadio.heard[1].at=fakeMillis-600000;meshRadio.heardCount=2;meshRadio.heardSamples=4;
   channels::Channel invite{};strcpy(invite.name,"Hiking");for(int i=0;i<16;i++)invite.secret[i]=uint8_t(i*13+5);
-  add(peerId(5),meshRadio.nodeId,"Marat",channels::link(invite).c_str(),false,ChatMessage::Received,200);}
+  add(peerId(5),meshRadio.nodeId,"Linda",channels::link(invite).c_str(),false,ChatMessage::Received,200);}
  maps.available=true;maps.tileCount=1240;maps.title="Amsterdam";maps.zoom=15;maps.center(52.3731,4.8926);
  navigation.headingValid=true;navigation.heading=37;navigation.calibrated=true;
  // "--dice LANG": the dice of src/games/dice/Dice.cpp as a server for the web page checks: a command a line on stdin, its answer

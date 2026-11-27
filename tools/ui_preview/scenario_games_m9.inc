@@ -108,6 +108,6 @@
  strlcpy(config.apps,"chats {My_games chess checkers sea} -{games pet} nodes",sizeof config.apps);key(0x82);shot("m9-home-folders");
  {uint8_t o[AppEntriesMax];unsigned n=appsShown(o);must(n>=3&&o[1]==(AppFolder|0)&&appsFolderName(0)=="My games","custom folder");}
  key(0xb6);key(13);must(has("\"folder_name\":\"My games\""),"custom folder opens");shot("m9-folder-custom");key(0x82);config.apps[0]=0;
- for(auto& g:duels.games)g=Duel();strcpy(peer(5).name,"Marat");
+ for(auto& g:duels.games)g=Duel();strcpy(peer(5).name,"Linda");
  printf("games checks passed\n");
 }

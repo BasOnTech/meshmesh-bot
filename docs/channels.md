@@ -55,7 +55,7 @@ a message (151 bytes) URL-encoded; then its letters go as they are, without `%D0
 - **M9.** Chats: Public, the channels, “Add a channel”, then direct conversations. On a channel row
   ←/→ open the channel card, in a channel chat the ← key. Card: QR code, hash, key of a private channel,
   “Invite” (←/→ choose the contact), “Leave channel” (OK twice).
-- **Heltec V4 (OLED).** Messages name their channel (`Marat #kazan`); the “OK”/“Got it”
+- **Heltec V4 (OLED).** Messages name their channel (`Linda #amsterdam`); the “OK”/“Got it”
   replies write to the same channel.
 - **Web page and app.** Chat list with the channels, “+ Channel”, channel card with the QR code,
   invitations, removal.
