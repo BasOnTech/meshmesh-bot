@@ -74,10 +74,10 @@ static void scenario(){
   config.trial=before;config.setRadio(test);key(0x90);key(13);for(int i=0;i<11;i++)key(0xb6);shot("radio-test");
   key(0x86);config.trial=RadioProfile();config.setRadio(saved);}
  // Regional presets: <> on the first row steps through the list (the preview takes every frequency) and fills the radio rows.
- {key(0x90);key(13);for(int i=0;i<16;i++)key(0xb7);shot("radio-preset");
+ {key(0x90);key(13);if(uiStatus().indexOf("\"radio_preset\":\"Netherlands\"")<0){printf("FAIL default preset Netherlands: %s\n",uiStatus().c_str());exit(1);}key(0xb7);shot("radio-preset");
   if(uiStatus().indexOf("\"radio_preset\":\"Netherlands (Limburg)\"")<0){printf("FAIL preset Netherlands (Limburg): %s\n",uiStatus().c_str());exit(1);}
   for(int i=0;i<4;i++)key(0xb6);key(0xb4);if(uiStatus().indexOf(String("\"radio_preset\":\"")+tr("Custom")+"\"")<0){printf("FAIL preset after a changed CR: %s\n",uiStatus().c_str());exit(1);}key(0x86);}
- key(0x90);shot("settings");key(13);key(0xb6);key(0xb7);shot("radio");for(int i=0;i<7;i++)key(0xb6);key(0xb7);shot("radio-hash");key(0xb6);key(0xb6);key(13);shot("radio-regions");key(0xb5);key(0xb7);key(0xb7);key(0xb7);shot("radio-region");key(13);for(int i=0;i<3;i++)key(8);for(char ch:std::string("sao"))key(ch);shot("radio-region-type");key(0x86);key(0x86);key(0xb6);key(13);for(int i=0;i<8;i++)key(0xb6);key(0xb7);shot("display-battery");for(int i=0;i<8;i++)key(0xb5);shot("display");key(13);shot("display-name");key(0x86);key(0x86);
+ key(0x90);shot("settings");key(13);key(0xb6);key(0xb7);shot("radio");for(int i=0;i<7;i++)key(0xb6);key(0xb7);shot("radio-hash");key(0xb6);key(0xb6);key(13);shot("radio-regions");key(0xb5);key(0xb7);key(0xb7);key(0xb7);shot("radio-region");key(13);for(int i=0;i<3;i++)key(8);for(char ch:std::string("ams"))key(ch);shot("radio-region-type");key(0x86);key(0x86);key(0xb6);key(13);for(int i=0;i<8;i++)key(0xb6);key(0xb7);shot("display-battery");for(int i=0;i<8;i++)key(0xb5);shot("display");key(13);shot("display-name");key(0x86);key(0x86);
  tile("connect");key(13);key(13);shot("wifi-ap");key(0xb7);shot("wifi-qr");key(0xb7);shot("wifi-qr-page");key(0x86);key(0xb6);key(13);shot("network");key(13);key(0xb6);key(13);key(0x83);shot("diagnostics");key(0x90);for(int i=0;i<5;i++)key(0xb6);key(13);shot("help");key(13);shot("help-layout");key(0x86);key(13);shot("help-layout");key(0x86);
  // Connections with Bluetooth on: the MeshCore- name the phone apps see, then off again.
  key(0x90);for(int i=0;i<3;i++)key(0xb6);key(13);key(0xb6);key(0xb6);key(13);
@@ -195,9 +195,9 @@ static void scenario(){
    org("inv 5 24 6 Autumn Swiss");tour::Tour* P=tour::net.find(pid);if(!P||P->state!=tour::Invited)fail("invitation received");
    openTour(pid);for(int i=0;i<2;i++)tick();shot("tour-invite");previewSent.clear();key(13);if(P->state!=tour::Running||previewSent.empty()||previewSent.back().text.find(" yes")==std::string::npos)fail("joined");
    char list[160];snprintf(list,sizeof list,"pl %06lX:John,%06lX:M9,%06lX:Linda,%06lX:Sanne",(unsigned long)(peerId(3)>>40),(unsigned long)(meshRadio.nodeId>>40),(unsigned long)(peerId(5)>>40),(unsigned long)(peerId(6)>>40));org(list);
-   const Peer* marat=nullptr;for(unsigned i=0;i<meshRadio.peerCount;i++)if(meshRadio.peers[i].id==peerId(5))marat=&meshRadio.peers[i];
+   const Peer* linda=nullptr;for(unsigned i=0;i<meshRadio.peerCount;i++)if(meshRadio.peers[i].id==peerId(5))linda=&meshRadio.peers[i];
    const char* b64="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";std::string key64;
-   for(int i=0;i<32;i+=3){uint32_t v=uint32_t(marat->publicKey[i])<<16|(i+1<32?marat->publicKey[i+1]<<8:0)|(i+2<32?marat->publicKey[i+2]:0);key64+=b64[v>>18&63];key64+=b64[v>>12&63];key64+=i+1<32?b64[v>>6&63]:'=';key64+=i+2<32?b64[v&63]:'=';}
+   for(int i=0;i<32;i+=3){uint32_t v=uint32_t(linda->publicKey[i])<<16|(i+1<32?linda->publicKey[i+1]<<8:0)|(i+2<32?linda->publicKey[i+2]:0);key64+=b64[v>>18&63];key64+=b64[v>>12&63];key64+=i+1<32?b64[v>>6&63]:'=';key64+=i+2<32?b64[v&63]:'=';}
    snprintf(list,sizeof list,"r1 w 6D21 %s Linda",key64.c_str());org(list);
    ChessMatch* g=chessNet.find(0x6D21);if(!g||g->tour!=pid||g->mine!=chess::White||g->state!=ChessMatch::Playing||g->peer!=peerId(5))fail("the pairing starts my game");
    snprintf(list,sizeof list,"st 1 %06lX:2:3,%06lX:1:4,%06lX:1:2,%06lX:0:3",(unsigned long)(peerId(6)>>40),(unsigned long)(meshRadio.nodeId>>40),(unsigned long)(peerId(3)>>40),(unsigned long)(peerId(5)>>40));org(list);
@@ -221,6 +221,8 @@ static void scenario(){
  hardware.fsOk=false;home();previewCommands="";key(0xa3);shot("heltec-format-menu");key(0xa3);shot("heltec-format-armed");key(0xa3);
  if(previewCommands!="fsformat;restart;"){printf("FAIL create storage: %s\n",previewCommands.c_str());exit(1);}hardware.fsOk=true;
  // Radio settings with one button: hold on "Radio...", the frequency digit by digit (click +1, hold next), SF, Save.
+ // A fixed start below the band edge, so +1 MHz stays inside 863-870 whatever the default.
+ config.frequency=868.731f;config.sf=8;config.cr=6;
  for(int i=0;i<11;i++)tick();go("settings");
  key(0xa3);expect("settings menu","\"menu\":true");key(0xa3);expect("radio screen","\"page\":\"radio\"");shot("heltec-radio");
  key(0xa3);key(13);expect("MHz +1","\"radio_draft\":\"869.731\"");key(0xa3);key(0xa3);key(13);key(13);expect("10 kHz +2","\"radio_draft\":\"869.751\"");shot("heltec-radio-freq");

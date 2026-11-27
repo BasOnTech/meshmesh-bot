@@ -1086,7 +1086,7 @@ void drawEditing() {
   } else if(page == ServerHome) {
     text(26, 160, serverEditHint(), textSubtle, small);
   } else if(page == Radio || regionEditPage()) {
-    text(26, 160, page == Radio ? t("As on repeaters: msk, sao...; empty: none") : t("As on repeaters: msk, sao...; empty: default"), textSubtle, small);
+    text(26, 160, page == Radio ? t("As on repeaters: nl, ams...; empty: none") : t("As on repeaters: nl, ams...; empty: default"), textSubtle, small);
   } else if(pass) text(26, 160, t("8-63 characters; -> after a letter: capital"), textSubtle, small);
   text(26, 175, page == DiceView ? diceEditOk() : page == ChannelAdd ? channelEditOk()
                                                 : page == Remote     ? (remoteEdit == EditPassword ? t("OK: log in   BACK: cancel") : t("OK: send   BACK: cancel"))

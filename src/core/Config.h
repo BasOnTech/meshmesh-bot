@@ -17,14 +17,14 @@ struct RadioProfile {
 };
 struct Config {
   char name[25] = MM_NODE_NAME;
-  float frequency = 868.731f, bandwidth = 62.5f;
-  uint8_t sf = 8, cr = 6, hops = 3, brightness = MM_BRIGHTNESS_DEFAULT;
+  float frequency = 869.618f, bandwidth = 62.5f; // the Netherlands preset (RadioPresets.h)
+  uint8_t sf = 7, cr = 5, hops = 3, brightness = MM_BRIGHTNESS_DEFAULT;
   uint8_t pathHash = 2; // bytes per hop in the path of our flood packets, 1..3 (MeshCore path hash mode + 1)
   int8_t power = 10;
   bool relay = true, gps = true, sound = true, batteryVolts = false;
   uint8_t lang = LangEn; // interface language, I18n.h
   uint16_t autoLock = 90, dimAfter = 30;
-  int16_t utcOffset = 180;
+  int16_t utcOffset = 60; // CET
   uint8_t key[32] = {};
   uint32_t bootCounter = 0;
   uint8_t role = RoleNormal;
@@ -45,7 +45,7 @@ struct Config {
   char region[31] = "";
   uint8_t regionKey[16] = {};
   // The regional preset chosen last (RadioPresets.h), by name: tells apart the presets that share the radio.
-  char preset[32] = "";
+  char preset[32] = "Netherlands";
   // The profile before the last change of the shared radio parameters ("radio previous" returns to it), and
   // during a test ("radio try") the saved one: the test lives in memory only, a restart brings the saved one back.
   RadioProfile previous, trial;

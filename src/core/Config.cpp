@@ -34,10 +34,10 @@ void Config::load() {
   }
   p.getString("name", name, sizeof(name));
   if(!name[0]) strcpy(name, MM_NODE_NAME);
-  frequency = p.getFloat("freq", 868.731f);
+  frequency = p.getFloat("freq", 869.618f);
   bandwidth = p.getFloat("bw", 62.5f);
-  sf = p.getUChar("sf", 8);
-  cr = p.getUChar("cr", 6);
+  sf = p.getUChar("sf", 7);
+  cr = p.getUChar("cr", 5);
   power = p.getChar("power", 10);
   hops = p.getUChar("hops", 3);
   pathHash = p.getUChar("path_hash", 2);
@@ -58,7 +58,7 @@ void Config::load() {
   notifyFailed = p.getBool("n_failed", false);
   p.getString("n_words", notifyWords, sizeof notifyWords);
   if(!meshmesh::validUtf8((const uint8_t*)notifyWords, strlen(notifyWords))) notifyWords[0] = 0;
-  utcOffset = p.getShort("utc_offset", 180);
+  utcOffset = p.getShort("utc_offset", 60);
   // 0.24.0: two bytes of path hash by default; boards still on the old default of one byte move to two, once.
   if(!p.isKey("path_hash2")) {
     if(pathHash == 1) {
@@ -83,7 +83,7 @@ void Config::load() {
     p.putBool("apps3", true);
   } // 0.33.0: the games folder
   strlcpy(region, p.getString("region", "").c_str(), sizeof region);
-  strlcpy(preset, p.getString("preset", "").c_str(), sizeof preset);
+  strlcpy(preset, p.getString("preset", "Netherlands").c_str(), sizeof preset);
   if(!region[0]) memset(regionKey, 0, 16);
   else if(p.getBytesLength("region_key") != 16 || p.getBytes("region_key", regionKey, 16) != 16) regions::keyOf(region, regionKey);
   // Language: "lang" since 0.3.7; older versions kept only "russian".
@@ -131,10 +131,11 @@ void Config::load() {
     if(!previous.set() || !c.valid() || sameRadio(previous)) previous = RadioProfile();
   }
   if(!valid()) {
-    frequency = 868.731f;
+    frequency = 869.618f;
     bandwidth = 62.5f;
-    sf = 8;
-    cr = 6;
+    sf = 7;
+    cr = 5;
+    strcpy(preset, "Netherlands");
     power = 10;
     hops = 3;
     pathHash = 2;

@@ -75,7 +75,7 @@ python -m esptool --chip esp32s3 --port PORT write-flash --flash-mode dio --flas
   0x0 bootloader.bin 0x8000 partitions.bin 0xe000 boot_app0.bin 0x10000 firmware.bin
 ```
 
-Default radio: 868.731 MHz, BW 62.5 kHz, SF8, CR4/6 — change it in Settings → Radio; all nodes
+Default radio: the Netherlands preset, 869.618 MHz, BW 62.5 kHz, SF7, CR4/5 — change it in Settings → Radio; all nodes
 of a network must match. Follow your country's radio regulations.
 
 ## Build

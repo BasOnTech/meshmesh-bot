@@ -112,10 +112,10 @@ MeshRadio::ChannelResult MeshRadio::createChannel(const String& name,uint64_t* i
 bool MeshRadio::removeChannel(uint64_t id){int i=channelIndex(id);if(i<=0)return false;memmove(channelList+i,channelList+i+1,sizeof(channels::Channel)*(channelCount-i-1));channelCount--;return true;}
 bool MeshRadio::sendInvite(uint64_t contact,uint64_t id){const channels::Channel* c=channel(id);if(!c)return false;String l=channels::link(*c);if(l.length()>151)l=channels::link(*c,true);return sendMessage(l,contact);}
 bool MeshRadio::setChannelRegion(uint64_t id,const String& raw){int i=channelIndex(id);if(i<0)return false;String r=raw;r.trim();if(r.length()&&r!=regions::Unscoped){r=regions::normalize(r);if(!r.length())return false;}strncpy(channelList[i].region,r.c_str(),sizeof(channelList[i].region)-1);return true;}
-// Region search: the answer of two repeaters of the Moscow scheme (docs/regions.md), at once.
+// Region search: the answer of two repeaters of a Dutch scheme, at once.
 namespace regions {
 Search search;
-bool find(){static Found list[MaxFound];search=Search();search.found=list;search.state=Search::Done;search.repeaters=search.answered=2;for(const char* n:{"ru","mow","msk","sao"}){strcpy(search.found[search.count].name,n);search.found[search.count++].repeaters=2;}return true;}
+bool find(){static Found list[MaxFound];search=Search();search.found=list;search.state=Search::Done;search.repeaters=search.answered=2;for(const char* n:{"eu","nl","nl-nh","ams"}){strcpy(search.found[search.count].name,n);search.found[search.count++].repeaters=2;}return true;}
 void tick(){}
 String json(){return "{}";}
 }
