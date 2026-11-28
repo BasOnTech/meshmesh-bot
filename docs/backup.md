@@ -69,7 +69,7 @@ Everything else is read and written with existing commands: `config`/`set`, `cha
 ## File format
 
 ```json
-{"format":"meshmesh-backup","version":1,"created":"2026-11-09T07:09:28Z","firmware":"0.30.0",
+{"format":"murmur-backup","version":1,"created":"2026-11-09T07:09:28Z","firmware":"0.30.0",
  "board":"m9","board_name":"Elecrow ThinkNode M9","role":"normal","node":{"id":"…","name":"…","public_key":"…"},
  "settings":{…},"identity":{"private_key":"…"},
  "channels":[{"id":"…","name":"…","kind":"private","link":"meshcore://channel/add?…","region":"","policy":{…}}],
@@ -84,8 +84,11 @@ current board. A restore applies only the private key `identity.private_key`; th
 and keeps both together (one `identity` record in the MeshCore storage). Copies made by 0.30.0 repeat the public key in
 `identity.public_key`; it is not applied, the page uses it only for the preview.
 
-The file name is `meshmesh-backup-<name>-YYYY-MM-DD-HH-MM.json` in the local time of the phone or computer (since 0.30.1;
+The file name is `murmur-backup-<name>-YYYY-MM-DD-HH-MM.json` in the local time of the phone or computer (since 0.30.1;
 UTC in 0.30.0); `created` inside the file is UTC in ISO 8601.
+
+Copies made before the rename to Murmur have the format `meshmesh-backup` and the file name `meshmesh-backup-…`;
+the page still restores them.
 
 If the node key could not be read (home network, older firmware), `identity_error` is written instead of
 `identity`. A section is missing when the board does not have that feature.

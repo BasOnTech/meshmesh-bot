@@ -1,4 +1,6 @@
-# BotMesh
+# Murmur
+
+> A murmuration is a flock of starlings moving as one network, and a murmur is quiet talk.
 
 This is the Bas on Tech MeshCore firmware
 

@@ -43,10 +43,10 @@ SHOTS = {
     'web-radio': ('radio', '', '', False),
     # Backup (docs/backup.md): the save card, then the preview of a restore from a made-up copy of this demo board.
     'web-backup': ('backup', '', '', False),
-    'web-backup-restore': ('backup', '', "request('/api/config').then(c=>backupOpen({files:[new File([JSON.stringify({format:'meshmesh-backup',version:1,"
+    'web-backup-restore': ('backup', '', "request('/api/config').then(c=>backupOpen({files:[new File([JSON.stringify({format:'murmur-backup',version:1,"
                            "created:'2026-11-01T18:20:00Z',board:status.board,board_name:boardName(),node:{name:c.name},settings:{...c,sf:9,dim_after:60},"
                            "contacts:[{key:'ab'.repeat(32),name:'Lena',type:1}],quick:{to:'ALL',gps:true,presets:['OK','👍','🚶','','','','','','','']},"
-                           "identity:{private_key:'00'.repeat(64),public_key:'77'+'0'.repeat(62)}})],'meshmesh-backup-M9.json')]})).then(()=>{"
+                           "identity:{private_key:'00'.repeat(64),public_key:'77'+'0'.repeat(62)}})],'murmur-backup-M9.json')]})).then(()=>{"
                            "$('bkRestore').scrollIntoView({block:'start'});scrollBy(0,-70)})", False),
     'web-msg-path': ('msg/' + key(ANNA), '', '', False),
     'web-msg-echoes': ('msg/' + key(MINE), '', '', False),

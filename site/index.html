@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BoT Mesh</title>
+<title>Murmur</title>
 <meta name="description" content="" data-i18n-content="meta.description">
 <meta property="og:title" content="" data-i18n-content="meta.ogTitle">
 <meta property="og:description" content="" data-i18n-content="meta.ogDescription">
@@ -209,7 +209,7 @@ footer a{color:var(--dim)}
 <body>
 <header>
  <div class="wrap">
-  <a class="logo" href="#"><img src="img/icon.svg" alt="">BoT Mesh</a>
+  <a class="logo" href="#"><img src="img/icon.svg" alt="">Murmur</a>
   <nav>
    <a href="#how"><span data-i18n="nav.how"></span></a>
    <a href="#install"><span data-i18n="nav.install"></span></a>
@@ -400,7 +400,7 @@ footer a{color:var(--dim)}
 
 <footer>
  <div class="wrap">
-  <span>BoT Mesh <span id="ver"></span> · <a href="https://github.com/BasOnTech/meshmesh-bot/blob/main/LICENSE">MIT</a></span>
+  <span>Murmur <span id="ver"></span> · <a href="https://github.com/BasOnTech/meshmesh-bot/blob/main/LICENSE">MIT</a></span>
   <span><span data-i18n="footer.radio"></span> <a href="https://github.com/meshcore-dev/MeshCore">MeshCore</a> · <span data-i18n="footer.maps"></span> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a></span>
  </div>
 </footer>
@@ -591,7 +591,7 @@ function renderBoards(){
  document.getElementById('installer').setAttribute('manifest',b.langs?`firmware/${b.env}/manifest-${fwLang()}.json`:`firmware/${b.env}/manifest.json`);
  document.getElementById('zip').href=b.zip;
  document.getElementById('chosenName').textContent=b.name;
- document.getElementById('chosenInfo').textContent=`BoT Mesh ${VERSION} · ${b.chip} · ${b.flash}`;
+ document.getElementById('chosenInfo').textContent=`Murmur ${VERSION} · ${b.chip} · ${b.flash}`;
  const tag=document.getElementById('chosenTag');
  tag.className='tag '+(b.verified?'ok':'cm');tag.textContent=b.verified?L('tag.verified'):L('tag.unverified');
  document.getElementById('communityNote').hidden=b.verified;

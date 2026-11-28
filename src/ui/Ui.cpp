@@ -864,7 +864,7 @@ String distanceText(float m, float bearing) {
 String title() {
   if(locked) return config.name;
   switch(page) {
-  case Home: return "BoT Mesh";
+  case Home: return "Murmur";
   case Threads: return t("Chats");
   case Chat: return nameOf(recipient);
   case Map: return t("Map");

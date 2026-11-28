@@ -31,7 +31,7 @@ def main():
     d = ImageDraw.Draw(img)
     x = 70
     d.text((x, 92), 'LORA · MESHCORE · ESP32', font=font(24, 1), fill=ACCENT)
-    d.text((x, 150), 'BoT Mesh', font=font(98, 1), fill=TEXT)
+    d.text((x, 150), 'Murmur', font=font(98, 1), fill=TEXT)
     d.text((x, 278), 'Talk without the internet', font=font(32, 0), fill=TEXT)
     d.text((x, 320), 'or a cell network', font=font(32, 0), fill=TEXT)
     d.text((x, 395), 'Chats · maps · radar', font=font(30, 0), fill=MUTED)
