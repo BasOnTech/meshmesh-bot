@@ -5,7 +5,7 @@ This is the Bas on Tech MeshCore firmware
 It is based on [MeshMesh](https://github.com/IKrasnodymov/meshmesh). However over time there are so many changes in code and UI that it developed on its own.
 
 Differences between MeshMesh:
-- Only supports ThinkNode M9 and Helltek v4
+- Only supports ThinkNode M9 and Heltec v4
 - Only supports English
 - List interface for quick navigating
 - Different UI approach
