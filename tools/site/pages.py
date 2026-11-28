@@ -43,7 +43,7 @@ Update (keeps key, settings, contacts and history):
   python -m esptool --chip {chip} --port PORT write-flash --flash-mode dio --flash-freq {freq} --flash-size {size} \\
     {boot} bootloader.bin 0x8000 partitions.bin 0xe000 boot_app0.bin 0x10000 firmware.bin
 
-Or in Chrome/Edge: https://basontech.github.io/meshmesh-bot/#install
+Or in Chrome/Edge: https://basontech.github.io/meshcore-murmur-firmware/#install
 """
 
 

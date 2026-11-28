@@ -42,9 +42,9 @@ package.
 
 ## Repository
 
-GitHub: this fork, `BasOnTech/meshmesh-bot`, of the public `IKrasnodymov/meshmesh` (MIT; `README.md` — the overview,
+GitHub: this fork, `BasOnTech/meshcore-murmur-firmware`, of the public `IKrasnodymov/meshmesh` (MIT; `README.md` — the overview,
 `docs/` — the detailed documents, all in English), main branch `main`. The site is GitHub Pages from `site/`
-(https://basontech.github.io/meshmesh-bot/): `.github/workflows/pages.yml` builds all boards and `tools/site/pages.py`
+(https://basontech.github.io/meshcore-murmur-firmware/): `.github/workflows/pages.yml` builds all boards and `tools/site/pages.py`
 (ESP Web Tools browser-install manifests, writing at offsets without erasing NVS). The link preview image
 `site/img/og.png` — `tools/site/og_image.py` (from `site/img/m9-home-en.png`; run by hand, not in CI). Screen
 screenshots — `tools/ui_preview`; the interactive simulator in an SDL2 window — `tools/ui_preview/sim.sh [m9] [LANG]`
